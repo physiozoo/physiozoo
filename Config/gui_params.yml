@@ -1,0 +1,6 @@
+not_in_use_gui:
+    hrv_freq: [methods, power_methods, extra_bands]
+    mse: [mse_metrics]
+
+
+#hrv_nl: [beta_method]

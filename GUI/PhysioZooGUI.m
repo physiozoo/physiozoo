@@ -1,5 +1,5 @@
 function PhysioZooGUI()
-DEBUG = 1;
+DEBUG = 0;
 
 %-------------- remove -----------------
 if DEBUG
@@ -65,10 +65,7 @@ displayEndOfDemoMessage('');
         
         DATA.filter_quotient = false;
         DATA.filter_lowpass = true; 
-        DATA.filter_range = false;
-                
-        % Load user-specified default parameters
-        %rhrv_load_defaults('human');                
+        DATA.filter_range = false;                                      
         
         if screensize(4) < 1080
             DATA.BigFontSize = 11;
@@ -86,10 +83,7 @@ displayEndOfDemoMessage('');
         DATA.default_method_index = 1;              
         
         DATA.LowPassFilteringFields = [];
-        DATA.PoincareFilteringFields = [];
-        
-        %DATA.flag = 0;
-        
+        DATA.PoincareFilteringFields = [];                        
     end % createData
 %-------------------------------------------------------------------------%
 %%
@@ -161,7 +155,28 @@ displayEndOfDemoMessage('');
         
         DATA.mammal = [];   
         
-        %DATA.flag = 0;
+        DATA.flag = '';
+    end
+%%
+    function clean_gui()
+        set(GUI.DataQualityMenu,'Enable', 'off');
+        set(GUI.SaveAsMenu,'Enable', 'off');
+        set(GUI.SaveFiguresAsMenu,'Enable', 'off');
+        set(GUI.SaveParamFileMenu,'Enable', 'off');
+        
+        GUI.RawDataSlider.Enable = 'off';
+        GUI.Filt_RawDataSlider.Enable = 'off';
+        
+        set(GUI.MinYLimit_Edit, 'String', '');
+        set(GUI.MaxYLimit_Edit, 'String', '');
+        set(GUI.Filt_MinYLimit_Edit, 'String', '');
+        set(GUI.Filt_MaxYLimit_Edit, 'String', '');
+        set(GUI.WindowSize, 'String', '');
+        set(GUI.FirstSecond, 'String', '');
+        set(GUI.Filt_WindowSize, 'String', '');
+        set(GUI.Filt_FirstSecond, 'String', ''); 
+        
+        title(GUI.RawDataAxes, '');
     end
 
 %% Open the window
@@ -301,7 +316,12 @@ displayEndOfDemoMessage('');
         GUI.OptionsTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
         GUI.AdvancedTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
         
-        GUI.OptionsBox = uix.VBox( 'Parent', GUI.OptionsTab, 'Spacing', 5);
+        tabs_widths = 350;
+        tabs_heights = 350;
+        
+        GUI.OptionsSclPanel = uix.ScrollingPanel( 'Parent', GUI.OptionsTab);
+        GUI.OptionsBox = uix.VBox( 'Parent', GUI.OptionsSclPanel, 'Spacing', 5);
+        set( GUI.OptionsSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         GUI.AdvancedBox = uix.VBox( 'Parent', GUI.AdvancedTab, 'Spacing', 5);
         
 %--------------------------------------------------------------------------------------------                
@@ -312,10 +332,7 @@ displayEndOfDemoMessage('');
         GUI.TimeParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', 5);
         GUI.FrequencyParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', 5);
         GUI.NonLinearParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', 5);            
-               
-        tabs_widths = 350;
-        tabs_heights = 350;
-                
+                               
         GUI.FilteringSclPanel = uix.ScrollingPanel('Parent', GUI.FilteringParamTab); 
         GUI.FilteringParamBox = uix.VBox('Parent', GUI.FilteringSclPanel, 'Spacing', 7);
         set( GUI.FilteringSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
@@ -648,8 +665,7 @@ displayEndOfDemoMessage('');
     function filt_slider_Callback(~, ~)
         Filt_FirstSecond2Show = int64(get(GUI.Filt_RawDataSlider, 'Value'));
         DATA.Filt_firstSecond2Show = Filt_FirstSecond2Show;
-        set(GUI.Filt_FirstSecond, 'String', num2str(Filt_FirstSecond2Show));
-        %[DATA.tnn_window, DATA.nni_window] = getFilteredSignal();
+        set(GUI.Filt_FirstSecond, 'String', num2str(Filt_FirstSecond2Show));        
         CalcPlotSignalStat();
     end
 %%
@@ -931,6 +947,7 @@ displayEndOfDemoMessage('');
                     DATA.trr = QRS_data(2:end)/DATA.SamplingFrequency;
                 else
                     errordlg('Please, choose the file with the QRS data.', 'Input Error');
+                    clean_gui();
                     cla(GUI.RawDataAxes);
                     return;
                 end
@@ -942,12 +959,13 @@ displayEndOfDemoMessage('');
                     fclose(fileID);
                 end
                 try
-                    qrs_data = rdann( [PathName DATA.DataFileName], 'atr' ); % qrs
+                    qrs_data = rdann( [PathName DATA.DataFileName], 'qrs' ); % atr qrs
                     if ~isempty(qrs_data)                    
                         DATA.rri = diff(qrs_data)/DATA.SamplingFrequency;
                         DATA.trr = qrs_data(2:end)/DATA.SamplingFrequency;
                     else
                         errordlg('Please, choose the file with the QRS data.', 'Input Error');
+                        clean_gui();
                         cla(GUI.RawDataAxes);
                         return;
                     end
@@ -956,6 +974,7 @@ displayEndOfDemoMessage('');
                     clearData();
                     clear_statistics_plots();
                     clearStatTables();
+                    clean_gui();
                     cla(GUI.RawDataAxes);
                     return;
                 end
@@ -975,6 +994,7 @@ displayEndOfDemoMessage('');
                         DATA.trr = txt_data(2:end)/DATA.SamplingFrequency;
                     else
                         errordlg('Please, choose the file with the QRS data.', 'Input Error');
+                        clean_gui();
                         cla(GUI.RawDataAxes);
                         return;
                     end
@@ -1054,14 +1074,6 @@ displayEndOfDemoMessage('');
         catch e
             errordlg(['hrv_time error: ' e.message], 'Input Error');     
             DATA.flag = 'hrv_time';
-%             if DATA.flag
-%                 DATA.hrv_td = table;
-%                 DATA.pd_time = struct([]);
-%                 
-%                 GUI.TimeParametersTableData = [];
-%                 GUI.TimeParametersTable.RowName = [];
-%                 GUI.TimeParametersTable.Data = [];
-%             end
             rethrow(e);
         end
         
@@ -1082,15 +1094,7 @@ displayEndOfDemoMessage('');
         catch e
             errordlg(['hrv_fragmentation error: ' e.message], 'Input Error');
             DATA.flag = 'hrv_fragmentation';
-%             if DATA.flag
-%                 DATA.hrv_frag = table;
-%                 
-%                 GUI.FragParametersTableData = [];
-%                 GUI.FragParametersTable.RowName=[];
-%                 GUI.FragParametersTable.Data = [];
-%             end
             rethrow(e);
-
         end
         updateTimeStatistics();        
         updateStatisticsTable();
@@ -1149,19 +1153,6 @@ displayEndOfDemoMessage('');
         catch e
             errordlg(['hrv_freq error: ' e.message], 'Input Error');
             DATA.flag = 'hrv_freq';
-%             if DATA.flag
-%                 DATA.hrv_fd = table;
-%                 DATA.pd_freq = struct([]);
-%                 
-%                 DATA.hrv_fd_lomb = table;
-%                 DATA.hrv_fd_ar = table;
-%                 DATA.hrv_fd_welch = table;
-%                 
-%                 GUI.FrequencyParametersTableData = [];
-%                 GUI.FrequencyParametersTable.RowName = [];
-%                 GUI.FrequencyParametersTableMethodRowName = [];
-%                 GUI.FrequencyParametersTable.Data = [];                
-%             end
             rethrow(e);            
          end
         updateStatisticsTable(); 
@@ -1190,14 +1181,6 @@ displayEndOfDemoMessage('');
         catch e
             errordlg(['hrv_nonlinear: ' e.message], 'Input Error');
             DATA.flag = 'hrv_nonlinear';
-%             if DATA.flag
-%                 DATA.hrv_nl = table;
-%                 DATA.pd_nl = struct([]);
-%                 
-%                 GUI.NonLinearTableData = [];
-%                 GUI.NonLinearTable.RowName = [];
-%                 GUI.NonLinearTable.Data = [];
-%             end
             rethrow(e);
         end
         updateStatisticsTable(); 
@@ -1208,48 +1191,7 @@ displayEndOfDemoMessage('');
         GUI.StatisticsTable.Data = cat(1, GUI.TimeParametersTableData, GUI.FrequencyParametersTableData, GUI.NonLinearTableData);
     end
 %%
-%     function calcStatistics()
-%         try
-%             calcTimeStatistics();
-%         catch e
-%             rethrow(e);
-%         end
-%         try
-%             calcFrequencyStatistics();
-%         catch e
-%             rethrow(e);
-%         end
-%         try
-%             calcNolinearStatistics();
-%         catch e
-%             rethrow(e);
-%         end
-%         %updateStatisticsTable();
-%     end
-
-%%
-    function clear_statistics_plots()
-        
-        %         grid(GUI.TimeAxes1, 'off');
-        %         grid(GUI.FrequencyAxes1, 'off');
-        %         grid(GUI.FrequencyAxes2, 'off');
-        %         grid(GUI.NonLinearAxes1, 'off');
-        %         grid(GUI.NonLinearAxes2, 'off');
-        %         grid(GUI.NonLinearAxes3, 'off');
-        %
-        %         legend(GUI.TimeAxes1, 'off');
-        %         legend(GUI.FrequencyAxes1, 'off');
-        %         legend(GUI.FrequencyAxes2, 'off');
-        %         legend(GUI.NonLinearAxes1, 'off');
-        %         legend(GUI.NonLinearAxes2, 'off');
-        %         legend(GUI.NonLinearAxes3, 'off');
-        %
-        %         cla(GUI.TimeAxes1);
-        %         cla(GUI.FrequencyAxes1);
-        %         cla(GUI.FrequencyAxes2);
-        %         cla(GUI.NonLinearAxes1);
-        %         cla(GUI.NonLinearAxes2);
-        %         cla(GUI.NonLinearAxes3);
+    function clear_statistics_plots()                
         clear_time_statistics_results();
         clear_frequency_statistics_results();
         clear_nonlinear_statistics_results();
@@ -1322,22 +1264,11 @@ displayEndOfDemoMessage('');
         box(GUI.NonLinearAxes2, 'off' );
         box(GUI.NonLinearAxes3, 'off' );
     end
-% %%
-%     function plot_statistics_results()
-%         
-%         %clear_statistics_plots();
-%         
-%         plot_time_statistics_results();
-%         plot_frequency_statistics_results();
-%         plot_nonlinear_statistics_results();
-%     end
-
 %%
     function set_filter_mammal_integ_param(filter_index, mammal_index, integration_index)
         
         DATA.filter_index = filter_index;        
         set_filters(DATA.Filters{DATA.filter_index});
-%         enable_disable_filtering_params();
         
         DATA.mammal_index = mammal_index;
         % Load user-specified default parameters        
@@ -1352,7 +1283,6 @@ displayEndOfDemoMessage('');
         %         DATA.integration_index = integration_index;
         
     end
-
 %%
     function reset_plot()
         
@@ -1442,18 +1372,13 @@ displayEndOfDemoMessage('');
                     set(GUI.Filt_FirstSecond, 'Enable', 'on');
                     set(GUI.Filt_RawDataSlider, 'Enable', 'on');
                 end                
-            catch e %ME
-%                 clearData();
-%                 clear_statistics_plots();
-%                 clearStatTables();
-%                errordlg(['Reset error: ' e.message], 'Input Error');
+            catch  %ME
             end
         end
     end % reset
 
 %%
-    function setSliderProperties(slider_handle, maxSignalLength, MyWindowSize, SliderStep)
-        
+    function setSliderProperties(slider_handle, maxSignalLength, MyWindowSize, SliderStep)        
         set(slider_handle, 'Min', 0);
         set(slider_handle, 'Max', maxSignalLength - MyWindowSize+1);
         set(slider_handle, 'Value', 0);
@@ -1634,8 +1559,7 @@ displayEndOfDemoMessage('');
             DATA.MinYLimit = MinYLimit;
             DATA.MaxYLimit = MaxYLimit;
             
-            GetPlotSignal();
-            %plotDataQuality();
+            GetPlotSignal();           
         end
     end
 %%
@@ -1718,10 +1642,8 @@ displayEndOfDemoMessage('');
                 clear_nonlinear_data();
             end
             rethrow(e);
-        end                
-        %plot_statistics_results();
+        end                       
     end
-
 %%
     function GetPlotSignal()
         if ~isempty(DATA.rri)
@@ -1730,11 +1652,9 @@ displayEndOfDemoMessage('');
             plotSignal();
         end
     end
-
 %%
     function Mammal_popupmenu_Callback( ~, ~ )
-        index_selected = get(GUI.Mammal_popupmenu,'Value');
-        %DATA.flag = 1;
+        index_selected = get(GUI.Mammal_popupmenu,'Value');       
         
         % Load user-specified default parameters
         rhrv_load_defaults(DATA.mammals{index_selected});
@@ -1805,8 +1725,7 @@ displayEndOfDemoMessage('');
                 FiltSignal();
                 CalcPlotSignalStat();
             end
-            DATA.filter_index = index_selected;
-            %enable_disable_filtering_params();
+            DATA.filter_index = index_selected;            
         catch e
             errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
             %             GUI.Filtering_popupmenu.Value = DATA.filter_index;
@@ -2087,7 +2006,6 @@ displayEndOfDemoMessage('');
             end
         end
     end
-
 %%
     function onSaveResultsAsFile( ~, ~ )  
                 
@@ -2198,21 +2116,18 @@ displayEndOfDemoMessage('');
     end
 %%
     function update_statistics(param_category)
-        if strcmp(param_category, 'filtrr') % || strcmp(param_category(1), 'poincare')
+        if strcmp(param_category, 'filtrr') 
             FiltSignal();
             CalcPlotSignalStat();
         elseif strcmp(param_category, 'hrv_time')
-            calcTimeStatistics();
-            %updateStatisticsTable();
+            calcTimeStatistics();            
             plot_time_statistics_results();
         elseif strcmp(param_category, 'hrv_nl') || strcmp(param_category, 'hrv_freq')
-            calcFrequencyStatistics();
-            %updateStatisticsTable();
+            calcFrequencyStatistics();            
             plot_frequency_statistics_results();
             %elseif strcmp(param_category(1), 'hrv_nl') || strcmp(param_category(1), 'dfa') || strcmp(param_category(1), 'mse')
         elseif strcmp(param_category, 'dfa') || strcmp(param_category, 'mse')
-            calcNolinearStatistics();
-            %updateStatisticsTable();
+            calcNolinearStatistics();            
             plot_nonlinear_statistics_results();
         end
     end
@@ -2244,8 +2159,8 @@ displayEndOfDemoMessage('');
                     return;
                 end
             elseif strcmp(param_name, 'hrv_freq.window_minutes')
-                if isnan(screen_value) || screen_value > DATA.maxSignalLength/60 || screen_value < 0.5
-                    errordlg(['set_config_Callback error: ' 'The value must be greater than 30 sec and less than data length!'], 'Input Error');
+                if isnan(screen_value) || screen_value > double(DATA.maxSignalLength)/60 || screen_value < 0.5
+                    errordlg(['set_config_Callback error: ' 'The value must be greater than 30 sec and less than ' num2str(double(DATA.maxSignalLength)/60), ' sec!'], 'Input Error');
                     set(src, 'String', prev_screen_value);
                     return;
                 end

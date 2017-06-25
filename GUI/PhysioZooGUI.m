@@ -338,14 +338,14 @@ displayEndOfDemoMessage('');
         GUI.Mammal_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.MammalBox, 'Callback', @Mammal_popupmenu_Callback, 'FontSize', SmallFontSize);
         GUI.Mammal_popupmenu.String = DATA.GUI_mammals;
         uix.Empty( 'Parent', GUI.MammalBox );
-        set( GUI.MammalBox, 'Widths', [-37, -30, -20]  );
+        set( GUI.MammalBox, 'Widths', [-37, -30, -10]  );
         
         GUI.IntegrationBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.IntegrationBox, 'String', 'Integration Level', 'FontSize', SmallFontSize, 'Enable', 'off', 'HorizontalAlignment', 'left');
         GUI.Integration_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.IntegrationBox, 'Callback', @Integration_popupmenu_Callback, 'FontSize', SmallFontSize, 'Enable', 'off');
         GUI.Integration_popupmenu.String = DATA.GUI_Integration;
         uix.Empty( 'Parent', GUI.IntegrationBox );
-        set( GUI.IntegrationBox, 'Widths', [-37, -30, -20]  );
+        set( GUI.IntegrationBox, 'Widths', [-37, -30, -10]  );
         
         GUI.FilteringBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.FilteringBox, 'String', 'Filtering', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
@@ -353,7 +353,7 @@ displayEndOfDemoMessage('');
         GUI.Filtering_popupmenu.String = DATA.Filters;    
         uix.Empty( 'Parent', GUI.FilteringBox );
             
-        set( GUI.FilteringBox, 'Widths', [-37, -30, -20]  );
+        set( GUI.FilteringBox, 'Widths', [-37, -30, -10]  );
         
         uix.Empty( 'Parent', GUI.OptionsBox );
         set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -50] );                
@@ -834,7 +834,7 @@ displayEndOfDemoMessage('');
             end
         end
         
-        [DataQuality_FileName, PathName] = uigetfile({'*.mat','MAT-files (*.mat)'}, 'Open Data-Quality-Annotations File', dataQualityDirectory);
+        [DataQuality_FileName, PathName] = uigetfile({'*.mat','MAT-files (*.mat)'}, 'Open Data-Quality-Annotations File', [dataQualityDirectory filesep]);
         if ~isequal(DataQuality_FileName, 0)
             QualityAnnotations = load([PathName DataQuality_FileName], 'quality_anno*');
             QualityAnnotations_field_names = fieldnames(QualityAnnotations);
@@ -888,9 +888,9 @@ displayEndOfDemoMessage('');
         
         [QRS_FileName, PathName] = uigetfile( ...
             {'*.mat','MAT-files (*.mat)'; ...
-            '*.qrs;*.hea',  'WFDB Files (*.qrs,*.hea)'; ...
+            '*.qrs;*.hea; *.atr',  'WFDB Files (*.qrs,*.hea,*.atr)'; ...
             '*.txt','Text Files (*.txt)'}, ...
-            'Open QRS File', dataDirectory);
+            'Open QRS File', [dataDirectory filesep]);
         
         if ~isequal(QRS_FileName, 0)
             clearData();
@@ -934,7 +934,7 @@ displayEndOfDemoMessage('');
                     cla(GUI.RawDataAxes);
                     return;
                 end
-            elseif strcmp(ExtensionFileName, 'hea') || strcmp(ExtensionFileName, 'qrs')
+            elseif strcmp(ExtensionFileName, 'hea') || strcmp(ExtensionFileName, 'qrs') || strcmp(ExtensionFileName, 'atr')
                 
                 fileID = fopen([PathName DATA.DataFileName '.hea' ],'r');
                 if fileID ~= -1
@@ -942,7 +942,7 @@ displayEndOfDemoMessage('');
                     fclose(fileID);
                 end
                 try
-                    qrs_data = rdann( [PathName DATA.DataFileName], 'qrs' );
+                    qrs_data = rdann( [PathName DATA.DataFileName], 'atr' ); % qrs
                     if ~isempty(qrs_data)                    
                         DATA.rri = diff(qrs_data)/DATA.SamplingFrequency;
                         DATA.trr = qrs_data(2:end)/DATA.SamplingFrequency;
@@ -1052,7 +1052,8 @@ displayEndOfDemoMessage('');
             GUI.TimeParametersTableData = [DATA.timeDescriptions DATA.timeData];
             GUI.TimeParametersTable.Data = DATA.timeData;
         catch e
-            errordlg(['hrv_time error: ' e.message], 'Input Error');            
+            errordlg(['hrv_time error: ' e.message], 'Input Error');     
+            DATA.flag = 'hrv_time';
 %             if DATA.flag
 %                 DATA.hrv_td = table;
 %                 DATA.pd_time = struct([]);
@@ -1080,6 +1081,7 @@ displayEndOfDemoMessage('');
             GUI.FragParametersTable.Data = DATA.fragData;
         catch e
             errordlg(['hrv_fragmentation error: ' e.message], 'Input Error');
+            DATA.flag = 'hrv_fragmentation';
 %             if DATA.flag
 %                 DATA.hrv_frag = table;
 %                 
@@ -1090,13 +1092,15 @@ displayEndOfDemoMessage('');
             rethrow(e);
 
         end
+        updateTimeStatistics();        
+        updateStatisticsTable();
+    end
+%%
+    function updateTimeStatistics()
         GUI.TimeParametersTable.RowName = [GUI.TimeParametersTable.RowName; GUI.FragParametersTable.RowName];
         GUI.TimeParametersTableData = [GUI.TimeParametersTableData; GUI.FragParametersTableData];
         GUI.TimeParametersTable.Data = [GUI.TimeParametersTable.Data; GUI.FragParametersTable.Data];
-        
-        updateStatisticsTable();
     end
-
 %%
     function calcFrequencyStatistics() 
         % Save processing start time
@@ -1144,6 +1148,7 @@ displayEndOfDemoMessage('');
             
         catch e
             errordlg(['hrv_freq error: ' e.message], 'Input Error');
+            DATA.flag = 'hrv_freq';
 %             if DATA.flag
 %                 DATA.hrv_fd = table;
 %                 DATA.pd_freq = struct([]);
@@ -1184,6 +1189,7 @@ displayEndOfDemoMessage('');
             %--------------------------------------------------------------
         catch e
             errordlg(['hrv_nonlinear: ' e.message], 'Input Error');
+            DATA.flag = 'hrv_nonlinear';
 %             if DATA.flag
 %                 DATA.hrv_nl = table;
 %                 DATA.pd_nl = struct([]);
@@ -1202,43 +1208,85 @@ displayEndOfDemoMessage('');
         GUI.StatisticsTable.Data = cat(1, GUI.TimeParametersTableData, GUI.FrequencyParametersTableData, GUI.NonLinearTableData);
     end
 %%
-    function calcStatistics()                        
-        calcTimeStatistics();
-        calcFrequencyStatistics();
-        calcNolinearStatistics();
-        %updateStatisticsTable();                 
-    end
+%     function calcStatistics()
+%         try
+%             calcTimeStatistics();
+%         catch e
+%             rethrow(e);
+%         end
+%         try
+%             calcFrequencyStatistics();
+%         catch e
+%             rethrow(e);
+%         end
+%         try
+%             calcNolinearStatistics();
+%         catch e
+%             rethrow(e);
+%         end
+%         %updateStatisticsTable();
+%     end
 
 %%
     function clear_statistics_plots()
         
+        %         grid(GUI.TimeAxes1, 'off');
+        %         grid(GUI.FrequencyAxes1, 'off');
+        %         grid(GUI.FrequencyAxes2, 'off');
+        %         grid(GUI.NonLinearAxes1, 'off');
+        %         grid(GUI.NonLinearAxes2, 'off');
+        %         grid(GUI.NonLinearAxes3, 'off');
+        %
+        %         legend(GUI.TimeAxes1, 'off');
+        %         legend(GUI.FrequencyAxes1, 'off');
+        %         legend(GUI.FrequencyAxes2, 'off');
+        %         legend(GUI.NonLinearAxes1, 'off');
+        %         legend(GUI.NonLinearAxes2, 'off');
+        %         legend(GUI.NonLinearAxes3, 'off');
+        %
+        %         cla(GUI.TimeAxes1);
+        %         cla(GUI.FrequencyAxes1);
+        %         cla(GUI.FrequencyAxes2);
+        %         cla(GUI.NonLinearAxes1);
+        %         cla(GUI.NonLinearAxes2);
+        %         cla(GUI.NonLinearAxes3);
+        clear_time_statistics_results();
+        clear_frequency_statistics_results();
+        clear_nonlinear_statistics_results();
+    end
+%%
+    function clear_time_statistics_results()
         grid(GUI.TimeAxes1, 'off');
+        legend(GUI.TimeAxes1, 'off')
+        cla(GUI.TimeAxes1);                
+    end
+%%
+    function clear_frequency_statistics_results()
         grid(GUI.FrequencyAxes1, 'off');
         grid(GUI.FrequencyAxes2, 'off');
+        legend(GUI.FrequencyAxes1, 'off');
+        legend(GUI.FrequencyAxes2, 'off');
+        cla(GUI.FrequencyAxes1);
+        cla(GUI.FrequencyAxes2);                        
+    end
+%%
+    function clear_nonlinear_statistics_results()
         grid(GUI.NonLinearAxes1, 'off');
         grid(GUI.NonLinearAxes2, 'off');
         grid(GUI.NonLinearAxes3, 'off');
         
-        legend(GUI.TimeAxes1, 'off');
-        legend(GUI.FrequencyAxes1, 'off');
-        legend(GUI.FrequencyAxes2, 'off');
         legend(GUI.NonLinearAxes1, 'off');
         legend(GUI.NonLinearAxes2, 'off');
         legend(GUI.NonLinearAxes3, 'off');
         
-        cla(GUI.TimeAxes1);
-        cla(GUI.FrequencyAxes1);
-        cla(GUI.FrequencyAxes2);
         cla(GUI.NonLinearAxes1);
         cla(GUI.NonLinearAxes2);
-        cla(GUI.NonLinearAxes3);
+        cla(GUI.NonLinearAxes3);                
     end
-
 %%
     function plot_time_statistics_results()
-        grid(GUI.TimeAxes1, 'off');
-        legend(GUI.TimeAxes1, 'off')
-        cla(GUI.TimeAxes1);
+        
+        clear_time_statistics_results();
         
         if ~isempty(DATA.pd_time)
             plot_hrv_time_hist(GUI.TimeAxes1, DATA.pd_time, 'clear', true);                        
@@ -1247,37 +1295,26 @@ displayEndOfDemoMessage('');
     end
 %%
     function plot_frequency_statistics_results()
-        grid(GUI.FrequencyAxes1, 'off');
-        grid(GUI.FrequencyAxes2, 'off');
-        legend(GUI.FrequencyAxes1, 'off');
-        legend(GUI.FrequencyAxes2, 'off');
-        cla(GUI.FrequencyAxes1);
-        cla(GUI.FrequencyAxes2);
+
+        clear_frequency_statistics_results();
         
         if ~isempty(DATA.pd_freq)
             plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.pd_freq, 'detailed_legend', false);
-            plot_hrv_nl_beta(GUI.FrequencyAxes2, DATA.pd_nl.beta);
+%----------------  BETA  -----------------------            
+            %plot_hrv_nl_beta(GUI.FrequencyAxes2, DATA.pd_nl.beta);
         end
         box(GUI.FrequencyAxes1, 'off' );
         box(GUI.FrequencyAxes2, 'off' );
     end
 %%
     function plot_nonlinear_statistics_results()
-        grid(GUI.NonLinearAxes1, 'off');
-        grid(GUI.NonLinearAxes2, 'off');
-        grid(GUI.NonLinearAxes3, 'off');
         
-        legend(GUI.NonLinearAxes1, 'off');
-        legend(GUI.NonLinearAxes2, 'off');
-        legend(GUI.NonLinearAxes3, 'off');
-        
-        cla(GUI.NonLinearAxes1);
-        cla(GUI.NonLinearAxes2);
-        cla(GUI.NonLinearAxes3);
+        clear_nonlinear_statistics_results();
         
         if ~isempty(DATA.pd_nl)
             plot_dfa_fn(GUI.NonLinearAxes1, DATA.pd_nl.dfa);
-            %plot_hrv_nl_beta(GUI.FrequencyAxes2, DATA.pd_nl.beta);
+%----------------  BETA  -----------------------            
+            plot_hrv_nl_beta(GUI.FrequencyAxes2, DATA.pd_nl.beta);
             plot_mse(GUI.NonLinearAxes3, DATA.pd_nl.mse);
             plot_poincare_ellipse(GUI.NonLinearAxes2, DATA.pd_nl.poincare);
         end
@@ -1285,15 +1322,15 @@ displayEndOfDemoMessage('');
         box(GUI.NonLinearAxes2, 'off' );
         box(GUI.NonLinearAxes3, 'off' );
     end
-%%
-    function plot_statistics_results()
-        
-        %clear_statistics_plots();
-        
-        plot_time_statistics_results();
-        plot_frequency_statistics_results();
-        plot_nonlinear_statistics_results();
-    end
+% %%
+%     function plot_statistics_results()
+%         
+%         %clear_statistics_plots();
+%         
+%         plot_time_statistics_results();
+%         plot_frequency_statistics_results();
+%         plot_nonlinear_statistics_results();
+%     end
 
 %%
     function set_filter_mammal_integ_param(filter_index, mammal_index, integration_index)
@@ -1648,12 +1685,41 @@ displayEndOfDemoMessage('');
             end            
         end
     end
-
 %%
     function CalcPlotSignalStat()
-        GetPlotSignal();
-        calcStatistics();
-        plot_statistics_results();
+        GetPlotSignal();        
+        try
+            calcTimeStatistics();
+            plot_time_statistics_results();
+            
+            calcFrequencyStatistics();
+            plot_frequency_statistics_results();
+            
+            calcNolinearStatistics();
+            plot_nonlinear_statistics_results();
+        catch e
+            if strcmp(DATA.flag, 'hrv_time') || strcmp(DATA.flag, 'hrv_fragmentation')
+                if strcmp(DATA.flag, 'hrv_time')
+                    clear_time_data();
+                end
+                if strcmp(DATA.flag, 'hrv_fragmentation')
+                    clear_fragmentation_data();
+                end                
+                updateTimeStatistics();                
+                calcFrequencyStatistics();
+                plot_frequency_statistics_results();
+                calcNolinearStatistics();
+                plot_nonlinear_statistics_results();
+            elseif strcmp(DATA.flag, 'hrv_freq')
+                clear_frequency_data();                
+                calcNolinearStatistics();
+                plot_nonlinear_statistics_results();
+            elseif strcmp(DATA.flag, 'hrv_nonlinear')
+                clear_nonlinear_data();
+            end
+            rethrow(e);
+        end                
+        %plot_statistics_results();
     end
 
 %%
@@ -1666,32 +1732,48 @@ displayEndOfDemoMessage('');
     end
 
 %%
-    function Mammal_popupmenu_Callback( ~, ~ )        
+    function Mammal_popupmenu_Callback( ~, ~ )
         index_selected = get(GUI.Mammal_popupmenu,'Value');
         %DATA.flag = 1;
         
         % Load user-specified default parameters
-        rhrv_load_defaults(DATA.mammals{index_selected});        
+        rhrv_load_defaults(DATA.mammals{index_selected});
         createConfigParametersInterface();
         try
-            if(isfield(DATA, 'rri') && ~isempty(DATA.rri))                
+            if(isfield(DATA, 'rri') && ~isempty(DATA.rri))
                 FiltSignal();
                 CalcPlotSignalStat();
             end
-            DATA.mammal_index = index_selected;                        
+            DATA.mammal_index = index_selected;
         catch e
             errordlg(['Mammal_popupmenu_Callback Error: ' e.message], 'Input Error');
-            GUI.Mammal_popupmenu.Value = DATA.mammal_index;
-            rhrv_load_defaults(DATA.mammals{DATA.mammal_index});
-            createConfigParametersInterface();
-        end       
+            %             GUI.Mammal_popupmenu.Value = DATA.mammal_index;
+            %             rhrv_load_defaults(DATA.mammals{DATA.mammal_index});
+            %             createConfigParametersInterface();
+            if strcmp(DATA.flag, 'hrv_time')
+                clear_time_data();
+            end
+            if strcmp(DATA.flag, 'hrv_fragmentation')
+                clear_fragmentation_data();
+            end
+            if strcmp(DATA.flag, 'hrv_time') || strcmp(DATA.flag, 'hrv_fragmentation')
+                updateTimeStatistics();
+            end
+            
+            if strcmp(DATA.flag, 'hrv_freq')
+                clear_frequency_data();
+            end
+            if strcmp(DATA.flag, 'hrv_nonlinear')
+                clear_nonlinear_data();
+            end
+            updateStatisticsTable();
+        end
     end
 %%
     function Integration_popupmenu_Callback( ~, ~ )
         items = get(GUI.Integration_popupmenu, 'String');
         index_selected = get(GUI.Integration_popupmenu,'Value');
-        DATA.Integration = items{index_selected};
-        %DATA.flag = 1;
+        DATA.Integration = items{index_selected};        
     end
 
 %%
@@ -1715,12 +1797,11 @@ displayEndOfDemoMessage('');
     function Filtering_popupmenu_Callback( ~, ~ )
         items = get(GUI.Filtering_popupmenu, 'String');
         index_selected = get(GUI.Filtering_popupmenu,'Value');
-        Filter = items{index_selected};
-        %DATA.flag = 1;
+        Filter = items{index_selected};        
         
         try
             set_filters(Filter);
-            if(isfield(DATA, 'rri') && ~isempty(DATA.rri) )                
+            if(isfield(DATA, 'rri') && ~isempty(DATA.rri) )
                 FiltSignal();
                 CalcPlotSignalStat();
             end
@@ -1728,10 +1809,73 @@ displayEndOfDemoMessage('');
             %enable_disable_filtering_params();
         catch e
             errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
-            GUI.Filtering_popupmenu.Value = DATA.filter_index;
-            set_filters(items{DATA.filter_index});
-        end        
+            %             GUI.Filtering_popupmenu.Value = DATA.filter_index;
+            %             set_filters(items{DATA.filter_index});
+            
+            if strcmp(DATA.flag, 'hrv_time')
+                clear_time_data();
+            end
+            if strcmp(DATA.flag, 'hrv_fragmentation')
+                clear_fragmentation_data();
+            end
+            if strcmp(DATA.flag, 'hrv_time') || strcmp(DATA.flag, 'hrv_fragmentation')
+                updateTimeStatistics();
+            end
+            
+            if strcmp(DATA.flag, 'hrv_freq')
+                clear_frequency_data();
+            end
+            if strcmp(DATA.flag, 'hrv_nonlinear')
+                clear_nonlinear_data();
+            end
+            updateStatisticsTable();
+        end
     end
+%%
+    function clear_time_data()
+        DATA.hrv_td = table;
+        DATA.pd_time = struct([]);
+        
+        GUI.TimeParametersTableData = [];
+        GUI.TimeParametersTable.RowName = [];
+        GUI.TimeParametersTable.Data = [];
+        clear_time_statistics_results();
+    end
+%%
+    function clear_fragmentation_data()
+        DATA.hrv_frag = table;
+        GUI.FragParametersTableData = [];
+        GUI.FragParametersTable.RowName=[];
+        GUI.FragParametersTable.Data = [];
+    end
+%%
+    function clear_frequency_data()
+        DATA.hrv_fd = table;
+        DATA.pd_freq = struct([]);
+        
+        DATA.hrv_fd_lomb = table;
+        DATA.hrv_fd_ar = table;
+        DATA.hrv_fd_welch = table;
+        
+        GUI.FrequencyParametersTableData = [];
+        GUI.FrequencyParametersTable.RowName = [];
+        GUI.FrequencyParametersTableMethodRowName = [];
+        GUI.FrequencyParametersTable.Data = [];
+        
+        clear_frequency_statistics_results();
+    end
+%%
+    function clear_nonlinear_data()        
+        DATA.hrv_nl = table;
+        DATA.pd_nl = struct([]);
+        
+        GUI.NonLinearTableData = [];
+        GUI.NonLinearTable.RowName = [];
+        GUI.NonLinearTable.Data = [];
+        
+        clear_nonlinear_statistics_results();        
+    end
+
 %%
     function set_filters(Filter)
         if strcmp(Filter, 'No Filtering') % No Filtering

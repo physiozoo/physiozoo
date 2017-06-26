@@ -52,8 +52,8 @@ displayEndOfDemoMessage('');
         
         DATA.rec_name = [];
         
-        DATA.mammals = {'human', 'rabbit', 'mice', 'canine'};
-        DATA.GUI_mammals = {'Human'; 'Rabbit'; 'Mice'; 'Dog'};
+        DATA.mammals = {'human', 'rabbit', 'mice', 'canine', 'custom'};
+        DATA.GUI_mammals = {'Human'; 'Rabbit'; 'Mice'; 'Dog'; 'Custom'};
         DATA.mammal_index = 1;
         
         DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};
@@ -163,6 +163,7 @@ displayEndOfDemoMessage('');
         set(GUI.SaveAsMenu,'Enable', 'off');
         set(GUI.SaveFiguresAsMenu,'Enable', 'off');
         set(GUI.SaveParamFileMenu,'Enable', 'off');
+        set(GUI.LoadConfigFile, 'Enable', 'off');
         
         GUI.RawDataSlider.Enable = 'off';
         GUI.Filt_RawDataSlider.Enable = 'off';
@@ -227,6 +228,7 @@ displayEndOfDemoMessage('');
         GUI.FileMenu = uimenu( GUI.Window, 'Label', 'File' );
         uimenu( GUI.FileMenu, 'Label', 'Open File', 'Callback', @onOpenFile, 'Accelerator','O');
         GUI.DataQualityMenu = uimenu( GUI.FileMenu, 'Label', 'Open Data Quality File', 'Callback', @onOpenDataQualityFile, 'Accelerator','Q', 'Enable', 'off');
+        GUI.LoadConfigFile = uimenu( GUI.FileMenu, 'Label', 'Load Custom Config File', 'Callback', @onLoadCustomConfigFile, 'Accelerator','P', 'Enable', 'off');
         GUI.SaveAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save Statistics As', 'Callback', @onSaveResultsAsFile, 'Accelerator','S', 'Enable', 'off');
         GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save Figures As', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');
         GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Parameters File', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');        
@@ -1018,6 +1020,7 @@ displayEndOfDemoMessage('');
             set(GUI.SaveAsMenu, 'Enable', 'on');
             set(GUI.SaveFiguresAsMenu, 'Enable', 'on');  
             set(GUI.SaveParamFileMenu, 'Enable', 'on'); 
+            set(GUI.LoadConfigFile, 'Enable', 'on');
         end
     end
 %%
@@ -1653,12 +1656,8 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function Mammal_popupmenu_Callback( ~, ~ )
-        index_selected = get(GUI.Mammal_popupmenu,'Value');       
-        
-        % Load user-specified default parameters
-        rhrv_load_defaults(DATA.mammals{index_selected});
-        createConfigParametersInterface();
+    function run_after_mammal_change(index_selected)
+        createConfigParametersInterface();        
         try
             if(isfield(DATA, 'rri') && ~isempty(DATA.rri))
                 FiltSignal();
@@ -1688,6 +1687,35 @@ displayEndOfDemoMessage('');
             end
             updateStatisticsTable();
         end
+    end
+%%
+    function Mammal_popupmenu_Callback( ~, ~ )
+        
+        persistent configDirectory;        
+        index_selected = get(GUI.Mammal_popupmenu,'Value');               
+        if index_selected == 5            
+            if isempty(configDirectory)
+                if DEBUG
+                    configDirectory = 'D:\physiozoo-toolbox\Config\';
+                else
+                    configDirectory = pwd;
+                end
+            end            
+            [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [configDirectory filesep]);
+            if ~isequal(Config_FileName, 0)
+                params_filename = fullfile(PathName, Config_FileName);
+                [pathstr, name, ~] = fileparts(params_filename);
+                rhrv_load_defaults([pathstr filesep name]);
+                configDirectory = PathName;
+            else % Cancel bu user
+               GUI.Mammal_popupmenu.Value = DATA.mammal_index;
+               return;
+            end
+        else        
+            % Load user-specified default parameters
+            rhrv_load_defaults(DATA.mammals{index_selected});
+        end
+        run_after_mammal_change(index_selected);
     end
 %%
     function Integration_popupmenu_Callback( ~, ~ )
@@ -2223,8 +2251,7 @@ displayEndOfDemoMessage('');
                 elseif strcmp(param_name, 'hrv_freq.lf_band')
                     couple_name = 'hrv_freq.hf_band';
                     do_couple = true;
-                end                
-                
+                end                                
                 if do_couple                    
                     cp_param_array = rhrv_get_default(couple_name);
                     rhrv_set_default( couple_name, [screen_value cp_param_array.value(2)] );  
@@ -2235,11 +2262,9 @@ displayEndOfDemoMessage('');
                 param_value = screen_value;
                 prev_param_array = rhrv_get_default(param_name);
                 prev_param_value = prev_param_array.value;
-            end
-            
+            end            
             rhrv_set_default( param_name, param_value );
-        end
-                
+        end                
         try
             update_statistics(param_category(1));
             set(src, 'UserData', screen_value);
@@ -2261,11 +2286,29 @@ displayEndOfDemoMessage('');
                         set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(prev_param_value))
                     end
                 end                
-            end
-            %update_statistics(param_category(1));
+            end            
         end
     end
-
+%%
+    function onLoadCustomConfigFile( ~, ~)        
+        persistent configDirectory;                
+        if isempty(configDirectory)
+            if DEBUG
+                configDirectory = 'D:\physiozoo-toolbox\Config\';
+            else
+                configDirectory = pwd;
+            end
+        end
+        [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [configDirectory filesep]);
+        if ~isequal(Config_FileName, 0)
+            params_filename = fullfile(PathName, Config_FileName);
+            [pathstr, name, ~] = fileparts(params_filename);
+            rhrv_load_defaults([pathstr filesep name]);
+            configDirectory = PathName;
+            GUI.Mammal_popupmenu.Value = 5;
+            run_after_mammal_change(5);
+        end        
+    end
 %%
     function onSaveParamFile( ~, ~ )
         

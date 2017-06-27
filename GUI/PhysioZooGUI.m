@@ -9,20 +9,9 @@ if DEBUG
 end
 %---------------------
 
-addpath('lib/GUI Layout Toolbox 2.3.1');             
-%addpath('lib/GUILayout-v1p17');             
-     
-%global rhrv_initialized;
-%global rhrv_default_values;
-% if (isempty(rhrv_initialized))
-%     %error('Please run bootstrap.m before using the rhrv tools');
-%     addpath('rhrv');
-%     rhrv_init;
-% end
-% 
-% 
-% %% Make sure environment is set up
-% rhrv_init --close;
+% Add third-party dependencies to path
+gui_basepath = fileparts(mfilename('fullpath'));
+addpath(genpath([gui_basepath filesep 'lib']));
 
 %%
 %Descriptions = createDescriptions();

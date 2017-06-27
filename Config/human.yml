@@ -13,12 +13,12 @@ filtrr:
             value: 0.32
             description: Minimal allowed RR interval duration
             name: RR min
-            units: Seconds
+            units: sec
         rr_max:
             value: 1.5
             description: Maximal allowed RR interval duration
             name: RR max
-            units: Seconds
+            units: sec
     lowpass:
         enable:
             value: true
@@ -29,7 +29,7 @@ filtrr:
             value: 10
             description: Length in samples of the lowpass filter
             name: Lowpass filter length
-            units: Samples
+            units: n.u.
         win_threshold:
             value: 20
             description: Threshold percantage above/below the lowpass filter value
@@ -53,7 +53,7 @@ hrv_time:
         value: 50
         description: Threshold value for PNNx
         name: PNN Threshold
-        units: Milliseconds
+        units: ms
 
 # Frequency-domain HRV parameters
 hrv_freq:    
@@ -76,7 +76,7 @@ hrv_freq:
         value: 5
         description: Duration of winodow for spectral averaging
         name: Spectral window duration
-        units: Minutes
+        units: min
     welch_overlap:
         value: 50
         description: Percent overlap between windows when using welch method

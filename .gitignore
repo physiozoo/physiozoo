@@ -8,6 +8,9 @@
 # Default local physionet install directory
 bin/wfdb/
 
+# Local data files
+database/
+
 ### Generated files ###
 *.eps
 *.xlsx

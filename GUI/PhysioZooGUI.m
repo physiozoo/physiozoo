@@ -42,7 +42,7 @@ displayEndOfDemoMessage('');
         DATA.rec_name = [];
         
         DATA.mammals = {'human', 'rabbit', 'mice', 'canine', 'custom'};
-        DATA.GUI_mammals = {'Human'; 'Rabbit'; 'Mice'; 'Dog'; 'Custom'};
+        DATA.GUI_mammals = {'Human'; 'Rabbit'; 'Mice'; 'Dog'; 'Custom'};        
         DATA.mammal_index = 1;
         
         DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};
@@ -343,8 +343,8 @@ displayEndOfDemoMessage('');
         
         GUI.MammalBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.MammalBox, 'String', 'Mammal', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.Mammal_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.MammalBox, 'Callback', @Mammal_popupmenu_Callback, 'FontSize', SmallFontSize);
-        GUI.Mammal_popupmenu.String = DATA.GUI_mammals;
+        GUI.Mammal_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.MammalBox, 'Callback', @Mammal_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', DATA.GUI_mammals);
+        %GUI.Mammal_popupmenu.String = DATA.GUI_mammals;
         uix.Empty( 'Parent', GUI.MammalBox );
         set( GUI.MammalBox, 'Widths', [-37, -30, -10]  );
         
@@ -892,10 +892,11 @@ displayEndOfDemoMessage('');
                 dataDirectory = pwd;
             end
         end        
-        
+                
+        %'*.qrs;*.hea; *.atr',  'WFDB Files (*.qrs,*.hea,*.atr)'; ...
         [QRS_FileName, PathName] = uigetfile( ...
             {'*.mat','MAT-files (*.mat)'; ...
-            '*.qrs;*.hea; *.atr',  'WFDB Files (*.qrs,*.hea,*.atr)'; ...
+            '*.qrs; *.atr',  'WFDB Files (*.qrs, *.atr)'; ...
             '*.txt','Text Files (*.txt)'}, ...
             'Open QRS File', [dataDirectory filesep]);
         
@@ -915,8 +916,18 @@ displayEndOfDemoMessage('');
                 if isfield(QRS, 'Fs')
                     DATA.SamplingFrequency = QRS.Fs;
                 end
-                if isfield(QRS, 'Mammal')
-                    DATA.mammal = QRS.Mammal;
+                if isfield(QRS, 'mammal')
+                    mammal = QRS.mammal;
+                elseif isfield(QRS, 'Mammal')
+                    mammal = QRS.Mammal;
+                end
+                if isfield(QRS, 'mammal') || isfield(QRS, 'Mammal')
+                    if strcmp(mammal, 'dogs')
+                        DATA.mammal = 'canine';
+                    else
+                        DATA.mammal = mammal;
+                    end
+                    %DATA.mammal = QRS.mammal;
                     DATA.mammal_index = find(strcmp(DATA.mammals, DATA.mammal));
                     GUI.Mammal_popupmenu.Value = DATA.mammal_index;                    
                 else
@@ -926,7 +937,7 @@ displayEndOfDemoMessage('');
                 i = 1;
                 QRS_data = [];
                 while i <= QRS_field_names_number
-                    if strfind(QRS_field_names{i}, 'qrs')
+                    if contains(QRS_field_names{i}, 'qrs') || contains(QRS_field_names{i}, 'data')
                         QRS_data = QRS.(QRS_field_names{i});
                         break;
                     end
@@ -942,15 +953,24 @@ displayEndOfDemoMessage('');
                     cla(GUI.RawDataAxes);
                     return;
                 end
-            elseif strcmp(ExtensionFileName, 'hea') || strcmp(ExtensionFileName, 'qrs') || strcmp(ExtensionFileName, 'atr')
+            elseif strcmp(ExtensionFileName, 'qrs') || strcmp(ExtensionFileName, 'atr')
                 
-                fileID = fopen([PathName DATA.DataFileName '.hea' ],'r');
-                if fileID ~= -1
-                    DATA.SamplingFrequency = fscanf(fileID, '%*s %*d %d', 1);
-                    fclose(fileID);
-                end
                 try
-                    qrs_data = rdann( [PathName DATA.DataFileName], 'qrs' ); % atr qrs
+                    [ ~, Fs, ~ ] = get_signal_channel( [PathName DATA.DataFileName] );
+                    DATA.SamplingFrequency = Fs;
+                catch
+                    errordlg('Cann''t get sampling frequency.', 'Input Error');
+                    clean_gui();
+                    cla(GUI.RawDataAxes);
+                    return;
+                end
+%                 fileID = fopen([PathName DATA.DataFileName '.hea' ],'r');
+%                 if fileID ~= -1
+%                     DATA.SamplingFrequency = fscanf(fileID, '%*s %*d %d', 1);
+%                     fclose(fileID);
+%                 end
+                try
+                    qrs_data = rdann( [PathName DATA.DataFileName], ExtensionFileName); % atr qrs
                     if ~isempty(qrs_data)                    
                         DATA.rri = diff(qrs_data)/DATA.SamplingFrequency;
                         DATA.trr = qrs_data(2:end)/DATA.SamplingFrequency;
@@ -2169,7 +2189,19 @@ displayEndOfDemoMessage('');
             screen_value = str2double(get(src, 'String'));  
             prev_screen_value = get(src, 'UserData');                        
             
-            if strcmp(param_name, 'hrv_freq.welch_overlap')
+            if strcmp(param_name, 'hrv_freq.welch_overlap')  
+                if isnan(screen_value) || screen_value < 0 || screen_value >= 100
+                    errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
+                    set(src, 'String', prev_screen_value);
+                    return;
+                end
+            elseif strcmp(param_name, 'filtrr.quotient.rr_max_change')
+                if isnan(screen_value) || screen_value <= 0 || screen_value > 100
+                    errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
+                    set(src, 'String', prev_screen_value);
+                    return;
+                end            
+            elseif strcmp(param_name, 'filtrr.lowpass.win_threshold')
                 if isnan(screen_value) || screen_value < 0 || screen_value > 100
                     errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
                     set(src, 'String', prev_screen_value);
@@ -2258,7 +2290,7 @@ displayEndOfDemoMessage('');
             update_statistics(param_category(1));
             set(src, 'UserData', screen_value);
         catch e
-            %errordlg(['set_config_Callback error: ' e.message], 'Input Error');
+            errordlg(['set_config_Callback error: ' e.message], 'Input Error');
             if strcmp(get(src, 'Style'), 'popupmenu')
                 DATA.default_method_index = prev_default_method_index;
                 set(src, 'Value', prev_default_method_index);

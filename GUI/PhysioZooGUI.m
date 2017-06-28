@@ -64,7 +64,7 @@ displayEndOfDemoMessage('');
             DATA.SmallFontSize = 11;
         end                
         
-        DATA.window_size = [screensize(3)*0.9 screensize(4)*0.9];        
+        DATA.window_size = [screensize(3)*0.95 screensize(4)*0.9];        
         
         DATA.MyGreen = [39 232 51]/256;
         
@@ -368,7 +368,7 @@ displayEndOfDemoMessage('');
         
         GUI.TimeBox = uix.HBox( 'Parent', GUI.TimeTab, 'Spacing', 5);
         GUI.ParamTimeBox = uix.VBox( 'Parent', GUI.TimeBox, 'Spacing', 5);
-        GUI.TimeParametersTable = uitable( 'Parent', GUI.ParamTimeBox, 'FontSize', 11);
+        GUI.TimeParametersTable = uitable( 'Parent', GUI.ParamTimeBox, 'FontSize', SmallFontSize);
         uix.Empty( 'Parent', GUI.ParamTimeBox );        
         GUI.TimeAxes1 = axes('Parent', uicontainer('Parent', GUI.TimeBox) );                
                 
@@ -376,7 +376,7 @@ displayEndOfDemoMessage('');
                 
         GUI.FrequencyBox = uix.HBox( 'Parent', GUI.FrequencyTab, 'Spacing', 5);
         GUI.ParamFrequencyBox = uix.VBox( 'Parent', GUI.FrequencyBox, 'Spacing', 5);
-        GUI.FrequencyParametersTable = uitable( 'Parent', GUI.ParamFrequencyBox, 'FontSize', 11);
+        GUI.FrequencyParametersTable = uitable( 'Parent', GUI.ParamFrequencyBox, 'FontSize', SmallFontSize);
         uix.Empty( 'Parent', GUI.ParamFrequencyBox );
         GUI.FrequencyAxes1 = axes('Parent', uicontainer('Parent', GUI.FrequencyBox) );
         GUI.FrequencyAxes2 = axes('Parent', uicontainer('Parent', GUI.FrequencyBox) );
@@ -385,7 +385,7 @@ displayEndOfDemoMessage('');
         
         GUI.NonLinearBox = uix.HBox( 'Parent', GUI.NonLinearTab, 'Spacing', 5);
         GUI.ParamNonLinearBox = uix.VBox( 'Parent', GUI.NonLinearBox, 'Spacing', 5);
-        GUI.NonLinearTable = uitable( 'Parent', GUI.ParamNonLinearBox, 'FontSize', 11);
+        GUI.NonLinearTable = uitable( 'Parent', GUI.ParamNonLinearBox, 'FontSize', SmallFontSize);
         uix.Empty( 'Parent', GUI.ParamNonLinearBox );
         GUI.NonLinearAxes1 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
         GUI.NonLinearAxes2 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
@@ -393,7 +393,7 @@ displayEndOfDemoMessage('');
                 
         GUI.NonLinearTable.ColumnName = {'Values'};
         
-        GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticshTab, 'FontSize', 11, 'ColumnWidth',{700 'auto'});        
+        GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticshTab, 'FontSize', SmallFontSize, 'ColumnWidth',{550 'auto'});    % 700    
         GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};        
                         
         set( GUI.mainLayout, 'Heights', [-50, -50]  );
@@ -939,8 +939,8 @@ displayEndOfDemoMessage('');
                 QRS_field_names_number = length(QRS_field_names);
                 i = 1;
                 QRS_data = [];
-                while i <= QRS_field_names_number
-                    if contains(QRS_field_names{i}, 'qrs') || contains(QRS_field_names{i}, 'data')
+                while i <= QRS_field_names_number                    
+                    if ~isempty(regexpi(QRS_field_names{i}, 'qrs' | 'data'))  
                         QRS_data = QRS.(QRS_field_names{i});
                         break;
                     end

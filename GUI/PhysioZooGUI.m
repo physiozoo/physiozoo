@@ -41,8 +41,8 @@ displayEndOfDemoMessage('');
         
         DATA.rec_name = [];
         
-        DATA.mammals = {'human', 'rabbit', 'mice', 'canine', 'custom'};
-        DATA.GUI_mammals = {'Human'; 'Rabbit'; 'Mice'; 'Dog'; 'Custom'};        
+        DATA.mammals = {'human', 'rabbit', 'mouse', 'canine', 'custom'};
+        DATA.GUI_mammals = {'Human'; 'Rabbit'; 'Mouse'; 'Dog'; 'Custom'};        
         DATA.mammal_index = 1;
         
         DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};
@@ -927,6 +927,9 @@ displayEndOfDemoMessage('');
                     else
                         DATA.mammal = mammal;
                     end
+                    if strcmp(mammal, 'mice')
+                        DATA.mammal = 'mouse';
+                    end
                     %DATA.mammal = QRS.mammal;
                     DATA.mammal_index = find(strcmp(DATA.mammals, DATA.mammal));
                     GUI.Mammal_popupmenu.Value = DATA.mammal_index;                    
@@ -980,6 +983,8 @@ displayEndOfDemoMessage('');
                         cla(GUI.RawDataAxes);
                         return;
                     end
+                    GUI.Mammal_popupmenu.Value = 1;
+                    DATA.mammal = 'human';
                 catch e
                     errordlg(['onOpenFile error: ' e.message], 'Input Error');
                     clearData();
@@ -993,7 +998,12 @@ displayEndOfDemoMessage('');
                 file_name = [PathName DATA.DataFileName '.txt'];
                 fileID = fopen(file_name, 'r');
                 if fileID ~= -1
-                    DATA.mammal = fscanf(fileID, '%*s %s', 1);
+                    mammal = fscanf(fileID, '%*s %s', 1);
+                    if strcmp(mammal, 'mice')
+                        DATA.mammal = 'mouse';
+                    else
+                        DATA.mammal = mammal;
+                    end
                     DATA.SamplingFrequency = fscanf(fileID, '%*s %d', 1);
                     DATA.integration = fscanf(fileID, '%*s %s', 1);                    
                     txt_data = dlmread(file_name,' ',4,0);
@@ -1016,15 +1026,15 @@ displayEndOfDemoMessage('');
             end            
             
             DATA.mammal_index = get(GUI.Mammal_popupmenu,'Value');
-            rhrv_load_defaults(DATA.mammals{ DATA.mammal_index} );
+            rhrv_load_defaults(DATA.mammals{ DATA.mammal_index } );
             createConfigParametersInterface();
             
             reset_plot();            
-            
-            set(GUI.DataQualityMenu, 'Enable', 'on');
-            TitleName = strrep(DATA.DataFileName, '_', '\_');
+
+            set(GUI.DataQualityMenu, 'Enable', 'on');            
             if isfield(GUI, 'RawDataAxes')
-                title(GUI.RawDataAxes, TitleName);
+                TitleName = [strrep(PathName, '\', '\\') strrep(QRS_FileName, '_', '\_')] ;
+                title(GUI.RawDataAxes, TitleName, 'FontWeight', 'normal');
             end
             set(GUI.SaveAsMenu, 'Enable', 'on');
             set(GUI.SaveFiguresAsMenu, 'Enable', 'on');  

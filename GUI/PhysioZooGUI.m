@@ -238,94 +238,102 @@ displayEndOfDemoMessage('');
         
         % + Create the panels        
         %GUI.RawData_Box = uix.VBox('Parent', GUI.mainLayout, 'Spacing', 5);
-        GUI.RawData_Box = uix.HBoxFlex('Parent', GUI.mainLayout, 'Spacing', 5);
-        GUI.Statistics_BoxPanel = uix.BoxPanel( 'Parent', GUI.mainLayout, 'Title', '  ', 'Padding', 5 );
+        GUI.RawData_Box = uix.HBoxFlex('Parent', GUI.mainLayout, 'Spacing', 5); % Upper Part
+        GUI.Statistics_BoxPanel = uix.BoxPanel( 'Parent', GUI.mainLayout, 'Title', '  ', 'Padding', 5 ); %Low Part
         
         raw_data_part = 0.5;
         statistics_part = 1 - raw_data_part;
         set( GUI.mainLayout, 'Heights', [(-1)*raw_data_part, (-1)*statistics_part]  );
         
+        
+        %---------------------------------
         GUI.Statistics_Box = uix.HBoxFlex('Parent', GUI.Statistics_BoxPanel, 'Spacing', 3);                
         
-        GUI.Options_TabPanel = uix.TabPanel('Parent', GUI.Statistics_Box, 'Padding', 0');
+        %GUI.Options_TabPanel = uix.TabPanel('Parent', GUI.Statistics_Box, 'Padding', 0');
         GUI.Analysis_TabPanel = uix.TabPanel('Parent', GUI.Statistics_Box, 'Padding', 0');
         
-        options_part = 0.18;
-        analysis_part = 1 - options_part;
-        Left_Part_widths_in_pixels = options_part*(DATA.window_size(1));  
-        Right_Part_widths_in_pixels = analysis_part*(DATA.window_size(1));  
-        set( GUI.Statistics_Box, 'Widths', [(-1)*options_part (-1)*analysis_part] ); % [-22 -75]
-        
-        
+         options_part = 0.18;
+         analysis_part = 1 - options_part;
+         Left_Part_widths_in_pixels = options_part*(DATA.window_size(1));  
+         Right_Part_widths_in_pixels = analysis_part*(DATA.window_size(1));  
+%         set( GUI.Statistics_Box, 'Widths', [(-1)*options_part (-1)*analysis_part] ); % [-22 -75]
+        %---------------------------------
         GUI.StatisticshTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', 5);
         GUI.TimeTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', 5);
         GUI.FrequencyTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', 5);
         GUI.NonLinearTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', 5);                
-        
-        %GUI.RawDataAxesButtons_Box = uix.HBox('Parent', GUI.RawData_Box, 'Spacing', 0);
+                
         temp_panel = uix.Panel( 'Parent', GUI.RawData_Box, 'Padding', 5);
-        GUI.RawDataAxesButtons_Box = uix.VBox('Parent', temp_panel, 'Spacing', 3);
+        GUI.Options_TabPanel = uix.TabPanel('Parent', temp_panel, 'Padding', 0');
+        
+        
+        
+        
+        %GUI.RawDataAxesButtons_Box = uix.VBox('Parent', temp_panel, 'Spacing', 3);
         temp_panel = uix.Panel( 'Parent', GUI.RawData_Box, 'Padding', 5);
         GUI.RawDataControls_Box = uix.VBox('Parent', temp_panel, 'Spacing', 3);
         %set( GUI.RawData_Box, 'Widths', [(-1)*options_part (-1)*analysis_part] );
-        set( GUI.RawData_Box, 'Widths', [Left_Part_widths_in_pixels -1] );
+        %set( GUI.RawData_Box, 'Widths', [Left_Part_widths_in_pixels -1] );
+        set( GUI.RawData_Box, 'Widths', [(-1)*options_part (-1)*analysis_part] ); % [-22 -75]               
+%         GUI.CommandsButtons_Box = uix.VButtonBox('Parent', GUI.RawDataAxesButtons_Box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');        
+%         uix.Empty( 'Parent', GUI.RawDataAxesButtons_Box );
+%         set( GUI.RawDataAxesButtons_Box, 'Heights', [-15, -90]  ); % [-15, 25, -90]
         
-        %GUI.SettingsCommandsButtons_Box = uix.VBox('Parent', GUI.RawDataAxesButtons_Box, 'Spacing', 0);        
-        GUI.CommandsButtons_Box = uix.VButtonBox('Parent', GUI.RawDataAxesButtons_Box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
-        %GUI.YLimitBox = uix.HBox('Parent', GUI.RawDataAxesButtons_Box, 'Spacing', 3);
-        uix.Empty( 'Parent', GUI.RawDataAxesButtons_Box );
-        set( GUI.RawDataAxesButtons_Box, 'Heights', [-15, -90]  ); % [-15, 25, -90]
-        
-        GUI.RawDataAxes = axes('Parent', uicontainer('Parent', GUI.RawDataControls_Box) );        
-        %GUI.RawDataAxes = axes('Parent', GUI.RawDataControls_Box );        
+        buttons_axes_Box = uix.HBox( 'Parent', GUI.RawDataControls_Box, 'Spacing', 5);
+        GUI.CommandsButtons_Box = uix.VButtonBox('Parent', buttons_axes_Box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');  
+        GUI.RawDataAxes = axes('Parent', uicontainer('Parent', buttons_axes_Box) );       
+        set( buttons_axes_Box, 'Widths', [70 -1]);
         GUI.WindowSliderBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3);
         GUI.Filt_WindowSliderBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3);
-        set( GUI.RawDataControls_Box, 'Heights', [-1, 25, 25]  );
+        %GUI.CommandsButtons_Box = uix.HButtonBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3, 'HorizontalAlignment', 'left');        
+        set( GUI.RawDataControls_Box, 'Heights', [-1, 22, 22]  );
         %--------------------------
         
-        field_size = [-35, -35, -30];
-        %GUI.YLimitBox = uix.HBox('Parent', GUI.WindowSliderBox, 'Spacing', 3);
-        GUI.FirstSecondBox = uix.HBox('Parent', GUI.WindowSliderBox, 'Spacing', 3);
-        GUI.WindowSizeBox = uix.HBox('Parent', GUI.WindowSliderBox, 'Spacing', 3);
+        field_size = [-35, -35, -30];        
+        %GUI.FirstSecondBox = uix.HBox('Parent', GUI.WindowSliderBox, 'Spacing', 3);
+        %GUI.WindowSizeBox = uix.HBox('Parent', GUI.WindowSliderBox, 'Spacing', 3);
+        
+                
+%         GUI.Filt_FirstSecondBox = uix.HBox('Parent', GUI.Filt_WindowSliderBox, 'Spacing', 3);
+%         GUI.Filt_WindowSizeBox = uix.HBox('Parent', GUI.Filt_WindowSliderBox, 'Spacing', 3);
+                              
+                
+        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Start Window:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.FirstSecond = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSliderBox, 'Callback', @FirstSecond_Callback, 'FontSize', BigFontSize, 'Enable', 'off');
+        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        %set( GUI.FirstSecondBox, 'Widths', field_size  );
+        
+        field_size = [155, -30, -60];
+        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Window Size:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.WindowSize = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSliderBox, 'Callback', @WindowSize_Callback, 'FontSize', BigFontSize);
+        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        %set( GUI.WindowSizeBox, 'Widths', field_size  ); % [-45, -40, -35]
+        
         GUI.RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', GUI.WindowSliderBox, 'Callback', @slider_Callback);
         GUI.RawDataSlider.Enable = 'off';
         addlistener(GUI.RawDataSlider, 'ContinuousValueChange', @sldrFrame_Motion);
-        set( GUI.WindowSliderBox, 'Widths', field_size );
+        set( GUI.WindowSliderBox, 'Widths', [155 -5 -5 155 -5 -5 -70] );
         
-        %GUI.Filt_YLimitBox = uix.HBox('Parent', GUI.Filt_WindowSliderBox, 'Spacing', 3);
-        GUI.Filt_FirstSecondBox = uix.HBox('Parent', GUI.Filt_WindowSliderBox, 'Spacing', 3);
-        GUI.Filt_WindowSizeBox = uix.HBox('Parent', GUI.Filt_WindowSliderBox, 'Spacing', 3);
-        GUI.Filt_RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', GUI.Filt_WindowSliderBox, 'Callback', @filt_slider_Callback);
-        GUI.Filt_RawDataSlider.Enable = 'off';
-        addlistener(GUI.Filt_RawDataSlider, 'ContinuousValueChange', @filt_sldrFrame_Motion);
-        set( GUI.Filt_WindowSliderBox, 'Widths', field_size );
-                
-        field_size = [155, -30, -60];
-        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSizeBox, 'String', 'Window Size:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.WindowSize = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSizeBox, 'Callback', @WindowSize_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSizeBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        set( GUI.WindowSizeBox, 'Widths', field_size  ); % [-45, -40, -35]
-                
-        uicontrol( 'Style', 'text', 'Parent', GUI.FirstSecondBox, 'String', 'Start Window:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.FirstSecond = uicontrol( 'Style', 'edit', 'Parent', GUI.FirstSecondBox, 'Callback', @FirstSecond_Callback, 'FontSize', BigFontSize, 'Enable', 'off');
-        uicontrol( 'Style', 'text', 'Parent', GUI.FirstSecondBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        set( GUI.FirstSecondBox, 'Widths', field_size  );
-        
-        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_FirstSecondBox, 'String', 'Start Filtered Window:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.Filt_FirstSecond = uicontrol( 'Style', 'edit', 'Parent', GUI.Filt_FirstSecondBox, 'Callback', @Filt_FirstSecond_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_FirstSecondBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        set( GUI.Filt_FirstSecondBox, 'Widths', field_size  );                
+        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'Start Selected Window:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.Filt_FirstSecond = uicontrol( 'Style', 'edit', 'Parent', GUI.Filt_WindowSliderBox, 'Callback', @Filt_FirstSecond_Callback, 'FontSize', BigFontSize);
+        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        %set( GUI.Filt_FirstSecondBox, 'Widths', field_size  );                
                 
 %         uicontrol( 'Style', 'text', 'Parent', GUI.Filt_YLimitBox, 'String', '              Filt Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
 %         GUI.Filt_MinYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.Filt_YLimitBox, 'FontSize', BigFontSize);
 %         uicontrol( 'Style', 'text', 'Parent', GUI.Filt_YLimitBox, 'String', '-', 'FontSize', BigFontSize);
 %         GUI.Filt_MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.Filt_YLimitBox, 'FontSize', BigFontSize);
         
-        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSizeBox, 'String', 'Filt Window Size:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.Filt_WindowSize = uicontrol( 'Style', 'edit', 'Parent', GUI.Filt_WindowSizeBox, 'Callback', @Filt_WindowSize_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSizeBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        set( GUI.Filt_WindowSizeBox, 'Widths', field_size  );
+        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'Selected Window Size:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.Filt_WindowSize = uicontrol( 'Style', 'edit', 'Parent', GUI.Filt_WindowSliderBox, 'Callback', @Filt_WindowSize_Callback, 'FontSize', BigFontSize);
+        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        %set( GUI.Filt_WindowSizeBox, 'Widths', field_size  );
                 
+        GUI.Filt_RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', GUI.Filt_WindowSliderBox, 'Callback', @filt_slider_Callback);
+        GUI.Filt_RawDataSlider.Enable = 'off';
+        addlistener(GUI.Filt_RawDataSlider, 'ContinuousValueChange', @filt_sldrFrame_Motion);
+        set( GUI.Filt_WindowSliderBox, 'Widths', [155 -5 -5 155 -5 -5 -70] );  
+        
         GUI.RR_or_HR_plot_button = uicontrol( 'Style', 'ToggleButton', 'Parent', GUI.CommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
         GUI.Reset_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', GUI.CommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
         set( GUI.CommandsButtons_Box, 'ButtonSize', [70, 25], 'Spacing', 5  );
@@ -413,7 +421,7 @@ displayEndOfDemoMessage('');
         set( GUI.ParamTimeBox, 'Heights', tables_field_size );
                 
         GUI.TimeAxes1 = axes('Parent', uicontainer('Parent', GUI.TimeBox) );        
-        set( GUI.TimeBox, 'Widths', [-14 -90] );                                        
+        set( GUI.TimeBox, 'Widths', [-11 -90] );                                        
         %---------------------------
                 
         GUI.FrequencyBox = uix.HBox( 'Parent', GUI.FrequencyTab, 'Spacing', 5);
@@ -425,7 +433,7 @@ displayEndOfDemoMessage('');
         
         GUI.FrequencyAxes1 = axes('Parent', uicontainer('Parent', GUI.FrequencyBox) );
         GUI.FrequencyAxes2 = axes('Parent', uicontainer('Parent', GUI.FrequencyBox) );                                   
-        set( GUI.FrequencyBox, 'Widths', [-27 -35 -35] );   % [-35 -35 -35]     
+        set( GUI.FrequencyBox, 'Widths', [-20 -35 -35] );   % [-35 -35 -35]     
         %---------------------------
         
         GUI.NonLinearBox = uix.HBox( 'Parent', GUI.NonLinearTab, 'Spacing', 5);
@@ -438,7 +446,7 @@ displayEndOfDemoMessage('');
         GUI.NonLinearAxes1 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
         GUI.NonLinearAxes2 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
         GUI.NonLinearAxes3 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
-        set( GUI.NonLinearBox, 'Widths', [-11 -25 -25 -25] );        % [-25 -40 -40 -40]
+        set( GUI.NonLinearBox, 'Widths', [-9 -25 -25 -25] );        % [-25 -40 -40 -40]
         %---------------------------
         GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticshTab, 'FontSize', SmallFontSize, 'ColumnWidth',{550 'auto'}, 'FontName', 'Calibri');    % 700    
         GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};                                        
@@ -581,15 +589,15 @@ displayEndOfDemoMessage('');
 
         % Filtering Parameters
         clearParametersBox(GUI.FilteringParamBox);
-        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Range Filtering', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');  
+        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Range', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');  
         filt_range_keys_length = FillParamFields(GUI.FilteringParamBox, containers.Map(filt_range_keys, values(defaults_map, filt_range_keys)));
         uix.Empty( 'Parent', GUI.FilteringParamBox );
         
-        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Lowpass Filtering', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
+        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Lowpass', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
         filt_lowpass_keys_length = FillParamFields(GUI.FilteringParamBox, containers.Map(lowpass_range_keys, values(defaults_map, lowpass_range_keys)));
         uix.Empty( 'Parent', GUI.FilteringParamBox );
         
-        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Quotient Filtering', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
+        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Quotient', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
         filt_quotient_keys_length = FillParamFields(GUI.FilteringParamBox, containers.Map(quotient_range_keys, values(defaults_map, quotient_range_keys)));
         uix.Empty( 'Parent', GUI.FilteringParamBox );
         
@@ -635,12 +643,12 @@ displayEndOfDemoMessage('');
         
         % NonLinear Parameters - DFA
         clearParametersBox(GUI.NonLinearParamBox);
-        uicontrol( 'Style', 'text', 'Parent', GUI.NonLinearParamBox, 'String', 'DFA', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');   
+        uicontrol( 'Style', 'text', 'Parent', GUI.NonLinearParamBox, 'String', 'Detrended Fluctuation Analysis (DFA)', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');   
         dfa_param_length = FillParamFields(GUI.NonLinearParamBox, containers.Map(dfa_keys, values(defaults_map, dfa_keys)));               
         
         % NonLinear Parameters - MSE
         uix.Empty( 'Parent', GUI.NonLinearParamBox );
-        uicontrol( 'Style', 'text', 'Parent', GUI.NonLinearParamBox, 'String', 'MSE', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold'); 
+        uicontrol( 'Style', 'text', 'Parent', GUI.NonLinearParamBox, 'String', 'Multi Scale Entropy (MSE)', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold'); 
         mse_param_length = FillParamFields(GUI.NonLinearParamBox, containers.Map(mse_keys, values(defaults_map, mse_keys)));
                       
 %         % NonLinear Parameters - Beta

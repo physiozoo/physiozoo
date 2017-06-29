@@ -57,14 +57,14 @@ displayEndOfDemoMessage('');
         DATA.filter_range = false;                                      
         
         if screensize(3) < 1920 %1080
-            DATA.BigFontSize = 10;
-            DATA.SmallFontSize = 10;
+            DATA.BigFontSize = 8;
+            DATA.SmallFontSize = 8;
         else
             DATA.BigFontSize = 11;
             DATA.SmallFontSize = 11;
         end                
         
-        DATA.window_size = [screensize(3)*0.95 screensize(4)*0.9];        
+        DATA.window_size = [screensize(3)*0.97 screensize(4)*0.85];        
         
         DATA.MyGreen = [39 232 51]/256;
         
@@ -159,8 +159,8 @@ displayEndOfDemoMessage('');
         
         set(GUI.MinYLimit_Edit, 'String', '');
         set(GUI.MaxYLimit_Edit, 'String', '');
-        set(GUI.Filt_MinYLimit_Edit, 'String', '');
-        set(GUI.Filt_MaxYLimit_Edit, 'String', '');
+%         set(GUI.Filt_MinYLimit_Edit, 'String', '');
+%         set(GUI.Filt_MaxYLimit_Edit, 'String', '');
         set(GUI.WindowSize, 'String', '');
         set(GUI.FirstSecond, 'String', '');
         set(GUI.Filt_WindowSize, 'String', '');
@@ -199,7 +199,7 @@ displayEndOfDemoMessage('');
             'MenuBar', 'none', ...
             'Toolbar', 'none', ...
             'HandleVisibility', 'off', ...
-            'Position', [50, 50, DATA.window_size(1), DATA.window_size(2)], ...
+            'Position', [20, 50, DATA.window_size(1), DATA.window_size(2)], ...
             'Tag', 'fPhysioZoo');
         
         
@@ -318,12 +318,6 @@ displayEndOfDemoMessage('');
         GUI.Filt_FirstSecond = uicontrol( 'Style', 'edit', 'Parent', GUI.Filt_FirstSecondBox, 'Callback', @Filt_FirstSecond_Callback, 'FontSize', BigFontSize);
         uicontrol( 'Style', 'text', 'Parent', GUI.Filt_FirstSecondBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         set( GUI.Filt_FirstSecondBox, 'Widths', field_size  );                
-        
-        
-        
-%         GUI.Filt_RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', GUI.Filt_WindowSliderBox, 'Callback', @filt_slider_Callback);
-%         GUI.Filt_RawDataSlider.Enable = 'off';
-%         addlistener(GUI.Filt_RawDataSlider, 'ContinuousValueChange', @filt_sldrFrame_Motion);
                 
 %         uicontrol( 'Style', 'text', 'Parent', GUI.Filt_YLimitBox, 'String', '              Filt Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
 %         GUI.Filt_MinYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.Filt_YLimitBox, 'FontSize', BigFontSize);
@@ -1595,8 +1589,8 @@ displayEndOfDemoMessage('');
             set(GUI.MinYLimit_Edit, 'String', num2str(MinYLimit));
             set(GUI.MaxYLimit_Edit, 'String', num2str(MaxYLimit));
             
-            set(GUI.Filt_MinYLimit_Edit, 'String', num2str(Filt_MinYLimit));
-            set(GUI.Filt_MaxYLimit_Edit, 'String', num2str(Filt_MaxYLimit));
+%             set(GUI.Filt_MinYLimit_Edit, 'String', num2str(Filt_MinYLimit));
+%             set(GUI.Filt_MaxYLimit_Edit, 'String', num2str(Filt_MaxYLimit));
             
             DATA.MinYLimit = MinYLimit;
             DATA.MaxYLimit = MaxYLimit;

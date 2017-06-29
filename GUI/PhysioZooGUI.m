@@ -142,6 +142,10 @@ displayEndOfDemoMessage('');
         DATA.nonlinRowsNames = [];
         DATA.nonlinDescriptions = [];
         
+        GUI.TimeParametersTableRowName = [];
+        GUI.FrequencyParametersTableMethodRowName = [];
+        GUI.NonLinearTableRowName = [];
+        
         DATA.mammal = [];   
         
         DATA.flag = '';
@@ -268,9 +272,9 @@ displayEndOfDemoMessage('');
         
         %GUI.SettingsCommandsButtons_Box = uix.VBox('Parent', GUI.RawDataAxesButtons_Box, 'Spacing', 0);        
         GUI.CommandsButtons_Box = uix.VButtonBox('Parent', GUI.RawDataAxesButtons_Box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
-        GUI.YLimitBox = uix.HBox('Parent', GUI.RawDataAxesButtons_Box, 'Spacing', 3);
+        %GUI.YLimitBox = uix.HBox('Parent', GUI.RawDataAxesButtons_Box, 'Spacing', 3);
         uix.Empty( 'Parent', GUI.RawDataAxesButtons_Box );
-        set( GUI.RawDataAxesButtons_Box, 'Heights', [-15, 25, -90]  );
+        set( GUI.RawDataAxesButtons_Box, 'Heights', [-15, -90]  ); % [-15, 25, -90]
         
         GUI.RawDataAxes = axes('Parent', uicontainer('Parent', GUI.RawDataControls_Box) );        
         %GUI.RawDataAxes = axes('Parent', GUI.RawDataControls_Box );        
@@ -295,14 +299,7 @@ displayEndOfDemoMessage('');
         GUI.Filt_RawDataSlider.Enable = 'off';
         addlistener(GUI.Filt_RawDataSlider, 'ContinuousValueChange', @filt_sldrFrame_Motion);
         set( GUI.Filt_WindowSliderBox, 'Widths', field_size );
-        
-        uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', '  Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.MinYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MinYLimit_Edit_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', '-', 'FontSize', BigFontSize);
-        GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
-        uix.Empty( 'Parent', GUI.YLimitBox );
-        set( GUI.YLimitBox, 'Widths', [70, -25, -5, -25, -25]  );
-        
+                
         field_size = [155, -30, -60];
         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSizeBox, 'String', 'Window Size:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.WindowSize = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSizeBox, 'Callback', @WindowSize_Callback, 'FontSize', BigFontSize);
@@ -393,48 +390,57 @@ displayEndOfDemoMessage('');
             
         set( GUI.FilteringBox, 'Widths', field_size  );
         
+        GUI.YLimitBox = uix.HBox('Parent', GUI.OptionsBox, 'Spacing', 3);
+        
+        uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', 'Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.MinYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MinYLimit_Edit_Callback, 'FontSize', BigFontSize);
+        uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', '-', 'FontSize', BigFontSize);
+        GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
+        uix.Empty( 'Parent', GUI.YLimitBox );
+        set( GUI.YLimitBox, 'Widths', [127, -27, -5, -27, -22]  );
+        
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -50] );                
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 25 -50] );                
         
         %---------------------------
         tables_field_size = [-85 -15];
         
         GUI.TimeBox = uix.HBox( 'Parent', GUI.TimeTab, 'Spacing', 5);
         GUI.ParamTimeBox = uix.VBox( 'Parent', GUI.TimeBox, 'Spacing', 5);
-        GUI.TimeParametersTable = uitable( 'Parent', GUI.ParamTimeBox, 'FontSize', SmallFontSize);
-        GUI.TimeParametersTable.ColumnName = {'Values'};  
+        GUI.TimeParametersTable = uitable( 'Parent', GUI.ParamTimeBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
+        GUI.TimeParametersTable.ColumnName = {'    Measures Name    ', 'Values'};  
         uix.Empty( 'Parent', GUI.ParamTimeBox );  
         set( GUI.ParamTimeBox, 'Heights', tables_field_size );
                 
         GUI.TimeAxes1 = axes('Parent', uicontainer('Parent', GUI.TimeBox) );        
-        set( GUI.TimeBox, 'Widths', [-15 -90] );                                        
+        set( GUI.TimeBox, 'Widths', [-14 -90] );                                        
         %---------------------------
                 
         GUI.FrequencyBox = uix.HBox( 'Parent', GUI.FrequencyTab, 'Spacing', 5);
         GUI.ParamFrequencyBox = uix.VBox( 'Parent', GUI.FrequencyBox, 'Spacing', 5);
-        GUI.FrequencyParametersTable = uitable( 'Parent', GUI.ParamFrequencyBox, 'FontSize', SmallFontSize);
-        GUI.FrequencyParametersTable.ColumnName = {'Values Lomb', 'Values AR', 'Values Welch'};          
+        GUI.FrequencyParametersTable = uitable( 'Parent', GUI.ParamFrequencyBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
+        GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Lomb', 'Values AR', 'Values Welch'};          
         uix.Empty( 'Parent', GUI.ParamFrequencyBox );
         set( GUI.ParamFrequencyBox, 'Heights', tables_field_size );
         
         GUI.FrequencyAxes1 = axes('Parent', uicontainer('Parent', GUI.FrequencyBox) );
         GUI.FrequencyAxes2 = axes('Parent', uicontainer('Parent', GUI.FrequencyBox) );                                   
-        set( GUI.FrequencyBox, 'Widths', [-29 -35 -35] );   % [-35 -35 -35]     
+        set( GUI.FrequencyBox, 'Widths', [-27 -35 -35] );   % [-35 -35 -35]     
         %---------------------------
         
         GUI.NonLinearBox = uix.HBox( 'Parent', GUI.NonLinearTab, 'Spacing', 5);
         GUI.ParamNonLinearBox = uix.VBox( 'Parent', GUI.NonLinearBox, 'Spacing', 5);
-        GUI.NonLinearTable = uitable( 'Parent', GUI.ParamNonLinearBox, 'FontSize', SmallFontSize);
-        GUI.NonLinearTable.ColumnName = {'Values'};
+        GUI.NonLinearTable = uitable( 'Parent', GUI.ParamNonLinearBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
+        GUI.NonLinearTable.ColumnName = {'    Measures Name    ', 'Values'};
         uix.Empty( 'Parent', GUI.ParamNonLinearBox );
         set( GUI.ParamNonLinearBox, 'Heights', tables_field_size ); 
         
         GUI.NonLinearAxes1 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
         GUI.NonLinearAxes2 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
         GUI.NonLinearAxes3 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
-        set( GUI.NonLinearBox, 'Widths', [-14 -25 -25 -25] );        % [-25 -40 -40 -40]
+        set( GUI.NonLinearBox, 'Widths', [-11 -25 -25 -25] );        % [-25 -40 -40 -40]
         %---------------------------
-        GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticshTab, 'FontSize', SmallFontSize, 'ColumnWidth',{550 'auto'});    % 700    
+        GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticshTab, 'FontSize', SmallFontSize, 'ColumnWidth',{550 'auto'}, 'FontName', 'Calibri');    % 700    
         GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};                                        
         %---------------------------
         
@@ -1103,9 +1109,9 @@ displayEndOfDemoMessage('');
             
             [DATA.timeData, DATA.timeRowsNames, DATA.timeDescriptions] = table2cell_StatisticsParam(DATA.hrv_td);
             
-            GUI.TimeParametersTable.RowName = DATA.timeRowsNames;
+            GUI.TimeParametersTableRowName = DATA.timeRowsNames;
             GUI.TimeParametersTableData = [DATA.timeDescriptions DATA.timeData];
-            GUI.TimeParametersTable.Data = DATA.timeData;
+            GUI.TimeParametersTable.Data = [DATA.timeRowsNames DATA.timeData];
         catch e
             errordlg(['hrv_time error: ' e.message], 'Input Error');     
             DATA.flag = 'hrv_time';
@@ -1123,9 +1129,9 @@ displayEndOfDemoMessage('');
             
             [DATA.fragData, DATA.fragRowsNames, DATA.fragDescriptions] = table2cell_StatisticsParam(DATA.hrv_frag);            
             
-            GUI.FragParametersTable.RowName = DATA.fragRowsNames;            
+            GUI.FragParametersTableRowName = DATA.fragRowsNames;            
             GUI.FragParametersTableData = [DATA.fragDescriptions DATA.fragData];
-            GUI.FragParametersTable.Data = DATA.fragData;
+            GUI.FragParametersTable.Data = [DATA.fragRowsNames DATA.fragData];
         catch e
             errordlg(['hrv_fragmentation error: ' e.message], 'Input Error');
             DATA.flag = 'hrv_fragmentation';
@@ -1136,7 +1142,7 @@ displayEndOfDemoMessage('');
     end
 %%
     function updateTimeStatistics()
-        GUI.TimeParametersTable.RowName = [GUI.TimeParametersTable.RowName; GUI.FragParametersTable.RowName];
+        GUI.TimeParametersTableRowName = [GUI.TimeParametersTableRowName; GUI.FragParametersTableRowName];
         GUI.TimeParametersTableData = [GUI.TimeParametersTableData; GUI.FragParametersTableData];
         GUI.TimeParametersTable.Data = [GUI.TimeParametersTable.Data; GUI.FragParametersTable.Data];
     end
@@ -1170,9 +1176,9 @@ displayEndOfDemoMessage('');
             [DATA.fd_welchData, DATA.fd_WelchRowsNames, DATA.fd_WelchDescriptions] = table2cell_StatisticsParam(DATA.hrv_fd_welch);
             
             GUI.FrequencyParametersTableLombRowName = DATA.fd_LombRowsNames;
-            GUI.FrequencyParametersTable.RowName = strrep(DATA.fd_LombRowsNames,'_LOMB','');                             
+            GUI.FrequencyParametersTableRowName = strrep(DATA.fd_LombRowsNames,'_LOMB','');                             
                         
-            GUI.FrequencyParametersTable.Data = [DATA.fd_lombData DATA.fd_arData DATA.fd_welchData];
+            GUI.FrequencyParametersTable.Data = [DATA.fd_LombRowsNames DATA.fd_lombData DATA.fd_arData DATA.fd_welchData];
             
             if DATA.default_method_index == 1 % Lomb
                 GUI.FrequencyParametersTableMethodRowName = DATA.fd_LombRowsNames;
@@ -1209,9 +1215,10 @@ displayEndOfDemoMessage('');
             
             [DATA.nonlinData, DATA.nonlinRowsNames, DATA.nonlinDescriptions] = table2cell_StatisticsParam(DATA.hrv_nl);
             
-            GUI.NonLinearTable.RowName = DATA.nonlinRowsNames;
+            GUI.NonLinearTableRowName = DATA.nonlinRowsNames;
             GUI.NonLinearTableData = [DATA.nonlinDescriptions DATA.nonlinData];
-            GUI.NonLinearTable.Data = DATA.nonlinData;            
+            %GUI.NonLinearTable.Data = DATA.nonlinData;            
+            GUI.NonLinearTable.Data = [DATA.nonlinRowsNames DATA.nonlinData];            
             %--------------------------------------------------------------
         catch e
             errordlg(['hrv_nonlinear: ' e.message], 'Input Error');
@@ -1222,7 +1229,7 @@ displayEndOfDemoMessage('');
     end
 %%
     function updateStatisticsTable() 
-        GUI.StatisticsTable.RowName = cat(1, GUI.TimeParametersTable.RowName, GUI.FrequencyParametersTableMethodRowName, GUI.NonLinearTable.RowName);
+        GUI.StatisticsTable.RowName = cat(1, GUI.TimeParametersTableRowName, GUI.FrequencyParametersTableMethodRowName, GUI.NonLinearTableRowName);
         GUI.StatisticsTable.Data = cat(1, GUI.TimeParametersTableData, GUI.FrequencyParametersTableData, GUI.NonLinearTableData);
     end
 %%
@@ -1407,7 +1414,8 @@ displayEndOfDemoMessage('');
                     set(GUI.Filt_FirstSecond, 'Enable', 'on');
                     set(GUI.Filt_RawDataSlider, 'Enable', 'on');
                 end                
-            catch  %ME
+            catch e %ME
+                errordlg(['Reset Plot: ' e.message], 'Input Error');
             end
         end
     end % reset

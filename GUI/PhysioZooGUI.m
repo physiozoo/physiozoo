@@ -64,7 +64,7 @@ displayEndOfDemoMessage('');
             DATA.SmallFontSize = 11;
         end                
         
-        DATA.window_size = [screensize(3)*0.97 screensize(4)*0.85];        
+        DATA.window_size = [screensize(3)*0.99 screensize(4)*0.85];        
         
         DATA.MyGreen = [39 232 51]/256;
         
@@ -477,13 +477,14 @@ displayEndOfDemoMessage('');
             
             uicontrol( 'Style', 'text', 'Parent', HBox, 'String', current_field.name, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
             
+            fields_size = [-50, -26, -25];
             if ischar(current_field_value)                                
                 PopUpMenu_control = uicontrol( 'Style', 'PopUpMenu', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description);
                 PopUpMenu_control.String = DATA.methods;
                 DATA.default_method_index = find(cellfun(@(x) strcmpi(x, current_field_value),DATA.methods ));
                 set(PopUpMenu_control, 'Value', DATA.default_method_index);
                 uix.Empty( 'Parent', HBox );
-                set( HBox, 'Widths', [-30, -19, -10]  );
+                set( HBox, 'Widths', fields_size  );
             else                
                 if length(current_field_value) < 2
                     current_value = num2str(current_field_value);
@@ -504,10 +505,10 @@ displayEndOfDemoMessage('');
                 
                 if length(current_field_value) < 2                    
                     %set( HBox, 'Widths', [-67, -40, -33]  );                    
-                    set( HBox, 'Widths', [-30, -19, -10]  );                    
+                    set( HBox, 'Widths', fields_size  );                    
                 else
                     %set( HBox, 'Widths', [-67, -18, -2, -18, -33]  );
-                    set( HBox, 'Widths', [-30, -8, -2, -8, -10]  );
+                    set( HBox, 'Widths', [-50, -11, -2, -11, -25]  ); %  [-30, -8, -2, -8, -10]
                 end
             end
         end
@@ -622,7 +623,7 @@ displayEndOfDemoMessage('');
         
         uix.Empty( 'Parent', GUI.FrequencyParamBox );  
         rs = 19; %-10;
-        set( GUI.FrequencyParamBox, 'Height', [-10, rs * ones(1, freq_param_length), -10, rs, -17, -70]  ); 
+        set( GUI.FrequencyParamBox, 'Height', [-10, rs * ones(1, freq_param_length), -10, rs, -17, -50]  ); 
         
         %-----------------------------------
         
@@ -773,20 +774,18 @@ displayEndOfDemoMessage('');
                 if ~(DATA.QualityAnnotations_Data(1, 1) + DATA.QualityAnnotations_Data(1,2))==0
                     
                     if ~isfield(GUI, 'RedLineHandle') || ~isvalid(GUI.RedLineHandle(1))
-                        GUI.RedLineHandle = line(ha, seconds(DATA.QualityAnnotations_Data'), [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3);
+                        GUI.RedLineHandle = line(ha, seconds((DATA.QualityAnnotations_Data-time_data(1))'), [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3);
                     else
                         for i = 1 : intervals_num
-                            GUI.RedLineHandle(i).XData = seconds(DATA.QualityAnnotations_Data(i, :)');
+                            %GUI.RedLineHandle(i).XData = seconds((DATA.QualityAnnotations_Data(i, :))');
+                            GUI.RedLineHandle(i).XData = seconds((DATA.QualityAnnotations_Data(i, :)-time_data(1))');
                             GUI.RedLineHandle(i).YData = [MaxYLimit MaxYLimit]';
                         end
                     end
-                    
-                    
+                                        
                     %fr=time_data(5)-time_data(4);
                     %win_indexes = find(time_data >= DATA.QualityAnnotations_Data(1,1)-2*fr & time_data <= DATA.QualityAnnotations_Data(1,2)+2*fr);
-                    
-                    
-                    
+                                     
                     for i = 1 : intervals_num
                         
                         a1=find(time_data >= DATA.QualityAnnotations_Data(i,1));
@@ -799,7 +798,7 @@ displayEndOfDemoMessage('');
                         if length(a1)<2
                             low_quality_indexes = [a2(end) : a1(1)];
                         else
-                            low_quality_indexes = [a2(end) : a1(1)+1];
+                            low_quality_indexes = [a2(end)-1 : a1(1)];
                         end
                         
                         %plot(ha, seconds(data_quality_time), data(win_indexes(1) : win_indexes(end)), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);
@@ -962,7 +961,7 @@ displayEndOfDemoMessage('');
                 
                 if ~isempty(QRS_data)                    
                     DATA.rri = diff(QRS_data)/DATA.SamplingFrequency;
-                    DATA.trr = QRS_data(2:end)/DATA.SamplingFrequency;
+                    DATA.trr = QRS_data(1:end-1)/DATA.SamplingFrequency;
                 else
                     errordlg('Please, choose the file with the QRS data.', 'Input Error');
                     clean_gui();
@@ -989,7 +988,7 @@ displayEndOfDemoMessage('');
                     qrs_data = rdann( [PathName DATA.DataFileName], ExtensionFileName); % atr qrs
                     if ~isempty(qrs_data)                    
                         DATA.rri = diff(qrs_data)/DATA.SamplingFrequency;
-                        DATA.trr = qrs_data(2:end)/DATA.SamplingFrequency;
+                        DATA.trr = qrs_data(1:end-1)/DATA.SamplingFrequency;
                     else
                         errordlg('Please, choose the file with the QRS data.', 'Input Error');
                         clean_gui();
@@ -1025,7 +1024,7 @@ displayEndOfDemoMessage('');
                     GUI.Mammal_popupmenu.Value = DATA.mammal_index; 
                     if ~isempty(txt_data)                    
                         DATA.rri = diff(txt_data)/DATA.SamplingFrequency;
-                        DATA.trr = txt_data(2:end)/DATA.SamplingFrequency;
+                        DATA.trr = txt_data(1:end-1)/DATA.SamplingFrequency;
                     else
                         errordlg('Please, choose the file with the QRS data.', 'Input Error');
                         clean_gui();

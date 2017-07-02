@@ -87,6 +87,11 @@ hrv_freq:
         description: Order of AR model to fit
         name: AR order
         units: n.u.
+    beta_band:
+        value: [0.0048, 0.064]
+        description: Frequency range for log-log slope calculation (beta)
+        name: Beta band
+        units: Hz     
 
 # DFA Parameters
 dfa:

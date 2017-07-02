@@ -68,7 +68,7 @@ displayEndOfDemoMessage('');
         
         DATA.MyGreen = [39 232 51]/256;
         
-        DATA.methods = {'Lomb'; 'AR'; 'Welch'};                 
+        DATA.methods = {'Lomb'; 'Welch'; 'AR'};                 
         DATA.default_method_index = 1;              
         
         DATA.LowPassFilteringFields = [];
@@ -349,9 +349,15 @@ displayEndOfDemoMessage('');
         uicontrol( 'Style', 'text', 'Parent', GUI.FilteringBox, 'String', 'Filtering', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Filtering_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.FilteringBox, 'Callback', @Filtering_popupmenu_Callback, 'FontSize', SmallFontSize);
         GUI.Filtering_popupmenu.String = DATA.Filters;    
-        uix.Empty( 'Parent', GUI.FilteringBox );
-            
+        uix.Empty( 'Parent', GUI.FilteringBox );            
         set( GUI.FilteringBox, 'Widths', field_size  );
+                
+        DefaultMethodBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
+        uicontrol( 'Style', 'text', 'Parent', DefaultMethodBox, 'String', 'Default frequency method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.DefaultMethod_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DefaultMethodBox, 'Callback', @DefaultMethod_popupmenu_Callback, 'FontSize', SmallFontSize, 'TooltipString', 'Default frequency method to used to display under statistics');
+        GUI.DefaultMethod_popupmenu.String = DATA.methods;
+        uix.Empty( 'Parent', DefaultMethodBox );
+        set( DefaultMethodBox, 'Widths', field_size  );        
         
         GUI.YLimitBox = uix.HBox('Parent', GUI.OptionsBox, 'Spacing', 3);
         
@@ -363,7 +369,7 @@ displayEndOfDemoMessage('');
         set( GUI.YLimitBox, 'Widths', [-37, -20, -5, -19 -15]  ); % [127, -27, -5, -27, -22]
         
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 22 -50] );                
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 22 -40] );                
         
         %---------------------------
         tables_field_size = [-85 -15];
@@ -382,7 +388,7 @@ displayEndOfDemoMessage('');
         GUI.FrequencyBox = uix.HBox( 'Parent', GUI.FrequencyTab, 'Spacing', 5);
         GUI.ParamFrequencyBox = uix.VBox( 'Parent', GUI.FrequencyBox, 'Spacing', 5);
         GUI.FrequencyParametersTable = uitable( 'Parent', GUI.ParamFrequencyBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
-        GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Lomb', 'Values AR', 'Values Welch'};          
+        GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Lomb', 'Values Welch', 'Values AR'};          
         uix.Empty( 'Parent', GUI.ParamFrequencyBox );
         set( GUI.ParamFrequencyBox, 'Heights', tables_field_size );
         
@@ -447,14 +453,14 @@ displayEndOfDemoMessage('');
             uicontrol( 'Style', 'text', 'Parent', HBox, 'String', current_field.name, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
             
             fields_size = [-40, -27, -25];
-            if ischar(current_field_value)                                
-                PopUpMenu_control = uicontrol( 'Style', 'PopUpMenu', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description);
-                PopUpMenu_control.String = DATA.methods;
-                DATA.default_method_index = find(cellfun(@(x) strcmpi(x, current_field_value),DATA.methods ));
-                set(PopUpMenu_control, 'Value', DATA.default_method_index);
-                uix.Empty( 'Parent', HBox );
-                set( HBox, 'Widths', fields_size  );
-            else                
+%             if ischar(current_field_value)                                
+%                 PopUpMenu_control = uicontrol( 'Style', 'PopUpMenu', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description);
+%                 PopUpMenu_control.String = DATA.methods;
+%                 DATA.default_method_index = find(cellfun(@(x) strcmpi(x, current_field_value),DATA.methods ));
+%                 set(PopUpMenu_control, 'Value', DATA.default_method_index);
+%                 uix.Empty( 'Parent', HBox );
+%                 set( HBox, 'Widths', fields_size  );
+           % else                
                 if length(current_field_value) < 2
                     current_value = num2str(current_field_value);
                     param_control = uicontrol( 'Style', 'edit', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description);
@@ -479,7 +485,7 @@ displayEndOfDemoMessage('');
                     %set( HBox, 'Widths', [-67, -18, -2, -18, -33]  );
                     set( HBox, 'Widths', [-40, -12, -2, -12, -25]  ); %  [-30, -8, -2, -8, -10]
                 end
-            end
+            %end
         end
     end
 
@@ -527,7 +533,7 @@ displayEndOfDemoMessage('');
 
         hrv_time_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'hrv_time')), param_keys)));
         hrv_freq_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'hrv_freq')), param_keys)));
-        hrv_nl_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'hrv_nl')), param_keys)));
+        %hrv_nl_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'hrv_nl')), param_keys)));
         dfa_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'dfa')), param_keys)));
         mse_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'mse')), param_keys)));       
         
@@ -579,20 +585,13 @@ displayEndOfDemoMessage('');
         
         
         % NonLinear Parameters - Beta
-        uix.Empty( 'Parent', GUI.FrequencyParamBox );
-        nl_param_length = FillParamFields(GUI.FrequencyParamBox, containers.Map(hrv_nl_keys, values(defaults_map, hrv_nl_keys)));  
-        
-        
-%         DefaultMethodBox = uix.HBox( 'Parent', GUI.FrequencyParamBox, 'Spacing', 3);
-%         uicontrol( 'Style', 'text', 'Parent', DefaultMethodBox, 'String', 'Default method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-%         PopUpMenu_control = uicontrol( 'Style', 'PopUpMenu', 'Parent', DefaultMethodBox, 'Callback', {@set_config_Callback, 'hrv_freq.present_methods'}, 'FontSize', SmallFontSize);
-%         PopUpMenu_control.String = DATA.methods;           
-%         uix.Empty( 'Parent', DefaultMethodBox );  
-%         set( DefaultMethodBox, 'Widths', [-37, -24, -17]  );                        
+        %uix.Empty( 'Parent', GUI.FrequencyParamBox );
+        %nl_param_length = FillParamFields(GUI.FrequencyParamBox, containers.Map(hrv_nl_keys, values(defaults_map, hrv_nl_keys)));  
         
         uix.Empty( 'Parent', GUI.FrequencyParamBox );  
-        rs = 19; %-10;
-        set( GUI.FrequencyParamBox, 'Height', [-10, rs * ones(1, freq_param_length), -10, rs, -17, -50]  ); 
+        rs = 19; %19;
+        %set( GUI.FrequencyParamBox, 'Height', [-10, rs * ones(1, freq_param_length), -10, rs, -17, -50]  ); 
+        set( GUI.FrequencyParamBox, 'Height', [-10, rs * ones(1, freq_param_length), -50]  ); 
         
         %-----------------------------------
         
@@ -1141,15 +1140,15 @@ displayEndOfDemoMessage('');
             GUI.FrequencyParametersTableLombRowName = DATA.fd_LombRowsNames;
             GUI.FrequencyParametersTableRowName = strrep(DATA.fd_LombRowsNames,'_LOMB','');                             
                         
-            GUI.FrequencyParametersTable.Data = [DATA.fd_LombRowsNames DATA.fd_lombData DATA.fd_arData DATA.fd_welchData];
+            GUI.FrequencyParametersTable.Data = [GUI.FrequencyParametersTableRowName DATA.fd_lombData DATA.fd_welchData DATA.fd_arData];
             
             if DATA.default_method_index == 1 % Lomb
                 GUI.FrequencyParametersTableMethodRowName = DATA.fd_LombRowsNames;
                 GUI.FrequencyParametersTableData = [DATA.fd_lombDescriptions DATA.fd_lombData];
-            elseif DATA.default_method_index == 2 % AR
+            elseif DATA.default_method_index == 3 % AR
                 GUI.FrequencyParametersTableMethodRowName = DATA.fd_ArRowsNames;
                 GUI.FrequencyParametersTableData = [DATA.fd_ArDescriptions DATA.fd_arData];
-            elseif DATA.default_method_index == 3 % Welch
+            elseif DATA.default_method_index == 2 % Welch
                 GUI.FrequencyParametersTableMethodRowName = DATA.fd_WelchRowsNames;
                 GUI.FrequencyParametersTableData = [DATA.fd_WelchDescriptions DATA.fd_welchData];
             end
@@ -1246,8 +1245,8 @@ displayEndOfDemoMessage('');
         clear_frequency_statistics_results();
         
         if ~isempty(DATA.pd_freq)
-            plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.pd_freq, 'detailed_legend', false);
-%----------------  BETA  -----------------------            
+            plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.pd_freq, 'detailed_legend', false);            
+            plot_hrv_freq_beta(GUI.FrequencyAxes2, DATA.pd_freq);         
         end
         box(GUI.FrequencyAxes1, 'off' );
         box(GUI.FrequencyAxes2, 'off' );
@@ -1258,9 +1257,7 @@ displayEndOfDemoMessage('');
         clear_nonlinear_statistics_results();
         
         if ~isempty(DATA.pd_nl)
-            plot_dfa_fn(GUI.NonLinearAxes1, DATA.pd_nl.dfa);
-%----------------  BETA  -----------------------            
-            plot_hrv_freq_beta(GUI.FrequencyAxes2, DATA.pd_nl.beta);
+            plot_dfa_fn(GUI.NonLinearAxes1, DATA.pd_nl.dfa);                     
             plot_mse(GUI.NonLinearAxes3, DATA.pd_nl.mse);
             plot_poincare_ellipse(GUI.NonLinearAxes2, DATA.pd_nl.poincare);
         end
@@ -1781,6 +1778,21 @@ displayEndOfDemoMessage('');
         end
     end
 %%
+    function DefaultMethod_popupmenu_Callback( ~, ~ )
+        DATA.default_method_index = get(GUI.DefaultMethod_popupmenu, 'Value');
+        if DATA.default_method_index == 1 % Lomb
+            GUI.FrequencyParametersTableMethodRowName = DATA.fd_LombRowsNames;
+            GUI.FrequencyParametersTableData = [DATA.fd_lombDescriptions DATA.fd_lombData];
+        elseif DATA.default_method_index == 3 % AR
+            GUI.FrequencyParametersTableMethodRowName = DATA.fd_ArRowsNames;
+            GUI.FrequencyParametersTableData = [DATA.fd_ArDescriptions DATA.fd_arData];
+        elseif DATA.default_method_index == 2 % Welch
+            GUI.FrequencyParametersTableMethodRowName = DATA.fd_WelchRowsNames;
+            GUI.FrequencyParametersTableData = [DATA.fd_WelchDescriptions DATA.fd_welchData];
+        end
+        updateStatisticsTable();
+    end
+%%
     function clear_time_data()
         DATA.hrv_td = table;
         DATA.pd_time = struct([]);
@@ -1966,6 +1978,12 @@ displayEndOfDemoMessage('');
                     plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false);
                     fig_print( af, [results_folder_name, filesep, filename, '_Spectral_Density'], 'output_format', ext);
                     close(af);
+                    
+                    af = figure;
+                    set(af, 'Visible', 'off')
+                    plot_hrv_freq_beta(gca, DATA.pd_freq);
+                    fig_print( af, [results_folder_name, filesep, filename, '_Beta'], 'output_format', ext);
+                    close(af);
                 end
                 
                 if ~isempty(DATA.pd_nl)
@@ -1973,12 +1991,6 @@ displayEndOfDemoMessage('');
                     set(af, 'Visible', 'off')
                     plot_dfa_fn(gca, DATA.pd_nl.dfa);
                     fig_print( af, [results_folder_name, filesep, filename, '_DFA'], 'output_format', ext);
-                    close(af);
-                    
-                    af = figure;
-                    set(af, 'Visible', 'off')
-                    plot_hrv_freq_beta(gca, DATA.pd_nl.beta);
-                    fig_print( af, [results_folder_name, filesep, filename, '_Beta'], 'output_format', ext);
                     close(af);
                     
                     af = figure;
@@ -2007,18 +2019,18 @@ displayEndOfDemoMessage('');
                     plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false);
                     savefig(af, [results_folder_name, filesep, filename, '_Spectral_Density'], 'compact');  
                     close(af);
+                    
+                    af = figure;
+                    set(af, 'Name', [filename, '_Beta'], 'NumberTitle', 'off');
+                    plot_hrv_freq_beta(gca, DATA.pd_freq);
+                    savefig(af, [results_folder_name, filesep, filename, '_Beta'], 'compact'); 
+                    close(af);
                 end
                 if ~isempty(DATA.pd_nl)
                     af = figure;
                     set(af, 'Name', [filename, '_DFA'], 'NumberTitle', 'off');
                     plot_dfa_fn(gca, DATA.pd_nl.dfa);
                     savefig(af, [results_folder_name filesep, filename, '_DFA'], 'compact'); 
-                    close(af);
-                    
-                    af = figure;
-                    set(af, 'Name', [filename, '_Beta'], 'NumberTitle', 'off');
-                    plot_hrv_freq_beta(gca, DATA.pd_nl.beta);
-                    savefig(af, [results_folder_name, filesep, filename, '_Beta'], 'compact'); 
                     close(af);
                     
                     af = figure;
@@ -2169,13 +2181,13 @@ displayEndOfDemoMessage('');
         param_category = strsplit(param_name, '.');
         %DATA.flag = 0;    
         
-        if strcmp(get(src, 'Style'), 'popupmenu')
-            prev_default_method_index = DATA.default_method_index;
-            DATA.default_method_index = get(src, 'Value');            
-%             methods_str = get(src, 'String');
-%             value = methods_str{index_selected};
-            screen_value = 0;
-        else
+%         if strcmp(get(src, 'Style'), 'popupmenu')
+%             prev_default_method_index = DATA.default_method_index;
+%             DATA.default_method_index = get(src, 'Value');            
+% %             methods_str = get(src, 'String');
+% %             value = methods_str{index_selected};
+%             screen_value = 0;
+        %else
             min_suffix_ind = strfind(param_name, '.min');
             max_suffix_ind = strfind(param_name, '.max');
             
@@ -2278,16 +2290,16 @@ displayEndOfDemoMessage('');
                 prev_param_value = prev_param_array.value;
             end            
             rhrv_set_default( param_name, param_value );
-        end                
+        %end                
         try
             update_statistics(param_category(1));
             set(src, 'UserData', screen_value);
         catch e
             errordlg(['set_config_Callback error: ' e.message], 'Input Error');
-            if strcmp(get(src, 'Style'), 'popupmenu')
-                DATA.default_method_index = prev_default_method_index;
-                set(src, 'Value', prev_default_method_index);
-            else
+%             if strcmp(get(src, 'Style'), 'popupmenu')
+%                 DATA.default_method_index = prev_default_method_index;
+%                 set(src, 'Value', prev_default_method_index);
+%             else
                 rhrv_set_default( param_name, prev_param_array );
                 set(src, 'String', num2str(prev_param_value));
                 
@@ -2300,7 +2312,7 @@ displayEndOfDemoMessage('');
                         set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(prev_param_value))
                     end
                 end                
-            end            
+            %end            
         end
     end
 %%

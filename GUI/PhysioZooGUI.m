@@ -1248,7 +1248,6 @@ displayEndOfDemoMessage('');
         if ~isempty(DATA.pd_freq)
             plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.pd_freq, 'detailed_legend', false);
 %----------------  BETA  -----------------------            
-            %plot_hrv_nl_beta(GUI.FrequencyAxes2, DATA.pd_nl.beta);
         end
         box(GUI.FrequencyAxes1, 'off' );
         box(GUI.FrequencyAxes2, 'off' );
@@ -1261,7 +1260,7 @@ displayEndOfDemoMessage('');
         if ~isempty(DATA.pd_nl)
             plot_dfa_fn(GUI.NonLinearAxes1, DATA.pd_nl.dfa);
 %----------------  BETA  -----------------------            
-            plot_hrv_nl_beta(GUI.FrequencyAxes2, DATA.pd_nl.beta);
+            plot_hrv_freq_beta(GUI.FrequencyAxes2, DATA.pd_nl.beta);
             plot_mse(GUI.NonLinearAxes3, DATA.pd_nl.mse);
             plot_poincare_ellipse(GUI.NonLinearAxes2, DATA.pd_nl.poincare);
         end
@@ -1978,7 +1977,7 @@ displayEndOfDemoMessage('');
                     
                     af = figure;
                     set(af, 'Visible', 'off')
-                    plot_hrv_nl_beta(gca, DATA.pd_nl.beta);
+                    plot_hrv_freq_beta(gca, DATA.pd_nl.beta);
                     fig_print( af, [results_folder_name, filesep, filename, '_Beta'], 'output_format', ext);
                     close(af);
                     
@@ -2018,7 +2017,7 @@ displayEndOfDemoMessage('');
                     
                     af = figure;
                     set(af, 'Name', [filename, '_Beta'], 'NumberTitle', 'off');
-                    plot_hrv_nl_beta(gca, DATA.pd_nl.beta);
+                    plot_hrv_freq_beta(gca, DATA.pd_nl.beta);
                     savefig(af, [results_folder_name, filesep, filename, '_Beta'], 'compact'); 
                     close(af);
                     

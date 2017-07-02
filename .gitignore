@@ -1,8 +1,8 @@
 ### Physionet ###
 # Physionet data files
-#*.dat
-#*.hea
-#*.atr
+*.dat
+*.hea
+*.atr
 *.qrs*
 
 # Default local physionet install directory
@@ -16,6 +16,10 @@ database/
 *.xlsx
 
 ### Matlab ###
+
+# Saved data files
+*.mat
+
 # Windows default autosave extension
 *.asv
 

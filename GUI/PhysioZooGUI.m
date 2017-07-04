@@ -257,23 +257,34 @@ displayEndOfDemoMessage('');
         GUI.RawDataControls_Box = uix.VBox('Parent', temp_panel, 'Spacing', 3);
         set( GUI.RawData_Box, 'Widths', [(-1)*options_part (-1)*analysis_part] ); % [-22 -75]               
         
-        buttons_axes_Box = uix.HBox( 'Parent', GUI.RawDataControls_Box, 'Spacing', 5);
-        GUI.CommandsButtons_Box = uix.VButtonBox('Parent', buttons_axes_Box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');  
+        buttons_axes_Box = uix.HBox( 'Parent', GUI.RawDataControls_Box, 'Spacing', 5);        
+        
+        GUI.CommandsButtons_Box = uix.VButtonBox('Parent', buttons_axes_Box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');        
+        
         GUI.RawDataAxes = axes('Parent', uicontainer('Parent', buttons_axes_Box) );       
         set( buttons_axes_Box, 'Widths', [70 -1]);
+        %GUI.YLimitBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3);
         GUI.WindowSliderBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3);
         GUI.Filt_WindowSliderBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3);        
         set( GUI.RawDataControls_Box, 'Heights', [-1, 22, 22]  );
+        
+%         uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', 'Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+%         GUI.MinYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MinYLimit_Edit_Callback, 'FontSize', BigFontSize);
+%         uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', '-', 'FontSize', BigFontSize);
+%         GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MaxYLimit_Edit_Callback, 'FontSize', BigFontSize);      
+%         uix.Empty( 'Parent', GUI.YLimitBox );
+%         set( GUI.YLimitBox, 'Widths', [180, -20, -5, -20, -190]  ); % [-37, -15, -5, -15] [-37, -20, -5, -19 -15]
+        
         %--------------------------
                               
-        field_size = [170 -5 -5 170 -5 -5 -70]; %[155 -5 -5 155 -5 -5 -70];        
+        field_size = [180 -5 -5 180 -5 -5 -30]; %[155 -5 -5 155 -5 -5 -70];        
         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Start Window:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.FirstSecond = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSliderBox, 'Callback', @FirstSecond_Callback, 'FontSize', BigFontSize, 'Enable', 'off');
-        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         
         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Window Size:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.WindowSize = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSliderBox, 'Callback', @WindowSize_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         
         GUI.RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', GUI.WindowSliderBox, 'Callback', @slider_Callback);
         GUI.RawDataSlider.Enable = 'off';
@@ -282,11 +293,11 @@ displayEndOfDemoMessage('');
         
         uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'Start Selected Window:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.Filt_FirstSecond = uicontrol( 'Style', 'edit', 'Parent', GUI.Filt_WindowSliderBox, 'Callback', @Filt_FirstSecond_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         
         uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'Selected Window Size:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.Filt_WindowSize = uicontrol( 'Style', 'edit', 'Parent', GUI.Filt_WindowSliderBox, 'Callback', @Filt_WindowSize_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');        
+        uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');        
                 
         GUI.Filt_RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', GUI.Filt_WindowSliderBox, 'Callback', @filt_slider_Callback);
         GUI.Filt_RawDataSlider.Enable = 'off';
@@ -358,7 +369,7 @@ displayEndOfDemoMessage('');
                 
         DefaultMethodBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', DefaultMethodBox, 'String', 'Default frequency method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.DefaultMethod_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DefaultMethodBox, 'Callback', @DefaultMethod_popupmenu_Callback, 'FontSize', SmallFontSize, 'TooltipString', 'Default frequency method to used to display under statistics');
+        GUI.DefaultMethod_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DefaultMethodBox, 'Callback', @DefaultMethod_popupmenu_Callback, 'FontSize', SmallFontSize, 'TooltipString', 'Default frequency method to use to display under statistics');
         GUI.DefaultMethod_popupmenu.String = DATA.methods;
         uix.Empty( 'Parent', DefaultMethodBox );
         set( DefaultMethodBox, 'Widths', field_size  );        
@@ -368,12 +379,12 @@ displayEndOfDemoMessage('');
         uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', 'Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.MinYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MinYLimit_Edit_Callback, 'FontSize', BigFontSize);
         uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', '-', 'FontSize', BigFontSize);
-        GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
+        GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MaxYLimit_Edit_Callback, 'FontSize', BigFontSize); 
         uix.Empty( 'Parent', GUI.YLimitBox );
-        set( GUI.YLimitBox, 'Widths', [-37, -20, -5, -19 -15]  ); % [127, -27, -5, -27, -22]
+        set( GUI.YLimitBox, 'Widths', [-37, -20, -5, -19 -16]  ); % [-37, -15, -5, -15] [-37, -20, -5, -19 -15]
         
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 22 -40] );                
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 24 -40] );                
         
         %---------------------------
         tables_field_size = [-85 -15];
@@ -624,32 +635,36 @@ displayEndOfDemoMessage('');
 %set( GUI.NonLinearParamBox, 'Widths', 600, 'Heights', 600, 'HorizontalOffsets', 100, 'VerticalOffsets', 100 )
 %%
     function slider_Callback(~, ~)
-        firstSecond2Show = int64(get(GUI.RawDataSlider, 'Value'));
+        %firstSecond2Show = int64(get(GUI.RawDataSlider, 'Value'));
+        firstSecond2Show = get(GUI.RawDataSlider, 'Value');
         DATA.firstSecond2Show = firstSecond2Show;
-        set(GUI.FirstSecond, 'String', num2str(firstSecond2Show));
+        set(GUI.FirstSecond, 'String', calcDuration(firstSecond2Show, 0));
         GetPlotSignal();
     end
 
 %%
     function sldrFrame_Motion(~, ~)
-        firstSecond2Show = int64(get(GUI.RawDataSlider, 'Value'));
+        %firstSecond2Show = int64(get(GUI.RawDataSlider, 'Value'));
+        firstSecond2Show = get(GUI.RawDataSlider, 'Value');
         DATA.firstSecond2Show = firstSecond2Show;
-        set(GUI.FirstSecond, 'String', num2str(firstSecond2Show));
+        set(GUI.FirstSecond, 'String', calcDuration(firstSecond2Show, 0));
         GetPlotSignal();
     end
 
 %%
     function filt_slider_Callback(~, ~)
-        Filt_FirstSecond2Show = int64(get(GUI.Filt_RawDataSlider, 'Value'));
+        %Filt_FirstSecond2Show = int64(get(GUI.Filt_RawDataSlider, 'Value'));
+        Filt_FirstSecond2Show = get(GUI.Filt_RawDataSlider, 'Value');
         DATA.Filt_firstSecond2Show = Filt_FirstSecond2Show;
-        set(GUI.Filt_FirstSecond, 'String', num2str(Filt_FirstSecond2Show));        
+        set(GUI.Filt_FirstSecond, 'String', calcDuration(Filt_FirstSecond2Show, 0));        
         CalcPlotSignalStat();
     end
 %%
     function filt_sldrFrame_Motion(~, ~)
-        Filt_FirstSecond2Show = int64(get(GUI.Filt_RawDataSlider, 'Value'));
+        %Filt_FirstSecond2Show = int64(get(GUI.Filt_RawDataSlider, 'Value'));
+        Filt_FirstSecond2Show = get(GUI.Filt_RawDataSlider, 'Value');
         DATA.Filt_FirstSecond2Show = Filt_FirstSecond2Show;
-        set(GUI.Filt_FirstSecond, 'String', num2str(Filt_FirstSecond2Show));
+        set(GUI.Filt_FirstSecond, 'String', calcDuration(Filt_FirstSecond2Show, 0));
         GetPlotSignal();
     end
 %%
@@ -681,7 +696,7 @@ displayEndOfDemoMessage('');
         else
             data =  60 ./ signal_data;
             filt_data =  60 ./ filt_signal_data;
-            yString = 'HR [BPM]';
+            yString = 'HR (BPM)';
             MinYLimit = min(DATA.HRMinYLimit, DATA.HRMaxYLimit);
             MaxYLimit = max(DATA.HRMinYLimit, DATA.HRMaxYLimit);
             
@@ -797,7 +812,7 @@ displayEndOfDemoMessage('');
                         
                         if verLessThan('matlab','9.1')
                             % -- Code to run in MATLAB R2014a and earlier here --
-                            plot(ha, time_data(low_quality_indexes)), data(low_quality_indexes, '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);
+                            plot(ha, time_data(low_quality_indexes), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);
                         else
                             % -- Code to run in MATLAB R2014b and later here --
                             plot(ha, seconds(time_data(low_quality_indexes)), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);
@@ -1381,20 +1396,21 @@ displayEndOfDemoMessage('');
 %                 set(GUI.Filt_MinYLimit_Edit, 'String', num2str(DATA.Filt_RRMinYLimit));
 %                 set(GUI.Filt_MaxYLimit_Edit, 'String', num2str(DATA.Filt_RRMaxYLimit));
                 set(GUI.Filt_RawDataSlider, 'Enable', 'on');
-                set(GUI.Filt_WindowSize, 'String', num2str(DATA.Filt_MyWindowSize));
-                set(GUI.Filt_FirstSecond, 'String', num2str(DATA.Filt_FirstSecond2Show));
+                set(GUI.Filt_WindowSize, 'String', calcDuration(DATA.Filt_MyWindowSize, 0));
+                set(GUI.Filt_FirstSecond, 'String', calcDuration(DATA.Filt_FirstSecond2Show, 0));
                 
                 set(GUI.MinYLimit_Edit, 'String', num2str(DATA.RRMinYLimit));
                 set(GUI.MaxYLimit_Edit, 'String', num2str(DATA.RRMaxYLimit));
                 set(GUI.RawDataSlider, 'Enable', 'off');
-                set(GUI.WindowSize, 'String', num2str(DATA.MyWindowSize));
+                set(GUI.WindowSize, 'String', calcDuration(double(DATA.MyWindowSize), 0));
+                %set(GUI.WindowSize, 'String', num2str(DATA.MyWindowSize));
                 set(GUI.RR_or_HR_plot_button, 'Enable', 'on');
                 set(GUI.RR_or_HR_plot_button, 'Value', 0);
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot HR');
-                set(GUI.FirstSecond, 'String', num2str(DATA.firstSecond2Show), 'Enable', 'off');
+                set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0), 'Enable', 'off');
                                 
                 if(DATA.Filt_MyWindowSize >= DATA.Filt_MaxSignalLength)
-                    set(GUI.Filt_FirstSecond, 'String', num2str(DATA.Filt_FirstSecond2Show), 'Enable', 'off');
+                    set(GUI.Filt_FirstSecond, 'String', calcDuration(DATA.Filt_FirstSecond2Show, 0), 'Enable', 'off');
                     set(GUI.Filt_RawDataSlider, 'Enable', 'off');
                 else
                     set(GUI.Filt_FirstSecond, 'Enable', 'on');
@@ -1429,7 +1445,8 @@ displayEndOfDemoMessage('');
     function WindowSize_Callback(~, ~)
         
         if ~isempty(DATA.rri)
-            MyWindowSize = str2double(get(GUI.WindowSize,'String'));
+            %MyWindowSize = str2double(get(GUI.WindowSize,'String'));
+            MyWindowSize = calcDurationInSeconds(get(GUI.WindowSize,'String'));
             
             if isInputNumeric(GUI.WindowSize, MyWindowSize, DATA.MyWindowSize)
                 if(MyWindowSize == DATA.maxSignalLength)
@@ -1438,15 +1455,15 @@ displayEndOfDemoMessage('');
                     DATA.MyWindowSize = MyWindowSize;
                     DATA.firstSecond2Show = 0;
                     DATA.Filt_FirstSecond2Show = 0;
-                    set(GUI.FirstSecond, 'String', num2str(DATA.firstSecond2Show));
-                    set(GUI.Filt_FirstSecond, 'String', num2str(DATA.Filt_FirstSecond2Show));
+                    set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
+                    set(GUI.Filt_FirstSecond, 'String', calcDuration(DATA.Filt_FirstSecond2Show, 0));
                     setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.Filt_MyWindowSize, [(double(DATA.Filt_MyWindowSize)/10)/double(DATA.Filt_MaxSignalLength) , double(DATA.Filt_MyWindowSize)/double(DATA.Filt_MaxSignalLength) ]);                    
                     CalcPlotSignalStat();
                 elseif(MyWindowSize > DATA.maxSignalLength)
-                    set(GUI.WindowSize,'String', num2str(DATA.MyWindowSize));
+                    set(GUI.WindowSize,'String', calcDuration(DATA.MyWindowSize, 0));
                     errordlg('The window size must be less then signal length!', 'Input Error');
                 elseif (MyWindowSize <= 1)
-                    set(GUI.WindowSize,'String', num2str(DATA.MyWindowSize));
+                    set(GUI.WindowSize,'String', calcDuration(DATA.MyWindowSize, 0));
                     errordlg('The window size must be greater then 2!', 'Input Error');
                 else
                     set(GUI.RawDataSlider, 'Enable', 'on');
@@ -1454,8 +1471,8 @@ displayEndOfDemoMessage('');
                     DATA.MyWindowSize = MyWindowSize;
                     DATA.firstSecond2Show = 0;
                     DATA.Filt_FirstSecond2Show = 0;
-                    set(GUI.FirstSecond, 'String', num2str(DATA.firstSecond2Show));
-                    set(GUI.Filt_FirstSecond, 'String', num2str(DATA.Filt_FirstSecond2Show));
+                    set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
+                    set(GUI.Filt_FirstSecond, 'String', calcDuration(DATA.Filt_FirstSecond2Show, 0));
                     setSliderProperties(GUI.RawDataSlider, DATA.maxSignalLength, DATA.MyWindowSize, [(DATA.MyWindowSize/10)/double(DATA.maxSignalLength) , (DATA.MyWindowSize)/double(DATA.maxSignalLength) ]);
                     setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.Filt_MyWindowSize, [(double(DATA.Filt_MyWindowSize)/10)/double(DATA.Filt_MaxSignalLength) , double(DATA.Filt_MyWindowSize)/double(DATA.Filt_MaxSignalLength) ]);                    
                     CalcPlotSignalStat();
@@ -1467,7 +1484,7 @@ displayEndOfDemoMessage('');
 %%
     function Filt_WindowSize_Callback(~, ~)
         if ~isempty(DATA.rri)
-            Filt_MyWindowSize = str2double(get(GUI.Filt_WindowSize,'String'));
+            Filt_MyWindowSize = calcDurationInSeconds(get(GUI.Filt_WindowSize,'String'));
             
             if isInputNumeric(GUI.Filt_WindowSize, Filt_MyWindowSize, DATA.Filt_MyWindowSize)
                 
@@ -1476,20 +1493,20 @@ displayEndOfDemoMessage('');
                     set(GUI.Filt_FirstSecond, 'Enable', 'off');
                     DATA.Filt_MyWindowSize = Filt_MyWindowSize;
                     DATA.Filt_FirstSecond2Show = 0;
-                    set(GUI.Filt_FirstSecond, 'String', num2str(DATA.Filt_FirstSecond2Show));                    
+                    set(GUI.Filt_FirstSecond, 'String', calcDuration(DATA.Filt_FirstSecond2Show, 0));                    
                     CalcPlotSignalStat();
                 elseif(Filt_MyWindowSize > DATA.Filt_MaxSignalLength)
-                    set(GUI.Filt_WindowSize,'String', num2str(DATA.Filt_MyWindowSize));
+                    set(GUI.Filt_WindowSize,'String', calcDuration(DATA.Filt_MyWindowSize, 0));
                     errordlg('The filt window size must be less then signal length!', 'Input Error');
                 elseif (Filt_MyWindowSize <= 10)
-                    set(GUI.Filt_WindowSize,'String', num2str(DATA.Filt_MyWindowSize));
+                    set(GUI.Filt_WindowSize,'String', calcDuration(DATA.Filt_MyWindowSize, 0));
                     errordlg('The filt window size must be greater then 10!', 'Input Error');
                 else
                     set(GUI.Filt_RawDataSlider, 'Enable', 'on');
                     set(GUI.Filt_FirstSecond, 'Enable', 'on');
                     DATA.Filt_MyWindowSize = Filt_MyWindowSize;
                     DATA.Filt_FirstSecond2Show = 0;
-                    set(GUI.Filt_FirstSecond, 'String', num2str(DATA.Filt_FirstSecond2Show));
+                    set(GUI.Filt_FirstSecond, 'String', calcDuration(DATA.Filt_FirstSecond2Show, 0));
                     setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.Filt_MyWindowSize, [(double(DATA.Filt_MyWindowSize)/10)/double(DATA.Filt_MaxSignalLength) , double(DATA.Filt_MyWindowSize)/double(DATA.Filt_MaxSignalLength) ]);                    
                     CalcPlotSignalStat();
                 end
@@ -1892,11 +1909,11 @@ displayEndOfDemoMessage('');
 %%
     function FirstSecond_Callback ( ~, ~ )
         if ~isempty(DATA.rri)
-            firstSecond2Show = str2double(get(GUI.FirstSecond, 'String'));
+            firstSecond2Show = calcDurationInSeconds(get(GUI.FirstSecond, 'String'));
             if isInputNumeric(GUI.FirstSecond, firstSecond2Show, DATA.firstSecond2Show)
                 
                 if firstSecond2Show < 0 || firstSecond2Show > DATA.maxSignalLength - DATA.MyWindowSize + 1
-                    set(GUI.FirstSecond, 'String', num2str(DATA.firstSecond2Show));
+                    set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
                     errordlg('The first second value must be grater than 1 and less then signal length!', 'Input Error');
                 else
                     set(GUI.RawDataSlider, 'Value', firstSecond2Show);
@@ -1910,11 +1927,11 @@ displayEndOfDemoMessage('');
 %%
     function Filt_FirstSecond_Callback ( ~, ~ )
         if ~isempty(DATA.rri)
-            Filt_FirstSecond2Show = str2double(get(GUI.Filt_FirstSecond, 'String'));
+            Filt_FirstSecond2Show = calcDurationInSeconds(get(GUI.Filt_FirstSecond, 'String'));
             if isInputNumeric(GUI.Filt_FirstSecond, Filt_FirstSecond2Show, DATA.Filt_FirstSecond2Show)
                 
                 if Filt_FirstSecond2Show < 0 || Filt_FirstSecond2Show > DATA.Filt_MaxSignalLength - DATA.Filt_MyWindowSize + 1
-                    set(GUI.Filt_FirstSecond, 'String', num2str(DATA.Filt_FirstSecond2Show));
+                    set(GUI.Filt_FirstSecond, 'String', calcDuration(DATA.Filt_FirstSecond2Show, 0));
                     errordlg('The filt first second value must be grater than 1 and less then signal length!', 'Input Error');
                 else
                     set(GUI.Filt_RawDataSlider, 'Value', Filt_FirstSecond2Show);
@@ -1925,14 +1942,31 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function signalDuration = calcDuration(signal_length)
+    %function signalDuration = calcDuration(signal_length, need_ms)
+     function signalDuration = calcDuration(varargin)
+        
+        signal_length = varargin{1};
+        if length(varargin) == 2            
+            need_ms = varargin{2};  
+        else
+            need_ms = 1;
+        end
         % Duration of signal
         duration_h  = mod(floor(signal_length / 3600), 60);
         duration_m  = mod(floor(signal_length / 60), 60);
         duration_s  = mod(floor(signal_length), 60);
         duration_ms = floor(mod(signal_length, 1)*1000);
+        if need_ms
+            signalDuration = sprintf('%02d:%02d:%02d.%03d', duration_h, duration_m, duration_s, duration_ms);
+        else
+            signalDuration = sprintf('%02d:%02d:%02d', duration_h, duration_m, duration_s);
+        end
+    end
+%%
+    function signalDurationInSec = calcDurationInSeconds(signal_length_str)
+        duration = sscanf(signal_length_str, '%02d:%02d:%02d.%03d');
         
-        signalDuration = sprintf('%02d:%02d:%02d.%03d', duration_h, duration_m, duration_s, duration_ms);
+        signalDurationInSec = duration(1)*3600 + duration(2)*60 + duration(3);
     end
 %%
 % function bselection(source,event)

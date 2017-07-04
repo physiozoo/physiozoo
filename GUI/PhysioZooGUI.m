@@ -13,6 +13,10 @@ end
 gui_basepath = fileparts(mfilename('fullpath'));
 addpath(genpath([gui_basepath filesep 'lib']));
 
+%rhrv_init();
+%% Load default toolbox parameters
+%rhrv_load_defaults --clear;
+
 %%
 %Descriptions = createDescriptions();
 DATA = createData();
@@ -105,7 +109,7 @@ displayEndOfDemoMessage('');
         
         DATA.SamplingFrequency = 1000;
         
-        DATA.QualityAnnotations_Data = [];        
+        DATA.QualityAnnotations_Data = [];  
         
         DATA.FL_win_indexes = [];
         DATA.filt_FL_win_indexes = [];
@@ -211,9 +215,9 @@ displayEndOfDemoMessage('');
         uimenu( GUI.FileMenu, 'Label', 'Open File', 'Callback', @onOpenFile, 'Accelerator','O');
         GUI.DataQualityMenu = uimenu( GUI.FileMenu, 'Label', 'Open Data Quality File', 'Callback', @onOpenDataQualityFile, 'Accelerator','Q', 'Enable', 'off');
         GUI.LoadConfigFile = uimenu( GUI.FileMenu, 'Label', 'Load Custom Config File', 'Callback', @onLoadCustomConfigFile, 'Accelerator','P', 'Enable', 'off');
-        GUI.SaveAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save Statistics As', 'Callback', @onSaveResultsAsFile, 'Accelerator','S', 'Enable', 'off');
-        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save Figures As', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');
-        GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Parameters File', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');        
+        GUI.SaveAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save HRV Measures as', 'Callback', @onSaveResultsAsFile, 'Accelerator','S', 'Enable', 'off');
+        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save Figures as', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');
+        GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Config File', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');        
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @onExit, 'Separator', 'on', 'Accelerator', 'E');
         
         % + Help menu
@@ -262,7 +266,7 @@ displayEndOfDemoMessage('');
         set( GUI.RawDataControls_Box, 'Heights', [-1, 22, 22]  );
         %--------------------------
                               
-        field_size = [155 -10 -5 155 -10 -5 -70]; %[155 -5 -5 155 -5 -5 -70];        
+        field_size = [170 -5 -5 170 -5 -5 -70]; %[155 -5 -5 155 -5 -5 -70];        
         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Start Window:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.FirstSecond = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSliderBox, 'Callback', @FirstSecond_Callback, 'FontSize', BigFontSize, 'Enable', 'off');
         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
@@ -668,7 +672,7 @@ displayEndOfDemoMessage('');
         if (DATA.PlotHR == 0)
             data =  signal_data;
             filt_data =  filt_signal_data;
-            yString = 'RR [sec]';
+            yString = 'RR (sec)';
             MinYLimit = min(DATA.RRMinYLimit, DATA.RRMaxYLimit);
             MaxYLimit = max(DATA.RRMinYLimit, DATA.RRMaxYLimit);
             
@@ -698,7 +702,7 @@ displayEndOfDemoMessage('');
             
             set(ha, 'XLim', [signal_time(1) signal_time(end)]);
             set(ha, 'YLim', [MinYLimit MaxYLimit]);           
-            xlabel(ha, 'Time [sec]');
+            xlabel(ha, 'Time (sec)');
             ylabel(ha, yString);
         else
             % -- Code to run in MATLAB R2014b and later here --
@@ -709,7 +713,7 @@ displayEndOfDemoMessage('');
             set(ha, 'XLim', seconds([signal_time(1) signal_time(end)]));
             set(ha, 'YLim', [MinYLimit MaxYLimit]);
             xtickformat(ha, 'hh:mm:ss')
-            xlabel(ha, 'Time [h:min:sec]');
+            xlabel(ha, 'Time (h:min:sec)');
             ylabel(ha, yString);
         end     
         plotDataQuality();
@@ -733,20 +737,37 @@ displayEndOfDemoMessage('');
                 end
                 
                 if ~isfield(GUI, 'GreenLineHandle') || ~isvalid(GUI.GreenLineHandle)
-                    GUI.GreenLineHandle = line(ha, seconds([signal_time(1) signal_time(end)]), [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3);
+                    if verLessThan('matlab','9.1')
+                        GUI.GreenLineHandle = line(ha, [signal_time(1) signal_time(end)], [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3);
+                    else
+                        GUI.GreenLineHandle = line(ha, seconds([signal_time(1) signal_time(end)]), [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3);                        
+                    end
                 else
-                    GUI.GreenLineHandle.XData = seconds([signal_time(1) signal_time(end)]);
+                    if verLessThan('matlab','9.1')
+                        GUI.GreenLineHandle.XData = [signal_time(1) signal_time(end)];
+                    else
+                        GUI.GreenLineHandle.XData = seconds([signal_time(1) signal_time(end)]);  
+                        GUI.GreenLineHandle.Color = DATA.MyGreen;
+                    end
                     GUI.GreenLineHandle.YData = [MaxYLimit MaxYLimit];
                 end
                 
                 if ~(DATA.QualityAnnotations_Data(1, 1) + DATA.QualityAnnotations_Data(1,2))==0
                     
                     if ~isfield(GUI, 'RedLineHandle') || ~isvalid(GUI.RedLineHandle(1))
-                        GUI.RedLineHandle = line(ha, seconds((DATA.QualityAnnotations_Data-time_data(1))'), [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3);
+                        if verLessThan('matlab','9.1')
+                            GUI.RedLineHandle = line(ha, (DATA.QualityAnnotations_Data-time_data(1))', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3);
+                        else
+                            GUI.RedLineHandle = line(ha, seconds((DATA.QualityAnnotations_Data-time_data(1))'), [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3);                            
+                        end
                     else
                         for i = 1 : intervals_num
                             %GUI.RedLineHandle(i).XData = seconds((DATA.QualityAnnotations_Data(i, :))');
-                            GUI.RedLineHandle(i).XData = seconds((DATA.QualityAnnotations_Data(i, :)-time_data(1))');
+                            if verLessThan('matlab','9.1')
+                                GUI.RedLineHandle(i).XData = (DATA.QualityAnnotations_Data(i, :)-time_data(1))';
+                            else
+                                GUI.RedLineHandle(i).XData = seconds((DATA.QualityAnnotations_Data(i, :)-time_data(1))');                                
+                            end
                             GUI.RedLineHandle(i).YData = [MaxYLimit MaxYLimit]';
                         end
                     end
@@ -827,7 +848,13 @@ displayEndOfDemoMessage('');
             QualityAnnotations_field_names = fieldnames(QualityAnnotations);
             if ~isempty(QualityAnnotations_field_names)
                 
-                DATA.QualityAnnotations_Data = QualityAnnotations.(QualityAnnotations_field_names{1});                
+                DATA.QualityAnnotations_Data = QualityAnnotations.(QualityAnnotations_field_names{1});    
+                if isfield(GUI, 'GreenLineHandle')
+                    GUI = rmfield(GUI, 'GreenLineHandle');                    
+                end
+                if isfield(GUI, 'RedLineHandle')
+                    GUI = rmfield(GUI, 'RedLineHandle');
+                end
                 plotDataQuality();
                 
                 dataQualityDirectory = PathName;

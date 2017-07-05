@@ -1059,7 +1059,11 @@ displayEndOfDemoMessage('');
 
             set(GUI.DataQualityMenu, 'Enable', 'on');            
             if isfield(GUI, 'RawDataAxes')
-                TitleName = [strrep(PathName, '\', '\\') strrep(QRS_FileName, '_', '\_')] ;
+                PathName = strrep(PathName, '\', '\\');
+                PathName = strrep(PathName, '_', '\_');
+                QRS_FileName = strrep(QRS_FileName, '_', '\_');           
+                
+                TitleName = [PathName QRS_FileName] ;
                 title(GUI.RawDataAxes, TitleName, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize);
             end
             set(GUI.SaveAsMenu, 'Enable', 'on');

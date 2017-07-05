@@ -923,6 +923,8 @@ displayEndOfDemoMessage('');
             'Open QRS File', [dataDirectory filesep]);
         
         if ~isequal(QRS_FileName, 0)
+            waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Working on it...');
+            
             clearData();
             clear_statistics_plots();
             clearStatTables();
@@ -996,10 +998,10 @@ displayEndOfDemoMessage('');
 %                 end
                 try
                     %set(GUI.Window, 'Pointer', 'watch');
-                    h = waitbar(10,'Please wait...');
+                    
                     qrs_data = rdann( [PathName DATA.DataFileName], ExtensionFileName); % atr qrs
                     %set(GUI.Window, 'Pointer', 'arrow');
-                    close(h);
+                    
                     if ~isempty(qrs_data)                    
                         DATA.rri = diff(qrs_data)/DATA.SamplingFrequency;
                         DATA.trr = qrs_data(1:end-1)/DATA.SamplingFrequency;
@@ -1053,7 +1055,9 @@ displayEndOfDemoMessage('');
             
             DATA.mammal_index = get(GUI.Mammal_popupmenu,'Value');
             rhrv_load_defaults(DATA.mammals{ DATA.mammal_index } );
+            waitbar(2 / 2, waitbar_handle, 'Create Config Parameters Windows');
             createConfigParametersInterface();
+            close(waitbar_handle);
             
             reset_plot();            
 
@@ -1342,6 +1346,7 @@ displayEndOfDemoMessage('');
             setSliderProperties(GUI.RawDataSlider, DATA.maxSignalLength, 0, [0.01 , 0.1]);
             
             try
+                %waitbar(3 / 6, DATA.waitbar_handle, 'Filtering the signal');
                 % Only for calc min and max bounderies for plotting
                 FiltSignal('filter_quotient', false, 'filter_lowpass', true, 'filter_range', false);
                 
@@ -1657,15 +1662,26 @@ displayEndOfDemoMessage('');
     function CalcPlotSignalStat()
         GetPlotSignal();        
         try
+            
+            waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+            
+            waitbar(1 / 3, waitbar_handle, 'Calculating Time Measures');
             calcTimeStatistics();
             plot_time_statistics_results();
             
+            waitbar(2 / 3, waitbar_handle, 'Calculating Frequency Measures');
             calcFrequencyStatistics();
             plot_frequency_statistics_results();
             
+            waitbar(3 / 3, waitbar_handle, 'Calculating Nolinear Measures');
             calcNolinearStatistics();
             plot_nonlinear_statistics_results();
+            close(waitbar_handle);
+            
         catch e
+%             if ~isempty(DATA.waitbar_handle)
+%                 close(DATA.waitbar_handle);
+%             end
             if strcmp(DATA.flag, 'hrv_time') || strcmp(DATA.flag, 'hrv_fragmentation')
                 if strcmp(DATA.flag, 'hrv_time')
                     clear_time_data();

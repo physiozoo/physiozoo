@@ -1184,17 +1184,7 @@ displayEndOfDemoMessage('');
                         
             GUI.FrequencyParametersTable.Data = [GUI.FrequencyParametersTableRowName DATA.fd_lombData DATA.fd_welchData DATA.fd_arData];
             
-            if DATA.default_method_index == 1 % Lomb
-                GUI.FrequencyParametersTableMethodRowName = DATA.fd_LombRowsNames;
-                GUI.FrequencyParametersTableData = [DATA.fd_lombDescriptions DATA.fd_lombData];
-            elseif DATA.default_method_index == 3 % AR
-                GUI.FrequencyParametersTableMethodRowName = DATA.fd_ArRowsNames;
-                GUI.FrequencyParametersTableData = [DATA.fd_ArDescriptions DATA.fd_arData];
-            elseif DATA.default_method_index == 2 % Welch
-                GUI.FrequencyParametersTableMethodRowName = DATA.fd_WelchRowsNames;
-                GUI.FrequencyParametersTableData = [DATA.fd_WelchDescriptions DATA.fd_welchData];
-            end
-            
+            setFrequencyParametersTableMethodRowName();
         catch e
             errordlg(['hrv_freq error: ' e.message], 'Input Error');
             DATA.flag = 'hrv_freq';
@@ -1444,11 +1434,11 @@ displayEndOfDemoMessage('');
 %%
     function WindowSize_Callback(~, ~)
         
-        if ~isempty(DATA.rri)
-            %MyWindowSize = str2double(get(GUI.WindowSize,'String'));
-            MyWindowSize = calcDurationInSeconds(get(GUI.WindowSize,'String'));
+        if ~isempty(DATA.rri)            
+            MyWindowSize = get(GUI.WindowSize,'String');
+            [MyWindowSize, isInputNumeric]  = calcDurationInSeconds(GUI.WindowSize, MyWindowSize, DATA.MyWindowSize);
             
-            if isInputNumeric(GUI.WindowSize, MyWindowSize, DATA.MyWindowSize)
+            if isInputNumeric  
                 if(MyWindowSize == DATA.maxSignalLength)
                     set(GUI.RawDataSlider, 'Enable', 'off');
                     set(GUI.FirstSecond, 'Enable', 'off');
@@ -1464,7 +1454,7 @@ displayEndOfDemoMessage('');
                     errordlg('The window size must be less then signal length!', 'Input Error');
                 elseif (MyWindowSize <= 1)
                     set(GUI.WindowSize,'String', calcDuration(DATA.MyWindowSize, 0));
-                    errordlg('The window size must be greater then 2!', 'Input Error');
+                    errordlg('The window size must be greater then 2 sec!', 'Input Error');
                 else
                     set(GUI.RawDataSlider, 'Enable', 'on');
                     set(GUI.FirstSecond, 'Enable', 'on');
@@ -1484,10 +1474,10 @@ displayEndOfDemoMessage('');
 %%
     function Filt_WindowSize_Callback(~, ~)
         if ~isempty(DATA.rri)
-            Filt_MyWindowSize = calcDurationInSeconds(get(GUI.Filt_WindowSize,'String'));
+            Filt_MyWindowSize = get(GUI.Filt_WindowSize,'String');
+            [Filt_MyWindowSize, isInputNumeric]  = calcDurationInSeconds(GUI.Filt_WindowSize, Filt_MyWindowSize, DATA.Filt_MyWindowSize);
             
-            if isInputNumeric(GUI.Filt_WindowSize, Filt_MyWindowSize, DATA.Filt_MyWindowSize)
-                
+            if isInputNumeric                
                 if(Filt_MyWindowSize == DATA.Filt_MaxSignalLength)
                     set(GUI.Filt_RawDataSlider, 'Enable', 'off');
                     set(GUI.Filt_FirstSecond, 'Enable', 'off');
@@ -1500,7 +1490,7 @@ displayEndOfDemoMessage('');
                     errordlg('The filt window size must be less then signal length!', 'Input Error');
                 elseif (Filt_MyWindowSize <= 10)
                     set(GUI.Filt_WindowSize,'String', calcDuration(DATA.Filt_MyWindowSize, 0));
-                    errordlg('The filt window size must be greater then 10!', 'Input Error');
+                    errordlg('The filt window size must be greater then 10 sec!', 'Input Error');
                 else
                     set(GUI.Filt_RawDataSlider, 'Enable', 'on');
                     set(GUI.Filt_FirstSecond, 'Enable', 'on');
@@ -1824,6 +1814,11 @@ displayEndOfDemoMessage('');
 %%
     function DefaultMethod_popupmenu_Callback( ~, ~ )
         DATA.default_method_index = get(GUI.DefaultMethod_popupmenu, 'Value');
+        setFrequencyParametersTableMethodRowName();
+        updateStatisticsTable();
+    end
+%%
+    function setFrequencyParametersTableMethodRowName()
         if DATA.default_method_index == 1 % Lomb
             GUI.FrequencyParametersTableMethodRowName = DATA.fd_LombRowsNames;
             GUI.FrequencyParametersTableData = [DATA.fd_lombDescriptions DATA.fd_lombData];
@@ -1834,7 +1829,6 @@ displayEndOfDemoMessage('');
             GUI.FrequencyParametersTableMethodRowName = DATA.fd_WelchRowsNames;
             GUI.FrequencyParametersTableData = [DATA.fd_WelchDescriptions DATA.fd_welchData];
         end
-        updateStatisticsTable();
     end
 %%
     function clear_time_data()
@@ -1909,9 +1903,10 @@ displayEndOfDemoMessage('');
 %%
     function FirstSecond_Callback ( ~, ~ )
         if ~isempty(DATA.rri)
-            firstSecond2Show = calcDurationInSeconds(get(GUI.FirstSecond, 'String'));
-            if isInputNumeric(GUI.FirstSecond, firstSecond2Show, DATA.firstSecond2Show)
-                
+            %firstSecond2Show = calcDurationInSeconds(get(GUI.FirstSecond, 'String'));
+            screen_value = get(GUI.FirstSecond, 'String');
+            [firstSecond2Show, isInputNumeric]  = calcDurationInSeconds(GUI.FirstSecond, screen_value, DATA.firstSecond2Show);            
+            if isInputNumeric                
                 if firstSecond2Show < 0 || firstSecond2Show > DATA.maxSignalLength - DATA.MyWindowSize + 1
                     set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
                     errordlg('The first second value must be grater than 1 and less then signal length!', 'Input Error');
@@ -1927,9 +1922,9 @@ displayEndOfDemoMessage('');
 %%
     function Filt_FirstSecond_Callback ( ~, ~ )
         if ~isempty(DATA.rri)
-            Filt_FirstSecond2Show = calcDurationInSeconds(get(GUI.Filt_FirstSecond, 'String'));
-            if isInputNumeric(GUI.Filt_FirstSecond, Filt_FirstSecond2Show, DATA.Filt_FirstSecond2Show)
-                
+            Filt_FirstSecond2Show = get(GUI.Filt_FirstSecond, 'String');
+            [Filt_FirstSecond2Show, isInputNumeric]  = calcDurationInSeconds(GUI.Filt_FirstSecond, Filt_FirstSecond2Show, DATA.Filt_FirstSecond2Show);
+            if isInputNumeric                
                 if Filt_FirstSecond2Show < 0 || Filt_FirstSecond2Show > DATA.Filt_MaxSignalLength - DATA.Filt_MyWindowSize + 1
                     set(GUI.Filt_FirstSecond, 'String', calcDuration(DATA.Filt_FirstSecond2Show, 0));
                     errordlg('The filt first second value must be grater than 1 and less then signal length!', 'Input Error');
@@ -1963,10 +1958,22 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function signalDurationInSec = calcDurationInSeconds(signal_length_str)
-        duration = sscanf(signal_length_str, '%02d:%02d:%02d.%03d');
+    function [signalDurationInSec, isInputNumeric]  = calcDurationInSeconds(GUIFiled, NewFieldValue, OldFieldValue)
+        duration = sscanf(NewFieldValue, '%d:%d:%d');
         
-        signalDurationInSec = duration(1)*3600 + duration(2)*60 + duration(3);
+        isInputNumeric = true;
+        if isempty(duration) || duration(1) < 0 || length(duration) == 2 || length(duration) > 3
+            set(GUIFiled,'String', calcDuration(OldFieldValue, 0));
+            warndlg('Please, check your input');
+            isInputNumeric = false;
+            signalDurationInSec = [];
+        elseif length(duration) == 1
+            signalDuration = calcDuration(duration(1), 0);
+            set(GUIFiled,'String', signalDuration);
+            signalDurationInSec = duration(1);
+        else
+            signalDurationInSec = duration(1)*3600 + duration(2)*60 + duration(3);
+        end        
     end
 %%
 % function bselection(source,event)
@@ -2150,29 +2157,34 @@ displayEndOfDemoMessage('');
                 
                 %fprintf(hrv_fileID, '\r\n*HRV Time\r\n');
                 param_number = length(DATA.timeData);
-                for i = 1 : param_number
-                    fprintf(hrv_fileID, '%s, %02.2f\r\n', DATA.timeRowsNames{i, 1}, DATA.timeData{i, 1});
+                for i = 1 : param_number                    
+                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.timeRowsNames{i, 1}, DATA.timeData{i, 1});
                 end
+                
+                param_number = length(DATA.fragData);
+                for i = 1 : param_number                    
+                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.fragRowsNames{i, 1}, DATA.fragData{i, 1});
+                end               
                 
                 %fprintf(hrv_fileID, '\r\n\n*HRV Frequency\r\n');
                 param_number = length(DATA.fd_lombData);
                 %fprintf(hrv_fileID, '\r\n\n^Lomb Method\r\n');
                 for i = 1 : param_number
-                    fprintf(hrv_fileID, '%s, %02.2f\r\n', DATA.fd_LombRowsNames{i, 1}, DATA.fd_lombData{i, 1});
+                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.fd_LombRowsNames{i, 1}, DATA.fd_lombData{i, 1});
                 end
                 %fprintf(hrv_fileID, '\r\n\n^Ar Method\r\n');
                 for i = 1 : param_number
-                    fprintf(hrv_fileID, '%s, %02.2f\r\n', DATA.fd_ArRowsNames{i, 1}, DATA.fd_arData{i, 1});
+                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.fd_ArRowsNames{i, 1}, DATA.fd_arData{i, 1});
                 end
                 %fprintf(hrv_fileID, '\r\n\n^Welch Method\r\n');
                 for i = 1 : param_number
-                    fprintf(hrv_fileID, '%s, %02.2f\r\n', DATA.fd_WelchRowsNames{i, 1}, DATA.fd_welchData{i, 1});
+                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.fd_WelchRowsNames{i, 1}, DATA.fd_welchData{i, 1});
                 end
                 
                 %fprintf(hrv_fileID, '\r\n\n*HRV Non Linear\r\n');
                 param_number = length(DATA.nonlinData);
                 for i = 1 : param_number
-                    fprintf(hrv_fileID, '%s, %02.2f\r\n', DATA.nonlinRowsNames{i, 1}, DATA.nonlinData{i, 1});
+                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.nonlinRowsNames{i, 1}, DATA.nonlinData{i, 1});
                 end
                 fclose(hrv_fileID);
             else

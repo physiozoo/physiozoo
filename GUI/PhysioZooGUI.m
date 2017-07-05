@@ -995,7 +995,11 @@ displayEndOfDemoMessage('');
 %                     fclose(fileID);
 %                 end
                 try
+                    %set(GUI.Window, 'Pointer', 'watch');
+                    h = waitbar(10,'Please wait...');
                     qrs_data = rdann( [PathName DATA.DataFileName], ExtensionFileName); % atr qrs
+                    %set(GUI.Window, 'Pointer', 'arrow');
+                    close(h);
                     if ~isempty(qrs_data)                    
                         DATA.rri = diff(qrs_data)/DATA.SamplingFrequency;
                         DATA.trr = qrs_data(1:end-1)/DATA.SamplingFrequency;
@@ -1277,7 +1281,7 @@ displayEndOfDemoMessage('');
         clear_frequency_statistics_results();
         
         if ~isempty(DATA.pd_freq)
-            plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.pd_freq, 'detailed_legend', false);            
+            plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.pd_freq, 'detailed_legend', false, 'yscale', 'linear');            
             plot_hrv_freq_beta(GUI.FrequencyAxes2, DATA.pd_freq);         
         end
         box(GUI.FrequencyAxes1, 'off' );
@@ -2043,7 +2047,7 @@ displayEndOfDemoMessage('');
                 if ~isempty(DATA.pd_freq)
                     af = figure;
                     set(af, 'Visible', 'off')
-                    plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false);
+                    plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', 'linear');
                     fig_print( af, [results_folder_name, filesep, filename, '_Spectral_Density'], 'output_format', ext);
                     close(af);
                     
@@ -2084,7 +2088,7 @@ displayEndOfDemoMessage('');
                 if ~isempty(DATA.pd_freq)
                     af = figure; 
                     set(af, 'Name', [filename, '_Spectral_Density'], 'NumberTitle', 'off');
-                    plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false);
+                    plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', 'linear');
                     savefig(af, [results_folder_name, filesep, filename, '_Spectral_Density'], 'compact');  
                     close(af);
                     

@@ -1,6 +1,6 @@
 function PhysioZooGUI()
 DEBUG = 0;
-
+persistent ExportFiguresDirectory;
 %-------------- remove -----------------
 if DEBUG
     addpath('../rhrv');
@@ -76,7 +76,10 @@ displayEndOfDemoMessage('');
         DATA.default_method_index = 1;              
         
         DATA.LowPassFilteringFields = [];
-        DATA.PoincareFilteringFields = [];                        
+        DATA.PoincareFilteringFields = [];      
+        
+        DATA.FiguresFormats = {'fig', 'bmp', 'eps', 'emf', 'jpg', 'pcx', 'pbm', 'pdf', 'pgm', 'png', 'ppm', 'svg', 'tif', 'tiff'};
+        DATA.formats_index = 1;             
     end % createData
 %-------------------------------------------------------------------------%
 %%
@@ -153,6 +156,8 @@ displayEndOfDemoMessage('');
         DATA.mammal = [];   
         
         DATA.flag = '';
+        
+        DATA.formats_index = 1;             
     end
 %%
     function clean_gui()
@@ -173,6 +178,10 @@ displayEndOfDemoMessage('');
         set(GUI.Filt_FirstSecond, 'String', ''); 
         
         title(GUI.RawDataAxes, '');
+        
+        set(GUI.RecordName_text, 'String', '');
+        set(GUI.RecordLength_text, 'String', '');
+        set(GUI.DataQuality_text, 'String', '');
     end
 
 %% Open the window
@@ -216,7 +225,7 @@ displayEndOfDemoMessage('');
         GUI.DataQualityMenu = uimenu( GUI.FileMenu, 'Label', 'Open Data Quality File', 'Callback', @onOpenDataQualityFile, 'Accelerator','Q', 'Enable', 'off');
         GUI.LoadConfigFile = uimenu( GUI.FileMenu, 'Label', 'Load Custom Config File', 'Callback', @onLoadCustomConfigFile, 'Accelerator','P', 'Enable', 'off');
         GUI.SaveAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save HRV Measures as', 'Callback', @onSaveResultsAsFile, 'Accelerator','S', 'Enable', 'off');
-        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save Figures as', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');
+        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Export Figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');
         GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Config File', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');        
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @onExit, 'Separator', 'on', 'Accelerator', 'E');
         
@@ -346,6 +355,25 @@ displayEndOfDemoMessage('');
 %------------------------------------------------------------------------------        
         
         field_size = [-37, -45, -15];
+        
+        GUI.RecordNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
+        uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'String', 'Record file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.RecordName_text = uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');        
+        uix.Empty( 'Parent', GUI.RecordNameBox );
+        set( GUI.RecordNameBox, 'Widths', field_size  );
+        
+        GUI.DataQualityBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
+        uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'String', 'Data quality file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.DataQuality_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');        
+        uix.Empty( 'Parent', GUI.DataQualityBox );
+        set( GUI.DataQualityBox, 'Widths', field_size  );
+        
+        GUI.DataLengthBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
+        uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'String', 'Record length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.RecordLength_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');        
+        uix.Empty( 'Parent', GUI.DataLengthBox );
+        set( GUI.DataLengthBox, 'Widths', field_size  );
+        
         GUI.MammalBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.MammalBox, 'String', 'Mammal', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Mammal_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.MammalBox, 'Callback', @Mammal_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', DATA.GUI_mammals);
@@ -384,7 +412,7 @@ displayEndOfDemoMessage('');
         set( GUI.YLimitBox, 'Widths', [-37, -20, -5, -19 -16]  ); % [-37, -15, -5, -15] [-37, -20, -5, -19 -15]
         
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 24 -40] );                
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 24 -20] );                
         
         %---------------------------
         tables_field_size = [-85 -15];
@@ -436,7 +464,7 @@ displayEndOfDemoMessage('');
         GUI.Analysis_TabPanel.TabWidth = 90;
         GUI.Analysis_TabPanel.FontSize = BigFontSize;
         
-        GUI.Options_TabPanel.TabTitles = {'Options', 'Advanced'};
+        GUI.Options_TabPanel.TabTitles = {'Records', 'Options'};
         GUI.Options_TabPanel.TabWidth = 90;
         GUI.Options_TabPanel.FontSize = BigFontSize;                
     end % createInterface
@@ -863,6 +891,8 @@ displayEndOfDemoMessage('');
             QualityAnnotations_field_names = fieldnames(QualityAnnotations);
             if ~isempty(QualityAnnotations_field_names)
                 
+                set(GUI.DataQuality_text, 'String', DataQuality_FileName);
+                
                 DATA.QualityAnnotations_Data = QualityAnnotations.(QualityAnnotations_field_names{1});    
                 if isfield(GUI, 'GreenLineHandle')
                     GUI = rmfield(GUI, 'GreenLineHandle');                    
@@ -1069,6 +1099,8 @@ displayEndOfDemoMessage('');
                 
                 TitleName = [PathName QRS_FileName] ;
                 title(GUI.RawDataAxes, TitleName, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize);
+                
+                set(GUI.RecordName_text, 'String', QRS_FileName);                
             end
             set(GUI.SaveAsMenu, 'Enable', 'on');
             set(GUI.SaveFiguresAsMenu, 'Enable', 'on');  
@@ -1405,8 +1437,9 @@ displayEndOfDemoMessage('');
                 set(GUI.MinYLimit_Edit, 'String', num2str(DATA.RRMinYLimit));
                 set(GUI.MaxYLimit_Edit, 'String', num2str(DATA.RRMaxYLimit));
                 set(GUI.RawDataSlider, 'Enable', 'off');
-                set(GUI.WindowSize, 'String', calcDuration(double(DATA.MyWindowSize), 0));
-                %set(GUI.WindowSize, 'String', num2str(DATA.MyWindowSize));
+                ws = calcDuration(double(DATA.MyWindowSize), 0);
+                set(GUI.WindowSize, 'String', ws);
+                set(GUI.RecordLength_text, 'String', ws);                
                 set(GUI.RR_or_HR_plot_button, 'Enable', 'on');
                 set(GUI.RR_or_HR_plot_button, 'Value', 0);
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot HR');
@@ -1419,7 +1452,7 @@ displayEndOfDemoMessage('');
                     set(GUI.Filt_FirstSecond, 'Enable', 'on');
                     set(GUI.Filt_RawDataSlider, 'Enable', 'on');
                 end                
-            catch e %ME
+            catch e 
                 errordlg(['Reset Plot: ' e.message], 'Input Error');
             end
         end
@@ -1926,8 +1959,7 @@ displayEndOfDemoMessage('');
 
 %%
     function FirstSecond_Callback ( ~, ~ )
-        if ~isempty(DATA.rri)
-            %firstSecond2Show = calcDurationInSeconds(get(GUI.FirstSecond, 'String'));
+        if ~isempty(DATA.rri)            
             screen_value = get(GUI.FirstSecond, 'String');
             [firstSecond2Show, isInputNumeric]  = calcDurationInSeconds(GUI.FirstSecond, screen_value, DATA.firstSecond2Show);            
             if isInputNumeric                
@@ -1960,8 +1992,7 @@ displayEndOfDemoMessage('');
             end
         end
     end
-%%
-    %function signalDuration = calcDuration(signal_length, need_ms)
+%%    
      function signalDuration = calcDuration(varargin)
         
         signal_length = varargin{1};
@@ -2000,144 +2031,232 @@ displayEndOfDemoMessage('');
         end        
     end
 %%
-% function bselection(source,event)
-%        display(['Previous: ' event.OldValue.String]);
-%        display(['Current: ' event.NewValue.String]);
-%        display('------------------');
-% end
-
+    function cancel_button_Callback( ~, ~ )
+        delete( GUI.SaveFiguresWindow );
+    end
 %%
-    function onSaveFiguresAsFile( ~, ~ )
+    function dir_button_Callback( ~, ~ )        
+        if isempty(ExportFiguresDirectory)
+            ExportFiguresDirectory = pwd;
+        end
+        [fig_name, fig_path, FilterIndex] = uiputfile({'*.fig','MATLAB Figure (*.fig)';...
+            '*.bmp','Bitmap file (*.bmp)';...
+            '*.eps','EPS file (*.eps)';...
+            '*.emf','Enhanced metafile (*.emf)';...
+            '*.jpg','JPEG image (*.jpg)';...
+            '*.pcx','Paintbrush 24-bit file (*.pcx)';...
+            '*.pbm','Portable Bitmap file (*.pbm)';...
+            '*.pdf','Portable Document Format (*.pdf)';...
+            '*.pgm','Portable Graymap file (*.pgm)';...
+            '*.png','Portable Network Grafics file (*.png)';...
+            '*.ppm','Portable Pixmap file (*.ppm)';...
+            '*.svg','Scalable Vector Graphics file (*.svg)';...
+            '*.tif','TIFF image (*.tif)';...
+            '*.tif','TIFF no compression image (*.tif)'},'Choose Figures file Name', [ExportFiguresDirectory, filesep, DATA.DataFileName ]);
         
-         persistent figDirectory;
-        
-        if isempty(figDirectory)           
-            if DEBUG
-                figDirectory = 'D:\PhysioZoo\db\Results';
-            else
-                figDirectory = pwd;
+        if ~isequal(fig_path, 0)  
+            ExportFiguresDirectory = fig_path;
+            GUI.path_edit.String = [fig_path, fig_name];            
+            
+            [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
+            
+            if ~isempty(fig_path) && ~isempty(fig_name)
+                set(GUI.Formats_popupmenu, 'Value', FilterIndex);
             end
         end
+    end
+%%
+    function onSaveFiguresAsFile( ~, ~ )
+                
+        if isempty(ExportFiguresDirectory)
+            ExportFiguresDirectory = pwd;
+        end
         
-        [filename, results_folder_name, FilterIndex] = uiputfile({'*.fig','MATLAB Figure (*.fig)';...
-                                                                  '*.bmp','Bitmap file (*.bmp)';...                                                                  
-                                                                  '*.eps','EPS file (*.eps)';...
-                                                                  '*.emf','Enhanced metafile (*.emf)';...
-                                                                  '*.jpg','JPEG image (*.jpg)';...
-                                                                  '*.pcx','Paintbrush 24-bit file (*.pcx)';...
-                                                                  '*.pbm','Portable Bitmap file (*.pbm)';...
-                                                                  '*.pdf','Portable Document Format (*.pdf)';...
-                                                                  '*.pgm','Portable Graymap file (*.pgm)';...
-                                                                  '*.png','Portable Network Grafics file (*.png)';...                                                                  
-                                                                  '*.ppm','Portable Pixmap file (*.ppm)';...
-                                                                  '*.svg','Scalable Vector Graphics file (*.svg)';...
-                                                                  '*.tif','TIFF image (*.tif)';...
-                                                                  '*.tif','TIFF no compression image (*.tif)'},'Choose Figures file Name', [figDirectory, filesep, DATA.DataFileName ]);
+        FiguresNames = {'NN_Interval_Distribution'; 'Spectral_Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare_Ellipse'};        
         
-        if ~isequal(results_folder_name, 0)
+        DATA.export_figures = [1 1 1 1 1 1];
+        
+        GUI.SaveFiguresWindow = figure( ...
+            'Name', 'Export Figures Options', ...
+            'NumberTitle', 'off', ...
+            'MenuBar', 'none', ...
+            'Toolbar', 'none', ...
+            'HandleVisibility', 'off', ...
+            'Position', [700, 300, 400, 400]);
+        
+        mainSaveFigurestLayout = uix.VBox('Parent',GUI.SaveFiguresWindow, 'Spacing', 3);
+        figures_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Select figures to save:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );  
+        figures_box = uix.VButtonBox('Parent', figures_panel, 'Spacing', 2, 'HorizontalAlignment', 'left', 'ButtonSize', [200 25]);
+        
+        for i = 1 : 6
+            uicontrol( 'Style', 'checkbox', 'Parent', figures_box, 'Callback', {@figures_checkbox_Callback, i}, 'FontSize', DATA.BigFontSize, 'Tag', ['Fig' num2str(i)], 'String', FiguresNames{i}, 'FontName', 'Calibri', 'Value', 1);            
+        end                
+        
+        main_path_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures path:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );  
+        main_path_box = uix.VBox('Parent', main_path_panel, 'Spacing', 3);                
+        path_box = uix.HBox('Parent', main_path_box, 'Spacing', 3);
+        GUI.path_edit = uicontrol( 'Style', 'edit', 'Parent', path_box, 'String', [ExportFiguresDirectory, filesep, DATA.DataFileName '.fig'], 'FontSize', DATA.BigFontSize, 'FontName', 'Calibri', 'HorizontalAlignment', 'left');
+        uix.Empty( 'Parent', path_box );
+        set( path_box, 'Widths', [-80 -20 ] );
+        dir_button_Box = uix.HButtonBox('Parent', main_path_box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'ButtonSize', [100 25]);                
+        uicontrol( 'Style', 'ToggleButton', 'Parent', dir_button_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Change Path', 'FontName', 'Calibri');
+        set( main_path_box, 'Heights', [-30 -70] ); 
+        
+        main_formats_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures format:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );          
+        format_box = uix.HBox('Parent', main_formats_panel, 'Spacing', 3);   
+        GUI.Formats_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', format_box, 'Callback', @Formats_popupmenu_Callback, 'FontSize', DATA.BigFontSize, 'FontName', 'Calibri');
+        GUI.Formats_popupmenu.String = DATA.FiguresFormats;  
+        uix.Empty( 'Parent', format_box );
+        set( format_box, 'Widths', [-20 -80 ] );
+                
+        CommandsButtons_Box = uix.HButtonBox('Parent', mainSaveFigurestLayout, 'Spacing', 3, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', 'ButtonSize', [100 25]);                
+        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @save_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Export Figures', 'FontName', 'Calibri');
+        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @cancel_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
+        
+        set( mainSaveFigurestLayout, 'Heights', [-70 -45 -25 -20] );               
+    end
+%%
+    function figures_checkbox_Callback( src, ~, param_name )        
+        DATA.export_figures(param_name) = get(src, 'Value');        
+    end        
+%%
+    function Formats_popupmenu_Callback( ~, ~ )
+        index_selected = get(GUI.Formats_popupmenu, 'Value');
+        DATA.formats_index = index_selected;
+                
+        [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
+        
+        if ~isempty(fig_path) && ~isempty(fig_name)
+            GUI.path_edit.String = [fig_path, filesep, fig_name '.' DATA.FiguresFormats{index_selected}];
+        end
+    end
+%%
+    function save_button_Callback( ~, ~ )
+        
+        [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
+        
+        if ~isempty(fig_path) && ~isempty(fig_name) && ~isempty(fig_ext)
             
-            figDirectory = results_folder_name;
             
-            [~, filename, ext] = fileparts(filename);
-            ext = ext(2:end);
+            ExportFiguresDirectory = fig_path;
             
-            if FilterIndex == 6
+            ext = fig_ext(2:end);
+            
+            if strcmp(ext, 'pcx') 
                 ext = 'pcx24b';
-            elseif FilterIndex == 4
+            elseif strcmp(ext, 'emf')
                 ext = 'meta';
-            elseif FilterIndex == 5
+            elseif strcmp(ext, 'jpg')
                 ext = 'jpeg';
-            elseif FilterIndex == 13
+            elseif strcmp(ext, 'tif')
                 ext = 'tiff';
-            elseif FilterIndex == 14
+            elseif strcmp(ext, 'tiff')
                 ext = 'tiffn';
             end
             
-            if FilterIndex > 1
-                
-                if ~isempty(DATA.pd_time)
+            export_path_name = [fig_path filesep fig_name];
+            
+            if ~strcmp(ext, 'fig')
+                                
+                if ~isempty(DATA.pd_time) && DATA.export_figures(1)
                     af = figure;
-                    set(af, 'Visible', 'off')
-                    set(af, 'Name', [filename, '_NN_Interval_Distribution'], 'NumberTitle', 'off');
+                    set(af, 'Visible', 'off')                    
                     plot_hrv_time_hist(gca, DATA.pd_time, 'clear', true);                                        
-                    fig_print( af, [results_folder_name, filesep, filename, '_NN_Interval_Distribution'], 'output_format', ext);
+                    fig_print( af, [export_path_name, '_NN_Interval_Distribution'], 'output_format', ext);
                     close(af);
                 end
                 
                 if ~isempty(DATA.pd_freq)
-                    af = figure;
-                    set(af, 'Visible', 'off')
-                    plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', 'linear');
-                    fig_print( af, [results_folder_name, filesep, filename, '_Spectral_Density'], 'output_format', ext);
-                    close(af);
-                    
-                    af = figure;
-                    set(af, 'Visible', 'off')
-                    plot_hrv_freq_beta(gca, DATA.pd_freq);
-                    fig_print( af, [results_folder_name, filesep, filename, '_Beta'], 'output_format', ext);
-                    close(af);
+                    if DATA.export_figures(2)
+                        af = figure;
+                        set(af, 'Visible', 'off')
+                        plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', 'linear');
+                        fig_print( af, [export_path_name, '_Spectral_Density'], 'output_format', ext);
+                        close(af);
+                    end
+                    if DATA.export_figures(3)
+                        af = figure;
+                        set(af, 'Visible', 'off')
+                        plot_hrv_freq_beta(gca, DATA.pd_freq);
+                        fig_print( af, [export_path_name, '_Beta'], 'output_format', ext);
+                        close(af);
+                    end
                 end
                 
                 if ~isempty(DATA.pd_nl)
-                    af = figure;
-                    set(af, 'Visible', 'off')
-                    plot_dfa_fn(gca, DATA.pd_nl.dfa);
-                    fig_print( af, [results_folder_name, filesep, filename, '_DFA'], 'output_format', ext);
-                    close(af);
-                    
-                    af = figure;
-                    set(af, 'Visible', 'off')
-                    plot_mse(gca, DATA.pd_nl.mse);
-                    fig_print( af, [results_folder_name, filesep, filename, '_MSE'], 'output_format', ext);
-                    close(af);
-                    
-                    af = figure;
-                    set(af, 'Visible', 'off')
-                    plot_poincare_ellipse(gca, DATA.pd_nl.poincare);
-                    fig_print( af, [results_folder_name, filesep, filename, '_Poincare_Ellipse'], 'output_format', ext);
-                    close(af);
+                    if DATA.export_figures(4)
+                        af = figure;
+                        set(af, 'Visible', 'off')
+                        plot_dfa_fn(gca, DATA.pd_nl.dfa);
+                        fig_print( af, [export_path_name, '_DFA'], 'output_format', ext);
+                        close(af);
+                    end
+                    if DATA.export_figures(5)
+                        af = figure;
+                        set(af, 'Visible', 'off')
+                        plot_mse(gca, DATA.pd_nl.mse);
+                        fig_print( af, [export_path_name, '_MSE'], 'output_format', ext);
+                        close(af);
+                    end
+                    if DATA.export_figures(6)
+                        af = figure;
+                        set(af, 'Visible', 'off')
+                        plot_poincare_ellipse(gca, DATA.pd_nl.poincare);
+                        fig_print( af, [export_path_name, '_Poincare_Ellipse'], 'output_format', ext);
+                        close(af);
+                    end
                 end
-            elseif FilterIndex == 1
-                if ~isempty(DATA.pd_time)
+            elseif strcmp(ext, 'fig')
+                if ~isempty(DATA.pd_time) && DATA.export_figures(1)
                     af = figure;
-                    set(af, 'Name', [filename, '_NN_Interval_Distribution'], 'NumberTitle', 'off');
+                    set(af, 'Name', [fig_name, '_NN_Interval_Distribution'], 'NumberTitle', 'off');
                     plot_hrv_time_hist(gca, DATA.pd_time, 'clear', true);
-                    savefig(af, [results_folder_name, filesep, filename, '_NN_Interval_Distribution'], 'compact');                                        
+                    savefig(af, [export_path_name, '_NN_Interval_Distribution'], 'compact');                                        
                     close(af);
                 end
                 if ~isempty(DATA.pd_freq)
-                    af = figure; 
-                    set(af, 'Name', [filename, '_Spectral_Density'], 'NumberTitle', 'off');
-                    plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', 'linear');
-                    savefig(af, [results_folder_name, filesep, filename, '_Spectral_Density'], 'compact');  
-                    close(af);
-                    
-                    af = figure;
-                    set(af, 'Name', [filename, '_Beta'], 'NumberTitle', 'off');
-                    plot_hrv_freq_beta(gca, DATA.pd_freq);
-                    savefig(af, [results_folder_name, filesep, filename, '_Beta'], 'compact'); 
-                    close(af);
+                    if DATA.export_figures(2)
+                        af = figure;
+                        set(af, 'Name', [fig_name, '_Spectral_Density'], 'NumberTitle', 'off');
+                        plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', 'linear');
+                        savefig(af, [export_path_name, '_Spectral_Density'], 'compact');
+                        close(af);
+                    end
+                    if DATA.export_figures(3)
+                        af = figure;
+                        set(af, 'Name', [fig_name, '_Beta'], 'NumberTitle', 'off');
+                        plot_hrv_freq_beta(gca, DATA.pd_freq);
+                        savefig(af, [export_path_name, '_Beta'], 'compact');
+                        close(af);
+                    end
                 end
                 if ~isempty(DATA.pd_nl)
-                    af = figure;
-                    set(af, 'Name', [filename, '_DFA'], 'NumberTitle', 'off');
-                    plot_dfa_fn(gca, DATA.pd_nl.dfa);
-                    savefig(af, [results_folder_name filesep, filename, '_DFA'], 'compact'); 
-                    close(af);
-                    
-                    af = figure;
-                    set(af, 'Name', [filename, '_MSE'], 'NumberTitle', 'off');
-                    plot_mse(gca, DATA.pd_nl.mse);
-                    savefig(af, [results_folder_name, filesep, filename, '_MSE'], 'compact'); 
-                    close(af);
-                    
-                    af = figure;
-                    set(af, 'Name', [filename, '_Poincare_Ellipse'], 'NumberTitle', 'off');
-                    plot_poincare_ellipse(gca, DATA.pd_nl.poincare);
-                    savefig(af, [results_folder_name, filesep, filename, '_Poincare_Ellipse'], 'compact'); 
-                    close(af);
+                    if DATA.export_figures(4)
+                        af = figure;
+                        set(af, 'Name', [fig_name, '_DFA'], 'NumberTitle', 'off');
+                        plot_dfa_fn(gca, DATA.pd_nl.dfa);
+                        savefig(af, [export_path_name, '_DFA'], 'compact');
+                        close(af);
+                    end
+                    if DATA.export_figures(5)
+                        af = figure;
+                        set(af, 'Name', [fig_name, '_MSE'], 'NumberTitle', 'off');
+                        plot_mse(gca, DATA.pd_nl.mse);
+                        savefig(af, [export_path_name, '_MSE'], 'compact');
+                        close(af);
+                    end
+                    if DATA.export_figures(6)
+                        af = figure;
+                        set(af, 'Name', [fig_name, '_Poincare_Ellipse'], 'NumberTitle', 'off');
+                        plot_poincare_ellipse(gca, DATA.pd_nl.poincare);
+                        savefig(af, [export_path_name, '_Poincare_Ellipse'], 'compact');
+                        close(af);
+                    end
                 end
             end
+            delete( GUI.SaveFiguresWindow );
+        else
+            errordlg('Please enter valid path for export figures', 'Input Error');
         end
     end
 %%
@@ -2478,6 +2597,7 @@ displayEndOfDemoMessage('');
     function onExit( ~, ~ )
         % User wants to quit out of the application
         delete( GUI.Window );
+        delete( GUI.SaveFiguresWindow );
     end % onExit
 
 %     function redrawDemo()

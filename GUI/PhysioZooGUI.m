@@ -45,7 +45,7 @@ displayEndOfDemoMessage('');
         
         DATA.rec_name = [];
         
-        DATA.mammals = {'human', 'rabbit', 'mouse', 'canine', 'custom'};
+        DATA.mammals = {'human', 'rabbit', 'mouse', 'dog', 'custom'};
         DATA.GUI_mammals = {'Human'; 'Rabbit'; 'Mouse'; 'Dog'; 'Custom'};        
         DATA.mammal_index = 1;
         
@@ -354,7 +354,7 @@ displayEndOfDemoMessage('');
         set( GUI.NonLinearParamSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
 %------------------------------------------------------------------------------        
         
-        field_size = [-37, -45, -15];
+        field_size = [-37, -40, -15];
         
         GUI.RecordNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'String', 'Record file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
@@ -370,7 +370,8 @@ displayEndOfDemoMessage('');
         
         GUI.DataLengthBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'String', 'Record length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.RecordLength_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');        
+        GUI.RecordLength_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');    
+        %uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'String', 'h:min:sec');  
         uix.Empty( 'Parent', GUI.DataLengthBox );
         set( GUI.DataLengthBox, 'Widths', field_size  );
         
@@ -409,10 +410,10 @@ displayEndOfDemoMessage('');
         uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', '-', 'FontSize', BigFontSize);
         GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MaxYLimit_Edit_Callback, 'FontSize', BigFontSize); 
         uix.Empty( 'Parent', GUI.YLimitBox );
-        set( GUI.YLimitBox, 'Widths', [-37, -20, -5, -19 -16]  ); % [-37, -15, -5, -15] [-37, -20, -5, -19 -15]
+        set( GUI.YLimitBox, 'Widths', [-37, -17, -5, -16 -16]  ); % [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]
         
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 24 -20] );                
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 24 -15] );                
         
         %---------------------------
         tables_field_size = [-85 -15];
@@ -976,8 +977,8 @@ displayEndOfDemoMessage('');
                     mammal = QRS.Mammal;
                 end
                 if isfield(QRS, 'mammal') || isfield(QRS, 'Mammal')
-                    if strcmp(mammal, 'dogs')
-                        DATA.mammal = 'canine';
+                    if strcmp(mammal, 'dogs') || strcmp(mammal, 'dog') || strcmp(mammal, 'canine')
+                        DATA.mammal = 'dog';
                     else
                         DATA.mammal = mammal;
                     end
@@ -1095,9 +1096,9 @@ displayEndOfDemoMessage('');
             if isfield(GUI, 'RawDataAxes')
                 PathName = strrep(PathName, '\', '\\');
                 PathName = strrep(PathName, '_', '\_');
-                QRS_FileName = strrep(QRS_FileName, '_', '\_');           
+                QRS_FileName_title = strrep(QRS_FileName, '_', '\_');           
                 
-                TitleName = [PathName QRS_FileName] ;
+                TitleName = [PathName QRS_FileName_title] ;
                 title(GUI.RawDataAxes, TitleName, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize);
                 
                 set(GUI.RecordName_text, 'String', QRS_FileName);                
@@ -1439,7 +1440,7 @@ displayEndOfDemoMessage('');
                 set(GUI.RawDataSlider, 'Enable', 'off');
                 ws = calcDuration(double(DATA.MyWindowSize), 0);
                 set(GUI.WindowSize, 'String', ws);
-                set(GUI.RecordLength_text, 'String', ws);                
+                set(GUI.RecordLength_text, 'String', [ws '    h:min:sec']);                
                 set(GUI.RR_or_HR_plot_button, 'Enable', 'on');
                 set(GUI.RR_or_HR_plot_button, 'Value', 0);
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot HR');

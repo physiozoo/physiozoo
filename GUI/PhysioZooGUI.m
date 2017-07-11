@@ -1,13 +1,8 @@
 function PhysioZooGUI()
-DEBUG = 0;
+
 persistent ExportFiguresDirectory;
-%-------------- remove -----------------
-if DEBUG
-    addpath('../rhrv');
-    rhrv_init --force;
-    addpath('../Config');
-end
-%---------------------
+persistent dataDirectory;
+persistent configDirectory;
 
 % Add third-party dependencies to path
 gui_basepath = fileparts(mfilename('fullpath'));
@@ -199,7 +194,7 @@ displayEndOfDemoMessage('');
         GUI = struct();
         % Open a new figure window and remove the toolbar and menus
         % Open a window and add some menus
-        
+        %GUI.SaveFiguresWindow = [];
         GUI.Window = figure( ...
             'Name', 'PhysioZoo', ...
             'NumberTitle', 'off', ...
@@ -413,7 +408,7 @@ displayEndOfDemoMessage('');
         set( GUI.YLimitBox, 'Widths', [-37, -17, -5, -16 -16]  ); % [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]
         
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 24 -15] );                
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 24 -7] );                
         
         %---------------------------
         tables_field_size = [-85 -15];
@@ -878,12 +873,8 @@ displayEndOfDemoMessage('');
         
         persistent dataQualityDirectory;
         
-        if isempty(dataQualityDirectory)           
-            if DEBUG
-                dataQualityDirectory = 'D:\PhysioZoo\db\Dog\dogs_data\matlab_format\quality_annotations';
-            else
-                dataQualityDirectory = pwd;
-            end
+        if isempty(dataQualityDirectory)
+            dataQualityDirectory = [pwd filesep 'Examples'];
         end
         
         [DataQuality_FileName, PathName] = uigetfile({'*.mat','MAT-files (*.mat)'}, 'Open Data-Quality-Annotations File', [dataQualityDirectory filesep]);
@@ -936,15 +927,11 @@ displayEndOfDemoMessage('');
 %%
     function onOpenFile(~, ~)
         
-        persistent dataDirectory;
+%         persistent dataDirectory;
         
-        if isempty(dataDirectory)           
-            if DEBUG
-                dataDirectory = 'D:\PhysioZoo\db\Dog\dogs_data\matlab_format\peaks_manually_corrected';
-            else
-                dataDirectory = pwd;
-            end
-        end        
+        if isempty(dataDirectory)
+            dataDirectory = [pwd filesep 'Examples'];
+        end
                 
         %'*.qrs;*.hea; *.atr',  'WFDB Files (*.qrs,*.hea,*.atr)'; ...
         [QRS_FileName, PathName] = uigetfile( ...
@@ -959,6 +946,7 @@ displayEndOfDemoMessage('');
             clearData();
             clear_statistics_plots();
             clearStatTables();
+            clean_gui();
             
             dataDirectory = PathName;
             
@@ -1647,8 +1635,13 @@ displayEndOfDemoMessage('');
     end
 %%
     function Reset_pushbutton_Callback( ~, ~ )
-        filter_index = 1;
         
+        %basepath = fileparts(mfilename('fullpath'));
+        dataDirectory = [pwd filesep 'Examples'];
+        dataDirectory = [pwd filesep 'Examples'];
+        configDirectory = [pwd filesep 'Config'];
+        
+        filter_index = 1;        
         integration_index = 1;
         if isempty(DATA.mammal) 
             mammal_index = 1;
@@ -1782,16 +1775,12 @@ displayEndOfDemoMessage('');
 %%
     function Mammal_popupmenu_Callback( ~, ~ )
         
-        persistent configDirectory;        
+        %persistent configDirectory;        
         index_selected = get(GUI.Mammal_popupmenu,'Value');               
         if index_selected == 5            
             if isempty(configDirectory)
-                if DEBUG
-                    configDirectory = 'D:\physiozoo-toolbox\Config\';
-                else
-                    configDirectory = pwd;
-                end
-            end            
+                configDirectory = [pwd filesep 'Config'];                
+            end
             [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [configDirectory filesep]);
             if ~isequal(Config_FileName, 0)
                 params_filename = fullfile(PathName, Config_FileName);
@@ -2110,7 +2099,7 @@ displayEndOfDemoMessage('');
         uix.Empty( 'Parent', format_box );
         set( format_box, 'Widths', [-20 -80 ] );
                 
-        CommandsButtons_Box = uix.HButtonBox('Parent', mainSaveFigurestLayout, 'Spacing', 3, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', 'ButtonSize', [100 25]);                
+        CommandsButtons_Box = uix.HButtonBox('Parent', mainSaveFigurestLayout, 'Spacing', 3, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', 'ButtonSize', [125 30]);                
         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @save_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Export Figures', 'FontName', 'Calibri');
         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @cancel_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
         
@@ -2265,12 +2254,8 @@ displayEndOfDemoMessage('');
                 
         persistent statDirectory;
         
-        if isempty(statDirectory)           
-            if DEBUG
-                statDirectory = 'D:\PhysioZoo\db\Results';
-            else
-                statDirectory = pwd;
-            end
+        if isempty(statDirectory)
+            statDirectory = pwd;
         end
                 
         [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Result File Name', [statDirectory, filesep, DATA.DataFileName ]);                                       
@@ -2534,13 +2519,9 @@ displayEndOfDemoMessage('');
     end
 %%
     function onLoadCustomConfigFile( ~, ~)        
-        persistent configDirectory;                
+        %persistent configDirectory;                
         if isempty(configDirectory)
-            if DEBUG
-                configDirectory = 'D:\physiozoo-toolbox\Config\';
-            else
-                configDirectory = pwd;
-            end
+            configDirectory = [pwd filesep 'Config'];
         end
         [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [configDirectory filesep]);
         if ~isequal(Config_FileName, 0)
@@ -2557,12 +2538,8 @@ displayEndOfDemoMessage('');
         
         persistent paramDirectory;
         
-        if isempty(paramDirectory)           
-            if DEBUG
-                paramDirectory = 'D:\PhysioZoo\db\Results';
-            else
-                paramDirectory = pwd;
-            end
+        if isempty(paramDirectory)
+            paramDirectory = [pwd filesep 'Config'];
         end
                 
         [filename, results_folder_name] = uiputfile({'*.yml','Yaml Files (*.yml)'},'Choose Parameters File Name', [paramDirectory, filesep, [DATA.DataFileName '_' DATA.mammal] ]);                                       
@@ -2596,9 +2573,11 @@ displayEndOfDemoMessage('');
 
 %%
     function onExit( ~, ~ )
-        % User wants to quit out of the application
+        % User wants to quit out of the application        
+        if isfield(GUI, 'SaveFiguresWindow') && isvalid(GUI.SaveFiguresWindow)
+            delete( GUI.SaveFiguresWindow );
+        end
         delete( GUI.Window );
-        delete( GUI.SaveFiguresWindow );
     end % onExit
 
 %     function redrawDemo()

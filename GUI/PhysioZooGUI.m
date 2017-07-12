@@ -760,6 +760,10 @@ displayEndOfDemoMessage('');
             set(ha, 'YLim', [MinYLimit MaxYLimit]);           
             xlabel(ha, 'Time (sec)');
             ylabel(ha, yString);
+            
+            rect_handle = fill(ha, [filt_signal_time(1) filt_signal_time(1) filt_signal_time(2) filt_signal_time(2)], ...
+                                   [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15);
+            uistack(rect_handle, 'bottom');
         else
             % -- Code to run in MATLAB R2014b and later here --
             

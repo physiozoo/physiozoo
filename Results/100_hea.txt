@@ -1,0 +1,9 @@
+#header
+Record name: 100
+
+Mammal: human
+Integration level: ECG
+Filtering: LowPass
+Time begin: 00:00:00.000
+Time end: 00:05:59.000
+Number of mammals: 1

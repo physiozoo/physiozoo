@@ -1,12 +1,26 @@
 function PhysioZooGUI()
 
-persistent ExportFiguresDirectory;
+persistent ExportResultsDirectory;
 persistent dataDirectory;
 persistent configDirectory;
+persistent dataQualityDirectory;               
 
 % Add third-party dependencies to path
 gui_basepath = fileparts(mfilename('fullpath'));
 addpath(genpath([gui_basepath filesep 'lib']));
+basepath = fileparts(gui_basepath);
+if isempty(dataDirectory)
+    dataDirectory = [basepath filesep 'Examples'];
+end
+if isempty(configDirectory)
+    configDirectory = [basepath filesep 'Config'];
+end
+if isempty(ExportResultsDirectory)
+    ExportResultsDirectory = [basepath filesep 'Results'];
+end
+if isempty(dataQualityDirectory)
+    dataQualityDirectory = [basepath filesep 'Examples'];
+end
 
 %rhrv_init();
 %% Load default toolbox parameters
@@ -30,7 +44,7 @@ displayEndOfDemoMessage('');
         
         screensize = get( 0, 'Screensize' ); 
         
-        DATA.currentDirectory = pwd;
+        %DATA.currentDirectory = pwd;
         
         DATA.DEFAULT_WINDOW_MINUTES = Inf;
         DATA.DEFAULT_WINDOW_INDEX_LIMIT = Inf;
@@ -884,11 +898,11 @@ displayEndOfDemoMessage('');
 %%
     function onOpenDataQualityFile(~, ~)
         
-        persistent dataQualityDirectory;
-        
-        if isempty(dataQualityDirectory)
-            dataQualityDirectory = [pwd filesep 'Examples'];
-        end
+%         persistent dataQualityDirectory;
+%         
+%         if isempty(dataQualityDirectory)
+%             dataQualityDirectory = [basepath filesep 'Examples'];
+%         end
         
         [DataQuality_FileName, PathName] = uigetfile({'*.mat','MAT-files (*.mat)'}, 'Open Data-Quality-Annotations File', [dataQualityDirectory filesep]);
         if ~isequal(DataQuality_FileName, 0)
@@ -942,9 +956,9 @@ displayEndOfDemoMessage('');
         
 %         persistent dataDirectory;
         
-        if isempty(dataDirectory)
-            dataDirectory = [pwd filesep 'Examples'];
-        end
+%         if isempty(dataDirectory)
+%             dataDirectory = [basepath filesep 'Examples'];
+%         end
                 
         %'*.qrs;*.hea; *.atr',  'WFDB Files (*.qrs,*.hea,*.atr)'; ...
         [QRS_FileName, PathName] = uigetfile( ...
@@ -1652,16 +1666,19 @@ displayEndOfDemoMessage('');
         end
     end
 %%
+    function reset_defaults_path()
+        dataDirectory = [basepath filesep 'Examples'];
+        configDirectory = [basepath filesep 'Config'];
+        ExportResultsDirectory = [basepath filesep 'Results'];
+    end
+%%
     function Reset_pushbutton_Callback( ~, ~ )
         
-        %basepath = fileparts(mfilename('fullpath'));
-        dataDirectory = [pwd filesep 'Examples'];
-        dataDirectory = [pwd filesep 'Examples'];
-        configDirectory = [pwd filesep 'Config'];
+        reset_defaults_path();
         
-        filter_index = 1;        
+        filter_index = 1;
         integration_index = 1;
-        if isempty(DATA.mammal) 
+        if isempty(DATA.mammal)
             mammal_index = 1;
         else
             mammal_index = find(strcmp(DATA.mammals, DATA.mammal));
@@ -1797,9 +1814,9 @@ displayEndOfDemoMessage('');
         %persistent configDirectory;        
         index_selected = get(GUI.Mammal_popupmenu,'Value');               
         if index_selected == 5            
-            if isempty(configDirectory)
-                configDirectory = [pwd filesep 'Config'];                
-            end
+%             if isempty(configDirectory)
+%                 configDirectory = [basepath filesep 'Config'];                
+%             end
             [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [configDirectory filesep]);
             if ~isequal(Config_FileName, 0)
                 params_filename = fullfile(PathName, Config_FileName);
@@ -2045,9 +2062,9 @@ displayEndOfDemoMessage('');
     end
 %%
     function dir_button_Callback( ~, ~ )        
-        if isempty(ExportFiguresDirectory)
-            ExportFiguresDirectory = pwd;
-        end
+%         if isempty(ExportResultsDirectory)
+%             ExportResultsDirectory = basepath;
+%         end
         [fig_name, fig_path, FilterIndex] = uiputfile({'*.fig','MATLAB Figure (*.fig)';...
             '*.bmp','Bitmap file (*.bmp)';...
             '*.eps','EPS file (*.eps)';...
@@ -2061,10 +2078,10 @@ displayEndOfDemoMessage('');
             '*.ppm','Portable Pixmap file (*.ppm)';...
             '*.svg','Scalable Vector Graphics file (*.svg)';...
             '*.tif','TIFF image (*.tif)';...
-            '*.tif','TIFF no compression image (*.tif)'},'Choose Figures file Name', [ExportFiguresDirectory, filesep, DATA.DataFileName ]);
+            '*.tif','TIFF no compression image (*.tif)'},'Choose Figures file Name', [ExportResultsDirectory, filesep, DATA.DataFileName ]);
         
         if ~isequal(fig_path, 0)  
-            ExportFiguresDirectory = fig_path;
+            ExportResultsDirectory = fig_path;
             GUI.path_edit.String = [fig_path, fig_name];            
             
             [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
@@ -2077,9 +2094,9 @@ displayEndOfDemoMessage('');
 %%
     function onSaveFiguresAsFile( ~, ~ )
                 
-        if isempty(ExportFiguresDirectory)
-            ExportFiguresDirectory = pwd;
-        end
+%         if isempty(ExportResultsDirectory)
+%             ExportResultsDirectory = basepath;
+%         end
         
         FiguresNames = {'NN_Interval_Distribution'; 'Spectral_Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare_Ellipse'};        
         
@@ -2104,7 +2121,7 @@ displayEndOfDemoMessage('');
         main_path_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures path:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );  
         main_path_box = uix.VBox('Parent', main_path_panel, 'Spacing', 3);                
         path_box = uix.HBox('Parent', main_path_box, 'Spacing', 3);
-        GUI.path_edit = uicontrol( 'Style', 'edit', 'Parent', path_box, 'String', [ExportFiguresDirectory, filesep, DATA.DataFileName '.fig'], 'FontSize', DATA.BigFontSize, 'FontName', 'Calibri', 'HorizontalAlignment', 'left');
+        GUI.path_edit = uicontrol( 'Style', 'edit', 'Parent', path_box, 'String', [ExportResultsDirectory, filesep, DATA.DataFileName '.fig'], 'FontSize', DATA.BigFontSize, 'FontName', 'Calibri', 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', path_box );
         set( path_box, 'Widths', [-80 -20 ] );
         dir_button_Box = uix.HButtonBox('Parent', main_path_box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'ButtonSize', [100 25]);                
@@ -2147,7 +2164,7 @@ displayEndOfDemoMessage('');
         if ~isempty(fig_path) && ~isempty(fig_name) && ~isempty(fig_ext)
             
             
-            ExportFiguresDirectory = fig_path;
+            ExportResultsDirectory = fig_path;
             
             ext = fig_ext(2:end);
             
@@ -2271,17 +2288,17 @@ displayEndOfDemoMessage('');
 %%
     function onSaveResultsAsFile( ~, ~ )  
                 
-        persistent statDirectory;
-        
-        if isempty(statDirectory)
-            statDirectory = pwd;
-        end
+%         persistent statDirectory;
+%         
+%         if isempty(statDirectory)
+%             statDirectory = basepath;
+%         end
                 
-        [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Result File Name', [statDirectory, filesep, DATA.DataFileName ]);                                       
+        [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Result File Name', [ExportResultsDirectory, filesep, DATA.DataFileName ]);                                       
         
         if ~isequal(results_folder_name, 0)
             
-            statDirectory = results_folder_name;
+            ExportResultsDirectory = results_folder_name;
             
             [~, filename, ~] = fileparts(filename);
                         
@@ -2539,9 +2556,9 @@ displayEndOfDemoMessage('');
 %%
     function onLoadCustomConfigFile( ~, ~)        
         %persistent configDirectory;                
-        if isempty(configDirectory)
-            configDirectory = [pwd filesep 'Config'];
-        end
+%         if isempty(configDirectory)
+%             configDirectory = [basepath filesep 'Config'];
+%         end
         [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [configDirectory filesep]);
         if ~isequal(Config_FileName, 0)
             params_filename = fullfile(PathName, Config_FileName);
@@ -2555,17 +2572,17 @@ displayEndOfDemoMessage('');
 %%
     function onSaveParamFile( ~, ~ )
         
-        persistent paramDirectory;
-        
-        if isempty(paramDirectory)
-            paramDirectory = [pwd filesep 'Config'];
-        end
+%         persistent paramDirectory;
+%         
+%         if isempty(paramDirectory)
+%             paramDirectory = [basepath filesep 'Config'];
+%         end
                 
-        [filename, results_folder_name] = uiputfile({'*.yml','Yaml Files (*.yml)'},'Choose Parameters File Name', [paramDirectory, filesep, [DATA.DataFileName '_' DATA.mammal] ]);                                       
+        [filename, results_folder_name] = uiputfile({'*.yml','Yaml Files (*.yml)'},'Choose Parameters File Name', [configDirectory, filesep, [DATA.DataFileName '_' DATA.mammal] ]);                                       
         
         if ~isequal(results_folder_name, 0)
             
-            paramDirectory = results_folder_name;
+            configDirectory = results_folder_name;
             
             rhrv_save_defaults( fullfile(results_folder_name, filename) );
                                                 

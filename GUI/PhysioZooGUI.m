@@ -74,7 +74,10 @@ displayEndOfDemoMessage('');
         DATA.PoincareFilteringFields = [];      
         
         DATA.FiguresFormats = {'fig', 'bmp', 'eps', 'emf', 'jpg', 'pcx', 'pbm', 'pdf', 'pgm', 'png', 'ppm', 'svg', 'tif', 'tiff'};
-        DATA.formats_index = 1;             
+        DATA.formats_index = 1;     
+        
+        rec_colors = lines;
+        DATA.rectangle_color = rec_colors(6, :);
     end % createData
 %-------------------------------------------------------------------------%
 %%
@@ -745,15 +748,25 @@ displayEndOfDemoMessage('');
             ylabel(ha, yString);
         else
             % -- Code to run in MATLAB R2014b and later here --
+            
+            filt_signal_x_lim = seconds([filt_signal_time(1) filt_signal_time(end)]);
+            
             plot(ha, seconds(signal_time), data, 'b-', 'LineWidth', 2);
             hold(ha, 'on');
             plot(ha, seconds(filt_signal_time), filt_data, 'g-', 'LineWidth', 1);
-            
+                        
             set(ha, 'XLim', seconds([signal_time(1) signal_time(end)]));
             set(ha, 'YLim', [MinYLimit MaxYLimit]);
             xtickformat(ha, 'hh:mm:ss')
             xlabel(ha, 'Time (h:min:sec)');
             ylabel(ha, yString);
+            
+            
+            rect_handle = fill(ha, [filt_signal_x_lim(1) filt_signal_x_lim(1) filt_signal_x_lim(2) filt_signal_x_lim(2)], ...
+                                   [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15);
+            uistack(rect_handle, 'bottom');
+            
+            
         end     
         plotDataQuality();
     end
@@ -994,6 +1007,7 @@ displayEndOfDemoMessage('');
                     DATA.rri = diff(QRS_data)/DATA.SamplingFrequency;
                     DATA.trr = QRS_data(1:end-1)/DATA.SamplingFrequency;
                 else
+                    close(waitbar_handle);
                     errordlg('Please, choose the file with the QRS data.', 'Input Error');
                     clean_gui();
                     cla(GUI.RawDataAxes);
@@ -1005,6 +1019,7 @@ displayEndOfDemoMessage('');
                     [ ~, Fs, ~ ] = get_signal_channel( [PathName DATA.DataFileName] );
                     DATA.SamplingFrequency = Fs;
                 catch
+                    close(waitbar_handle);
                     errordlg('Cann''t get sampling frequency.', 'Input Error');
                     clean_gui();
                     cla(GUI.RawDataAxes);
@@ -1033,6 +1048,7 @@ displayEndOfDemoMessage('');
                     GUI.Mammal_popupmenu.Value = 1;
                     DATA.mammal = 'human';
                 catch e
+                    close(waitbar_handle);
                     errordlg(['onOpenFile error: ' e.message], 'Input Error');
                     clearData();
                     clear_statistics_plots();
@@ -1061,6 +1077,7 @@ displayEndOfDemoMessage('');
                         DATA.rri = diff(txt_data)/DATA.SamplingFrequency;
                         DATA.trr = txt_data(1:end-1)/DATA.SamplingFrequency;
                     else
+                        close(waitbar_handle);
                         errordlg('Please, choose the file with the QRS data.', 'Input Error');
                         clean_gui();
                         cla(GUI.RawDataAxes);
@@ -1068,6 +1085,7 @@ displayEndOfDemoMessage('');
                     end
                 end
             else
+                close(waitbar_handle);
                 errordlg('Please, choose another file format.', 'Input Error');
                 return;
             end            
@@ -1709,6 +1727,7 @@ displayEndOfDemoMessage('');
 %             if ~isempty(DATA.waitbar_handle)
 %                 close(DATA.waitbar_handle);
 %             end
+            close(waitbar_handle);
             if strcmp(DATA.flag, 'hrv_time') || strcmp(DATA.flag, 'hrv_fragmentation')
                 if strcmp(DATA.flag, 'hrv_time')
                     clear_time_data();

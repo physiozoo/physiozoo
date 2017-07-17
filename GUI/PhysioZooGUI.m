@@ -1,27 +1,11 @@
-function PhysioZooGUI()
-
-persistent ExportResultsDirectory;
-persistent dataDirectory;
-persistent configDirectory;
-persistent dataQualityDirectory;               
+function PhysioZooGUI()         
 
 % Add third-party dependencies to path
 gui_basepath = fileparts(mfilename('fullpath'));
 addpath(genpath([gui_basepath filesep 'lib']));
 basepath = fileparts(gui_basepath);
-if isempty(dataDirectory)
-    dataDirectory = [basepath filesep 'Examples'];
-end
-if isempty(configDirectory)
-    configDirectory = [basepath filesep 'Config'];
-end
-if isempty(ExportResultsDirectory)
-    ExportResultsDirectory = [basepath filesep 'Results'];
-end
-if isempty(dataQualityDirectory)
-    dataQualityDirectory = [basepath filesep 'Examples'];
-end
-
+persistent DIRS;
+        
 %rhrv_init();
 %% Load default toolbox parameters
 %rhrv_load_defaults --clear;
@@ -92,6 +76,8 @@ displayEndOfDemoMessage('');
         
         rec_colors = lines;
         DATA.rectangle_color = rec_colors(6, :);
+        
+        DATA.freq_yscale = 'linear';
     end % createData
 %-------------------------------------------------------------------------%
 %%
@@ -231,6 +217,11 @@ displayEndOfDemoMessage('');
 %         jTreeFig = mde.getClient('HRV Analysis').getTopLevelAncestor;
 %         jTreeFig.setIcon(figIcon);
         
+
+        DATA.zoom_handle = zoom(GUI.Window);
+        DATA.zoom_handle.Motion = 'vertical';
+        DATA.zoom_handle.Enable = 'on';
+
         % + File menu
         GUI.FileMenu = uimenu( GUI.Window, 'Label', 'File' );
         uimenu( GUI.FileMenu, 'Label', 'Open File', 'Callback', @onOpenFile, 'Accelerator','O');
@@ -283,20 +274,12 @@ displayEndOfDemoMessage('');
         GUI.CommandsButtons_Box = uix.VButtonBox('Parent', buttons_axes_Box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');        
         
         GUI.RawDataAxes = axes('Parent', uicontainer('Parent', buttons_axes_Box) );       
-        set( buttons_axes_Box, 'Widths', [70 -1]);
-        %GUI.YLimitBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3);
+        set( buttons_axes_Box, 'Widths', [70 -1]);        
         GUI.WindowSliderBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3);
         GUI.Filt_WindowSliderBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3);        
         set( GUI.RawDataControls_Box, 'Heights', [-1, 22, 22]  );
         
-%         uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', 'Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-%         GUI.MinYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MinYLimit_Edit_Callback, 'FontSize', BigFontSize);
-%         uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', '-', 'FontSize', BigFontSize);
-%         GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MaxYLimit_Edit_Callback, 'FontSize', BigFontSize);      
-%         uix.Empty( 'Parent', GUI.YLimitBox );
-%         set( GUI.YLimitBox, 'Widths', [180, -20, -5, -20, -190]  ); % [-37, -15, -5, -15] [-37, -20, -5, -19 -15]
-        
-        %--------------------------
+     %--------------------------
                               
         field_size = [180 -5 -5 180 -5 -5 -30]; %[155 -5 -5 155 -5 -5 -70];        
         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Start Window:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
@@ -446,11 +429,30 @@ displayEndOfDemoMessage('');
         GUI.FrequencyParametersTable = uitable( 'Parent', GUI.ParamFrequencyBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
         GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Lomb', 'Values Welch', 'Values AR'};          
         uix.Empty( 'Parent', GUI.ParamFrequencyBox );
-        set( GUI.ParamFrequencyBox, 'Heights', tables_field_size );
+        set( GUI.ParamFrequencyBox, 'Heights', tables_field_size );                
         
-        GUI.FrequencyAxes1 = axes('Parent', uicontainer('Parent', GUI.FrequencyBox) );
-        GUI.FrequencyAxes2 = axes('Parent', uicontainer('Parent', GUI.FrequencyBox) );                                   
-        set( GUI.FrequencyBox, 'Widths', [-34 -32 -32] );   % [-20 -35 -35]     
+        PSD_Box = uix.VBox( 'Parent', GUI.FrequencyBox, 'Spacing', 5);
+        PSD_HBox = uix.HBox('Parent', PSD_Box, 'Spacing', 3);  % , 'VerticalAlignment', 'top'        
+        FrAxesBox = uix.HBox( 'Parent', PSD_Box, 'Spacing', 1);
+        
+%         Gain_ButtonsBox = uix.VButtonBox( 'Parent', FrAxesBox);
+%         uicontrol( 'Style', 'PushButton', 'Parent', Gain_ButtonsBox, 'Callback', @up_pushbutton_Callback, 'FontSize', BigFontSize, 'String', char(9650)); % , 'FontName','Blue Highway'
+%         uicontrol( 'Style', 'PushButton', 'Parent', Gain_ButtonsBox, 'Callback', @down_pushbutton_Callback, 'FontSize', BigFontSize, 'String', char(9660));
+%         uix.Empty( 'Parent', Gain_ButtonsBox );
+%         set( Gain_ButtonsBox, 'ButtonSize', [25 25], 'Spacing', 1, 'Padding', 1, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'bottom' );
+               
+        GUI.FrequencyAxes1 = axes('Parent', uicontainer('Parent', FrAxesBox) );               
+        GUI.FrequencyAxes2 = axes('Parent', uicontainer('Parent', FrAxesBox) ); 
+        
+        set( PSD_Box, 'Heights', [-7 -93] );        
+        set( FrAxesBox, 'Widths', [-50 -50], 'Padding', 1 );
+                
+        uix.Empty( 'Parent', PSD_HBox ); 
+        uicontrol( 'Style', 'ToggleButton', 'Parent', PSD_HBox, 'Callback', @PSD_pushbutton_Callback, 'FontSize', BigFontSize, 'Value', 1, 'String', 'Log');        
+        uix.Empty( 'Parent', PSD_HBox ); 
+        set( PSD_HBox, 'Widths', [-30 100 -45] );
+        
+        set( GUI.FrequencyBox, 'Widths', [-34 -64] );   % [-34 -64] [-34 -32 -32]     
         %---------------------------
         
         GUI.NonLinearBox = uix.HBox( 'Parent', GUI.NonLinearTab, 'Spacing', 5);
@@ -462,7 +464,7 @@ displayEndOfDemoMessage('');
         
         GUI.NonLinearAxes1 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
         GUI.NonLinearAxes2 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
-        GUI.NonLinearAxes3 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
+        GUI.NonLinearAxes3 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );        
         set( GUI.NonLinearBox, 'Widths', [-14 -24 -24 -24] );        % [-9 -25 -25 -25]
         %---------------------------
         GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticshTab, 'FontSize', SmallFontSize, 'ColumnWidth',{550 'auto'}, 'FontName', 'Calibri');    % 700    
@@ -479,7 +481,7 @@ displayEndOfDemoMessage('');
         
         GUI.Options_TabPanel.TabTitles = {'Records', 'Options'};
         GUI.Options_TabPanel.TabWidth = 90;
-        GUI.Options_TabPanel.FontSize = BigFontSize;                
+        GUI.Options_TabPanel.FontSize = BigFontSize;                      
     end % createInterface
 
 %%
@@ -761,8 +763,8 @@ displayEndOfDemoMessage('');
             xlabel(ha, 'Time (sec)');
             ylabel(ha, yString);
             
-            rect_handle = fill(ha, [filt_signal_time(1) filt_signal_time(1) filt_signal_time(2) filt_signal_time(2)], ...
-                                   [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15);
+            rect_handle = fill([filt_signal_time(1) filt_signal_time(1) filt_signal_time(2) filt_signal_time(2)], ...
+                                   [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15, 'Parent', ha);
             uistack(rect_handle, 'bottom');
         else
             % -- Code to run in MATLAB R2014b and later here --
@@ -778,14 +780,38 @@ displayEndOfDemoMessage('');
             xtickformat(ha, 'hh:mm:ss')
             xlabel(ha, 'Time (h:min:sec)');
             ylabel(ha, yString);
-            
-            
+                        
             rect_handle = fill(ha, [filt_signal_x_lim(1) filt_signal_x_lim(1) filt_signal_x_lim(2) filt_signal_x_lim(2)], ...
                                    [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15);
-            uistack(rect_handle, 'bottom');
-            
-            
-        end     
+            uistack(rect_handle, 'bottom');                        
+        end   
+
+%         filt_signal_x_lim = seconds([filt_signal_time(1) filt_signal_time(end)]);
+% 
+%         plot(seconds(signal_time), data, 'b-', 'LineWidth', 2, 'Parent', ha);
+%         hold(ha, 'on');
+%         plot(seconds(filt_signal_time), filt_data, 'g-', 'LineWidth', 1, 'Parent', ha);
+% 
+%         set(ha, 'XLim', seconds([signal_time(1) signal_time(end)]));
+%         set(ha, 'YLim', [MinYLimit MaxYLimit]);
+%         %xtickformat(ha, 'hh:mm:ss')
+%         xlabel('Time (h:min:sec)', 'Parent', ha);
+%         ylabel(yString, 'Parent', ha);
+
+        %h = gco(figure_handle);
+        % gca Current axes or chart
+        % gcbo Handle of object whose callback is executing [h,figure] = gcbo
+        
+        
+%         rect_handle = fill([filt_signal_x_lim(1) filt_signal_x_lim(1) filt_signal_x_lim(2) filt_signal_x_lim(2)], ...
+%             [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15, 'Parent', ha);
+%         uistack(rect_handle, 'bottom');
+        
+        setAllowAxesZoom(DATA.zoom_handle, GUI.RawDataAxes, false);
+        
+%     if ~verLessThan('matlab','9.1')        
+%         xtickformat(ha, 'hh:mm:ss')        
+%     end
         plotDataQuality();
     end
 
@@ -877,6 +903,7 @@ displayEndOfDemoMessage('');
                 
             end
         end
+        setAllowAxesZoom(DATA.zoom_handle, GUI.RawDataAxes, false);
     end
 
 %%
@@ -902,13 +929,9 @@ displayEndOfDemoMessage('');
 %%
     function onOpenDataQualityFile(~, ~)
         
-%         persistent dataQualityDirectory;
-%         
-%         if isempty(dataQualityDirectory)
-%             dataQualityDirectory = [basepath filesep 'Examples'];
-%         end
+        set_defaults_path();
         
-        [DataQuality_FileName, PathName] = uigetfile({'*.mat','MAT-files (*.mat)'}, 'Open Data-Quality-Annotations File', [dataQualityDirectory filesep]);
+        [DataQuality_FileName, PathName] = uigetfile({'*.mat','MAT-files (*.mat)'}, 'Open Data-Quality-Annotations File', [DIRS.dataQualityDirectory filesep]);
         if ~isequal(DataQuality_FileName, 0)
             QualityAnnotations = load([PathName DataQuality_FileName], 'quality_anno*');
             QualityAnnotations_field_names = fieldnames(QualityAnnotations);
@@ -925,7 +948,7 @@ displayEndOfDemoMessage('');
                 end
                 plotDataQuality();
                 
-                dataQualityDirectory = PathName;
+                DIRS.dataQualityDirectory = PathName;
             else
                 errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
             end
@@ -965,11 +988,13 @@ displayEndOfDemoMessage('');
 %         end
                 
         %'*.qrs;*.hea; *.atr',  'WFDB Files (*.qrs,*.hea,*.atr)'; ...
+        set_defaults_path();
+        
         [QRS_FileName, PathName] = uigetfile( ...
             {'*.mat','MAT-files (*.mat)'; ...
             '*.qrs; *.atr',  'WFDB Files (*.qrs, *.atr)'; ...
             '*.txt','Text Files (*.txt)'}, ...
-            'Open QRS File', [dataDirectory filesep]);
+            'Open QRS File', [DIRS.dataDirectory filesep]);
         
         if ~isequal(QRS_FileName, 0)
             waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Working on it...');
@@ -979,7 +1004,7 @@ displayEndOfDemoMessage('');
             clearStatTables();
             clean_gui();
             
-            dataDirectory = PathName;
+            DIRS.dataDirectory = PathName;
             
             [~, DATA.DataFileName, ExtensionFileName] = fileparts(QRS_FileName);
                        
@@ -1339,6 +1364,7 @@ displayEndOfDemoMessage('');
             plot_hrv_time_hist(GUI.TimeAxes1, DATA.pd_time, 'clear', true);                        
         end
         box(GUI.TimeAxes1, 'off' );
+        setAllowAxesZoom(DATA.zoom_handle, GUI.TimeAxes1, false);
     end
 %%
     function plot_frequency_statistics_results()
@@ -1346,11 +1372,12 @@ displayEndOfDemoMessage('');
         clear_frequency_statistics_results();
         
         if ~isempty(DATA.pd_freq)
-            plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.pd_freq, 'detailed_legend', false, 'yscale', 'linear');            
+            plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.pd_freq, 'detailed_legend', false, 'yscale', DATA.freq_yscale);            
             plot_hrv_freq_beta(GUI.FrequencyAxes2, DATA.pd_freq);         
         end
         box(GUI.FrequencyAxes1, 'off' );
         box(GUI.FrequencyAxes2, 'off' );
+        setAllowAxesZoom(DATA.zoom_handle, GUI.FrequencyAxes2, false);
     end
 %%
     function plot_nonlinear_statistics_results()
@@ -1365,6 +1392,7 @@ displayEndOfDemoMessage('');
         box(GUI.NonLinearAxes1, 'off' );
         box(GUI.NonLinearAxes2, 'off' );
         box(GUI.NonLinearAxes3, 'off' );
+        setAllowAxesZoom(DATA.zoom_handle, [GUI.NonLinearAxes1, GUI.NonLinearAxes2, GUI.NonLinearAxes3], false);
     end
 %%
     function set_filter_mammal_integ_param(filter_index, mammal_index, integration_index)
@@ -1670,10 +1698,31 @@ displayEndOfDemoMessage('');
         end
     end
 %%
+    function set_defaults_path()
+        
+%         persistent ExportResultsDirectory;
+%         persistent dataDirectory;
+%         persistent configDirectory;
+%         persistent dataQualityDirectory;
+        
+        if ~isfield(DIRS, 'dataDirectory') %isempty(DIRS.dataDirectory)
+            DIRS.dataDirectory = [basepath filesep 'Examples'];
+        end
+        if ~isfield(DIRS, 'configDirectory') %isempty(DIRS.configDirectory)
+            DIRS.configDirectory = [basepath filesep 'Config'];
+        end
+        if ~isfield(DIRS, 'ExportResultsDirectory') %isempty(DIRS.ExportResultsDirectory)
+            DIRS.ExportResultsDirectory = [basepath filesep 'Results'];
+        end
+        if ~isfield(DIRS, 'dataQualityDirectory') %isempty(DIRS.dataQualityDirectory)
+            DIRS.dataQualityDirectory = [basepath filesep 'Examples'];
+        end
+    end
+%%
     function reset_defaults_path()
-        dataDirectory = [basepath filesep 'Examples'];
-        configDirectory = [basepath filesep 'Config'];
-        ExportResultsDirectory = [basepath filesep 'Results'];
+        DIRS.dataDirectory = [basepath filesep 'Examples'];
+        DIRS.configDirectory = [basepath filesep 'Config'];
+        DIRS.ExportResultsDirectory = [basepath filesep 'Results'];
     end
 %%
     function Reset_pushbutton_Callback( ~, ~ )
@@ -1815,18 +1864,20 @@ displayEndOfDemoMessage('');
 %%
     function Mammal_popupmenu_Callback( ~, ~ )
         
+        set_defaults_path();
+        
         %persistent configDirectory;        
         index_selected = get(GUI.Mammal_popupmenu,'Value');               
         if index_selected == 5            
 %             if isempty(configDirectory)
 %                 configDirectory = [basepath filesep 'Config'];                
 %             end
-            [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [configDirectory filesep]);
+            [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
             if ~isequal(Config_FileName, 0)
                 params_filename = fullfile(PathName, Config_FileName);
                 [pathstr, name, ~] = fileparts(params_filename);
                 rhrv_load_defaults([pathstr filesep name]);
-                configDirectory = PathName;
+                DIRS.configDirectory = PathName;
             else % Cancel bu user
                GUI.Mammal_popupmenu.Value = DATA.mammal_index;
                return;
@@ -2069,6 +2120,8 @@ displayEndOfDemoMessage('');
 %         if isempty(ExportResultsDirectory)
 %             ExportResultsDirectory = basepath;
 %         end
+        set_defaults_path();    
+        
         [fig_name, fig_path, FilterIndex] = uiputfile({'*.fig','MATLAB Figure (*.fig)';...
             '*.bmp','Bitmap file (*.bmp)';...
             '*.eps','EPS file (*.eps)';...
@@ -2082,10 +2135,10 @@ displayEndOfDemoMessage('');
             '*.ppm','Portable Pixmap file (*.ppm)';...
             '*.svg','Scalable Vector Graphics file (*.svg)';...
             '*.tif','TIFF image (*.tif)';...
-            '*.tif','TIFF no compression image (*.tif)'},'Choose Figures file Name', [ExportResultsDirectory, filesep, DATA.DataFileName ]);
+            '*.tif','TIFF no compression image (*.tif)'},'Choose Figures file Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName ]);
         
         if ~isequal(fig_path, 0)  
-            ExportResultsDirectory = fig_path;
+            DIRS.ExportResultsDirectory = fig_path;
             GUI.path_edit.String = [fig_path, fig_name];            
             
             [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
@@ -2101,6 +2154,7 @@ displayEndOfDemoMessage('');
 %         if isempty(ExportResultsDirectory)
 %             ExportResultsDirectory = basepath;
 %         end
+        set_defaults_path();    
         
         FiguresNames = {'NN_Interval_Distribution'; 'Spectral_Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare_Ellipse'};        
         
@@ -2125,7 +2179,7 @@ displayEndOfDemoMessage('');
         main_path_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures path:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );  
         main_path_box = uix.VBox('Parent', main_path_panel, 'Spacing', 3);                
         path_box = uix.HBox('Parent', main_path_box, 'Spacing', 3);
-        GUI.path_edit = uicontrol( 'Style', 'edit', 'Parent', path_box, 'String', [ExportResultsDirectory, filesep, DATA.DataFileName '.fig'], 'FontSize', DATA.BigFontSize, 'FontName', 'Calibri', 'HorizontalAlignment', 'left');
+        GUI.path_edit = uicontrol( 'Style', 'edit', 'Parent', path_box, 'String', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '.fig'], 'FontSize', DATA.BigFontSize, 'FontName', 'Calibri', 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', path_box );
         set( path_box, 'Widths', [-80 -20 ] );
         dir_button_Box = uix.HButtonBox('Parent', main_path_box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'ButtonSize', [100 25]);                
@@ -2168,7 +2222,7 @@ displayEndOfDemoMessage('');
         if ~isempty(fig_path) && ~isempty(fig_name) && ~isempty(fig_ext)
             
             
-            ExportResultsDirectory = fig_path;
+            DIRS.ExportResultsDirectory = fig_path;
             
             ext = fig_ext(2:end);
             
@@ -2200,7 +2254,7 @@ displayEndOfDemoMessage('');
                     if DATA.export_figures(2)
                         af = figure;
                         set(af, 'Visible', 'off')
-                        plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', 'linear');
+                        plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
                         fig_print( af, [export_path_name, '_Spectral_Density'], 'output_format', ext);
                         close(af);
                     end
@@ -2248,7 +2302,7 @@ displayEndOfDemoMessage('');
                     if DATA.export_figures(2)
                         af = figure;
                         set(af, 'Name', [fig_name, '_Spectral_Density'], 'NumberTitle', 'off');
-                        plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', 'linear');
+                        plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
                         savefig(af, [export_path_name, '_Spectral_Density'], 'compact');
                         close(af);
                     end
@@ -2298,11 +2352,13 @@ displayEndOfDemoMessage('');
 %             statDirectory = basepath;
 %         end
                 
-        [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Result File Name', [ExportResultsDirectory, filesep, DATA.DataFileName ]);                                       
+        set_defaults_path();    
+        
+        [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Result File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName ]);                                       
         
         if ~isequal(results_folder_name, 0)
             
-            ExportResultsDirectory = results_folder_name;
+            DIRS.ExportResultsDirectory = results_folder_name;
             
             [~, filename, ~] = fileparts(filename);
                         
@@ -2563,12 +2619,14 @@ displayEndOfDemoMessage('');
 %         if isempty(configDirectory)
 %             configDirectory = [basepath filesep 'Config'];
 %         end
-        [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [configDirectory filesep]);
+        set_defaults_path();
+        
+        [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
         if ~isequal(Config_FileName, 0)
             params_filename = fullfile(PathName, Config_FileName);
             [pathstr, name, ~] = fileparts(params_filename);
             rhrv_load_defaults([pathstr filesep name]);
-            configDirectory = PathName;
+            DIRS.configDirectory = PathName;
             GUI.Mammal_popupmenu.Value = 5;
             run_after_mammal_change(5);
         end        
@@ -2582,11 +2640,13 @@ displayEndOfDemoMessage('');
 %             paramDirectory = [basepath filesep 'Config'];
 %         end
                 
-        [filename, results_folder_name] = uiputfile({'*.yml','Yaml Files (*.yml)'},'Choose Parameters File Name', [configDirectory, filesep, [DATA.DataFileName '_' DATA.mammal] ]);                                       
+        set_defaults_path();
+        
+        [filename, results_folder_name] = uiputfile({'*.yml','Yaml Files (*.yml)'},'Choose Parameters File Name', [DIRS.configDirectory, filesep, [DATA.DataFileName '_' DATA.mammal] ]);                                       
         
         if ~isequal(results_folder_name, 0)
             
-            configDirectory = results_folder_name;
+            DIRS.configDirectory = results_folder_name;
             
             rhrv_save_defaults( fullfile(results_folder_name, filename) );
                                                 
@@ -2606,7 +2666,19 @@ displayEndOfDemoMessage('');
             result = WriteYaml(fullfile(results_folder_name, filename), temp_rhrv_default_values);
         end                   
     end
-
+%%
+     function PSD_pushbutton_Callback( src, ~ )        
+        if get(src, 'Value')    
+            set(src, 'String', 'Log');
+            DATA.freq_yscale = 'linear';
+        else
+            set(src, 'String', 'Linear');
+            DATA.freq_yscale = 'log';
+        end
+        if ~isempty(DATA.pd_freq)            
+            plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.pd_freq, 'detailed_legend', false, 'yscale', DATA.freq_yscale); 
+        end        
+    end
 %%
     function onHelp( ~, ~ )
     end

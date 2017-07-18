@@ -763,7 +763,7 @@ displayEndOfDemoMessage('');
             xlabel(ha, 'Time (sec)');
             ylabel(ha, yString);
             
-            rect_handle = fill([filt_signal_time(1) filt_signal_time(1) filt_signal_time(2) filt_signal_time(2)], ...
+            rect_handle = fill([filt_signal_time(1) filt_signal_time(1) filt_signal_time(end) filt_signal_time(end)], ...
                                    [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15, 'Parent', ha);
             uistack(rect_handle, 'bottom');
         else
@@ -834,7 +834,7 @@ displayEndOfDemoMessage('');
                 
                 if ~isfield(GUI, 'GreenLineHandle') || ~isvalid(GUI.GreenLineHandle)
                     if verLessThan('matlab','9.1')
-                        GUI.GreenLineHandle = line(ha, [signal_time(1) signal_time(end)], [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3);
+                        GUI.GreenLineHandle = line([signal_time(1) signal_time(end)], [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3, 'Parent', ha);
                     else
                         GUI.GreenLineHandle = line(ha, seconds([signal_time(1) signal_time(end)]), [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3);                        
                     end
@@ -852,7 +852,7 @@ displayEndOfDemoMessage('');
                     
                     if ~isfield(GUI, 'RedLineHandle') || ~isvalid(GUI.RedLineHandle(1))
                         if verLessThan('matlab','9.1')
-                            GUI.RedLineHandle = line(ha, (DATA.QualityAnnotations_Data-time_data(1))', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3);
+                            GUI.RedLineHandle = line((DATA.QualityAnnotations_Data-time_data(1))', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3, 'Parent', ha);
                         else
                             GUI.RedLineHandle = line(ha, seconds((DATA.QualityAnnotations_Data-time_data(1))'), [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3);                            
                         end
@@ -893,7 +893,7 @@ displayEndOfDemoMessage('');
                         
                         if verLessThan('matlab','9.1')
                             % -- Code to run in MATLAB R2014a and earlier here --
-                            plot(ha, time_data(low_quality_indexes), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);
+                            plot(time_data(low_quality_indexes), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
                         else
                             % -- Code to run in MATLAB R2014b and later here --
                             plot(ha, seconds(time_data(low_quality_indexes)), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);

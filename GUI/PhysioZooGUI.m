@@ -5,6 +5,7 @@ gui_basepath = fileparts(mfilename('fullpath'));
 addpath(genpath([gui_basepath filesep 'lib']));
 basepath = fileparts(gui_basepath);
 persistent DIRS;
+persistent DATA_Fig;
         
 %rhrv_init();
 %% Load default toolbox parameters
@@ -314,6 +315,7 @@ displayEndOfDemoMessage('');
         
         GUI.OptionsTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
         GUI.AdvancedTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
+        GUI.BatchTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
         
         tabs_widths = Left_Part_widths_in_pixels; %342 310;
         tabs_heights = 350;
@@ -321,10 +323,13 @@ displayEndOfDemoMessage('');
         GUI.OptionsSclPanel = uix.ScrollingPanel( 'Parent', GUI.OptionsTab);
         GUI.OptionsBox = uix.VBox( 'Parent', GUI.OptionsSclPanel, 'Spacing', 5);
         set( GUI.OptionsSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
-        GUI.AdvancedBox = uix.VBox( 'Parent', GUI.AdvancedTab, 'Spacing', 5);
+        
+        GUI.BatchSclPanel = uix.ScrollingPanel( 'Parent', GUI.BatchTab);
+        GUI.BatchBox = uix.VBox( 'Parent', GUI.BatchSclPanel, 'Spacing', 5);
+        set( GUI.BatchSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         
 %--------------------------------------------------------------------------------------------                
-        
+        GUI.AdvancedBox = uix.VBox( 'Parent', GUI.AdvancedTab, 'Spacing', 5);
         GUI.Advanced_TabPanel = uix.TabPanel('Parent', GUI.AdvancedBox, 'Padding', 0');
         
         GUI.FilteringParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', 5);
@@ -409,7 +414,38 @@ displayEndOfDemoMessage('');
         
         uix.Empty( 'Parent', GUI.OptionsBox );
         set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 24 -7] );                
+        %---------------------------
         
+        uix.Empty( 'Parent', GUI.BatchBox );
+        
+        field_size = [-40, -27, -15];
+        
+        BatchStartTimeBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
+        uicontrol( 'Style', 'text', 'Parent', BatchStartTimeBox, 'String', 'Start time', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left','Enable', 'off');
+        uicontrol( 'Style', 'edit', 'Parent', BatchStartTimeBox, 'FontSize', SmallFontSize, 'Callback', @batch_startTime_Edit_Callback, 'String', '0','Enable', 'off');        
+        uicontrol( 'Style', 'text', 'Parent', BatchStartTimeBox, 'String', 'sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left','Enable', 'off');
+        set( BatchStartTimeBox, 'Widths', field_size  );
+        
+        BatchWindowLengthBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
+        uicontrol( 'Style', 'text', 'Parent', BatchWindowLengthBox, 'String', 'Window lenght', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left','Enable', 'off');
+        uicontrol( 'Style', 'edit', 'Parent', BatchWindowLengthBox, 'FontSize', SmallFontSize, 'Callback', @batch_windowLength_Edit_Callback, 'String', '300','Enable', 'off');        
+        uicontrol( 'Style', 'text', 'Parent', BatchWindowLengthBox, 'String', 'sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left','Enable', 'off');
+        set( BatchWindowLengthBox, 'Widths', field_size  );
+        
+        BatchOverlapBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
+        uicontrol( 'Style', 'text', 'Parent', BatchOverlapBox, 'String', 'Overlap', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left','Enable', 'off');
+        uicontrol( 'Style', 'edit', 'Parent', BatchOverlapBox, 'FontSize', SmallFontSize, 'Callback', @batch_overlap_Edit_Callback, 'String', '100','Enable', 'off');        
+        uicontrol( 'Style', 'text', 'Parent', BatchOverlapBox, 'String', '%', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left','Enable', 'off');
+        set( BatchOverlapBox, 'Widths', field_size  );
+        
+        BatchEndTimeBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
+        uicontrol( 'Style', 'text', 'Parent', BatchEndTimeBox, 'String', 'End time', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left','Enable', 'off');
+        uicontrol( 'Style', 'edit', 'Parent', BatchEndTimeBox, 'FontSize', SmallFontSize, 'Callback', @batch_endTime_Edit_Callback, 'String', '300','Enable', 'off');        
+        uicontrol( 'Style', 'text', 'Parent', BatchEndTimeBox, 'String', 'sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left','Enable', 'off');
+        set( BatchEndTimeBox, 'Widths', field_size  );
+        
+        uix.Empty( 'Parent', GUI.BatchBox );
+        set( GUI.BatchBox, 'Heights', [-10 -10 -10 -10 -10 -100] );    
         %---------------------------
         tables_field_size = [-85 -15];
         
@@ -479,7 +515,7 @@ displayEndOfDemoMessage('');
         GUI.Analysis_TabPanel.TabWidth = 90;
         GUI.Analysis_TabPanel.FontSize = BigFontSize;
         
-        GUI.Options_TabPanel.TabTitles = {'Records', 'Options'};
+        GUI.Options_TabPanel.TabTitles = {'Records', 'Options', 'Batch'};
         GUI.Options_TabPanel.TabWidth = 90;
         GUI.Options_TabPanel.FontSize = BigFontSize;                      
     end % createInterface
@@ -752,66 +788,63 @@ displayEndOfDemoMessage('');
         
         cla(ha);
         
-        if verLessThan('matlab','9.1')
-            % -- Code to run in MATLAB R2016a?? and earlier here --
-            plot(ha, signal_time, data, 'b-', 'LineWidth', 2);
-            hold(ha, 'on');
-            plot(ha, filt_signal_time, filt_data, 'g-', 'LineWidth', 1);
-            
-            set(ha, 'XLim', [signal_time(1) signal_time(end)]);
-            set(ha, 'YLim', [MinYLimit MaxYLimit]);           
-            xlabel(ha, 'Time (sec)');
-            ylabel(ha, yString);
-            
-            rect_handle = fill([filt_signal_time(1) filt_signal_time(1) filt_signal_time(end) filt_signal_time(end)], ...
-                                   [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15, 'Parent', ha);
-            uistack(rect_handle, 'bottom');
-        else
-            % -- Code to run in MATLAB R2014b and later here --
-            
-            filt_signal_x_lim = seconds([filt_signal_time(1) filt_signal_time(end)]);
-            
-            plot(ha, seconds(signal_time), data, 'b-', 'LineWidth', 2);
-            hold(ha, 'on');
-            plot(ha, seconds(filt_signal_time), filt_data, 'g-', 'LineWidth', 1);
-                        
-            set(ha, 'XLim', seconds([signal_time(1) signal_time(end)]));
-            set(ha, 'YLim', [MinYLimit MaxYLimit]);
-            xtickformat(ha, 'hh:mm:ss')
-            xlabel(ha, 'Time (h:min:sec)');
-            ylabel(ha, yString);
-                        
-            rect_handle = fill(ha, [filt_signal_x_lim(1) filt_signal_x_lim(1) filt_signal_x_lim(2) filt_signal_x_lim(2)], ...
-                                   [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15);
-            uistack(rect_handle, 'bottom');                        
-        end   
+%         if verLessThan('matlab','9.1')
+%             % -- Code to run in MATLAB R2016a?? and earlier here --
+%             plot(ha, signal_time, data, 'b-', 'LineWidth', 2);
+%             hold(ha, 'on');
+%             plot(ha, filt_signal_time, filt_data, 'g-', 'LineWidth', 1);
+%             
+%             set(ha, 'XLim', [signal_time(1) signal_time(end)]);
+%             set(ha, 'YLim', [MinYLimit MaxYLimit]);
+%             xlabel(ha, 'Time (sec)');
+%             ylabel(ha, yString);
+%             
+%             rect_handle = fill([filt_signal_time(1) filt_signal_time(1) filt_signal_time(end) filt_signal_time(end)], ...
+%                 [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15, 'Parent', ha);
+%             uistack(rect_handle, 'bottom');
+%         else
+%             % -- Code to run in MATLAB R2014b and later here --
+%             
+%             filt_signal_x_lim = seconds([filt_signal_time(1) filt_signal_time(end)]);
+%             
+%             plot(ha, seconds(signal_time), data, 'b-', 'LineWidth', 2);
+%             hold(ha, 'on');
+%             plot(ha, seconds(filt_signal_time), filt_data, 'g-', 'LineWidth', 1);
+%             
+%             set(ha, 'XLim', seconds([signal_time(1) signal_time(end)]));
+%             set(ha, 'YLim', [MinYLimit MaxYLimit]);
+%             xtickformat(ha, 'hh:mm:ss')
+%             xlabel(ha, 'Time (h:min:sec)');
+%             ylabel(ha, yString);
+%             
+%             rect_handle = fill(ha, [filt_signal_x_lim(1) filt_signal_x_lim(1) filt_signal_x_lim(2) filt_signal_x_lim(2)], ...
+%                 [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15);
+%             uistack(rect_handle, 'bottom');
+%         end
 
-%         filt_signal_x_lim = seconds([filt_signal_time(1) filt_signal_time(end)]);
-% 
-%         plot(seconds(signal_time), data, 'b-', 'LineWidth', 2, 'Parent', ha);
-%         hold(ha, 'on');
-%         plot(seconds(filt_signal_time), filt_data, 'g-', 'LineWidth', 1, 'Parent', ha);
-% 
-%         set(ha, 'XLim', seconds([signal_time(1) signal_time(end)]));
-%         set(ha, 'YLim', [MinYLimit MaxYLimit]);
-%         %xtickformat(ha, 'hh:mm:ss')
-%         xlabel('Time (h:min:sec)', 'Parent', ha);
-%         ylabel(yString, 'Parent', ha);
+        
+        
+        plot(ha, signal_time, data, 'b-', 'LineWidth', 2);
+        hold(ha, 'on');
+        plot(ha, filt_signal_time, filt_data, 'g-', 'LineWidth', 1);
+        
+        set(ha, 'XLim', [signal_time(1) signal_time(end)]);
+        set(ha, 'YLim', [MinYLimit MaxYLimit]);
+        xlabel(ha, 'Time (sec)');
+        ylabel(ha, yString);
+        
+        rect_handle = fill([filt_signal_time(1) filt_signal_time(1) filt_signal_time(end) filt_signal_time(end)], ...
+            [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15, 'Parent', ha);
+        uistack(rect_handle, 'bottom');
+        
+        x_ticks_array = get(ha, 'XTick');        
+        set(ha, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0), x_ticks_array, 'UniformOutput', false))
 
         %h = gco(figure_handle);
         % gca Current axes or chart
         % gcbo Handle of object whose callback is executing [h,figure] = gcbo
-        
-        
-%         rect_handle = fill([filt_signal_x_lim(1) filt_signal_x_lim(1) filt_signal_x_lim(2) filt_signal_x_lim(2)], ...
-%             [MinYLimit MaxYLimit MaxYLimit MinYLimit], DATA.rectangle_color ,'FaceAlpha', .15, 'Parent', ha);
-%         uistack(rect_handle, 'bottom');
-        
         setAllowAxesZoom(DATA.zoom_handle, GUI.RawDataAxes, false);
         
-%     if ~verLessThan('matlab','9.1')        
-%         xtickformat(ha, 'hh:mm:ss')        
-%     end
         plotDataQuality();
     end
 
@@ -832,74 +865,111 @@ displayEndOfDemoMessage('');
                     data = 60 ./ data;
                 end
                 
-                if ~isfield(GUI, 'GreenLineHandle') || ~isvalid(GUI.GreenLineHandle)
-                    if verLessThan('matlab','9.1')
-                        GUI.GreenLineHandle = line([signal_time(1) signal_time(end)], [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3, 'Parent', ha);
-                    else
-                        GUI.GreenLineHandle = line(ha, seconds([signal_time(1) signal_time(end)]), [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3);                        
-                    end
-                else
-                    if verLessThan('matlab','9.1')
-                        GUI.GreenLineHandle.XData = [signal_time(1) signal_time(end)];
-                    else
-                        GUI.GreenLineHandle.XData = seconds([signal_time(1) signal_time(end)]);  
-                        GUI.GreenLineHandle.Color = DATA.MyGreen;
-                    end
+                if ~isfield(GUI, 'GreenLineHandle') || ~isvalid(GUI.GreenLineHandle)                    
+                    GUI.GreenLineHandle = line([signal_time(1) signal_time(end)], [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3, 'Parent', ha);                    
+                else                    
+                    GUI.GreenLineHandle.XData = [signal_time(1) signal_time(end)];                    
+                    GUI.GreenLineHandle.Color = DATA.MyGreen;                    
                     GUI.GreenLineHandle.YData = [MaxYLimit MaxYLimit];
                 end
-                
+%---------------------------------              
+
                 if ~(DATA.QualityAnnotations_Data(1, 1) + DATA.QualityAnnotations_Data(1,2))==0
                     
-                    if ~isfield(GUI, 'RedLineHandle') || ~isvalid(GUI.RedLineHandle(1))
-                        if verLessThan('matlab','9.1')
-                            GUI.RedLineHandle = line((DATA.QualityAnnotations_Data-time_data(1))', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3, 'Parent', ha);
-                        else
-                            GUI.RedLineHandle = line(ha, seconds((DATA.QualityAnnotations_Data-time_data(1))'), [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3);                            
-                        end
+                    if ~isfield(GUI, 'RedLineHandle') || ~isvalid(GUI.RedLineHandle(1))                        
+                        GUI.RedLineHandle = line((DATA.QualityAnnotations_Data-time_data(1))', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3, 'Parent', ha);                        
                     else
-                        for i = 1 : intervals_num
-                            %GUI.RedLineHandle(i).XData = seconds((DATA.QualityAnnotations_Data(i, :))');
-                            if verLessThan('matlab','9.1')
-                                GUI.RedLineHandle(i).XData = (DATA.QualityAnnotations_Data(i, :)-time_data(1))';
-                            else
-                                GUI.RedLineHandle(i).XData = seconds((DATA.QualityAnnotations_Data(i, :)-time_data(1))');                                
-                            end
+                        for i = 1 : intervals_num                                                        
+                            GUI.RedLineHandle(i).XData = (DATA.QualityAnnotations_Data(i, :)-time_data(1))';                            
                             GUI.RedLineHandle(i).YData = [MaxYLimit MaxYLimit]';
                         end
                     end
-                                        
-                    %fr=time_data(5)-time_data(4);
-                    %win_indexes = find(time_data >= DATA.QualityAnnotations_Data(1,1)-2*fr & time_data <= DATA.QualityAnnotations_Data(1,2)+2*fr);
                                      
-                    for i = 1 : intervals_num
-                        
+                    for i = 1 : intervals_num                        
                         a1=find(time_data >= DATA.QualityAnnotations_Data(i,1));
                         a2=find(time_data <= DATA.QualityAnnotations_Data(i,2));
                         
-                        %                         a2_start = a2(end);
-                        %                         a1_stop = a1(1)+1;
                         if isempty(a2); a2 = 1; end % case where the bad quality starts before the first annotated peak
                         if isempty(a1); a1 = length(time_data); end
                         if length(a1)<2
                             low_quality_indexes = [a2(end) : a1(1)];
                         else
                             low_quality_indexes = [a2(end)-1 : a1(1)];
-                        end
-                        
-                        %plot(ha, seconds(data_quality_time), data(win_indexes(1) : win_indexes(end)), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);
-                        %                         plot(ha, seconds(data_quality_time), data(win_indexes(1) : win_indexes(end)), '-s', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'MarkerSize',5,...
-                        %                             'MarkerEdgeColor',[255 157 189]/255,...
-                        %                             'MarkerFaceColor',[255 157 189]/255);
-                        
-                        if verLessThan('matlab','9.1')
-                            % -- Code to run in MATLAB R2014a and earlier here --
-                            plot(time_data(low_quality_indexes), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
-                        else
-                            % -- Code to run in MATLAB R2014b and later here --
-                            plot(ha, seconds(time_data(low_quality_indexes)), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);
-                        end
+                        end                        
+                        plot(time_data(low_quality_indexes), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);                        
                     end
                 end
+                
+                
+%-----------------------------------------                
+%                 if ~isfield(GUI, 'GreenLineHandle') || ~isvalid(GUI.GreenLineHandle)
+%                     if verLessThan('matlab','9.1')
+%                         GUI.GreenLineHandle = line([signal_time(1) signal_time(end)], [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3, 'Parent', ha);
+%                     else
+%                         GUI.GreenLineHandle = line(ha, seconds([signal_time(1) signal_time(end)]), [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3);                        
+%                     end
+%                 else
+%                     if verLessThan('matlab','9.1')
+%                         GUI.GreenLineHandle.XData = [signal_time(1) signal_time(end)];
+%                     else
+%                         GUI.GreenLineHandle.XData = seconds([signal_time(1) signal_time(end)]);  
+%                         GUI.GreenLineHandle.Color = DATA.MyGreen;
+%                     end
+%                     GUI.GreenLineHandle.YData = [MaxYLimit MaxYLimit];
+%                 end
+                
+%                 if ~(DATA.QualityAnnotations_Data(1, 1) + DATA.QualityAnnotations_Data(1,2))==0
+%                     
+%                     if ~isfield(GUI, 'RedLineHandle') || ~isvalid(GUI.RedLineHandle(1))
+%                         if verLessThan('matlab','9.1')
+%                             GUI.RedLineHandle = line((DATA.QualityAnnotations_Data-time_data(1))', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3, 'Parent', ha);
+%                         else
+%                             GUI.RedLineHandle = line(ha, seconds((DATA.QualityAnnotations_Data-time_data(1))'), [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3);                            
+%                         end
+%                     else
+%                         for i = 1 : intervals_num
+%                             %GUI.RedLineHandle(i).XData = seconds((DATA.QualityAnnotations_Data(i, :))');
+%                             if verLessThan('matlab','9.1')
+%                                 GUI.RedLineHandle(i).XData = (DATA.QualityAnnotations_Data(i, :)-time_data(1))';
+%                             else
+%                                 GUI.RedLineHandle(i).XData = seconds((DATA.QualityAnnotations_Data(i, :)-time_data(1))');                                
+%                             end
+%                             GUI.RedLineHandle(i).YData = [MaxYLimit MaxYLimit]';
+%                         end
+%                     end
+%                                         
+%                     %fr=time_data(5)-time_data(4);
+%                     %win_indexes = find(time_data >= DATA.QualityAnnotations_Data(1,1)-2*fr & time_data <= DATA.QualityAnnotations_Data(1,2)+2*fr);
+%                                      
+%                     for i = 1 : intervals_num
+%                         
+%                         a1=find(time_data >= DATA.QualityAnnotations_Data(i,1));
+%                         a2=find(time_data <= DATA.QualityAnnotations_Data(i,2));
+%                         
+%                         %                         a2_start = a2(end);
+%                         %                         a1_stop = a1(1)+1;
+%                         if isempty(a2); a2 = 1; end % case where the bad quality starts before the first annotated peak
+%                         if isempty(a1); a1 = length(time_data); end
+%                         if length(a1)<2
+%                             low_quality_indexes = [a2(end) : a1(1)];
+%                         else
+%                             low_quality_indexes = [a2(end)-1 : a1(1)];
+%                         end
+%                         
+%                         %plot(ha, seconds(data_quality_time), data(win_indexes(1) : win_indexes(end)), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);
+%                         %                         plot(ha, seconds(data_quality_time), data(win_indexes(1) : win_indexes(end)), '-s', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'MarkerSize',5,...
+%                         %                             'MarkerEdgeColor',[255 157 189]/255,...
+%                         %                             'MarkerFaceColor',[255 157 189]/255);
+%                         
+%                         if verLessThan('matlab','9.1')
+%                             % -- Code to run in MATLAB R2014a and earlier here --
+%                             plot(time_data(low_quality_indexes), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
+%                         else
+%                             % -- Code to run in MATLAB R2014b and later here --
+%                             plot(ha, seconds(time_data(low_quality_indexes)), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);
+%                         end
+%                     end
+%                 end
                 
             end
         end
@@ -1395,24 +1465,24 @@ displayEndOfDemoMessage('');
         setAllowAxesZoom(DATA.zoom_handle, [GUI.NonLinearAxes1, GUI.NonLinearAxes2, GUI.NonLinearAxes3], false);
     end
 %%
-    function set_filter_mammal_integ_param(filter_index, mammal_index, integration_index)
-        
-        DATA.filter_index = filter_index;        
-        set_filters(DATA.Filters{DATA.filter_index});
-        
-        DATA.mammal_index = mammal_index;
-        % Load user-specified default parameters        
-        rhrv_load_defaults(DATA.mammals{ DATA.mammal_index} );        
-        createConfigParametersInterface();
-        
-        GUI.Mammal_popupmenu.Value = mammal_index;
-        GUI.Filtering_popupmenu.Value = filter_index;
-        GUI.Integration_popupmenu.Value = integration_index;
-        
-        %         DATA.Integration = 'ECG';
-        %         DATA.integration_index = integration_index;
-        
-    end
+%     function set_filter_mammal_integ_param(filter_index, mammal_index, integration_index)
+%         
+%         DATA.filter_index = filter_index;        
+%         set_filters(DATA.Filters{DATA.filter_index});
+%         
+%         DATA.mammal_index = mammal_index;
+%         % Load user-specified default parameters        
+%         rhrv_load_defaults(DATA.mammals{ DATA.mammal_index} );        
+%         createConfigParametersInterface();
+%         
+%         GUI.Mammal_popupmenu.Value = mammal_index;
+%         GUI.Filtering_popupmenu.Value = filter_index;
+%         GUI.Integration_popupmenu.Value = integration_index;
+%         
+%         %         DATA.Integration = 'ECG';
+%         %         DATA.integration_index = integration_index;
+%         
+%     end
 %%
     function reset_plot()
         
@@ -1461,7 +1531,9 @@ displayEndOfDemoMessage('');
                     DATA.HRMinYLimit = min(min_nni_60, max_nni_60) - delta_60;
                     DATA.HRMaxYLimit = max(min_nni_60, max_nni_60) + delta_60;
                 end                
-                
+                                
+                DATA.Filt_MyDefaultWindowSize = rhrv_get_default('hrv_freq.window_minutes', 'value') * 60; % min to sec
+                                
                 DATA.Filt_MaxSignalLength = int64(tnn(end));
                 DATA.Filt_MyWindowSize = min(DATA.Filt_MaxSignalLength, DATA.Filt_MyDefaultWindowSize);
                 DATA.Filt_MyDefaultWindowSize = DATA.Filt_MyWindowSize;
@@ -1490,7 +1562,7 @@ displayEndOfDemoMessage('');
                 set(GUI.MinYLimit_Edit, 'String', num2str(DATA.RRMinYLimit));
                 set(GUI.MaxYLimit_Edit, 'String', num2str(DATA.RRMaxYLimit));
                 set(GUI.RawDataSlider, 'Enable', 'off');
-                ws = calcDuration(double(DATA.MyWindowSize), 0);
+                ws = calcDuration(DATA.MyWindowSize, 0);
                 set(GUI.WindowSize, 'String', ws);
                 set(GUI.RecordLength_text, 'String', [ws '    h:min:sec']);                
                 set(GUI.RR_or_HR_plot_button, 'Enable', 'on');
@@ -1728,15 +1800,28 @@ displayEndOfDemoMessage('');
     function Reset_pushbutton_Callback( ~, ~ )
         
         reset_defaults_path();
+        DATA_Fig.export_figures = [1 1 1 1 1 1];
+        DATA_Fig.export_figures_formats_index = 1;
+                
+        DATA.filter_index = 1;
+        set_filters(DATA.Filters{DATA.filter_index});                
         
-        filter_index = 1;
-        integration_index = 1;
         if isempty(DATA.mammal)
             mammal_index = 1;
         else
             mammal_index = find(strcmp(DATA.mammals, DATA.mammal));
         end
-        set_filter_mammal_integ_param(filter_index, mammal_index, integration_index);
+        
+        DATA.mammal_index = mammal_index;                
+        
+        % Load user-specified default parameters        
+        rhrv_load_defaults(DATA.mammals{ DATA.mammal_index} );        
+        createConfigParametersInterface();
+        
+        GUI.Mammal_popupmenu.Value = mammal_index;
+        GUI.Filtering_popupmenu.Value = DATA.filter_index;
+        GUI.Integration_popupmenu.Value = 1;
+                
         reset_plot();
     end
 
@@ -1829,38 +1914,38 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function run_after_mammal_change(index_selected)
-        createConfigParametersInterface();        
-        try
-            if(isfield(DATA, 'rri') && ~isempty(DATA.rri))
-                FiltSignal();
-                CalcPlotSignalStat();
-            end
-            DATA.mammal_index = index_selected;
-        catch e
-            errordlg(['Mammal_popupmenu_Callback Error: ' e.message], 'Input Error');
-            %             GUI.Mammal_popupmenu.Value = DATA.mammal_index;
-            %             rhrv_load_defaults(DATA.mammals{DATA.mammal_index});
-            %             createConfigParametersInterface();
-            if strcmp(DATA.flag, 'hrv_time')
-                clear_time_data();
-            end
-            if strcmp(DATA.flag, 'hrv_fragmentation')
-                clear_fragmentation_data();
-            end
-            if strcmp(DATA.flag, 'hrv_time') || strcmp(DATA.flag, 'hrv_fragmentation')
-                updateTimeStatistics();
-            end
-            
-            if strcmp(DATA.flag, 'hrv_freq')
-                clear_frequency_data();
-            end
-            if strcmp(DATA.flag, 'hrv_nonlinear')
-                clear_nonlinear_data();
-            end
-            updateStatisticsTable();
-        end
-    end
+%     function run_after_mammal_change(index_selected)
+%         createConfigParametersInterface();        
+%         try
+%             if(isfield(DATA, 'rri') && ~isempty(DATA.rri))
+%                 FiltSignal();
+%                 CalcPlotSignalStat();
+%             end
+%             DATA.mammal_index = index_selected;
+%         catch e
+%             errordlg(['Mammal_popupmenu_Callback Error: ' e.message], 'Input Error');
+%             %             GUI.Mammal_popupmenu.Value = DATA.mammal_index;
+%             %             rhrv_load_defaults(DATA.mammals{DATA.mammal_index});
+%             %             createConfigParametersInterface();
+%             if strcmp(DATA.flag, 'hrv_time')
+%                 clear_time_data();
+%             end
+%             if strcmp(DATA.flag, 'hrv_fragmentation')
+%                 clear_fragmentation_data();
+%             end
+%             if strcmp(DATA.flag, 'hrv_time') || strcmp(DATA.flag, 'hrv_fragmentation')
+%                 updateTimeStatistics();
+%             end
+%             
+%             if strcmp(DATA.flag, 'hrv_freq')
+%                 clear_frequency_data();
+%             end
+%             if strcmp(DATA.flag, 'hrv_nonlinear')
+%                 clear_nonlinear_data();
+%             end
+%             updateStatisticsTable();
+%         end
+%     end
 %%
     function Mammal_popupmenu_Callback( ~, ~ )
         
@@ -1878,7 +1963,7 @@ displayEndOfDemoMessage('');
                 [pathstr, name, ~] = fileparts(params_filename);
                 rhrv_load_defaults([pathstr filesep name]);
                 DIRS.configDirectory = PathName;
-            else % Cancel bu user
+            else % Cancel by user
                GUI.Mammal_popupmenu.Value = DATA.mammal_index;
                return;
             end
@@ -1886,7 +1971,10 @@ displayEndOfDemoMessage('');
             % Load user-specified default parameters
             rhrv_load_defaults(DATA.mammals{index_selected});
         end
-        run_after_mammal_change(index_selected);
+        %run_after_mammal_change(index_selected);
+        createConfigParametersInterface();
+        reset_plot();
+        DATA.mammal_index = index_selected;
     end
 %%
     function Integration_popupmenu_Callback( ~, ~ )
@@ -2076,7 +2164,7 @@ displayEndOfDemoMessage('');
 %%    
      function signalDuration = calcDuration(varargin)
         
-        signal_length = varargin{1};
+        signal_length = double(varargin{1});
         if length(varargin) == 2            
             need_ms = varargin{2};  
         else
@@ -2150,7 +2238,7 @@ displayEndOfDemoMessage('');
     end
 %%
     function onSaveFiguresAsFile( ~, ~ )
-                
+        
 %         if isempty(ExportResultsDirectory)
 %             ExportResultsDirectory = basepath;
 %         end
@@ -2158,7 +2246,12 @@ displayEndOfDemoMessage('');
         
         FiguresNames = {'NN_Interval_Distribution'; 'Spectral_Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare_Ellipse'};        
         
-        DATA.export_figures = [1 1 1 1 1 1];
+        if ~isfield(DATA_Fig, 'export_figures')
+            DATA_Fig.export_figures = [1 1 1 1 1 1];
+        end
+        if ~isfield(DATA_Fig, 'export_figures_formats_index')
+            DATA_Fig.export_figures_formats_index = DATA.formats_index;
+        end
         
         GUI.SaveFiguresWindow = figure( ...
             'Name', 'Export Figures Options', ...
@@ -2173,13 +2266,16 @@ displayEndOfDemoMessage('');
         figures_box = uix.VButtonBox('Parent', figures_panel, 'Spacing', 2, 'HorizontalAlignment', 'left', 'ButtonSize', [200 25]);
         
         for i = 1 : 6
-            uicontrol( 'Style', 'checkbox', 'Parent', figures_box, 'Callback', {@figures_checkbox_Callback, i}, 'FontSize', DATA.BigFontSize, 'Tag', ['Fig' num2str(i)], 'String', FiguresNames{i}, 'FontName', 'Calibri', 'Value', 1);            
+            uicontrol( 'Style', 'checkbox', 'Parent', figures_box, 'Callback', {@figures_checkbox_Callback, i}, 'FontSize', DATA.BigFontSize, ...
+                       'Tag', ['Fig' num2str(i)], 'String', FiguresNames{i}, 'FontName', 'Calibri', 'Value', DATA_Fig.export_figures(i));            
         end                
         
         main_path_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures path:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );  
         main_path_box = uix.VBox('Parent', main_path_panel, 'Spacing', 3);                
         path_box = uix.HBox('Parent', main_path_box, 'Spacing', 3);
-        GUI.path_edit = uicontrol( 'Style', 'edit', 'Parent', path_box, 'String', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '.fig'], 'FontSize', DATA.BigFontSize, 'FontName', 'Calibri', 'HorizontalAlignment', 'left');
+        GUI.path_edit = uicontrol( 'Style', 'edit', 'Parent', path_box, ...
+                                   'String', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '.' DATA.FiguresFormats{DATA_Fig.export_figures_formats_index}], ...
+                                   'FontSize', DATA.BigFontSize, 'FontName', 'Calibri', 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', path_box );
         set( path_box, 'Widths', [-80 -20 ] );
         dir_button_Box = uix.HButtonBox('Parent', main_path_box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'ButtonSize', [100 25]);                
@@ -2190,6 +2286,7 @@ displayEndOfDemoMessage('');
         format_box = uix.HBox('Parent', main_formats_panel, 'Spacing', 3);   
         GUI.Formats_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', format_box, 'Callback', @Formats_popupmenu_Callback, 'FontSize', DATA.BigFontSize, 'FontName', 'Calibri');
         GUI.Formats_popupmenu.String = DATA.FiguresFormats;  
+        set(GUI.Formats_popupmenu, 'Value', DATA_Fig.export_figures_formats_index);
         uix.Empty( 'Parent', format_box );
         set( format_box, 'Widths', [-20 -80 ] );
                 
@@ -2201,7 +2298,7 @@ displayEndOfDemoMessage('');
     end
 %%
     function figures_checkbox_Callback( src, ~, param_name )        
-        DATA.export_figures(param_name) = get(src, 'Value');        
+        DATA_Fig.export_figures(param_name) = get(src, 'Value');        
     end        
 %%
     function Formats_popupmenu_Callback( ~, ~ )
@@ -2220,7 +2317,8 @@ displayEndOfDemoMessage('');
         [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
         
         if ~isempty(fig_path) && ~isempty(fig_name) && ~isempty(fig_ext)
-            
+           
+            DATA_Fig.export_figures_formats_index = DATA.formats_index;
             
             DIRS.ExportResultsDirectory = fig_path;
             
@@ -2242,7 +2340,7 @@ displayEndOfDemoMessage('');
             
             if ~strcmp(ext, 'fig')
                                 
-                if ~isempty(DATA.pd_time) && DATA.export_figures(1)
+                if ~isempty(DATA.pd_time) && DATA_Fig.export_figures(1)
                     af = figure;
                     set(af, 'Visible', 'off')                    
                     plot_hrv_time_hist(gca, DATA.pd_time, 'clear', true);                                        
@@ -2251,14 +2349,14 @@ displayEndOfDemoMessage('');
                 end
                 
                 if ~isempty(DATA.pd_freq)
-                    if DATA.export_figures(2)
+                    if DATA_Fig.export_figures(2)
                         af = figure;
                         set(af, 'Visible', 'off')
                         plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
                         fig_print( af, [export_path_name, '_Spectral_Density'], 'output_format', ext);
                         close(af);
                     end
-                    if DATA.export_figures(3)
+                    if DATA_Fig.export_figures(3)
                         af = figure;
                         set(af, 'Visible', 'off')
                         plot_hrv_freq_beta(gca, DATA.pd_freq);
@@ -2268,21 +2366,21 @@ displayEndOfDemoMessage('');
                 end
                 
                 if ~isempty(DATA.pd_nl)
-                    if DATA.export_figures(4)
+                    if DATA_Fig.export_figures(4)
                         af = figure;
                         set(af, 'Visible', 'off')
                         plot_dfa_fn(gca, DATA.pd_nl.dfa);
                         fig_print( af, [export_path_name, '_DFA'], 'output_format', ext);
                         close(af);
                     end
-                    if DATA.export_figures(5)
+                    if DATA_Fig.export_figures(5)
                         af = figure;
                         set(af, 'Visible', 'off')
                         plot_mse(gca, DATA.pd_nl.mse);
                         fig_print( af, [export_path_name, '_MSE'], 'output_format', ext);
                         close(af);
                     end
-                    if DATA.export_figures(6)
+                    if DATA_Fig.export_figures(6)
                         af = figure;
                         set(af, 'Visible', 'off')
                         plot_poincare_ellipse(gca, DATA.pd_nl.poincare);
@@ -2291,7 +2389,7 @@ displayEndOfDemoMessage('');
                     end
                 end
             elseif strcmp(ext, 'fig')
-                if ~isempty(DATA.pd_time) && DATA.export_figures(1)
+                if ~isempty(DATA.pd_time) && DATA_Fig.export_figures(1)
                     af = figure;
                     set(af, 'Name', [fig_name, '_NN_Interval_Distribution'], 'NumberTitle', 'off');
                     plot_hrv_time_hist(gca, DATA.pd_time, 'clear', true);
@@ -2299,14 +2397,14 @@ displayEndOfDemoMessage('');
                     close(af);
                 end
                 if ~isempty(DATA.pd_freq)
-                    if DATA.export_figures(2)
+                    if DATA_Fig.export_figures(2)
                         af = figure;
                         set(af, 'Name', [fig_name, '_Spectral_Density'], 'NumberTitle', 'off');
                         plot_hrv_freq_spectrum(gca, DATA.pd_freq, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
                         savefig(af, [export_path_name, '_Spectral_Density'], 'compact');
                         close(af);
                     end
-                    if DATA.export_figures(3)
+                    if DATA_Fig.export_figures(3)
                         af = figure;
                         set(af, 'Name', [fig_name, '_Beta'], 'NumberTitle', 'off');
                         plot_hrv_freq_beta(gca, DATA.pd_freq);
@@ -2315,21 +2413,21 @@ displayEndOfDemoMessage('');
                     end
                 end
                 if ~isempty(DATA.pd_nl)
-                    if DATA.export_figures(4)
+                    if DATA_Fig.export_figures(4)
                         af = figure;
                         set(af, 'Name', [fig_name, '_DFA'], 'NumberTitle', 'off');
                         plot_dfa_fn(gca, DATA.pd_nl.dfa);
                         savefig(af, [export_path_name, '_DFA'], 'compact');
                         close(af);
                     end
-                    if DATA.export_figures(5)
+                    if DATA_Fig.export_figures(5)
                         af = figure;
                         set(af, 'Name', [fig_name, '_MSE'], 'NumberTitle', 'off');
                         plot_mse(gca, DATA.pd_nl.mse);
                         savefig(af, [export_path_name, '_MSE'], 'compact');
                         close(af);
                     end
-                    if DATA.export_figures(6)
+                    if DATA_Fig.export_figures(6)
                         af = figure;
                         set(af, 'Name', [fig_name, '_Poincare_Ellipse'], 'NumberTitle', 'off');
                         plot_poincare_ellipse(gca, DATA.pd_nl.poincare);
@@ -2628,7 +2726,10 @@ displayEndOfDemoMessage('');
             rhrv_load_defaults([pathstr filesep name]);
             DIRS.configDirectory = PathName;
             GUI.Mammal_popupmenu.Value = 5;
-            run_after_mammal_change(5);
+            %run_after_mammal_change(5);
+            createConfigParametersInterface();
+            reset_plot();
+            DATA.mammal_index = 5;
         end        
     end
 %%

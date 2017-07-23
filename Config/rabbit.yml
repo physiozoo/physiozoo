@@ -91,7 +91,12 @@ hrv_freq:
         value: [0.003, 0.01]
         description: Frequency range for log-log slope calculation (beta)
         name: Beta band
-        units: Hz     
+        units: Hz   
+    osf:
+        value: 4
+        description: Factor of oversampling in frequency domain resolution
+        name: Resampling factor
+        units: n.u.  
 
 # DFA Parameters
 dfa:

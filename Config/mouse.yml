@@ -75,7 +75,7 @@ hrv_freq:
     window_minutes:
         value: 3
         description: Duration of winodow for spectral averaging
-        name: Spectral window lenght
+        name: Spectral window length
         units: min
     welch_overlap:
         value: 50

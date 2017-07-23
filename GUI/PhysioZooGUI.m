@@ -254,7 +254,7 @@ displayEndOfDemoMessage('');
         GUI.Statistics_Box = uix.HBoxFlex('Parent', GUI.Statistics_BoxPanel, 'Spacing', 3);                                
         GUI.Analysis_TabPanel = uix.TabPanel('Parent', GUI.Statistics_Box, 'Padding', 0');
         
-        options_part = 0.27;
+        options_part = 0.25; % 0.27
         analysis_part = 1 - options_part;
         Left_Part_widths_in_pixels = options_part*(DATA.window_size(1));
         %---------------------------------
@@ -282,7 +282,7 @@ displayEndOfDemoMessage('');
         
      %--------------------------
                               
-        field_size = [180 -5 -5 180 -5 -5 -30]; %[155 -5 -5 155 -5 -5 -70];        
+        field_size = [170 -5 -5 170 -5 -5 -30]; %[155 -5 -5 155 -5 -5 -70];        
         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Start Window:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.FirstSecond = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSliderBox, 'Callback', @FirstSecond_Callback, 'FontSize', BigFontSize, 'Enable', 'off');
         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
@@ -318,7 +318,7 @@ displayEndOfDemoMessage('');
         GUI.BatchTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
         
         tabs_widths = Left_Part_widths_in_pixels; %342 310;
-        tabs_heights = 350;
+        tabs_heights = 370;
         
         GUI.OptionsSclPanel = uix.ScrollingPanel( 'Parent', GUI.OptionsTab);
         GUI.OptionsBox = uix.VBox( 'Parent', GUI.OptionsSclPanel, 'Spacing', 5);
@@ -354,7 +354,7 @@ displayEndOfDemoMessage('');
         set( GUI.NonLinearParamSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
 %------------------------------------------------------------------------------        
         
-        field_size = [-37, -40, -15];
+        field_size = [170, -1, 1]; % [-37, -40, -15]
         
         GUI.RecordNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'String', 'Record file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
@@ -366,42 +366,43 @@ displayEndOfDemoMessage('');
         uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'String', 'Data quality file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.DataQuality_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');        
         uix.Empty( 'Parent', GUI.DataQualityBox );
-        set( GUI.DataQualityBox, 'Widths', field_size  );
+        set( GUI.DataQualityBox, 'Widths', field_size );
         
         GUI.DataLengthBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'String', 'Record length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.RecordLength_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');    
         %uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'String', 'h:min:sec');  
         uix.Empty( 'Parent', GUI.DataLengthBox );
-        set( GUI.DataLengthBox, 'Widths', field_size  );
+        set( GUI.DataLengthBox, 'Widths', field_size );
         
+        field_size = [170, 140, -1]; % [180, -1, 300]
         GUI.MammalBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.MammalBox, 'String', 'Mammal', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Mammal_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.MammalBox, 'Callback', @Mammal_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', DATA.GUI_mammals);
         %GUI.Mammal_popupmenu.String = DATA.GUI_mammals;
         uix.Empty( 'Parent', GUI.MammalBox );
-        set( GUI.MammalBox, 'Widths', field_size  );
+        set( GUI.MammalBox, 'Widths', field_size );
         
         GUI.IntegrationBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.IntegrationBox, 'String', 'Integration Level', 'FontSize', SmallFontSize, 'Enable', 'off', 'HorizontalAlignment', 'left');
         GUI.Integration_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.IntegrationBox, 'Callback', @Integration_popupmenu_Callback, 'FontSize', SmallFontSize, 'Enable', 'off');
         GUI.Integration_popupmenu.String = DATA.GUI_Integration;
         uix.Empty( 'Parent', GUI.IntegrationBox );
-        set( GUI.IntegrationBox, 'Widths', field_size  );
+        set( GUI.IntegrationBox, 'Widths', field_size );
         
         GUI.FilteringBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.FilteringBox, 'String', 'Filtering', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Filtering_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.FilteringBox, 'Callback', @Filtering_popupmenu_Callback, 'FontSize', SmallFontSize);
         GUI.Filtering_popupmenu.String = DATA.Filters;    
         uix.Empty( 'Parent', GUI.FilteringBox );            
-        set( GUI.FilteringBox, 'Widths', field_size  );
+        set( GUI.FilteringBox, 'Widths', field_size );
                 
         DefaultMethodBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', DefaultMethodBox, 'String', 'Default frequency method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.DefaultMethod_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DefaultMethodBox, 'Callback', @DefaultMethod_popupmenu_Callback, 'FontSize', SmallFontSize, 'TooltipString', 'Default frequency method to use to display under statistics');
         GUI.DefaultMethod_popupmenu.String = DATA.methods;
         uix.Empty( 'Parent', DefaultMethodBox );
-        set( DefaultMethodBox, 'Widths', field_size  );        
+        set( DefaultMethodBox, 'Widths', field_size );        
         
         GUI.YLimitBox = uix.HBox('Parent', GUI.OptionsBox, 'Spacing', 3);
         
@@ -410,7 +411,7 @@ displayEndOfDemoMessage('');
         uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', '-', 'FontSize', BigFontSize);
         GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MaxYLimit_Edit_Callback, 'FontSize', BigFontSize); 
         uix.Empty( 'Parent', GUI.YLimitBox );
-        set( GUI.YLimitBox, 'Widths', [-37, -17, -5, -16 -16]  ); % [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]
+        set( GUI.YLimitBox, 'Widths', [170, 67, 5, 65 -1]  ); %[140, -17, -5, -17 100] [-37, -17, -5, -16 -16] [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]
         
         uix.Empty( 'Parent', GUI.OptionsBox );
         set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 24 -7] );                
@@ -418,7 +419,7 @@ displayEndOfDemoMessage('');
         
         uix.Empty( 'Parent', GUI.BatchBox );
         
-        field_size = [-40, -27, -15];
+        field_size = [120, 120, -1];
         
         BatchStartTimeBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', BatchStartTimeBox, 'String', 'Start time', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left','Enable', 'off');
@@ -546,7 +547,7 @@ displayEndOfDemoMessage('');
             
             uicontrol( 'Style', 'text', 'Parent', HBox, 'String', current_field.name, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
             
-            fields_size = [-40, -27, -25];
+            fields_size = [150, 125, -1]; %[125, -1, 90] [-40, -27, -25]
 %             if ischar(current_field_value)                                
 %                 PopUpMenu_control = uicontrol( 'Style', 'PopUpMenu', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description);
 %                 PopUpMenu_control.String = DATA.methods;
@@ -577,7 +578,7 @@ displayEndOfDemoMessage('');
                     set( HBox, 'Widths', fields_size  );                    
                 else
                     %set( HBox, 'Widths', [-67, -18, -2, -18, -33]  );
-                    set( HBox, 'Widths', [-40, -12, -2, -12, -25]  ); %  [-30, -8, -2, -8, -10]
+                    set( HBox, 'Widths', [150, 58, 5, 56, -1]  );%[125, -12, -2, -12, 90] [-40, -12, -2, -12, -25] %  [-30, -8, -2, -8, -10]
                 end
             %end
         end
@@ -1079,7 +1080,7 @@ displayEndOfDemoMessage('');
             [~, DATA.DataFileName, ExtensionFileName] = fileparts(QRS_FileName);
                        
             ExtensionFileName = ExtensionFileName(2:end);
-            if strcmp(ExtensionFileName, 'mat')                
+            if strcmpi(ExtensionFileName, 'mat')                
                 QRS = load([PathName QRS_FileName]);
                 QRS_field_names = fieldnames(QRS);
                 if isfield(QRS, 'Fs')
@@ -1091,13 +1092,16 @@ displayEndOfDemoMessage('');
                     mammal = QRS.Mammal;
                 end
                 if isfield(QRS, 'mammal') || isfield(QRS, 'Mammal')
-                    if strcmp(mammal, 'dogs') || strcmp(mammal, 'dog') || strcmp(mammal, 'canine')
+                    if strcmpi(mammal, 'dogs') || strcmpi(mammal, 'dog') || strcmpi(mammal, 'canine')
                         DATA.mammal = 'dog';
                     else
                         DATA.mammal = mammal;
                     end
-                    if strcmp(mammal, 'mice')
+                    if strcmpi(mammal, 'mice') || strcmpi(mammal, 'mouse')
                         DATA.mammal = 'mouse';
+                    end
+                    if strcmpi(mammal, 'rabbit')
+                        DATA.mammal = 'rabbit';
                     end
                     %DATA.mammal = QRS.mammal;
                     DATA.mammal_index = find(strcmp(DATA.mammals, DATA.mammal));
@@ -1126,7 +1130,7 @@ displayEndOfDemoMessage('');
                     cla(GUI.RawDataAxes);
                     return;
                 end
-            elseif strcmp(ExtensionFileName, 'qrs') || strcmp(ExtensionFileName, 'atr')
+            elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                 
                 try
                     [ ~, Fs, ~ ] = get_signal_channel( [PathName DATA.DataFileName] );
@@ -1170,12 +1174,12 @@ displayEndOfDemoMessage('');
                     cla(GUI.RawDataAxes);
                     return;
                 end
-            elseif strcmp(ExtensionFileName, 'txt')
+            elseif strcmpi(ExtensionFileName, 'txt')
                 file_name = [PathName DATA.DataFileName '.txt'];
                 fileID = fopen(file_name, 'r');
                 if fileID ~= -1
                     mammal = fscanf(fileID, '%*s %s', 1);
-                    if strcmp(mammal, 'mice')
+                    if strcmpi(mammal, 'mice')
                         DATA.mammal = 'mouse';
                     else
                         DATA.mammal = mammal;
@@ -2259,7 +2263,7 @@ displayEndOfDemoMessage('');
             'MenuBar', 'none', ...
             'Toolbar', 'none', ...
             'HandleVisibility', 'off', ...
-            'Position', [700, 300, 400, 400]);
+            'Position', [700, 300, 800, 400]);
         
         mainSaveFigurestLayout = uix.VBox('Parent',GUI.SaveFiguresWindow, 'Spacing', 3);
         figures_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Select figures to save:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );  
@@ -2277,7 +2281,7 @@ displayEndOfDemoMessage('');
                                    'String', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '.' DATA.FiguresFormats{DATA_Fig.export_figures_formats_index}], ...
                                    'FontSize', DATA.BigFontSize, 'FontName', 'Calibri', 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', path_box );
-        set( path_box, 'Widths', [-80 -20 ] );
+        set( path_box, 'Widths', [-80 -10 ] );
         dir_button_Box = uix.HButtonBox('Parent', main_path_box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'ButtonSize', [100 25]);                
         uicontrol( 'Style', 'ToggleButton', 'Parent', dir_button_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Change Path', 'FontName', 'Calibri');
         set( main_path_box, 'Heights', [-30 -70] ); 
@@ -2324,21 +2328,21 @@ displayEndOfDemoMessage('');
             
             ext = fig_ext(2:end);
             
-            if strcmp(ext, 'pcx') 
+            if strcmpi(ext, 'pcx') 
                 ext = 'pcx24b';
-            elseif strcmp(ext, 'emf')
+            elseif strcmpi(ext, 'emf')
                 ext = 'meta';
-            elseif strcmp(ext, 'jpg')
+            elseif strcmpi(ext, 'jpg')
                 ext = 'jpeg';
-            elseif strcmp(ext, 'tif')
+            elseif strcmpi(ext, 'tif')
                 ext = 'tiff';
-            elseif strcmp(ext, 'tiff')
+            elseif strcmpi(ext, 'tiff')
                 ext = 'tiffn';
             end
             
             export_path_name = [fig_path filesep fig_name];
             
-            if ~strcmp(ext, 'fig')
+            if ~strcmpi(ext, 'fig')
                                 
                 if ~isempty(DATA.pd_time) && DATA_Fig.export_figures(1)
                     af = figure;
@@ -2388,7 +2392,7 @@ displayEndOfDemoMessage('');
                         close(af);
                     end
                 end
-            elseif strcmp(ext, 'fig')
+            elseif strcmpi(ext, 'fig')
                 if ~isempty(DATA.pd_time) && DATA_Fig.export_figures(1)
                     af = figure;
                     set(af, 'Name', [fig_name, '_NN_Interval_Distribution'], 'NumberTitle', 'off');

@@ -156,7 +156,8 @@ displayEndOfDemoMessage('');
         
         DATA.flag = '';
         
-        DATA.formats_index = 1;             
+        DATA.formats_index = 1;   
+        DATA.freq_yscale = 'linear';
     end
 %%
     function clean_gui()
@@ -181,6 +182,9 @@ displayEndOfDemoMessage('');
         set(GUI.RecordName_text, 'String', '');
         set(GUI.RecordLength_text, 'String', '');
         set(GUI.DataQuality_text, 'String', '');
+        
+        set(GUI.freq_yscale_Button, 'String', 'Log');
+        set(GUI.freq_yscale_Button, 'Value', 1);
     end
 
 %% Open the window
@@ -485,7 +489,7 @@ displayEndOfDemoMessage('');
         set( FrAxesBox, 'Widths', [-50 -50], 'Padding', 1 );
                 
         uix.Empty( 'Parent', PSD_HBox ); 
-        uicontrol( 'Style', 'ToggleButton', 'Parent', PSD_HBox, 'Callback', @PSD_pushbutton_Callback, 'FontSize', BigFontSize, 'Value', 1, 'String', 'Log');        
+        GUI.freq_yscale_Button = uicontrol( 'Style', 'ToggleButton', 'Parent', PSD_HBox, 'Callback', @PSD_pushbutton_Callback, 'FontSize', BigFontSize, 'Value', 1, 'String', 'Log');        
         uix.Empty( 'Parent', PSD_HBox ); 
         set( PSD_HBox, 'Widths', [-30 100 -45] );
         
@@ -1542,6 +1546,10 @@ displayEndOfDemoMessage('');
                 DATA.Filt_MyWindowSize = min(DATA.Filt_MaxSignalLength, DATA.Filt_MyDefaultWindowSize);
                 DATA.Filt_MyDefaultWindowSize = DATA.Filt_MyWindowSize;
                 
+                set(GUI.freq_yscale_Button, 'String', 'Log');
+                set(GUI.freq_yscale_Button, 'Value', 1);
+                DATA.freq_yscale = 'linear';
+                
                 if DATA.filter_index == 1 % LowPass
                     CalcPlotSignalStat();
                 else                    
@@ -1572,7 +1580,7 @@ displayEndOfDemoMessage('');
                 set(GUI.RR_or_HR_plot_button, 'Enable', 'on');
                 set(GUI.RR_or_HR_plot_button, 'Value', 0);
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot HR');
-                set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0), 'Enable', 'off');
+                set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0), 'Enable', 'off');                                
                                 
                 if(DATA.Filt_MyWindowSize >= DATA.Filt_MaxSignalLength)
                     set(GUI.Filt_FirstSecond, 'String', calcDuration(DATA.Filt_FirstSecond2Show, 0), 'Enable', 'off');

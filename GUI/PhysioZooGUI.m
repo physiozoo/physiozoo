@@ -2454,88 +2454,105 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function onSaveResultsAsFile( ~, ~ )  
-                
-%         persistent statDirectory;
-%         
-%         if isempty(statDirectory)
-%             statDirectory = basepath;
-%         end
-                
-        set_defaults_path();    
+    function onSaveResultsAsFile( ~, ~ )
         
-        [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Result File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName ]);                                       
+        %         persistent statDirectory;
+        %
+        %         if isempty(statDirectory)
+        %             statDirectory = basepath;
+        %         end
+        
+        set_defaults_path();
+        
+        [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Result File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName ]);
         
         if ~isequal(results_folder_name, 0)
             
             DIRS.ExportResultsDirectory = results_folder_name;
             
             [~, filename, ~] = fileparts(filename);
-                        
+            
             if FilterIndex == 1
-                header_fileID = fopen(fullfile(results_folder_name, [filename '_hea.txt']), 'w');
-                hrv_fileID = fopen(fullfile(results_folder_name, [filename '_hrv.txt']), 'w');
-                
-                fprintf(header_fileID, '#header\r\n');
-                fprintf(header_fileID, 'Record name: %s\r\n\r\n', DATA.DataFileName);
-                fprintf(header_fileID, 'Mammal: %s\r\n', DATA.mammals{ DATA.mammal_index});
-                fprintf(header_fileID, 'Integration level: %s\r\n', DATA.Integration);
-                fprintf(header_fileID, 'Filtering: %s\r\n', DATA.Filters{DATA.filter_index});
-                fprintf(header_fileID, 'Time begin: %s\r\n', calcDuration(DATA.Filt_FirstSecond2Show));
-                fprintf(header_fileID, 'Time end: %s\r\n', calcDuration(DATA.Filt_FirstSecond2Show + DATA.Filt_MyWindowSize - 1));
-                fprintf(header_fileID, 'Number of mammals: 1\r\n');
-                
-                fclose(header_fileID);
-                
-                fprintf(hrv_fileID, '#HRV Statistics\r\n');
-                fprintf(hrv_fileID, '#Record name: %s\r\n\r\n', DATA.DataFileName);
-                
-                %fprintf(hrv_fileID, '\r\n*HRV Time\r\n');
-                param_number = length(DATA.timeData);
-                for i = 1 : param_number                    
-                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.timeRowsNames{i, 1}, DATA.timeData{i, 1});
-                end
-                
-                param_number = length(DATA.fragData);
-                for i = 1 : param_number                    
-                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.fragRowsNames{i, 1}, DATA.fragData{i, 1});
-                end               
-                
-                %fprintf(hrv_fileID, '\r\n\n*HRV Frequency\r\n');
-                param_number = length(DATA.fd_lombData);
-                %fprintf(hrv_fileID, '\r\n\n^Lomb Method\r\n');
-                for i = 1 : param_number
-                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.fd_LombRowsNames{i, 1}, DATA.fd_lombData{i, 1});
-                end
-                %fprintf(hrv_fileID, '\r\n\n^Ar Method\r\n');
-                for i = 1 : param_number
-                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.fd_ArRowsNames{i, 1}, DATA.fd_arData{i, 1});
-                end
-                %fprintf(hrv_fileID, '\r\n\n^Welch Method\r\n');
-                for i = 1 : param_number
-                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.fd_WelchRowsNames{i, 1}, DATA.fd_welchData{i, 1});
-                end
-                
-                %fprintf(hrv_fileID, '\r\n\n*HRV Non Linear\r\n');
-                param_number = length(DATA.nonlinData);
-                for i = 1 : param_number
-                    fprintf(hrv_fileID, '%s, %s\r\n', DATA.nonlinRowsNames{i, 1}, DATA.nonlinData{i, 1});
-                end
-                fclose(hrv_fileID);
+                ext = '.txt';
             else
-                RecordName = DATA.DataFileName;
-                Mammal = DATA.mammals{ DATA.mammal_index};
-                IntegrationLevel = DATA.Integration;
-                Filtering = DATA.Filters{DATA.filter_index};
-                TimeBegin = calcDuration(DATA.Filt_FirstSecond2Show);
-                TimeEnd = calcDuration(DATA.Filt_FirstSecond2Show + DATA.Filt_MyWindowSize - 1);
-                MammalsNumber = 1;
-                
-                TimeDomainData = DATA.hrv_td;
-                FrequencyDomainData = DATA.hrv_fd;
-                NonLinearData = DATA.hrv_nl;
-                save(fullfile(results_folder_name, filename), 'RecordName', 'Mammal', 'IntegrationLevel', 'Filtering', 'TimeBegin', 'TimeEnd', 'MammalsNumber',...
-                                                              'TimeDomainData', 'FrequencyDomainData', 'NonLinearData');
+                ext = '.mat';
+            end
+                        
+            full_file_name_hea = fullfile(results_folder_name, [filename '_hea.txt']);
+            full_file_name_hrv = fullfile(results_folder_name, [filename '_hrv' ext]);
+                        
+            button = 'Yes';
+            
+            if exist(full_file_name_hrv, 'file')               
+                button = questdlg([full_file_name_hrv ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');                
+            end
+            
+            if strcmp(button, 'Yes')
+                if FilterIndex == 1
+                    header_fileID = fopen(full_file_name_hea, 'w');
+                    hrv_fileID = fopen(full_file_name_hrv, 'w');
+                    
+                    fprintf(header_fileID, '#header\r\n');
+                    fprintf(header_fileID, 'Record name: %s\r\n\r\n', DATA.DataFileName);
+                    fprintf(header_fileID, 'Mammal: %s\r\n', DATA.mammals{ DATA.mammal_index});
+                    fprintf(header_fileID, 'Integration level: %s\r\n', DATA.Integration);
+                    fprintf(header_fileID, 'Filtering: %s\r\n', DATA.Filters{DATA.filter_index});
+                    fprintf(header_fileID, 'Time begin: %s\r\n', calcDuration(DATA.Filt_FirstSecond2Show));
+                    fprintf(header_fileID, 'Time end: %s\r\n', calcDuration(DATA.Filt_FirstSecond2Show + DATA.Filt_MyWindowSize - 1));
+                    fprintf(header_fileID, 'Number of mammals: 1\r\n');
+                    
+                    fclose(header_fileID);
+                    
+                    fprintf(hrv_fileID, '#HRV Statistics\r\n');
+                    fprintf(hrv_fileID, '#Record name: %s\r\n\r\n', DATA.DataFileName);
+                    
+                    %fprintf(hrv_fileID, '\r\n*HRV Time\r\n');
+                    param_number = length(DATA.timeData);
+                    for i = 1 : param_number
+                        fprintf(hrv_fileID, '%s, %s\r\n', DATA.timeRowsNames{i, 1}, DATA.timeData{i, 1});
+                    end
+                    
+                    param_number = length(DATA.fragData);
+                    for i = 1 : param_number
+                        fprintf(hrv_fileID, '%s, %s\r\n', DATA.fragRowsNames{i, 1}, DATA.fragData{i, 1});
+                    end
+                    
+                    %fprintf(hrv_fileID, '\r\n\n*HRV Frequency\r\n');
+                    param_number = length(DATA.fd_lombData);
+                    %fprintf(hrv_fileID, '\r\n\n^Lomb Method\r\n');
+                    for i = 1 : param_number
+                        fprintf(hrv_fileID, '%s, %s\r\n', DATA.fd_LombRowsNames{i, 1}, DATA.fd_lombData{i, 1});
+                    end
+                    %fprintf(hrv_fileID, '\r\n\n^Ar Method\r\n');
+                    for i = 1 : param_number
+                        fprintf(hrv_fileID, '%s, %s\r\n', DATA.fd_ArRowsNames{i, 1}, DATA.fd_arData{i, 1});
+                    end
+                    %fprintf(hrv_fileID, '\r\n\n^Welch Method\r\n');
+                    for i = 1 : param_number
+                        fprintf(hrv_fileID, '%s, %s\r\n', DATA.fd_WelchRowsNames{i, 1}, DATA.fd_welchData{i, 1});
+                    end
+                    
+                    %fprintf(hrv_fileID, '\r\n\n*HRV Non Linear\r\n');
+                    param_number = length(DATA.nonlinData);
+                    for i = 1 : param_number
+                        fprintf(hrv_fileID, '%s, %s\r\n', DATA.nonlinRowsNames{i, 1}, DATA.nonlinData{i, 1});
+                    end
+                    fclose(hrv_fileID);
+                else
+                    RecordName = DATA.DataFileName;
+                    Mammal = DATA.mammals{ DATA.mammal_index};
+                    IntegrationLevel = DATA.Integration;
+                    Filtering = DATA.Filters{DATA.filter_index};
+                    TimeBegin = calcDuration(DATA.Filt_FirstSecond2Show);
+                    TimeEnd = calcDuration(DATA.Filt_FirstSecond2Show + DATA.Filt_MyWindowSize - 1);
+                    MammalsNumber = 1;
+                    
+                    TimeDomainData = DATA.hrv_td;
+                    FrequencyDomainData = DATA.hrv_fd;
+                    NonLinearData = DATA.hrv_nl;
+                    save(full_file_name_hrv, 'RecordName', 'Mammal', 'IntegrationLevel', 'Filtering', 'TimeBegin', 'TimeEnd', 'MammalsNumber',...
+                        'TimeDomainData', 'FrequencyDomainData', 'NonLinearData');
+                end
             end
         end
     end
@@ -2752,21 +2769,19 @@ displayEndOfDemoMessage('');
 %         if isempty(paramDirectory)
 %             paramDirectory = [basepath filesep 'Config'];
 %         end
-                
         set_defaults_path();
         
         [filename, results_folder_name] = uiputfile({'*.yml','Yaml Files (*.yml)'},'Choose Parameters File Name', [DIRS.configDirectory, filesep, [DATA.DataFileName '_' DATA.mammal] ]);                                       
         
-        if ~isequal(results_folder_name, 0)
-            
+        if ~isequal(results_folder_name, 0)            
             DIRS.configDirectory = results_folder_name;
+            full_file_name = fullfile(results_folder_name, filename);
+            rhrv_save_defaults( full_file_name );
             
-            rhrv_save_defaults( fullfile(results_folder_name, filename) );
-                                                
-            temp_rhrv_default_values = ReadYaml(fullfile(results_folder_name, filename));
+            temp_rhrv_default_values = ReadYaml(full_file_name);
             
-            temp_hrv_freq = temp_rhrv_default_values.hrv_freq;            
-            temp_mse = temp_rhrv_default_values.mse;            
+            temp_hrv_freq = temp_rhrv_default_values.hrv_freq;
+            temp_mse = temp_rhrv_default_values.mse;
             
             temp_rhrv_default_values = rmfield(temp_rhrv_default_values, {'hrv_freq'; 'rqrs'; 'rhrv'});
             
@@ -2774,10 +2789,10 @@ displayEndOfDemoMessage('');
             temp_mse = rmfield(temp_mse, {'mse_metrics'});
             
             temp_rhrv_default_values.hrv_freq = temp_hrv_freq;
-            temp_rhrv_default_values.mse = temp_mse;            
+            temp_rhrv_default_values.mse = temp_mse;
             
-            result = WriteYaml(fullfile(results_folder_name, filename), temp_rhrv_default_values);
-        end                   
+            result = WriteYaml(full_file_name, temp_rhrv_default_values);
+        end
     end
 %%
      function PSD_pushbutton_Callback( src, ~ )        

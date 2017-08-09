@@ -91,7 +91,10 @@ end
 
 %% Detect QRS locations
 qrs_detector_func = str2func(qrs_detector);
-test_qrs = qrs_detector_func(rec_name, 'ecg_channel', ecg_channel);
+[test_qrs, outliers] = qrs_detector_func(rec_name, 'ecg_channel', ecg_channel);
+
+% Remove outliers
+test_qrs = setdiff(test_qrs, outliers);
 
 %% Compare detections to reference
 %  See: https://en.wikipedia.org/wiki/Confusion_matrix
@@ -130,7 +133,7 @@ if isnan(F1)
 end
 
 % Save quality measures in a struct
-sqi = struct('recName', rec_name, 'F1', F1, 'SE', SE, 'PPV', PPV, 'TP', TP, 'FP', FP, 'FN', FN);
+sqi = struct('F1', F1, 'SE', SE, 'PPV', PPV, 'TP', TP, 'FP', FP, 'FN', FN);
 
 %% Plot
 if should_plot

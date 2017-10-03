@@ -1,2 +1,0 @@
-bad_quality_1	bad_quality_2
-52566	52627

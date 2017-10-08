@@ -172,6 +172,7 @@ displayEndOfDemoMessage('');
     function clean_gui()
         set(GUI.DataQualityMenu,'Enable', 'off');
         set(GUI.SaveAsMenu,'Enable', 'off');
+        set(GUI.SavePSDAsMenu, 'Enable', 'off');
         set(GUI.SaveFiguresAsMenu,'Enable', 'off');
         set(GUI.SaveParamFileMenu,'Enable', 'off');
         set(GUI.LoadConfigFile, 'Enable', 'off');
@@ -256,7 +257,8 @@ displayEndOfDemoMessage('');
         GUI.DataQualityMenu = uimenu( GUI.FileMenu, 'Label', 'Open Data Quality File', 'Callback', @onOpenDataQualityFile, 'Accelerator','Q', 'Enable', 'off');
         GUI.LoadConfigFile = uimenu( GUI.FileMenu, 'Label', 'Load Custom Config File', 'Callback', @onLoadCustomConfigFile, 'Accelerator','P', 'Enable', 'off');
         GUI.SaveAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save HRV Measures as', 'Callback', @onSaveResultsAsFile, 'Accelerator','S', 'Enable', 'off');
-        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Export Figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');
+        GUI.SavePSDAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save PSD as', 'Callback', @onSavePSDAsFile, 'Accelerator','D', 'Enable', 'off');
+        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Export Figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');        
         GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Config File', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @onExit, 'Separator', 'on', 'Accelerator', 'E');
         
@@ -491,7 +493,7 @@ displayEndOfDemoMessage('');
         
         batch_Box = uix.HBox('Parent', GUI.BatchBox, 'Spacing', 5);
         uix.Empty( 'Parent', batch_Box );
-        uicontrol( 'Style', 'PushButton', 'Parent', batch_Box, 'Callback', @RunMultSegments_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Run');
+        uicontrol( 'Style', 'PushButton', 'Parent', batch_Box, 'Callback', @RunMultSegments_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Process');
         uix.Empty( 'Parent', batch_Box );
         set( batch_Box, 'Widths', [125 100 -1] );
         
@@ -566,7 +568,7 @@ displayEndOfDemoMessage('');
         GUI.Analysis_TabPanel.TabWidth = 90;
         GUI.Analysis_TabPanel.FontSize = BigFontSize;
         
-        GUI.Options_TabPanel.TabTitles = {'Records', 'Options', 'Analysis'};
+        GUI.Options_TabPanel.TabTitles = {'Record', 'Options', 'Analysis'};
         GUI.Options_TabPanel.TabWidth = 90;
         GUI.Options_TabPanel.FontSize = BigFontSize;
     end % createInterface
@@ -1430,8 +1432,9 @@ displayEndOfDemoMessage('');
                 title(GUI.RawDataAxes, TitleName, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize);
                 
                 set(GUI.RecordName_text, 'String', QRS_FileName);
-            end
+            end            
             set(GUI.SaveAsMenu, 'Enable', 'on');
+            set(GUI.SavePSDAsMenu, 'Enable', 'on');
             set(GUI.SaveFiguresAsMenu, 'Enable', 'on');
             set(GUI.SaveParamFileMenu, 'Enable', 'on');
             set(GUI.LoadConfigFile, 'Enable', 'on');
@@ -2107,51 +2110,27 @@ displayEndOfDemoMessage('');
         
         try
             set_filters(Filter);
+        catch e
+            errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
+            GUI.Filtering_popupmenu.Value = DATA.filter_index;
+            set_filters(items{DATA.filter_index});
+            return;
+        end        
+        try            
             if(isfield(DATA, 'rri') && ~isempty(DATA.rri) )
-                FiltSignal();
-                %CalcPlotSignalStat();
-                %cla(GUI.RawDataAxes);
+                FiltSignal();                
                 clear_statistics_plots();
-                clearStatTables();
-                %plotRawData();
-                %setXAxesLim();
-                %setYAxesLim();
-                
-                if isfield(GUI, 'filtered_handle')
-                    %delete(GUI.filtered_handle);
-                    %GUI = rmfield(GUI, 'filtered_handle');
-                    %GUI.filtered_handle = line(ha, ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-');        
+                clearStatTables();                                
+                if isfield(GUI, 'filtered_handle')                    
                     GUI.filtered_handle.XData = ones(1, length(DATA.tnn))*NaN;
                     GUI.filtered_handle.YData = ones(1, length(DATA.nni))*NaN;
                 end
-                plotFilteredData();
-                %plotDataQuality();
-                %plotMultipleWindows();
+                plotFilteredData();               
                 calcStatistics();
             end
             DATA.filter_index = index_selected;
         catch e
-            errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
-            %             GUI.Filtering_popupmenu.Value = DATA.filter_index;
-            %             set_filters(items{DATA.filter_index});
-            
-            %             if strcmp(DATA.flag, 'hrv_time')
-            %                 clear_time_data();
-            %             end
-            %             if strcmp(DATA.flag, 'hrv_fragmentation')
-            %                 clear_fragmentation_data();
-            %             end
-            %             if strcmp(DATA.flag, 'hrv_time') || strcmp(DATA.flag, 'hrv_fragmentation')
-            %                 updateTimeStatistics();
-            %             end
-            %
-            %             if strcmp(DATA.flag, 'hrv_freq')
-            %                 clear_frequency_data();
-            %             end
-            %             if strcmp(DATA.flag, 'hrv_nonlinear')
-            %                 clear_nonlinear_data();
-            %             end
-            %             updateStatisticsTable();
+            errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');            
         end
     end
 %%
@@ -2206,26 +2185,31 @@ displayEndOfDemoMessage('');
 %     end    
 %%
     function set_filters(Filter)
-        if strcmp(Filter, 'No Filtering') % No Filtering
+        
+        %DATA.Filters = {'LowPass', 'Range', 'Quotient', 'Combined filters', 'No filtering'};
+        
+        if strcmp(Filter, DATA.Filters{5}) % No filtering  
             DATA.filter_quotient = false;
             DATA.filter_lowpass = false;
             DATA.filter_range = false;
-        elseif strcmp(Filter, 'LowPass') % LowPass
+        elseif strcmp(Filter, DATA.Filters{1}) % LowPass
             DATA.filter_quotient = false;
             DATA.filter_lowpass = true;
             DATA.filter_range = false;
-        elseif strcmp(Filter, 'Range') % Range
+        elseif strcmp(Filter, DATA.Filters{2}) % Range
             DATA.filter_quotient = false;
             DATA.filter_lowpass = false;
             DATA.filter_range = true;
-        elseif strcmp(Filter, 'Quotient') % Quotient
+        elseif strcmp(Filter, DATA.Filters{3}) % Quotient
             DATA.filter_quotient = true;
             DATA.filter_lowpass = false;
             DATA.filter_range = false;
-        elseif strcmp(Filter, 'Combined Filters') % Combined Filters
+        elseif strcmp(Filter, DATA.Filters{4}) % Combined Filters
             DATA.filter_quotient = true;
             DATA.filter_lowpass = true;
             DATA.filter_range = true;
+        else
+            error('Unknown filter!');
         end
     end
 
@@ -2586,6 +2570,52 @@ displayEndOfDemoMessage('');
         
     end
 %%
+    function onSavePSDAsFile( ~, ~ )
+        if ~isempty(DATA.FrStat)
+            set_defaults_path();
+            [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose PSD File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName ]);
+            if ~isequal(results_folder_name, 0)
+                DIRS.ExportResultsDirectory = results_folder_name;
+                [~, filename, ~] = fileparts(filename);
+                if FilterIndex == 1
+                    ext = '.txt';
+                else
+                    ext = '.mat';
+                end
+                full_file_name_psd = fullfile(results_folder_name, filename);
+                button = 'Yes';
+                if exist([full_file_name_psd '_psd_W' num2str(1) ext], 'file')
+                    button = questdlg([full_file_name_psd ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
+                end
+                if strcmp(button, 'Yes')
+                    
+                    if FilterIndex == 1
+                        for i = 1 : DATA.AnalysisParams.winNum
+                            plot_data = DATA.FrStat.PlotData{i};
+                            psd_fileID = fopen([full_file_name_psd '_psd_W' num2str(i) ext], 'w');
+                            fprintf(psd_fileID, 'Frequency\tPSD_AR\t\tPSD_Welch\tPSD_Lomb\r\n');
+                            dlmwrite([full_file_name_psd '_psd_W' num2str(i) ext], [plot_data.f_axis plot_data.pxx_ar plot_data.pxx_welch plot_data.pxx_lomb], ...
+                                'precision', '%.5f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
+                            fclose(psd_fileID);
+                        end
+                    else
+                        for i = 1 : WindowNumber
+                            plot_data = DATA.FrStat.PlotData{i};
+                            Frequency = plot_data.f_axis;
+                            PSD_AR = plot_data.pxx_ar;
+                            PSD_Welch = plot_data.pxx_welch;
+                            PSD_Lomb = plot_data.pxx_lomb;
+                            save([full_file_name_psd '_psd_W' num2str(i) ext], 'Frequency', 'PSD_AR', 'PSD_Welch', 'PSD_Lomb');
+                        end
+                    end
+                    
+                end
+            end
+        else
+            errordlg('Please, press Process before saving!', 'Input Error');
+        end
+    end
+%%
     function onSaveResultsAsFile( ~, ~ )
         
         %         persistent statDirectory;
@@ -2612,7 +2642,7 @@ displayEndOfDemoMessage('');
             
             full_file_name_hea = fullfile(results_folder_name, [filename '_hea.txt']);
             full_file_name_hrv = fullfile(results_folder_name, [filename '_hrv' ext]);
-            full_file_name_psd = fullfile(results_folder_name, [filename '_psd_W']);
+            %full_file_name_psd = fullfile(results_folder_name, [filename '_psd_W']);
             
             button = 'Yes';
             
@@ -2648,24 +2678,24 @@ displayEndOfDemoMessage('');
                         
                         fclose(header_fileID);
                         
-                        max_length_rows_names = max(cellfun(@(x) strlength(x), AllRowsNames));
+                        max_length_rows_names = max(cellfun(@(x) length(x), AllRowsNames)); % strlength(x)
                         padded_rows_names = cellfun(@(x) [pad(x, max_length_rows_names) ':'], AllRowsNames, 'UniformOutput', false );
                         
-                        max_length_descr = max(cellfun(@(x) strlength(x), statistics_params(:, 1)));
+                        max_length_descr = max(cellfun(@(x) length(x), statistics_params(:, 1)));
                         statistics_params(:, 1) = cellfun(@(x) pad(x, max_length_descr), statistics_params(:, 1), 'UniformOutput', false );
                         
                         statisticsTable = cell2table(statistics_params, 'RowNames', padded_rows_names); %, 'VariableNames', column_names);
                         statisticsTable.Properties.DimensionNames(1) = {'Measures'};
                         writetable(statisticsTable, full_file_name_hrv, 'Delimiter', '\t', 'WriteRowNames', true, 'WriteVariableNames', false);
                         
-                        for i = 1 : DATA.AnalysisParams.winNum
-                            plot_data = DATA.FrStat.PlotData{i};
-                            psd_fileID = fopen([full_file_name_psd num2str(i) ext], 'w');
-                            fprintf(psd_fileID, 'Frequency\tPSD_AR\t\tPSD_Welch\tPSD_Lomb\r\n');
-                            dlmwrite([full_file_name_psd num2str(i) ext], [plot_data.f_axis plot_data.pxx_ar plot_data.pxx_welch plot_data.pxx_lomb], ...
-                                'precision', '%.5f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
-                            fclose(psd_fileID);
-                        end
+%                         for i = 1 : DATA.AnalysisParams.winNum
+%                             plot_data = DATA.FrStat.PlotData{i};
+%                             psd_fileID = fopen([full_file_name_psd num2str(i) ext], 'w');
+%                             fprintf(psd_fileID, 'Frequency\tPSD_AR\t\tPSD_Welch\tPSD_Lomb\r\n');
+%                             dlmwrite([full_file_name_psd num2str(i) ext], [plot_data.f_axis plot_data.pxx_ar plot_data.pxx_welch plot_data.pxx_lomb], ...
+%                                 'precision', '%.5f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
+%                             fclose(psd_fileID);
+%                         end
                     else
                         RecordName = DATA.DataFileName;
                         Mammal = DATA.mammals{ DATA.mammal_index};
@@ -2689,20 +2719,20 @@ displayEndOfDemoMessage('');
                         save(full_file_name_hrv, 'RecordName', 'Mammal', 'IntegrationLevel', 'Filtering', 'WindowStart', 'WindowEnd', 'WindowLength', 'Overlap', 'WindowNumber', 'MammalsNumber',...
                             'statisticsTable');
                         
-                        for i = 1 : WindowNumber
-                            
-                            plot_data = DATA.FrStat.PlotData{i};
-                            
-                            Frequency = plot_data.f_axis;
-                            PSD_AR = plot_data.pxx_ar;
-                            PSD_Welch = plot_data.pxx_welch;
-                            PSD_Lomb = plot_data.pxx_lomb;
-                            
-                            save([full_file_name_psd num2str(i) ext], 'Frequency', 'PSD_AR', 'PSD_Welch', 'PSD_Lomb');
-                        end
+%                         for i = 1 : WindowNumber
+%                             
+%                             plot_data = DATA.FrStat.PlotData{i};
+%                             
+%                             Frequency = plot_data.f_axis;
+%                             PSD_AR = plot_data.pxx_ar;
+%                             PSD_Welch = plot_data.pxx_welch;
+%                             PSD_Lomb = plot_data.pxx_lomb;
+%                             
+%                             save([full_file_name_psd num2str(i) ext], 'Frequency', 'PSD_AR', 'PSD_Welch', 'PSD_Lomb');
+%                         end
                     end
                 else
-                    errordlg('Please, press Run before saving!', 'Input Error');
+                    errordlg('Please, press Process before saving!', 'Input Error');
                 end
             end
         end

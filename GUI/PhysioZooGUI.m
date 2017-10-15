@@ -66,8 +66,9 @@ displayEndOfDemoMessage('');
         
         DATA.MyGreen = [39 232 51]/256;
         
-        DATA.methods = {'Lomb'; 'Welch'; 'AR'};
-        DATA.default_method_index = 2;
+        %DATA.methods = {'Lomb'; 'Welch'; 'AR'};
+        DATA.methods = {'Welch'; 'AR'};
+        DATA.default_method_index = 1;
         
         DATA.LowPassFilteringFields = [];
         DATA.PoincareFilteringFields = [];
@@ -130,7 +131,7 @@ displayEndOfDemoMessage('');
         %DATA.pd_nl = struct([]);
         DATA.NonLinStat.PlotData = [];
         
-        DATA.hrv_fd_lomb = table;
+        %DATA.hrv_fd_lomb = table;
         DATA.hrv_fd_ar = table;
         DATA.hrv_fd_welch = table;
         
@@ -138,9 +139,9 @@ displayEndOfDemoMessage('');
         DATA.timeRowsNames = [];
         DATA.timeDescriptions = [];
         
-        DATA.fd_lombData = [];
-        DATA.fd_LombRowsNames = [];
-        DATA.fd_lombDescriptions = [];
+        %DATA.fd_lombData = [];
+        %DATA.fd_LombRowsNames = [];
+        %DATA.fd_lombDescriptions = [];
         
         DATA.fd_arData = [];
         DATA.fd_ArRowsNames = [];
@@ -431,7 +432,7 @@ displayEndOfDemoMessage('');
         uicontrol( 'Style', 'text', 'Parent', DefaultMethodBox, 'String', 'Default frequency method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.DefaultMethod_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DefaultMethodBox, 'Callback', @DefaultMethod_popupmenu_Callback, 'FontSize', SmallFontSize, 'TooltipString', 'Default frequency method to use to display under statistics');
         GUI.DefaultMethod_popupmenu.String = DATA.methods;
-        GUI.DefaultMethod_popupmenu.Value = 2;
+        GUI.DefaultMethod_popupmenu.Value = 1;
         uix.Empty( 'Parent', DefaultMethodBox );
         set( DefaultMethodBox, 'Widths', field_size );
         
@@ -516,7 +517,8 @@ displayEndOfDemoMessage('');
         GUI.FrequencyBox = uix.HBox( 'Parent', GUI.FrequencyTab, 'Spacing', 5);
         GUI.ParamFrequencyBox = uix.VBox( 'Parent', GUI.FrequencyBox, 'Spacing', 5);
         GUI.FrequencyParametersTable = uitable( 'Parent', GUI.ParamFrequencyBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
-        GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Lomb', 'Values Welch', 'Values AR'};
+        %GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Lomb', 'Values Welch', 'Values AR'};
+        GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Welch', 'Values AR'};
         uix.Empty( 'Parent', GUI.ParamFrequencyBox );
         set( GUI.ParamFrequencyBox, 'Heights', tables_field_size );
         
@@ -1041,7 +1043,7 @@ displayEndOfDemoMessage('');
                         %line(time_data(a1(1):a2(end)+1), data(a1(1):a2(end)+1), 'LineStyle', '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha)
                         
                         %plot(time_data(low_quality_indexes), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
-                        i
+%                         i
                         if ~isempty(low_quality_indexes)
                             GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);                        
                         end
@@ -1988,7 +1990,7 @@ displayEndOfDemoMessage('');
     function Reset_pushbutton_Callback( ~, ~ )
         
         reset_defaults_path();
-        DATA_Fig.export_figures = [1 1 1 1 1 1];
+        DATA_Fig.export_figures = [1 1 1 1 1 1 1];
         DATA_Fig.export_figures_formats_index = 1;
         
         DATA.filter_index = 1;
@@ -2145,13 +2147,13 @@ displayEndOfDemoMessage('');
     end
 %%
     function [StatRowsNames, StatData] = setFrequencyMethodData()
-        if DATA.default_method_index == 1 % Lomb
-            StatRowsNames = DATA.FrStat.LombWindowsData.RowsNames;
-            StatData = DATA.FrStat.LombWindowsData.Data;
-        elseif DATA.default_method_index == 3 % AR
+%         if DATA.default_method_index == 1 % Lomb
+%             StatRowsNames = DATA.FrStat.LombWindowsData.RowsNames;
+%             StatData = DATA.FrStat.LombWindowsData.Data;
+        if DATA.default_method_index == 2 % AR
             StatRowsNames = DATA.FrStat.ArWindowsData.RowsNames;
             StatData = DATA.FrStat.ArWindowsData.Data;
-        elseif DATA.default_method_index == 2 % Welch
+        elseif DATA.default_method_index == 1 % Welch
             StatRowsNames = DATA.FrStat.WelchWindowsData.RowsNames;
             StatData = DATA.FrStat.WelchWindowsData.Data;
         end
@@ -2373,7 +2375,7 @@ displayEndOfDemoMessage('');
         
         for i = 1 : 7
             uicontrol( 'Style', 'checkbox', 'Parent', figures_box, 'Callback', {@figures_checkbox_Callback, i}, 'FontSize', DATA.BigFontSize, ...
-                'Tag', ['Fig' num2str(i)], 'String', FiguresNames{i}, 'FontName', 'Calibri', 'Value', DATA_Fig.export_figures(i));
+                'Tag', ['Fig' num2str(i)], 'String', FiguresNames{i}, 'FontName', 'Calibri', 'Value', DATA_Fig.export_figures(i));            
         end
         
         main_path_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures path:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
@@ -2444,110 +2446,122 @@ displayEndOfDemoMessage('');
             
             export_path_name = [fig_path filesep fig_name];
             
-            if ~strcmpi(ext, 'fig')
+            if ~isempty(DATA.TimeStat) || ~isempty(DATA.FrStat) || ~isempty(DATA.NonLinStat)
                 
-                if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1)
-                    af = figure;
-                    set(af, 'Visible', 'off')
-                    plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
-                    fig_print( af, [export_path_name, '_NN_Interval_Distribution'], 'output_format', ext);
-                    close(af);
-                end
-                
-                if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
-                    if DATA_Fig.export_figures(2)
+                if ~strcmpi(ext, 'fig')
+                    
+                    if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1)
                         af = figure;
                         set(af, 'Visible', 'off')
-                        plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
-                        fig_print( af, [export_path_name, '_Power_Spectral_Density'], 'output_format', ext);
+                        plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
+                        fig_print( af, [export_path_name, '_NN_Interval_Distribution'], 'output_format', ext);
                         close(af);
                     end
-                    if DATA_Fig.export_figures(3)
+                    
+                    if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
+                        if DATA_Fig.export_figures(2)
+                            af = figure;
+                            set(af, 'Visible', 'off')
+                            plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
+                            fig_print( af, [export_path_name, '_Power_Spectral_Density'], 'output_format', ext);
+                            close(af);
+                        end
+                        if DATA_Fig.export_figures(3)
+                            af = figure;
+                            set(af, 'Visible', 'off')
+                            plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
+                            fig_print( af, [export_path_name, '_Beta'], 'output_format', ext);
+                            close(af);
+                        end
+                    end
+                    
+                    if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
+                        if DATA_Fig.export_figures(4)
+                            af = figure;
+                            set(af, 'Visible', 'off')
+                            plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
+                            fig_print( af, [export_path_name, '_DFA'], 'output_format', ext);
+                            close(af);
+                        end
+                        if DATA_Fig.export_figures(5)
+                            af = figure;
+                            set(af, 'Visible', 'off')
+                            plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
+                            fig_print( af, [export_path_name, '_MSE'], 'output_format', ext);
+                            close(af);
+                        end
+                        if DATA_Fig.export_figures(6)
+                            af = figure;
+                            set(af, 'Visible', 'off')
+                            plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
+                            fig_print( af, [export_path_name, '_Poincare_Ellipse'], 'output_format', ext);
+                            close(af);
+                        end
+                    end
+                    if DATA_Fig.export_figures(7)
                         af = figure;
                         set(af, 'Visible', 'off')
-                        plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
-                        fig_print( af, [export_path_name, '_Beta'], 'output_format', ext);
+                        plot_rr_time_series(gca);
+                        fig_print( af, [export_path_name, '_RR_Time_Series'], 'output_format', ext);
+                        close(af);
+                    end
+                elseif strcmpi(ext, 'fig')
+                    if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1)
+                        af = figure;
+                        set(af, 'Name', [fig_name, '_NN_Interval_Distribution'], 'NumberTitle', 'off');
+                        plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
+                        savefig(af, [export_path_name, '_NN_Interval_Distribution'], 'compact');
+                        close(af);
+                    end
+                    if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
+                        if DATA_Fig.export_figures(2)
+                            af = figure;
+                            set(af, 'Name', [fig_name, '_Power_Spectral_Density'], 'NumberTitle', 'off');
+                            plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
+                            savefig(af, [export_path_name, '_Power_Spectral_Density'], 'compact');
+                            close(af);
+                        end
+                        if DATA_Fig.export_figures(3)
+                            af = figure;
+                            set(af, 'Name', [fig_name, '_Beta'], 'NumberTitle', 'off');
+                            plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
+                            savefig(af, [export_path_name, '_Beta'], 'compact');
+                            close(af);
+                        end
+                    end
+                    if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
+                        if DATA_Fig.export_figures(4)
+                            af = figure;
+                            set(af, 'Name', [fig_name, '_DFA'], 'NumberTitle', 'off');
+                            plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
+                            savefig(af, [export_path_name, '_DFA'], 'compact');
+                            close(af);
+                        end
+                        if DATA_Fig.export_figures(5)
+                            af = figure;
+                            set(af, 'Name', [fig_name, '_MSE'], 'NumberTitle', 'off');
+                            plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
+                            savefig(af, [export_path_name, '_MSE'], 'compact');
+                            close(af);
+                        end
+                        if DATA_Fig.export_figures(6)
+                            af = figure;
+                            set(af, 'Name', [fig_name, '_Poincare_Ellipse'], 'NumberTitle', 'off');
+                            plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
+                            savefig(af, [export_path_name, '_Poincare_Ellipse'], 'compact');
+                            close(af);
+                        end
+                    end
+                    if DATA_Fig.export_figures(7)
+                        af = figure;
+                        set(af, 'Name', [fig_name, '_RR_Time_Series'], 'NumberTitle', 'off');
+                        plot_rr_time_series(gca);
+                        savefig(af, [export_path_name, '_RR_Time_Series'], 'compact');
                         close(af);
                     end
                 end
-                
-                if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
-                    if DATA_Fig.export_figures(4)
-                        af = figure;
-                        set(af, 'Visible', 'off')
-                        plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
-                        fig_print( af, [export_path_name, '_DFA'], 'output_format', ext);
-                        close(af);
-                    end
-                    if DATA_Fig.export_figures(5)
-                        af = figure;
-                        set(af, 'Visible', 'off')
-                        plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
-                        fig_print( af, [export_path_name, '_MSE'], 'output_format', ext);
-                        close(af);
-                    end
-                    if DATA_Fig.export_figures(6)
-                        af = figure;
-                        set(af, 'Visible', 'off')
-                        plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
-                        fig_print( af, [export_path_name, '_Poincare_Ellipse'], 'output_format', ext);
-                        close(af);
-                    end
-                end
-                if DATA_Fig.export_figures(7)
-                    af = figure;
-                    set(af, 'Visible', 'off')                    
-                    plot_rr_time_series(gca);
-                    fig_print( af, [export_path_name, '_RR_Time_Series'], 'output_format', ext);
-                    close(af);
-                end
-            elseif strcmpi(ext, 'fig')
-                if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1)
-                    af = figure;
-                    set(af, 'Name', [fig_name, '_NN_Interval_Distribution'], 'NumberTitle', 'off');
-                    plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
-                    savefig(af, [export_path_name, '_NN_Interval_Distribution'], 'compact');
-                    close(af);
-                end
-                if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
-                    if DATA_Fig.export_figures(2)
-                        af = figure;
-                        set(af, 'Name', [fig_name, '_Power_Spectral_Density'], 'NumberTitle', 'off');
-                        plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
-                        savefig(af, [export_path_name, '_Power_Spectral_Density'], 'compact');
-                        close(af);
-                    end
-                    if DATA_Fig.export_figures(3)
-                        af = figure;
-                        set(af, 'Name', [fig_name, '_Beta'], 'NumberTitle', 'off');
-                        plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
-                        savefig(af, [export_path_name, '_Beta'], 'compact');
-                        close(af);
-                    end
-                end
-                if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
-                    if DATA_Fig.export_figures(4)
-                        af = figure;
-                        set(af, 'Name', [fig_name, '_DFA'], 'NumberTitle', 'off');
-                        plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
-                        savefig(af, [export_path_name, '_DFA'], 'compact');
-                        close(af);
-                    end
-                    if DATA_Fig.export_figures(5)
-                        af = figure;
-                        set(af, 'Name', [fig_name, '_MSE'], 'NumberTitle', 'off');
-                        plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
-                        savefig(af, [export_path_name, '_MSE'], 'compact');
-                        close(af);
-                    end
-                    if DATA_Fig.export_figures(6)
-                        af = figure;
-                        set(af, 'Name', [fig_name, '_Poincare_Ellipse'], 'NumberTitle', 'off');
-                        plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
-                        savefig(af, [export_path_name, '_Poincare_Ellipse'], 'compact');
-                        close(af);
-                    end
-                end
+            else
+                errordlg('Please, press Process before saving!', 'Input Error');
             end
             delete( GUI.SaveFiguresWindow );
         else
@@ -2556,18 +2570,27 @@ displayEndOfDemoMessage('');
     end
 %%
     function plot_rr_time_series(ax)
-        
-        plot(ax, DATA.trr, DATA.rri, 'b-', 'LineWidth', 2);
-        hold on
-        line(ax, ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-'); 
+                        
+        XData_active_window = get(GUI.rect_handle(DATA.active_window), 'XData');
+                
+        win_indexes = find(DATA.trr >= XData_active_window(1) & DATA.trr <= XData_active_window(3));
+        filt_win_indexes = find(DATA.tnn >= XData_active_window(1) & DATA.tnn <= XData_active_window(3));
+                
+        if (DATA.PlotHR == 0)
+            plot(ax, DATA.trr(win_indexes), DATA.rri(win_indexes), 'b-', 'LineWidth', 2);
+            hold on
+            plot(ax, DATA.tnn(filt_win_indexes), DATA.nni(filt_win_indexes), 'g-', 'LineWidth', 1);
+            yString = 'RR (sec)';
+        else
+            plot(ax, DATA.trr(win_indexes), 60 ./ DATA.rri(win_indexes), 'b-', 'LineWidth', 2);
+            hold on
+            plot(ax, DATA.tnn(filt_win_indexes), 60 ./ DATA.nni(filt_win_indexes), 'g-', 'LineWidth', 1);
+            yString = 'HR (BPM)';
+        end
         xlabel(ax, 'Time (sec)');
-        ylabel(ax, 'RR (sec)');
+        ylabel(ax, yString);
         
-        %set(ha, 'XLim', );
-        
-         GUI.rect_handle(DATA.active_window)
-        get(GUI.rect_handle(DATA.active_window), 'XData');
-        
+        set(ax, 'XLim', [XData_active_window(1), XData_active_window(3)]);                
     end
 %%
     function onSavePSDAsFile( ~, ~ )
@@ -2584,31 +2607,34 @@ displayEndOfDemoMessage('');
                 end
                 full_file_name_psd = fullfile(results_folder_name, filename);
                 button = 'Yes';
-                if exist([full_file_name_psd '_psd_W' num2str(1) ext], 'file')
+                if exist([full_file_name_psd '_psd_W1' ext], 'file')
                     button = questdlg([full_file_name_psd ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
                 end
                 if strcmp(button, 'Yes')
-                    
-                    if FilterIndex == 1
+                    full_file_name_psd = [full_file_name_psd '_psd_W'];
+                    if FilterIndex == 1                        
                         for i = 1 : DATA.AnalysisParams.winNum
                             plot_data = DATA.FrStat.PlotData{i};
-                            psd_fileID = fopen([full_file_name_psd '_psd_W' num2str(i) ext], 'w');
-                            fprintf(psd_fileID, 'Frequency\tPSD_AR\t\tPSD_Welch\tPSD_Lomb\r\n');
-                            dlmwrite([full_file_name_psd '_psd_W' num2str(i) ext], [plot_data.f_axis plot_data.pxx_ar plot_data.pxx_welch plot_data.pxx_lomb], ...
+                            psd_fileID = fopen([full_file_name_psd num2str(i) ext], 'w');
+                            %fprintf(psd_fileID, 'Frequency\tPSD_AR\t\tPSD_Welch\tPSD_Lomb\r\n');
+                            fprintf(psd_fileID, 'Frequency\tPSD_AR\t\tPSD_Welch\r\n');
+%                             dlmwrite([full_file_name_psd num2str(i) ext], [plot_data.f_axis plot_data.pxx_ar plot_data.pxx_welch plot_data.pxx_lomb], ...
+%                                 'precision', '%.5f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
+                            dlmwrite([full_file_name_psd num2str(i) ext], [plot_data.f_axis plot_data.pxx_ar plot_data.pxx_welch], ...
                                 'precision', '%.5f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
                             fclose(psd_fileID);
                         end
                     else
-                        for i = 1 : WindowNumber
+                        for i = 1 : DATA.AnalysisParams.winNum
                             plot_data = DATA.FrStat.PlotData{i};
                             Frequency = plot_data.f_axis;
                             PSD_AR = plot_data.pxx_ar;
                             PSD_Welch = plot_data.pxx_welch;
-                            PSD_Lomb = plot_data.pxx_lomb;
-                            save([full_file_name_psd '_psd_W' num2str(i) ext], 'Frequency', 'PSD_AR', 'PSD_Welch', 'PSD_Lomb');
+                            %PSD_Lomb = plot_data.pxx_lomb;
+                            %save([full_file_name_psd num2str(i) ext], 'Frequency', 'PSD_AR', 'PSD_Welch', 'PSD_Lomb');
+                            save([full_file_name_psd num2str(i) ext], 'Frequency', 'PSD_AR', 'PSD_Welch');
                         end
-                    end
-                    
+                    end                    
                 end
             end
         else
@@ -2641,19 +2667,20 @@ displayEndOfDemoMessage('');
             end
             
             full_file_name_hea = fullfile(results_folder_name, [filename '_hea.txt']);
-            full_file_name_hrv = fullfile(results_folder_name, [filename '_hrv' ext]);
-            %full_file_name_psd = fullfile(results_folder_name, [filename '_psd_W']);
+            full_file_name_hrv = fullfile(results_folder_name, [filename '_hrv' ext]);            
             
-            button = 'Yes';
-            
+            button = 'Yes';            
             if exist(full_file_name_hrv, 'file')
                 button = questdlg([full_file_name_hrv ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
             end
             
             if strcmp(button, 'Yes')                
                 if ~isempty(DATA.TimeStat) && ~isempty(DATA.FrStat) && ~isempty(DATA.NonLinStat)
-                    AllRowsNames = [DATA.TimeStat.RowsNames; DATA.FrStat.WelchWindowsData.RowsNames; DATA.FrStat.LombWindowsData.RowsNames; DATA.FrStat.ArWindowsData.RowsNames; DATA.NonLinStat.RowsNames];
-                    statistics_params = [DATA.TimeStat.Data; DATA.FrStat.WelchWindowsData.Data; DATA.FrStat.LombWindowsData.Data; DATA.FrStat.ArWindowsData.Data; DATA.NonLinStat.Data];
+%                     AllRowsNames = [DATA.TimeStat.RowsNames; DATA.FrStat.WelchWindowsData.RowsNames; DATA.FrStat.LombWindowsData.RowsNames; DATA.FrStat.ArWindowsData.RowsNames; DATA.NonLinStat.RowsNames];
+%                     statistics_params = [DATA.TimeStat.Data; DATA.FrStat.WelchWindowsData.Data; DATA.FrStat.LombWindowsData.Data; DATA.FrStat.ArWindowsData.Data; DATA.NonLinStat.Data];
+                    
+                    AllRowsNames = [DATA.TimeStat.RowsNames; DATA.FrStat.WelchWindowsData.RowsNames; DATA.FrStat.ArWindowsData.RowsNames; DATA.NonLinStat.RowsNames];
+                    statistics_params = [DATA.TimeStat.Data; DATA.FrStat.WelchWindowsData.Data; DATA.FrStat.ArWindowsData.Data; DATA.NonLinStat.Data];
                     
                     column_names = {'Description'};
                     for i = 1 : DATA.AnalysisParams.winNum
@@ -2661,9 +2688,7 @@ displayEndOfDemoMessage('');
                     end
                     
                     if FilterIndex == 1
-                        header_fileID = fopen(full_file_name_hea, 'w');
-                        %                     hrv_fileID = fopen(full_file_name_hrv, 'w');
-                        
+                        header_fileID = fopen(full_file_name_hea, 'w');                                               
                         fprintf(header_fileID, '#header\r\n');
                         fprintf(header_fileID, 'Record name: %s\r\n\r\n', DATA.DataFileName);
                         fprintf(header_fileID, 'Mammal: %s\r\n', DATA.mammals{ DATA.mammal_index});
@@ -2674,8 +2699,7 @@ displayEndOfDemoMessage('');
                         fprintf(header_fileID, 'Window length: %s\r\n', calcDuration(DATA.AnalysisParams.activeWin_length));
                         fprintf(header_fileID, 'Overlap: %s\r\n', num2str(DATA.AnalysisParams.segment_overlap));
                         fprintf(header_fileID, 'Windows number: %s\r\n', num2str(DATA.AnalysisParams.winNum));
-                        fprintf(header_fileID, 'Number of mammals: 1\r\n');
-                        
+                        fprintf(header_fileID, 'Number of mammals: 1\r\n');                        
                         fclose(header_fileID);
                         
                         max_length_rows_names = max(cellfun(@(x) length(x), AllRowsNames)); % strlength(x)
@@ -2686,16 +2710,7 @@ displayEndOfDemoMessage('');
                         
                         statisticsTable = cell2table(statistics_params, 'RowNames', padded_rows_names); %, 'VariableNames', column_names);
                         statisticsTable.Properties.DimensionNames(1) = {'Measures'};
-                        writetable(statisticsTable, full_file_name_hrv, 'Delimiter', '\t', 'WriteRowNames', true, 'WriteVariableNames', false);
-                        
-%                         for i = 1 : DATA.AnalysisParams.winNum
-%                             plot_data = DATA.FrStat.PlotData{i};
-%                             psd_fileID = fopen([full_file_name_psd num2str(i) ext], 'w');
-%                             fprintf(psd_fileID, 'Frequency\tPSD_AR\t\tPSD_Welch\tPSD_Lomb\r\n');
-%                             dlmwrite([full_file_name_psd num2str(i) ext], [plot_data.f_axis plot_data.pxx_ar plot_data.pxx_welch plot_data.pxx_lomb], ...
-%                                 'precision', '%.5f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
-%                             fclose(psd_fileID);
-%                         end
+                        writetable(statisticsTable, full_file_name_hrv, 'Delimiter', '\t', 'WriteRowNames', true, 'WriteVariableNames', false);                        
                     else
                         RecordName = DATA.DataFileName;
                         Mammal = DATA.mammals{ DATA.mammal_index};
@@ -2708,28 +2723,11 @@ displayEndOfDemoMessage('');
                         WindowNumber = DATA.AnalysisParams.winNum;
                         MammalsNumber = 1;
                         
-                        
-                        
                         statisticsTable = cell2table(statistics_params, 'RowNames', AllRowsNames, 'VariableNames', column_names);
                         statisticsTable.Properties.DimensionNames(1) = {'Measures'};
                         
-                        %                     TimeDomainData = DATA.hrv_td;
-                        %                     FrequencyDomainData = DATA.hrv_fd;
-                        %                     NonLinearData = DATA.hrv_nl;
                         save(full_file_name_hrv, 'RecordName', 'Mammal', 'IntegrationLevel', 'Filtering', 'WindowStart', 'WindowEnd', 'WindowLength', 'Overlap', 'WindowNumber', 'MammalsNumber',...
-                            'statisticsTable');
-                        
-%                         for i = 1 : WindowNumber
-%                             
-%                             plot_data = DATA.FrStat.PlotData{i};
-%                             
-%                             Frequency = plot_data.f_axis;
-%                             PSD_AR = plot_data.pxx_ar;
-%                             PSD_Welch = plot_data.pxx_welch;
-%                             PSD_Lomb = plot_data.pxx_lomb;
-%                             
-%                             save([full_file_name_psd num2str(i) ext], 'Frequency', 'PSD_AR', 'PSD_Welch', 'PSD_Lomb');
-%                         end
+                            'statisticsTable');                        
                     end
                 else
                     errordlg('Please, press Process before saving!', 'Input Error');
@@ -2737,7 +2735,6 @@ displayEndOfDemoMessage('');
             end
         end
     end
-
 %%
     function onPhysioZooHome( ~, ~ )
         url = 'http://www.physiozoo.com/';
@@ -3289,17 +3286,20 @@ displayEndOfDemoMessage('');
                 waitbar(2 / 3, waitbar_handle, ['Calculating frequency measures for window ' num2str(i)]);
                 % Freq domain metrics
                 fprintf('[win % d: %.3f] >> rhrv: Calculating frequency-domain metrics...\n', i, cputime-t0);
-                [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'lomb','welch','ar'},...
-                    'power_methods', {'lomb','welch','ar'});
+%                 [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'lomb','welch','ar'},...
+%                     'power_methods', {'lomb','welch','ar'});
+%                 
+                [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'},...
+                    'power_methods', {'welch','ar'});
                 
                 
                 DATA.FrStat.PlotData{i} = pd_freq;
                 
-                hrv_fd_lomb = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, '_lomb')), hrv_fd.Properties.VariableNames)));
+                %hrv_fd_lomb = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, '_lomb')), hrv_fd.Properties.VariableNames)));
                 hrv_fd_ar = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, '_ar')), hrv_fd.Properties.VariableNames)));
                 hrv_fd_welch = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, 'welch')), hrv_fd.Properties.VariableNames)));
                 
-                [fd_lombData, fd_LombRowsNames, fd_lombDescriptions] = table2cell_StatisticsParam(hrv_fd_lomb);
+                %[fd_lombData, fd_LombRowsNames, fd_lombDescriptions] = table2cell_StatisticsParam(hrv_fd_lomb);
                 [fd_arData, fd_ArRowsNames, fd_ArDescriptions] = table2cell_StatisticsParam(hrv_fd_ar);
                 [fd_welchData, fd_WelchRowsNames, fd_WelchDescriptions] = table2cell_StatisticsParam(hrv_fd_welch);
                 
@@ -3308,10 +3308,11 @@ displayEndOfDemoMessage('');
                     %                     GUI.FrequencyParametersTableLombRowName = fd_LombRowsNames;
                     %                     GUI.FrequencyParametersTableRowName = strrep(fd_LombRowsNames,'_LOMB','');
                     
-                    GUI.FrequencyParametersTableLombRowName = fd_WelchRowsNames;
+                    %GUI.FrequencyParametersTableLombRowName = fd_WelchRowsNames;
                     GUI.FrequencyParametersTableRowName = strrep(fd_WelchRowsNames,'_WELCH','');
                     
-                    GUI.FrequencyParametersTable.Data = [GUI.FrequencyParametersTableRowName fd_lombData fd_welchData fd_arData];
+                    %GUI.FrequencyParametersTable.Data = [GUI.FrequencyParametersTableRowName fd_lombData fd_welchData fd_arData];
+                    GUI.FrequencyParametersTable.Data = [GUI.FrequencyParametersTableRowName fd_welchData fd_arData];
                     
                     %DATA.pd_freq = pd_freq;
                     plot_frequency_statistics_results(i);
@@ -3326,16 +3327,16 @@ displayEndOfDemoMessage('');
             
             if i == 1
                 
-                DATA.FrStat.LombWindowsData.RowsNames = fd_LombRowsNames;
+                %DATA.FrStat.LombWindowsData.RowsNames = fd_LombRowsNames;
                 DATA.FrStat.ArWindowsData.RowsNames = fd_ArRowsNames;
                 DATA.FrStat.WelchWindowsData.RowsNames = fd_WelchRowsNames;
                 
-                DATA.FrStat.LombWindowsData.Data = [fd_lombDescriptions fd_lombData];
+                %DATA.FrStat.LombWindowsData.Data = [fd_lombDescriptions fd_lombData];
                 DATA.FrStat.ArWindowsData.Data = [fd_ArDescriptions fd_arData];
                 DATA.FrStat.WelchWindowsData.Data = [fd_WelchDescriptions fd_welchData];
             else
                 
-                DATA.FrStat.LombWindowsData.Data = [DATA.FrStat.LombWindowsData.Data fd_lombData];
+                %DATA.FrStat.LombWindowsData.Data = [DATA.FrStat.LombWindowsData.Data fd_lombData];
                 DATA.FrStat.ArWindowsData.Data = [DATA.FrStat.ArWindowsData.Data fd_arData];
                 DATA.FrStat.WelchWindowsData.Data = [DATA.FrStat.WelchWindowsData.Data fd_welchData];
             end
@@ -3480,7 +3481,8 @@ displayEndOfDemoMessage('');
             plot_time_statistics_results(DATA.active_window);
         end
         if isfield(DATA, 'FrStat') && ~isempty(DATA.FrStat)
-            GUI.FrequencyParametersTable.Data = [strrep(DATA.FrStat.WelchWindowsData.RowsNames,'_WELCH', '') DATA.FrStat.LombWindowsData.Data(:, DATA.active_window + 1) DATA.FrStat.WelchWindowsData.Data(:, DATA.active_window + 1) DATA.FrStat.ArWindowsData.Data(:, DATA.active_window + 1)];
+            %GUI.FrequencyParametersTable.Data = [strrep(DATA.FrStat.WelchWindowsData.RowsNames,'_WELCH', '') DATA.FrStat.LombWindowsData.Data(:, DATA.active_window + 1) DATA.FrStat.WelchWindowsData.Data(:, DATA.active_window + 1) DATA.FrStat.ArWindowsData.Data(:, DATA.active_window + 1)];
+            GUI.FrequencyParametersTable.Data = [strrep(DATA.FrStat.WelchWindowsData.RowsNames,'_WELCH', '') DATA.FrStat.WelchWindowsData.Data(:, DATA.active_window + 1) DATA.FrStat.ArWindowsData.Data(:, DATA.active_window + 1)];
             plot_frequency_statistics_results(DATA.active_window);
         end
         if isfield(DATA, 'NonLinStat') && ~isempty(DATA.NonLinStat)

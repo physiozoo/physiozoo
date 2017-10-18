@@ -446,7 +446,7 @@ displayEndOfDemoMessage('');
         set( GUI.YLimitBox, 'Widths', [170, 67, 5, 65 -1]  ); %[140, -17, -5, -17 100] [-37, -17, -5, -16 -16] [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]
         
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 24 -7] );
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 24 -20] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
         %---------------------------
         
         uix.Empty( 'Parent', GUI.BatchBox );
@@ -599,7 +599,23 @@ displayEndOfDemoMessage('');
             current_field = param_map(field_name);
             current_field_value = current_field.value;
             
-            uicontrol( 'Style', 'text', 'Parent', HBox, 'String', current_field.name, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
+            field_name = current_field.name;
+            if contains(field_name, 'Alpha1')
+                field_name = strrep(field_name, 'Alpha1', '');
+                field_name = [sprintf('\x3b1\x2081') field_name];
+            end
+            
+            if contains(field_name, 'Alpha2')
+                field_name = strrep(field_name, 'Alpha2', '');
+                field_name = [sprintf('\x3b1\x2082') field_name];
+            end
+            
+            if contains(field_name, 'Beta')
+                field_name = strrep(field_name, 'Beta', '');
+                field_name = [sprintf('\x3b2') field_name];
+            end
+            
+            uicontrol( 'Style', 'text', 'Parent', HBox, 'String', field_name, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
             
             fields_size = [150, 125, -1]; %[125, -1, 90] [-40, -27, -25]
             %             if ischar(current_field_value)
@@ -2352,7 +2368,8 @@ displayEndOfDemoMessage('');
         %         end
         set_defaults_path();
         
-        FiguresNames = {'NN Interval Distribution'; 'Power Spectral Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare Ellipse'; 'RR Time Series'};
+        GUIFiguresNames = {'NN Interval Distribution'; 'Power Spectral Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare Ellipse'; 'RR Time Series'};
+        DATA.FiguresNames = {'_NN_Interval_Distribution'; '_Power_Spectral_Density'; '_Beta'; '_DFA'; '_MSE'; '_Poincare_Ellipse'; '_RR_Time_Series'};
         
         if ~isfield(DATA_Fig, 'export_figures')
             DATA_Fig.export_figures = [1 1 1 1 1 1 1];
@@ -2375,7 +2392,7 @@ displayEndOfDemoMessage('');
         
         for i = 1 : 7
             uicontrol( 'Style', 'checkbox', 'Parent', figures_box, 'Callback', {@figures_checkbox_Callback, i}, 'FontSize', DATA.BigFontSize, ...
-                'Tag', ['Fig' num2str(i)], 'String', FiguresNames{i}, 'FontName', 'Calibri', 'Value', DATA_Fig.export_figures(i));            
+                'Tag', ['Fig' num2str(i)], 'String', GUIFiguresNames{i}, 'FontName', 'Calibri', 'Value', DATA_Fig.export_figures(i));            
         end
         
         main_path_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures path:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
@@ -2446,117 +2463,137 @@ displayEndOfDemoMessage('');
             
             export_path_name = [fig_path filesep fig_name];
             
+            yes_no = zeros(length(DATA.FiguresNames));
+            for i = 1 : length(DATA.FiguresNames)
+                if DATA_Fig.export_figures(i)
+                    full_file_name = [export_path_name DATA.FiguresNames{i} '.' ext];
+                    button = 'Yes';
+                    if exist(full_file_name, 'file')
+                        button = questdlg([full_file_name ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
+                    end
+                    if strcmp(button, 'Yes')
+                        yes_no(i) = 1;
+                    end
+                end
+            end            
+            
             if ~isempty(DATA.TimeStat) || ~isempty(DATA.FrStat) || ~isempty(DATA.NonLinStat)
                 
-                if ~strcmpi(ext, 'fig')
-                    
-                    if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1)
+                if ~strcmpi(ext, 'fig')                    
+                    if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1) && yes_no(1)
                         af = figure;
                         set(af, 'Visible', 'off')
                         plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
-                        fig_print( af, [export_path_name, '_NN_Interval_Distribution'], 'output_format', ext);
+                        fig_print( af, [export_path_name, DATA.FiguresNames{1}], 'output_format', ext, 'title', figure_title(fig_name, 1));
                         close(af);
                     end
                     
                     if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
-                        if DATA_Fig.export_figures(2)
+                        if DATA_Fig.export_figures(2) && yes_no(2)
                             af = figure;
                             set(af, 'Visible', 'off')
                             plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
-                            fig_print( af, [export_path_name, '_Power_Spectral_Density'], 'output_format', ext);
+                            fig_print( af, [export_path_name, DATA.FiguresNames{2}], 'output_format', ext, 'title', figure_title(fig_name, 2));
                             close(af);
                         end
-                        if DATA_Fig.export_figures(3)
+                        if DATA_Fig.export_figures(3) && yes_no(3)
                             af = figure;
                             set(af, 'Visible', 'off')
                             plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
-                            fig_print( af, [export_path_name, '_Beta'], 'output_format', ext);
+                            fig_print( af, [export_path_name, DATA.FiguresNames{3}], 'output_format', ext, 'title', figure_title(fig_name, 3));
                             close(af);
                         end
                     end
                     
                     if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
-                        if DATA_Fig.export_figures(4)
+                        if DATA_Fig.export_figures(4) && yes_no(4)
                             af = figure;
                             set(af, 'Visible', 'off')
                             plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
-                            fig_print( af, [export_path_name, '_DFA'], 'output_format', ext);
+                            fig_print( af, [export_path_name, DATA.FiguresNames{4}], 'output_format', ext, 'title', figure_title(fig_name, 4));
                             close(af);
                         end
-                        if DATA_Fig.export_figures(5)
+                        if DATA_Fig.export_figures(5) && yes_no(5)
                             af = figure;
                             set(af, 'Visible', 'off')
                             plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
-                            fig_print( af, [export_path_name, '_MSE'], 'output_format', ext);
+                            fig_print( af, [export_path_name, DATA.FiguresNames{5}], 'output_format', ext, 'title', figure_title(fig_name, 5));
                             close(af);
                         end
-                        if DATA_Fig.export_figures(6)
+                        if DATA_Fig.export_figures(6) && yes_no(6)
                             af = figure;
                             set(af, 'Visible', 'off')
                             plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
-                            fig_print( af, [export_path_name, '_Poincare_Ellipse'], 'output_format', ext);
+                            fig_print( af, [export_path_name, DATA.FiguresNames{6}], 'output_format', ext, 'title', figure_title(fig_name, 6));
                             close(af);
                         end
                     end
-                    if DATA_Fig.export_figures(7)
+                    if DATA_Fig.export_figures(7) && yes_no(7)
                         af = figure;
                         set(af, 'Visible', 'off')
                         plot_rr_time_series(gca);
-                        fig_print( af, [export_path_name, '_RR_Time_Series'], 'output_format', ext);
+                        fig_print( af, [export_path_name, DATA.FiguresNames{7}], 'output_format', ext, 'title', figure_title(fig_name, 7));
                         close(af);
                     end
                 elseif strcmpi(ext, 'fig')
-                    if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1)
+                    if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1) && yes_no(1)
                         af = figure;
-                        set(af, 'Name', [fig_name, '_NN_Interval_Distribution'], 'NumberTitle', 'off');
+                        set(af, 'Name', [fig_name, DATA.FiguresNames{1}], 'NumberTitle', 'off');
                         plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
-                        savefig(af, [export_path_name, '_NN_Interval_Distribution'], 'compact');
+                        title(gca, figure_title(fig_name, 1));
+                        savefig(af, [export_path_name, DATA.FiguresNames{1}], 'compact');
                         close(af);
                     end
                     if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
-                        if DATA_Fig.export_figures(2)
+                        if DATA_Fig.export_figures(2) && yes_no(2)
                             af = figure;
-                            set(af, 'Name', [fig_name, '_Power_Spectral_Density'], 'NumberTitle', 'off');
+                            set(af, 'Name', [fig_name, DATA.FiguresNames{2}], 'NumberTitle', 'off');
                             plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
-                            savefig(af, [export_path_name, '_Power_Spectral_Density'], 'compact');
+                            title(gca, figure_title(fig_name, 2));
+                            savefig(af, [export_path_name, DATA.FiguresNames{2}], 'compact');
                             close(af);
                         end
-                        if DATA_Fig.export_figures(3)
+                        if DATA_Fig.export_figures(3) && yes_no(3)
                             af = figure;
-                            set(af, 'Name', [fig_name, '_Beta'], 'NumberTitle', 'off');
+                            set(af, 'Name', [fig_name, DATA.FiguresNames{3}], 'NumberTitle', 'off');
                             plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
-                            savefig(af, [export_path_name, '_Beta'], 'compact');
+                            title(gca, figure_title(fig_name, 3));
+                            savefig(af, [export_path_name, DATA.FiguresNames{3}], 'compact');
                             close(af);
                         end
                     end
                     if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
-                        if DATA_Fig.export_figures(4)
+                        if DATA_Fig.export_figures(4) && yes_no(4)
                             af = figure;
-                            set(af, 'Name', [fig_name, '_DFA'], 'NumberTitle', 'off');
+                            set(af, 'Name', [fig_name, DATA.FiguresNames{4}], 'NumberTitle', 'off');
                             plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
-                            savefig(af, [export_path_name, '_DFA'], 'compact');
+                            title(gca, figure_title(fig_name, 4));
+                            savefig(af, [export_path_name, DATA.FiguresNames{4}], 'compact');
                             close(af);
                         end
-                        if DATA_Fig.export_figures(5)
+                        if DATA_Fig.export_figures(5) && yes_no(5)
                             af = figure;
-                            set(af, 'Name', [fig_name, '_MSE'], 'NumberTitle', 'off');
+                            set(af, 'Name', [fig_name, DATA.FiguresNames{5}], 'NumberTitle', 'off');
                             plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
-                            savefig(af, [export_path_name, '_MSE'], 'compact');
+                            title(gca, figure_title(fig_name, 5));
+                            savefig(af, [export_path_name, DATA.FiguresNames{5}], 'compact');
                             close(af);
                         end
-                        if DATA_Fig.export_figures(6)
+                        if DATA_Fig.export_figures(6) && yes_no(6)
                             af = figure;
-                            set(af, 'Name', [fig_name, '_Poincare_Ellipse'], 'NumberTitle', 'off');
+                            set(af, 'Name', [fig_name, DATA.FiguresNames{6}], 'NumberTitle', 'off');
                             plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
-                            savefig(af, [export_path_name, '_Poincare_Ellipse'], 'compact');
+                            title(gca, figure_title(fig_name, 6));
+                            savefig(af, [export_path_name, DATA.FiguresNames{6}], 'compact');
                             close(af);
                         end
                     end
-                    if DATA_Fig.export_figures(7)
+                    if DATA_Fig.export_figures(7) && yes_no(7)
                         af = figure;
-                        set(af, 'Name', [fig_name, '_RR_Time_Series'], 'NumberTitle', 'off');
+                        set(af, 'Name', [fig_name, DATA.FiguresNames{7}], 'NumberTitle', 'off');
                         plot_rr_time_series(gca);
-                        savefig(af, [export_path_name, '_RR_Time_Series'], 'compact');
+                        title(gca, figure_title(fig_name, 7));
+                        savefig(af, [export_path_name, DATA.FiguresNames{7}], 'compact');
                         close(af);
                     end
                 end
@@ -2567,6 +2604,10 @@ displayEndOfDemoMessage('');
         else
             errordlg('Please enter valid path for export figures', 'Input Error');
         end
+    end
+%%
+    function figure_title = figure_title(fig_name, title_number)
+        figure_title = [strrep(fig_name,  '_', '\_'), strrep(DATA.FiguresNames{title_number}, '_', '\_')] ;
     end
 %%
     function plot_rr_time_series(ax)
@@ -2679,7 +2720,7 @@ displayEndOfDemoMessage('');
 %                     AllRowsNames = [DATA.TimeStat.RowsNames; DATA.FrStat.WelchWindowsData.RowsNames; DATA.FrStat.LombWindowsData.RowsNames; DATA.FrStat.ArWindowsData.RowsNames; DATA.NonLinStat.RowsNames];
 %                     statistics_params = [DATA.TimeStat.Data; DATA.FrStat.WelchWindowsData.Data; DATA.FrStat.LombWindowsData.Data; DATA.FrStat.ArWindowsData.Data; DATA.NonLinStat.Data];
                     
-                    AllRowsNames = [DATA.TimeStat.RowsNames; DATA.FrStat.WelchWindowsData.RowsNames; DATA.FrStat.ArWindowsData.RowsNames; DATA.NonLinStat.RowsNames];
+                    AllRowsNames = [DATA.TimeStat.RowsNames; DATA.FrStat.WelchWindowsData.RowsNames_NO_GreekLetters; DATA.FrStat.ArWindowsData.RowsNames_NO_GreekLetters; DATA.NonLinStat.RowsNames_NO_GreekLetters];
                     statistics_params = [DATA.TimeStat.Data; DATA.FrStat.WelchWindowsData.Data; DATA.FrStat.ArWindowsData.Data; DATA.NonLinStat.Data];
                     
                     column_names = {'Description'};
@@ -3302,6 +3343,20 @@ displayEndOfDemoMessage('');
                 %[fd_lombData, fd_LombRowsNames, fd_lombDescriptions] = table2cell_StatisticsParam(hrv_fd_lomb);
                 [fd_arData, fd_ArRowsNames, fd_ArDescriptions] = table2cell_StatisticsParam(hrv_fd_ar);
                 [fd_welchData, fd_WelchRowsNames, fd_WelchDescriptions] = table2cell_StatisticsParam(hrv_fd_welch);
+                fd_ArRowsNames_NO_GreekLetters = fd_ArRowsNames;
+                fd_WelchRowsNames_NO_GreekLetters = fd_WelchRowsNames;
+                
+                for j = 1 : length(fd_ArRowsNames)
+                    if contains(fd_ArRowsNames{j}, 'BETA')
+                        fd_ArRowsNames{j} = [sprintf('\x3b2') strrep(fd_ArRowsNames{j}, 'BETA', '')];
+                    end                     
+                end
+                
+                for j = 1 : length(fd_WelchRowsNames)
+                    if contains(fd_WelchRowsNames{j}, 'BETA')
+                        fd_WelchRowsNames{j} = [sprintf('\x3b2') strrep(fd_WelchRowsNames{j}, 'BETA', '')];
+                    end                     
+                end
                 
                 if i == DATA.active_window
                     
@@ -3330,6 +3385,9 @@ displayEndOfDemoMessage('');
                 %DATA.FrStat.LombWindowsData.RowsNames = fd_LombRowsNames;
                 DATA.FrStat.ArWindowsData.RowsNames = fd_ArRowsNames;
                 DATA.FrStat.WelchWindowsData.RowsNames = fd_WelchRowsNames;
+                
+                DATA.FrStat.ArWindowsData.RowsNames_NO_GreekLetters = fd_ArRowsNames_NO_GreekLetters;
+                DATA.FrStat.WelchWindowsData.RowsNames_NO_GreekLetters = fd_WelchRowsNames_NO_GreekLetters;
                 
                 %DATA.FrStat.LombWindowsData.Data = [fd_lombDescriptions fd_lombData];
                 DATA.FrStat.ArWindowsData.Data = [fd_ArDescriptions fd_arData];
@@ -3370,6 +3428,25 @@ displayEndOfDemoMessage('');
                 DATA.NonLinStat.PlotData{i} = pd_nl;
                 
                 [nonlinData, nonlinRowsNames, nonlinDescriptions] = table2cell_StatisticsParam(hrv_nl);
+                nonlinRowsNames_NO_GreekLetters = nonlinRowsNames;
+                
+                for j = 1 : length(nonlinRowsNames)
+                    if contains(nonlinRowsNames{j}, 'alpha1')
+                        nonlinRowsNames{j} = [sprintf('\x3b1\x2081') strrep(nonlinRowsNames{j}, 'alpha1', '')];
+                    end
+                     if contains(nonlinRowsNames{j}, 'alpha2')
+                        nonlinRowsNames{j} = [sprintf('\x3b1\x2082') strrep(nonlinRowsNames{j}, 'alpha2', '')];
+                     end
+                    if contains(nonlinRowsNames{j}, 'SD1')
+                        nonlinRowsNames{j} = [sprintf('SD\x2081') strrep(nonlinRowsNames{j}, 'SD1', '')];
+                    end
+                    if contains(nonlinRowsNames{j}, 'SD2')
+                        nonlinRowsNames{j} = [sprintf('SD\x2082') strrep(nonlinRowsNames{j}, 'SD2', '')];
+                    end
+                end
+                
+                 %nonlinRowsNames = cellfun(@(x) [sprintf('\x3b1') strrep(x, 'alpha', '')], nonlinRowsNames, 'UniformOutput',  false);
+                
                 
                 if i == DATA.active_window
                     GUI.NonLinearTableRowName = nonlinRowsNames;
@@ -3387,6 +3464,7 @@ displayEndOfDemoMessage('');
             end
             if i == 1
                 DATA.NonLinStat.RowsNames = nonlinRowsNames;
+                DATA.NonLinStat.RowsNames_NO_GreekLetters = nonlinRowsNames_NO_GreekLetters;
                 DATA.NonLinStat.Data = [nonlinDescriptions nonlinData];
             else
                 DATA.NonLinStat.Data = [DATA.NonLinStat.Data nonlinData];

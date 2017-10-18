@@ -248,7 +248,7 @@ displayEndOfDemoMessage('');
         
         
         DATA.zoom_handle = zoom(GUI.Window);
-        DATA.zoom_handle.Motion = 'vertical';
+        %DATA.zoom_handle.Motion = 'vertical';
         DATA.zoom_handle.Enable = 'on';
         DATA.zoom_handle.ButtonDownFilter = @zoom_handle_ButtonDownFilter;
         
@@ -451,7 +451,7 @@ displayEndOfDemoMessage('');
         
         uix.Empty( 'Parent', GUI.BatchBox );
         
-        field_size = [120, 110, -1]; %150, 120, -1
+        field_size = [130, 110, -1]; %150, 120, -1
         
         BatchStartTimeBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', BatchStartTimeBox, 'String', 'Segment start', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
@@ -464,7 +464,7 @@ displayEndOfDemoMessage('');
         GUI.segment_endTime = uicontrol( 'Style', 'edit', 'Parent', BatchEndTimeBox, 'FontSize', SmallFontSize, 'Callback', @batch_Edit_Callback, 'Tag', 'segment_endTime');      
         uicontrol( 'Style', 'text', 'Parent', BatchEndTimeBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         uicontrol( 'Style', 'PushButton', 'Parent', BatchEndTimeBox, 'Callback', @Full_Length_pushbutton_Callback, 'FontSize', 10, 'String', 'Use full length');
-        set( BatchEndTimeBox, 'Widths', [120, 110, 90, 95] ); % 85
+        set( BatchEndTimeBox, 'Widths', [130, 110, 90, 95] ); % 85
         
         BatchWindowLengthBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', BatchWindowLengthBox, 'String', 'Window length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
@@ -479,13 +479,13 @@ displayEndOfDemoMessage('');
         set( BatchOverlapBox, 'Widths', field_size  );
         
         BatchActWinNumBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', BatchActWinNumBox, 'String', 'Selected Window', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        uicontrol( 'Style', 'text', 'Parent', BatchActWinNumBox, 'String', 'Selected window', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.active_winNum = uicontrol( 'Style', 'edit', 'Parent', BatchActWinNumBox, 'FontSize', SmallFontSize, 'Callback', @active_winNum_Edit_Callback, 'Tag', 'active_winNum', 'Enable', 'inactive');      
         uix.Empty( 'Parent', BatchActWinNumBox );
         set( BatchActWinNumBox, 'Widths', field_size );
         
         BatchWinNumBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', BatchWinNumBox, 'String', 'Windows number', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        uicontrol( 'Style', 'text', 'Parent', BatchWinNumBox, 'String', 'Number of windows', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.segment_winNum = uicontrol( 'Style', 'text', 'Parent', BatchWinNumBox, 'FontSize', SmallFontSize, 'Callback', @batch_Edit_Callback, 'Tag', 'winNum', 'Enable', 'inactive');      
         uix.Empty( 'Parent', BatchWinNumBox );
         set( BatchWinNumBox, 'Widths', field_size );              
@@ -600,17 +600,17 @@ displayEndOfDemoMessage('');
             current_field_value = current_field.value;
             
             field_name = current_field.name;
-            if contains(field_name, 'Alpha1')
+            if ~isempty(strfind(field_name, 'Alpha1'))
                 field_name = strrep(field_name, 'Alpha1', '');
                 field_name = [sprintf('\x3b1\x2081') field_name];
             end
             
-            if contains(field_name, 'Alpha2')
+            if ~isempty(strfind(field_name, 'Alpha2'))
                 field_name = strrep(field_name, 'Alpha2', '');
                 field_name = [sprintf('\x3b1\x2082') field_name];
             end
             
-            if contains(field_name, 'Beta')
+            if ~isempty(strfind(field_name, 'Beta'))
                 field_name = strrep(field_name, 'Beta', '');
                 field_name = [sprintf('\x3b2') field_name];
             end
@@ -3347,13 +3347,13 @@ displayEndOfDemoMessage('');
                 fd_WelchRowsNames_NO_GreekLetters = fd_WelchRowsNames;
                 
                 for j = 1 : length(fd_ArRowsNames)
-                    if contains(fd_ArRowsNames{j}, 'BETA')
+                    if ~isempty(strfind(fd_ArRowsNames{j}, 'BETA'))
                         fd_ArRowsNames{j} = [sprintf('\x3b2') strrep(fd_ArRowsNames{j}, 'BETA', '')];
                     end                     
                 end
                 
                 for j = 1 : length(fd_WelchRowsNames)
-                    if contains(fd_WelchRowsNames{j}, 'BETA')
+                    if ~isempty(strfind(fd_WelchRowsNames{j}, 'BETA'))
                         fd_WelchRowsNames{j} = [sprintf('\x3b2') strrep(fd_WelchRowsNames{j}, 'BETA', '')];
                     end                     
                 end
@@ -3431,16 +3431,16 @@ displayEndOfDemoMessage('');
                 nonlinRowsNames_NO_GreekLetters = nonlinRowsNames;
                 
                 for j = 1 : length(nonlinRowsNames)
-                    if contains(nonlinRowsNames{j}, 'alpha1')
+                    if ~isempty(strfind(nonlinRowsNames{j}, 'alpha1'))
                         nonlinRowsNames{j} = [sprintf('\x3b1\x2081') strrep(nonlinRowsNames{j}, 'alpha1', '')];
                     end
-                     if contains(nonlinRowsNames{j}, 'alpha2')
+                     if ~isempty(strfind(nonlinRowsNames{j}, 'alpha2'))
                         nonlinRowsNames{j} = [sprintf('\x3b1\x2082') strrep(nonlinRowsNames{j}, 'alpha2', '')];
                      end
-                    if contains(nonlinRowsNames{j}, 'SD1')
+                    if ~isempty(strfind(nonlinRowsNames{j}, 'SD1'))
                         nonlinRowsNames{j} = [sprintf('SD\x2081') strrep(nonlinRowsNames{j}, 'SD1', '')];
                     end
-                    if contains(nonlinRowsNames{j}, 'SD2')
+                    if ~isempty(strfind(nonlinRowsNames{j}, 'SD2'))
                         nonlinRowsNames{j} = [sprintf('SD\x2082') strrep(nonlinRowsNames{j}, 'SD2', '')];
                     end
                 end

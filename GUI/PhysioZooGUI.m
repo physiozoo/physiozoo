@@ -2744,10 +2744,12 @@ displayEndOfDemoMessage('');
                         fclose(header_fileID);
                         
                         max_length_rows_names = max(cellfun(@(x) length(x), AllRowsNames)); % strlength(x)
-                        padded_rows_names = cellfun(@(x) [pad(x, max_length_rows_names) ':'], AllRowsNames, 'UniformOutput', false );
+                        %padded_rows_names = cellfun(@(x) [pad(x, max_length_rows_names) ':'], AllRowsNames, 'UniformOutput', false );
+                        padded_rows_names = cellfun(@(x) [(x) ':'], AllRowsNames, 'UniformOutput', false );
                         
                         max_length_descr = max(cellfun(@(x) length(x), statistics_params(:, 1)));
-                        statistics_params(:, 1) = cellfun(@(x) pad(x, max_length_descr), statistics_params(:, 1), 'UniformOutput', false );
+                        %statistics_params(:, 1) = cellfun(@(x) pad(x, max_length_descr), statistics_params(:, 1), 'UniformOutput', false );
+                        statistics_params(:, 1) = cellfun(@(x) (x), statistics_params(:, 1), 'UniformOutput', false );
                         
                         statisticsTable = cell2table(statistics_params, 'RowNames', padded_rows_names); %, 'VariableNames', column_names);
                         statisticsTable.Properties.DimensionNames(1) = {'Measures'};

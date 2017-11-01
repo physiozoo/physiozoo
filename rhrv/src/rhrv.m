@@ -6,6 +6,11 @@ function [ hrv_metrics, hrv_stats, plot_datas ] = rhrv( rec_name, varargin )
 %       - rec_name: Path and name of a wfdb record's files e.g. db/mitdb/100 if the record files (both
 %                   100.dat and 100.hea) are in a folder named 'db/mitdb' relative to MATLABs pwd.
 %       - varargin: Pass in name-value pairs to configure advanced options:
+%           - ecg_channel: The channel number to use (in case the record has more than one). If not
+%                          provided, rhrv will attempt to use the first channel that has ECG data.
+%           - ann_ext: Specify an annotation file extention to use instead of loading the record
+%            itself (.dat file). If provided, RR intervals will be loaded from the annotation file
+%            instead of from the ECG.  Default: empty (don't use annotation).
 %           - window_minutes: Split ECG signal into windows of the specified length (in minutes)
 %                             and perform the analysis on each window separately.
 %           - window_index_offset: Number of windows to skip from the beginning.
@@ -33,6 +38,7 @@ function [ hrv_metrics, hrv_stats, plot_datas ] = rhrv( rec_name, varargin )
 
 % Defaults
 DEFAULT_ECG_CHANNEL = [];
+DEFAULT_ANN_EXT = '';
 DEFAULT_WINDOW_MINUTES = Inf;
 DEFAULT_WINDOW_INDEX_LIMIT = Inf;
 DEFAULT_WINDOW_INDEX_OFFSET = 0;
@@ -41,7 +47,8 @@ DEFAULT_PARAMS = '';
 % Define input
 p = inputParser;
 
-p.addRequired('rec_name', @isrecord);
+p.addRequired('rec_name');
+p.addParameter('ann_ext', DEFAULT_ANN_EXT, @(x) ischar(x));
 p.addParameter('ecg_channel', DEFAULT_ECG_CHANNEL, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('window_minutes', DEFAULT_WINDOW_MINUTES, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
 p.addParameter('window_index_limit', DEFAULT_WINDOW_INDEX_LIMIT, @(x) isnumeric(x) && numel(x) < 2 && x > 0);
@@ -52,6 +59,7 @@ p.addParameter('plot', nargout == 0,  @(x) isscalar(x) && islogical(x));
 
 % Get input
 p.parse(rec_name, varargin{:});
+ann_ext = p.Results.ann_ext;
 ecg_channel = p.Results.ecg_channel;
 window_minutes = p.Results.window_minutes;
 window_index_limit = p.Results.window_index_limit;
@@ -64,8 +72,8 @@ should_plot = p.Results.plot;
 %% Make sure toolbox is set up
 
 % Find the rhrv_init script path (we don't assume it's in the matlab path until it's run)
-[curr_folder, ~, ~] = fileparts(mfilename('fullpath'));
-[parent_folder, ~, ~] = fileparts(curr_folder);
+[curr_folder, ~, ~] = file_parts(mfilename('fullpath'));
+[parent_folder, ~, ~] = file_parts(curr_folder);
 init_path = [parent_folder filesep 'rhrv_init.m'];
 
 % Run rhrv_init. This won't actually do anything if it has already run before.
@@ -80,7 +88,21 @@ if ~isempty(params)
     end
 end
 
-%% Process ECG Signal
+%% Process ECG Signal or Annotations
+
+%% Make sure rec_name is valid - has either data or annotation
+if isempty(ann_ext)
+    if ~isrecord(rec_name)
+        error('Invalid record name %s', rec_name);
+    end
+    rr_intervals_source = 'ECG';
+else
+    if ~isrecord(rec_name, ann_ext)
+        error('Invalid record name %s: Can''t find annotator %s', rec_name, ann_ext);
+    end
+    rr_intervals_source = sprintf('annotator (%s)', ann_ext);
+end
+
 % Save processing start time
 t0 = cputime;
 
@@ -93,7 +115,7 @@ if isempty(ecg_channel)
         ecg_channel = default_ecg_channel;
     end
 end
-fprintf('[%.3f] >> rhrv: Processing ECG signal from record %s (ch. %d)...\n', cputime-t0, rec_name, ecg_channel);
+fprintf('[%.3f] >> rhrv: Processing record %s (ch. %d)...\n', cputime-t0, rec_name, ecg_channel);
 
 % Length of signal in seconds
 t_max = floor(ecg_N / ecg_Fs);
@@ -121,7 +143,7 @@ end
 window_max_index = min(num_win, window_index_offset + window_index_limit) - 1;
 
 % Output initialization
-hrv_metrics = table;
+hrv_metrics_tables = cell(num_win, 1);
 plot_datas = cell(num_win, 1);
 
 % Loop over all windows
@@ -132,54 +154,61 @@ for curr_win_idx = window_index_offset : window_max_index
     window_start_sample = curr_win_idx * window_samples + 1;
     window_end_sample   = window_start_sample + window_samples - 1;
 
-    % Read & process RR intervals from ECG signal
-    fprintf('[%.3f] >> rhrv: [%d/%d] Detecting QRS and RR intervals... ', cputime-t0, curr_win_idx+1, num_win);
-    [rri_window, trr_window, pd_ecgrr] = ecgrr(rec_name, 'ecg_channel', ecg_channel, 'from', window_start_sample, 'to', window_end_sample);
-    fprintf('%d intervals detected.\n', length(trr_window));
+    try
+        % Read & process RR intervals from ECG signal
+        fprintf('[%.3f] >> rhrv: [%d/%d] Detecting RR intervals from %s... ', cputime-t0, curr_win_idx+1, num_win, rr_intervals_source);
+        [rri_window, trr_window, pd_ecgrr] = ecgrr(rec_name, 'ann_ext', ann_ext, 'ecg_channel', ecg_channel, 'from', window_start_sample, 'to', window_end_sample);
+        fprintf('%d intervals detected.\n', length(trr_window));
 
-    % Apply transform function if available
-    if ~isempty(transform_fn)
-        fprintf('[%.3f] >> rhrv: [%d/%d] Applying transform function %s...\n', cputime-t0, curr_win_idx+1, num_win, func2str(transform_fn));
-        rri_window = transform_fn(rri_window);
-        % Rebuild time axis because length of rri may have changed
-        trr_window = [0; cumsum(rri_window(1:end-1))] + trr_window(1);
-    end
+        % Apply transform function if available
+        if ~isempty(transform_fn)
+            fprintf('[%.3f] >> rhrv: [%d/%d] Applying transform function %s...\n', cputime-t0, curr_win_idx+1, num_win, func2str(transform_fn));
+            rri_window = transform_fn(rri_window);
+            % Rebuild time axis because length of rri may have changed
+            trr_window = [0; cumsum(rri_window(1:end-1))] + trr_window(1);
+        end
 
-    % Filter RR intervals to produce NN intervals
-    fprintf('[%.3f] >> rhrv: [%d/%d] Removing ectopic intervals... ', cputime-t0, curr_win_idx+1, num_win);
-    [nni_window, tnn_window, pd_filtrr] = filtrr(rri_window, trr_window);
-    fprintf('%d intervals removed.\n', length(trr_window)-length(tnn_window));
+        % Filter RR intervals to produce NN intervals
+        fprintf('[%.3f] >> rhrv: [%d/%d] Removing ectopic intervals... ', cputime-t0, curr_win_idx+1, num_win);
+        [nni_window, tnn_window, pd_filtrr] = filtrr(rri_window, trr_window);
+        fprintf('%d intervals removed.\n', length(trr_window)-length(tnn_window));
 
-    if (isempty(nni_window))
-        warning('\n[%.3f] >> rhrv: [%d/%d] No intervals detected in window, skipping\n', cputime-t0, curr_win_idx+1, num_win);
+        if (isempty(nni_window))
+            warning('\n[%.3f] >> rhrv: [%d/%d] No intervals detected in window, skipping\n', cputime-t0, curr_win_idx+1, num_win);
+            continue;
+        end
+
+        % Time Domain metrics
+        fprintf('[%.3f] >> rhrv: [%d/%d] Calculating time-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
+        [hrv_td, pd_time ]= hrv_time(nni_window);
+
+        % Freq domain metrics
+        fprintf('[%.3f] >> rhrv: [%d/%d] Calculating frequency-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
+        [hrv_fd, ~, ~,  pd_freq ] = hrv_freq(nni_window);
+
+        % Non linear metrics
+        fprintf('[%.3f] >> rhrv: [%d/%d] Calculating nonlinear metrics...\n', cputime-t0, curr_win_idx+1, num_win);
+        [hrv_nl, pd_nl] = hrv_nonlinear(nni_window);
+
+        % Heart rate fragmentation metrics
+        fprintf('[%.3f] >> rhrv: [%d/%d] Calculating fragmentation metrics...\n', cputime-t0, curr_win_idx+1, num_win);
+        hrv_frag = hrv_fragmentation(nni_window);
+    catch e
+        fprintf(2,'\n');
+        fprintf(2,'[%.3f] >> rhrv: ERROR Analyzing window %d of %d in record %s:\n', cputime-t0, curr_win_idx+1, num_win, rec_name);
+        fprintf(2,'%s\nskipping window...\n', e.message);
         continue;
     end
-
-    % Time Domain metrics
-    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating time-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    [hrv_td, pd_time ]= hrv_time(nni_window);
-
-    % Freq domain metrics
-    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating frequency-domain metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    [hrv_fd, ~, ~,  pd_freq ] = hrv_freq(nni_window);
-
-    % Non linear metrics
-    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating nonlinear metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    [hrv_nl, pd_nl] = hrv_nonlinear(nni_window);
-
-    % Heart rate fragmentation metrics
-    fprintf('[%.3f] >> rhrv: [%d/%d] Calculating fragmentation metrics...\n', cputime-t0, curr_win_idx+1, num_win);
-    hrv_frag = hrv_fragmentation(nni_window);
 
     % Update metrics table
     intervals_count = table(length(rri_window),length(nni_window),'VariableNames',{'RR','NN'});
     intervals_count.Properties.VariableUnits = {'n.u.','n.u.'};
     intervals_count.Properties.VariableDescriptions = {'Number of RR intervals','Number of NN intervals'};
-    
-    % Add a new row to the output table for the current window
+
+    % Create and save the output table for the current window
     curr_win_table = [intervals_count, hrv_td, hrv_fd, hrv_nl, hrv_frag];
     curr_win_table.Properties.RowNames{1} = sprintf('%d', curr_win_idx+1);
-    hrv_metrics = [hrv_metrics; curr_win_table];
+    hrv_metrics_tables{curr_win_idx+1} = curr_win_table;
 
     % Save plot data
     plot_datas{curr_win_idx+1}.ecgrr = pd_ecgrr;
@@ -189,7 +218,8 @@ for curr_win_idx = window_index_offset : window_max_index
     plot_datas{curr_win_idx+1}.nl = pd_nl;
 end
 
-% Set table description
+% Create full table
+hrv_metrics = vertcat(hrv_metrics_tables{:});
 hrv_metrics.Properties.Description = sprintf('HRV metrics for %s', rec_name);
 
 %% Create stats table
@@ -209,7 +239,7 @@ end
 
 if (should_plot)
     fprintf('[%.3f] >> rhrv: Generating plots...\n', cputime-t0);
-    [~, filename] = fileparts(rec_name);
+    [~, filename] = file_parts(rec_name);
     for ii = 1:length(plot_datas)
 
         % Might have empty cells in plot_datas because we don't always calculate metrics for all
@@ -219,10 +249,13 @@ if (should_plot)
         end
 
         window = sprintf('%d/%d', ii, length(plot_datas));
-        
-        fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.ecgrr.name);
-        figure('NumberTitle','off', 'Name', fig_name);
-        plot_ecgrr(gca, plot_datas{ii}.ecgrr);
+
+        % When using annotations, wont have ecgrr plot data
+        if ~isempty(fieldnames(plot_datas{ii}.ecgrr))
+            fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.ecgrr.name);
+            figure('NumberTitle','off', 'Name', fig_name);
+            plot_ecgrr(gca, plot_datas{ii}.ecgrr);
+        end
 
         fig_name = sprintf('[%s %s] %s', filename, window, plot_datas{ii}.filtrr.name);
         figure('NumberTitle','off', 'Name', fig_name);

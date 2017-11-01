@@ -42,7 +42,7 @@ to_sample = p.Results.to;
 suffix = num2str(randi(999999));
 out_ext = ['rdsamp' suffix];
 
-[rec_path, rec_filename, ~] = fileparts(rec_name);
+[rec_path, rec_filename, ~] = file_parts(rec_name);
 temp_filename = sprintf('%s.%s', rec_filename, out_ext);
 temp_file = [rec_path filesep temp_filename];
 
@@ -65,15 +65,15 @@ end
 
 % run the command and write results to a temp file
 command = sprintf('%s > %s', command, temp_filename);
-[res, out] = jsystem(command,[], rec_path);
+[res, out, err] = jsystem(command,[], rec_path);
 if(res ~= 0)
-    error('rdann error: %s', out);
+    error('rdsamp error: %s\n%s', err, out);
 end
 
 M = dlmread(temp_file, ',');
 t = M(:,1);
 sig = M(:,2:end);
-Fs = floor(size(sig,1) / max(t)); % since tm is in seconds
+Fs = floor(size(sig,1) / (t(end) - t(1))); % since tm is in seconds
 
 % Delete the temp file
 delete(temp_file);

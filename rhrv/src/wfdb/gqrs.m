@@ -79,7 +79,7 @@ if isempty(ecg_channel)
 end
 
 %% === Create commandline arguments
-[rec_path, rec_filename, ~] = fileparts(rec_name);
+[rec_path, rec_filename, ~] = file_parts(rec_name);
 
 % commanline for gqrs
 gqrs_path = get_wfdb_tool_path('gqrs');
@@ -101,9 +101,9 @@ if (gqpost)
 end
 
 %% === Run gqrs
-[retval, output] = jsystem(cmdline, [], rec_path);
+[retval, output, stderr] = jsystem(cmdline, [], rec_path);
 if(retval ~= 0)
-    error('gqrs error: %s', output);
+    error('gqrs error: %s\n%s', stderr, output);
 end
 
 %% === Parse annotation
@@ -136,7 +136,7 @@ if (should_plot)
     figure;
     plot(tm, sig); hold on; grid on;
     plot(tm(qrs), sig(qrs,1), 'rx', 'MarkerSize', 6);
-    xlabel('time [s]'); ylabel('ECG [mV]');
+    xlabel('time (s)'); ylabel('ECG (mV)');
     
     if (~isempty(outliers))
         plot(tm(outliers), sig(outliers,1), 'ko', 'MarkerSize', 6);

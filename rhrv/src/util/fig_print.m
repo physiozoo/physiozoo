@@ -47,8 +47,21 @@ if isempty(output_format)
 end
 
 %% Clone the figure and make it invisible
-fig_handle = copyobj(fig_handle, 0);
-set(fig_handle, 'Visible', 'off');
+
+orig_gcf = gcf;
+try
+    fig_handle = copyobj(fig_handle, 0);
+    set(fig_handle, 'Visible', 'off');
+    delete_fig = true;
+catch e
+    warning('Failed to copy figure for printing to file: %s\nOriginal figure will be modified.', e.message);
+    delete_fig = false;
+
+    % Clean up if a new figure was created (partial copy)
+    if gcf ~= orig_gcf
+        delete(gcf)
+    end
+end
 
 %% Update the figure and axes
 
@@ -77,23 +90,28 @@ set(all_axes, ...
 
 % Set title if specified. Will be set only to first axes.
 if (~isempty(axes_title))
-    title(all_axes(end), axes_title, 'FontName', font, 'FontWeight', 'normal');
+    title(all_axes(end), axes_title, 'FontName', font, 'FontWeight', 'normal', 'FontSize', font_size);
 end
 
 % Set font for all text objects
 all_text = findall(fig_handle, 'type', 'text');
-set(all_text, 'FontName', font);
+set(all_text, 'FontName', font, 'FontSize', font_size);
+
+% Set font for legend
+lgd = findall(fig_handle, 'type', 'legend');
+set(lgd, 'FontName', font, 'FontSize', font_size);
 
 % Make sure output folder exists
 out_filename = regexprep(out_filename, ' ', '_'); % replace spaces in filename
-[out_dir, ~, ~] = fileparts(out_filename);
+[out_dir, ~, ~] = file_parts(out_filename);
 [~, ~, ~] = mkdir(out_dir);
 
 % Print figure as EPS
 print(fig_handle, out_filename, ['-d' output_format], ['-' renderer]);
 
 %% Clean up
-delete(fig_handle);
-
+if delete_fig
+    delete(fig_handle);
+end
 end
 

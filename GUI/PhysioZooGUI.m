@@ -8,7 +8,13 @@ basepath = fileparts(gui_basepath);
 
 %rhrv_init;
 
-
+%myBackgroundColor = [0.9 1 1];
+myUpBackgroundColor = [0.863 0.941 0.906];
+myLowBackgroundColor = [1 1 1];
+myEditTextColor = [1 1 1];
+mySliderColor = [0.8 0.9 0.9];
+myPushButtonColor = [0.26 0.37 0.41];
+myPanelColor = [0.58 0.69 0.73];
 
 persistent DIRS;
 persistent DATA_Fig;
@@ -172,6 +178,7 @@ displayEndOfDemoMessage('');
         %DATA.freq_yscale = 'log';
         
         DATA.active_window = 1;
+        DATA.AutoYLimit = [];
         
 %         DATA.AutoY = 1;
         
@@ -205,8 +212,8 @@ displayEndOfDemoMessage('');
         set(GUI.freq_yscale_Button, 'String', 'Log');
         set(GUI.freq_yscale_Button, 'Value', 1);
         
-%         set(GUI.AutoScaleY_pushButton, 'String', 'Auto');
-%         set(GUI.AutoScaleY_pushButton, 'Value', 1);
+%         set(GUI.AutoScaleY_checkbox, 'String', 'Auto');
+%         set(GUI.AutoScaleY_checkbox, 'Value', 1);
 %         
 %         set(GUI.MinYLimit_Edit, 'Enable', 'inactive');
 %         set(GUI.MaxYLimit_Edit, 'Enable', 'inactive');
@@ -245,6 +252,8 @@ displayEndOfDemoMessage('');
             'HandleVisibility', 'off', ...
             'Position', [20, 50, DATA.window_size(1), DATA.window_size(2)], ...
             'Tag', 'fPhysioZoo'); %, 'WindowButtonDownFcn', @WindowButtonDownFcn_mainFigure
+              
+        %set(GUI.Window, 'Color', [0.9 1 1]);
         
         % , 'WindowButtonMotionFcn', @WindowButtonMotionFcn_mainFigure
         %, 'WindowButtonMotionFcn', @WindowButtonMotionFcn_mainFigure
@@ -291,7 +300,7 @@ displayEndOfDemoMessage('');
         %uimenu( helpMenu, 'Label', 'About', 'Callback', @onAbout );
         
         % Create the layout (Arrange the main interface)
-        GUI.mainLayout = uix.VBoxFlex('Parent', GUI.Window, 'Spacing', 3);
+        GUI.mainLayout = uix.VBoxFlex('Parent', GUI.Window, 'Spacing', 3);        
         
         % + Create the panels
         GUI.RawData_Box = uix.HBoxFlex('Parent', GUI.mainLayout, 'Spacing', 5); % Upper Part
@@ -464,8 +473,8 @@ displayEndOfDemoMessage('');
         uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', '-', 'FontSize', BigFontSize);
         GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MinMaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
         uix.Empty( 'Parent', GUI.YLimitBox );
-        GUI.AutoScaleY_pushButton = uicontrol( 'Style', 'PushButton', 'Parent', GUI.YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto');
-        set( GUI.YLimitBox, 'Widths', [170, 67, 5, 65 10 55]  ); %[140, -17, -5, -17 100] [-37, -17, -5, -16 -16] [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]       
+        GUI.AutoScaleY_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1);
+        set( GUI.YLimitBox, 'Widths', [170, 67, 5, 65 10 95]  ); %[140, -17, -5, -17 100] [-37, -17, -5, -16 -16] [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]       
        
         uix.Empty( 'Parent', GUI.OptionsBox );
         set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 24 -20] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
@@ -595,6 +604,25 @@ displayEndOfDemoMessage('');
         GUI.Options_TabPanel.TabTitles = {'Record', 'Options', 'Analysis'};
         GUI.Options_TabPanel.TabWidth = 90;
         GUI.Options_TabPanel.FontSize = BigFontSize;
+        
+        % Upper Part         
+        
+        set(findobj(GUI.RawData_Box,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
+        set(findobj(GUI.RawData_Box,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
+        set(findobj(GUI.RawData_Box,'Style', 'slider'), 'BackgroundColor', mySliderColor);
+        set(findobj(GUI.RawData_Box,'Style', 'checkbox'), 'BackgroundColor', myUpBackgroundColor);
+        set(findobj(GUI.RawData_Box,'Style', 'ToggleButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
+        set(findobj(GUI.RawData_Box,'Style', 'PushButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
+        
+        %set(findobj(GUI.RawData_Box,'Style', 'PopUpMenu'), 'BackgroundColor', myUpBackgroundColor);
+        
+        set(findobj(GUI.RawData_Box,'Type', 'uicontainer'), 'BackgroundColor', myUpBackgroundColor);
+        set(findobj(GUI.RawData_Box,'Type', 'uipanel'), 'BackgroundColor', myUpBackgroundColor);
+       
+        % Low Part
+        set(findobj(GUI.Statistics_BoxPanel,'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
+        set(findobj(GUI.Statistics_BoxPanel,'Type', 'uipanel'), 'BackgroundColor', myLowBackgroundColor);     
+        
     end % createInterface
 
 %%
@@ -802,6 +830,20 @@ displayEndOfDemoMessage('');
         es = 2; % -15
         %set( GUI.NonLinearParamBox, 'Heights', [ts, rs * ones(1, dfa_param_length), es, ts,  rs * ones(1, mse_param_length), ts/2, rs, -35] );
         set( GUI.NonLinearParamBox, 'Heights', [ts, rs * ones(1, dfa_param_length), es, ts,  rs * ones(1, mse_param_length), -25] );
+        
+        
+        set(findobj(GUI.FilteringParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
+        set(findobj(GUI.FilteringParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
+        
+        set(findobj(GUI.TimeParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
+        set(findobj(GUI.TimeParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
+        
+        set(findobj(GUI.FrequencyParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
+        set(findobj(GUI.FrequencyParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
+        
+        set(findobj(GUI.NonLinearParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
+        set(findobj(GUI.NonLinearParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
+        
     end
 
 %set( GUI.NonLinearParamBox, 'Widths', 600, 'Heights', 600, 'HorizontalOffsets', 100, 'VerticalOffsets', 100 )
@@ -938,10 +980,17 @@ displayEndOfDemoMessage('');
     function setYAxesLim()
         ha = GUI.RawDataAxes;
                 
-        DATA.RRMinYLimit = DATA.AutoYLimit.RRMinYLimit;
-        DATA.RRMaxYLimit = DATA.AutoYLimit.RRMaxYLimit;
-        DATA.HRMinYLimit = DATA.AutoYLimit.HRMinYLimit;
-        DATA.HRMaxYLimit = DATA.AutoYLimit.HRMaxYLimit;
+        
+        if get(GUI.AutoScaleY_checkbox, 'Value') == 1
+
+            DATA.RRMinYLimit = DATA.AutoYLimit.RRMinYLimit;
+            DATA.RRMaxYLimit = DATA.AutoYLimit.RRMaxYLimit;
+            DATA.HRMinYLimit = DATA.AutoYLimit.HRMinYLimit;
+            DATA.HRMaxYLimit = DATA.AutoYLimit.HRMaxYLimit;
+            
+%         else
+%             [MinYLimit, MaxYLimit] = ReadFromMinMaxYLimit();
+        end
         
         if (DATA.PlotHR == 0)
             MinYLimit = min(DATA.RRMinYLimit, DATA.RRMaxYLimit);
@@ -1988,42 +2037,50 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function MinMaxYLimit_Edit_Callback(~, ~)
-        if ~isempty(DATA.rri)
-            MinYLimit = str2double(get(GUI.MinYLimit_Edit,'String'));
-            MaxYLimit = str2double(get(GUI.MaxYLimit_Edit,'String'));
+    function  [MinYLimit, MaxYLimit] = ReadFromMinMaxYLimit()
+        MinYLimit = str2double(get(GUI.MinYLimit_Edit,'String'));
+        MaxYLimit = str2double(get(GUI.MaxYLimit_Edit,'String'));
+        if (DATA.PlotHR == 0)
+            OldMinYLimit = DATA.RRMinYLimit;
+            OldMaxYLimit = DATA.RRMaxYLimit;
+        else
+            OldMinYLimit = DATA.HRMinYLimit;
+            OldMaxYLimit = DATA.HRMaxYLimit;
+        end
+        if isInputNumeric(GUI.MinYLimit_Edit, MinYLimit, OldMinYLimit) && isInputNumeric(GUI.MaxYLimit_Edit, MaxYLimit, OldMaxYLimit)
+            
             if (DATA.PlotHR == 0)
-                OldMinYLimit = DATA.RRMinYLimit;
-                OldMaxYLimit = DATA.RRMaxYLimit;
+                DATA.RRMinYLimit = MinYLimit;
+                DATA.RRMaxYLimit = MaxYLimit;
+                MinYLimit = min(DATA.RRMinYLimit, DATA.RRMaxYLimit);
+                MaxYLimit = max(DATA.RRMinYLimit, DATA.RRMaxYLimit);
             else
-                OldMinYLimit = DATA.HRMinYLimit;
-                OldMaxYLimit = DATA.HRMaxYLimit;
-            end
-            if isInputNumeric(GUI.MinYLimit_Edit, MinYLimit, OldMinYLimit) && isInputNumeric(GUI.MaxYLimit_Edit, MaxYLimit, OldMaxYLimit)
-                
-                if (DATA.PlotHR == 0)
-                    DATA.RRMinYLimit = MinYLimit;
-                    DATA.RRMaxYLimit = MaxYLimit;
-                    MinYLimit = min(DATA.RRMinYLimit, DATA.RRMaxYLimit);
-                    MaxYLimit = max(DATA.RRMinYLimit, DATA.RRMaxYLimit);
-                else
-                    DATA.HRMinYLimit = MinYLimit;
-                    DATA.HRMaxYLimit = MaxYLimit;
-                    MinYLimit = min(DATA.HRMinYLimit, DATA.HRMaxYLimit);
-                    MaxYLimit = max(DATA.HRMinYLimit, DATA.HRMaxYLimit);
-                end
-                
-                if(MinYLimit ~= MaxYLimit)
-                    set(GUI.RawDataAxes, 'YLim', [MinYLimit MaxYLimit]);
-                    DATA.MinYLimit = MinYLimit;
-                    DATA.MaxYLimit = MaxYLimit;
-                    plotDataQuality();
-                    plotMultipleWindows();
-                else
-                    errordlg('Please, enter correct values!', 'Input Error');
-                end
+                DATA.HRMinYLimit = MinYLimit;
+                DATA.HRMaxYLimit = MaxYLimit;
+                MinYLimit = min(DATA.HRMinYLimit, DATA.HRMaxYLimit);
+                MaxYLimit = max(DATA.HRMinYLimit, DATA.HRMaxYLimit);
             end
         end
+    end
+%%
+    function  SetMinMaxYLimit()
+        if ~isempty(DATA.rri)
+            [MinYLimit, MaxYLimit] = ReadFromMinMaxYLimit();
+            
+            if(MinYLimit ~= MaxYLimit)
+                set(GUI.RawDataAxes, 'YLim', [MinYLimit MaxYLimit]);
+                DATA.MinYLimit = MinYLimit;
+                DATA.MaxYLimit = MaxYLimit;
+                plotDataQuality();
+                plotMultipleWindows();
+            else
+                errordlg('Please, enter correct values!', 'Input Error');
+            end
+        end
+    end
+%%
+    function MinMaxYLimit_Edit_Callback(~, ~)
+        SetMinMaxYLimit();
     end
 %%
     function MinYLimit_Edit_Callback(~, ~)
@@ -2096,32 +2153,35 @@ displayEndOfDemoMessage('');
             if(DATA.PlotHR == 1)
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot HR');
                 DATA.PlotHR = 0;
-                %                 MinYLimit = min(DATA.RRMinYLimit, DATA.RRMaxYLimit);
-                %                 MaxYLimit = max(DATA.RRMinYLimit, DATA.RRMaxYLimit);
+                                MinYLimit = min(DATA.RRMinYLimit, DATA.RRMaxYLimit);
+                                MaxYLimit = max(DATA.RRMinYLimit, DATA.RRMaxYLimit);
                 %
                 %                 Filt_MinYLimit = min(DATA.Filt_RRMinYLimit, DATA.Filt_RRMaxYLimit);
                 %                 Filt_MaxYLimit = max(DATA.Filt_RRMinYLimit, DATA.Filt_RRMaxYLimit);
             else
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot RR');
                 DATA.PlotHR = 1;
-                %                 MinYLimit = min(DATA.HRMinYLimit, DATA.HRMaxYLimit);
-                %                 MaxYLimit = max(DATA.HRMinYLimit, DATA.HRMaxYLimit);
+                                MinYLimit = min(DATA.HRMinYLimit, DATA.HRMaxYLimit);
+                                MaxYLimit = max(DATA.HRMinYLimit, DATA.HRMaxYLimit);
                 %
                 %                 Filt_MinYLimit = min(DATA.Filt_HRMinYLimit, DATA.Filt_HRMaxYLimit);
                 %                 Filt_MaxYLimit = max(DATA.Filt_HRMinYLimit, DATA.Filt_HRMaxYLimit);
             end
             
+            set(GUI.MinYLimit_Edit, 'String', num2str(MinYLimit));
+            set(GUI.MaxYLimit_Edit, 'String', num2str(MaxYLimit));
+            
             cla(GUI.RawDataAxes);
-            plotRawData();
+            plotRawData();  
             setXAxesLim();
             setYAxesLim();
             plotFilteredData();
             plotDataQuality();
             plotMultipleWindows();
             
-            set(GUI.MinYLimit_Edit, 'String', num2str(DATA.MinYLimit));
-            set(GUI.MaxYLimit_Edit, 'String', num2str(DATA.MaxYLimit));
-            
+%             set(GUI.MinYLimit_Edit, 'String', num2str(DATA.MinYLimit));
+%             set(GUI.MaxYLimit_Edit, 'String', num2str(DATA.MaxYLimit));
+%             
             %             set(GUI.Filt_MinYLimit_Edit, 'String', num2str(Filt_MinYLimit));
             %             set(GUI.Filt_MaxYLimit_Edit, 'String', num2str(Filt_MaxYLimit));
             
@@ -2175,7 +2235,7 @@ displayEndOfDemoMessage('');
         end
         
         DATA.mammal_index = mammal_index;
-        DATA.default_method_index = 2;
+        DATA.default_method_index = 1;
         
         % Load user-specified default parameters
         rhrv_load_defaults(DATA.mammals{ DATA.mammal_index} );
@@ -2186,13 +2246,15 @@ displayEndOfDemoMessage('');
         GUI.Integration_popupmenu.Value = 1;
         GUI.DefaultMethod_popupmenu.Value = DATA.default_method_index;
         
-%         set(GUI.AutoScaleY_pushButton, 'String', 'Auto');
-%         set(GUI.AutoScaleY_pushButton, 'Value', 1);
+%         set(GUI.AutoScaleY_checkbox, 'String', 'Auto');
+%         set(GUI.AutoScaleY_checkbox, 'Value', 1);
 %         DATA.AutoY = 1;
 
 %         set(GUI.MinYLimit_Edit, 'Enable', 'inactive');
 %         set(GUI.MaxYLimit_Edit, 'Enable', 'inactive');        
 %             
+         set(GUI.AutoScaleY_checkbox, 'Value', 1);
+
         reset_plot();
     end
 
@@ -3780,7 +3842,7 @@ displayEndOfDemoMessage('');
         
     end
 %%
-    function AutoScaleY_pushbutton_Callback( ~, ~ )
+    function AutoScaleY_pushbutton_Callback( src, ~ )
         
 %         if DATA.AutoY == 1
 %             DATA.AutoY = 0;
@@ -3792,8 +3854,16 @@ displayEndOfDemoMessage('');
 %             set(src, 'String', 'Auto');
 %             set(GUI.MinYLimit_Edit, 'Enable', 'inactive');
 %             set(GUI.MaxYLimit_Edit, 'Enable', 'inactive');
-            set(GUI.MinYLimit_Edit, 'String', num2str(DATA.AutoYLimit.MinYLimit));
-            set(GUI.MaxYLimit_Edit, 'String', num2str(DATA.AutoYLimit.MaxYLimit));
+
+
+            if get(src, 'Value') == 1 % Auto Scale Y
+                set(GUI.MinYLimit_Edit, 'String', num2str(DATA.AutoYLimit.MinYLimit));
+                set(GUI.MaxYLimit_Edit, 'String', num2str(DATA.AutoYLimit.MaxYLimit));
+            else                
+                SetMinMaxYLimit();
+            end
+
+            
             setYAxesLim();
             %set(GUI.RawDataAxes, 'YLim', [DATA.AutoYLimit.MinYLimit DATA.AutoYLimit.MaxYLimit]);
             plotDataQuality();

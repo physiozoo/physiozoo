@@ -131,21 +131,21 @@ displayEndOfDemoMessage('');
         DATA.filt_FL_win_indexes = [];
         DATA.DataFileName = '';
         
-        DATA.hrv_td = table;
+        %DATA.hrv_td = table;
         %DATA.pd_time = struct([]);
         DATA.TimeStat.PlotData = [];
         
-        DATA.hrv_fd = table;
+        %DATA.hrv_fd = table;
         %DATA.pd_freq = struct([]);
         DATA.FrStat.PlotData = [];
         
-        DATA.hrv_nl = table;
+        %DATA.hrv_nl = table;
         %DATA.pd_nl = struct([]);
         DATA.NonLinStat.PlotData = [];
         
         %DATA.hrv_fd_lomb = table;
-        DATA.hrv_fd_ar = table;
-        DATA.hrv_fd_welch = table;
+        %DATA.hrv_fd_ar = table;
+        %DATA.hrv_fd_welch = table;
         
         DATA.timeData = [];
         DATA.timeRowsNames = [];
@@ -475,9 +475,11 @@ displayEndOfDemoMessage('');
         uix.Empty( 'Parent', GUI.YLimitBox );
         GUI.AutoScaleY_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1);
         set( GUI.YLimitBox, 'Widths', [170, 67, 5, 65 10 95]  ); %[140, -17, -5, -17 100] [-37, -17, -5, -16 -16] [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]       
-       
+        
+        GUI.ShowLegend_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.OptionsBox, 'Callback', @ShowLegend_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Show legend', 'Value', 1);
+                
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 24 -20] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 20 -20] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
         %---------------------------
         
         uix.Empty( 'Parent', GUI.BatchBox );
@@ -1084,14 +1086,14 @@ displayEndOfDemoMessage('');
         %         DATA.MaxYLimit = MaxYLimit;
         %         DATA.MinYLimit = MinYLimit;
         %
-        GUI.raw_data_handle = plot(ha, signal_time, data, 'b-', 'LineWidth', 2);
+        GUI.raw_data_handle = plot(ha, signal_time, data, 'b-', 'LineWidth', 2, 'DisplayName', 'Time series');
         hold(ha, 'on');
         
         
         
         %GUI.filtered_handle = plot(ha, filt_signal_time, filt_data, 'g-', 'LineWidth', 1);        
         %GUI.filtered_handle = line(ha, filt_signal_time, filt_data, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-');        
-        GUI.filtered_handle = line(ha, ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-');        
+        GUI.filtered_handle = line(ha, ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected time series');        
         
         
         %set(ha, 'XLim', [signal_time(1) signal_time(end)]);
@@ -1099,6 +1101,12 @@ displayEndOfDemoMessage('');
         xlabel(ha, 'Time (sec)');
         ylabel(ha, yString);
         
+        DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal'); % 
+        DATA.legend_handle.AutoUpdate = 'off';
+        
+        %DATA.legend_handle = legend([GUI.raw_data_handle, GUI.filtered_handle], 'Time series', 'Selected [filtered] time series', 'AutoUpdate', 'off' );      
+        %DATA.legend_handle.Box = 'on';
+                
         %set(ha, 'XLim', [win_indexes(1), win_indexes(end)]);
         
         set(ha, 'XLim', [DATA.firstSecond2Show, DATA.firstSecond2Show + DATA.MyWindowSize]);
@@ -1177,8 +1185,9 @@ displayEndOfDemoMessage('');
                     %GUI.GreenLineHandle.Color = DATA.MyGreen;
                     GUI.GreenLineHandle.YData = [MaxYLimit MaxYLimit];
                 end
+                uistack(GUI.GreenLineHandle, 'down')
                 %---------------------------------
-                
+                                
                 if ~(DATA.QualityAnnotations_Data(1, 1) + DATA.QualityAnnotations_Data(1,2))==0
                     
                     if ~isfield(GUI, 'RedLineHandle') || ~isvalid(GUI.RedLineHandle(1))
@@ -1213,11 +1222,14 @@ displayEndOfDemoMessage('');
                         %plot(time_data(low_quality_indexes), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
 %                         i
                         if ~isempty(low_quality_indexes)
-                            GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);                        
+                            GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
+                            if length(DATA.legend_handle.String) < 3
+                                legend([GUI.raw_data_handle, GUI.filtered_handle GUI.PinkLineHandle(1)], [DATA.legend_handle.String 'Bad quality']);
+                            end
                         end
                     end
                 end
-                
+
                 
                 %-----------------------------------------
                 %                 if ~isfield(GUI, 'GreenLineHandle') || ~isvalid(GUI.GreenLineHandle)
@@ -1752,21 +1764,18 @@ displayEndOfDemoMessage('');
         
         if ~isempty(DATA.rri)
             
-            trr = DATA.trr;
-            %rri = DATA.rri;                        
+            trr = DATA.trr;            
             DATA.maxSignalLength = trr(end);
                         
             DATA.Filt_MyDefaultWindowSize = rhrv_get_default('hrv_freq.window_minutes', 'value') * 60; % min to sec
                         
             DATA.PlotHR = 0;
-            DATA.firstSecond2Show = 0; %trr(1);
-            %DATA.Filt_FirstSecond2Show = 0;
+            DATA.firstSecond2Show = 0;            
             % Show only 6*hrv_freq.window_minutes portion of the raw data            
             DATA.MyWindowSize = min(6 * DATA.Filt_MyDefaultWindowSize, DATA.maxSignalLength);
             
             if DATA.MyWindowSize == DATA.maxSignalLength
-                enable_slider = 'off';
-                %DATA.MyWindowSize = DATA.MyWindowSize - DATA.firstSecond2Show; % - 0.0005;
+                enable_slider = 'off';                
                 set(GUI.FirstSecond, 'Enable', 'off');
             else
                 enable_slider = 'on';
@@ -1776,64 +1785,28 @@ displayEndOfDemoMessage('');
             setSliderProperties(GUI.RawDataSlider, DATA.maxSignalLength, DATA.MyWindowSize, [0.01 , 0.1]);
             GUI.RawDataSlider.Enable = enable_slider;
             
-            try
-                %waitbar(3 / 6, DATA.waitbar_handle, 'Filtering the signal');
+            try             
                 % Only for calc min and max bounderies for plotting
                 FiltSignal('filter_quotient', false, 'filter_lowpass', true, 'filter_range', false);
                 
                 tnn = DATA.tnn;
-%                 nni = DATA.nni;
                 
-                setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);
-                
-%                 if length(rri) == length(nni)
-%                     DATA.RRMinYLimit = min(rri);
-%                     DATA.RRMaxYLimit = max(rri);
-%                     
-%                     max_rri_60 = max(60 ./ rri);
-%                     min_rri_60 = min(60 ./ rri);
-%                     DATA.HRMinYLimit = min(min_rri_60, max_rri_60);
-%                     DATA.HRMaxYLimit = max(min_rri_60, max_rri_60);
-%                 else
-%                     max_nni = max(nni);
-%                     min_nni = min(nni);
-%                     delta = (max_nni - min_nni)*1;
-%                     
-%                     DATA.RRMinYLimit = min_nni - delta;
-%                     DATA.RRMaxYLimit = max_nni + delta;
-%                     
-%                     max_nni_60 = max(60 ./ nni);
-%                     min_nni_60 = min(60 ./ nni);
-%                     delta_60 = (max_nni_60 - min_nni_60)*1;
-%                     
-%                     DATA.HRMinYLimit = min(min_nni_60, max_nni_60) - delta_60;
-%                     DATA.HRMaxYLimit = max(min_nni_60, max_nni_60) + delta_60;
-%                 end
-                
-                
-                
-                %DATA.Filt_MaxSignalLength = int64(tnn(end));
+                setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);                               
+                                
                 DATA.Filt_MaxSignalLength = tnn(end);
-                
-                %DATA.Filt_MyWindowSize = min(DATA.Filt_MaxSignalLength, DATA.Filt_MyDefaultWindowSize);
-                %DATA.Filt_MyDefaultWindowSize = DATA.Filt_MyWindowSize;
-                
+                                 
                 set(GUI.freq_yscale_Button, 'String', 'Log');
                 set(GUI.freq_yscale_Button, 'Value', 1);
-                DATA.freq_yscale = 'linear';
-                %DATA.freq_yscale = 'log';
+                DATA.freq_yscale = 'linear';            
                 
                 DATA.DEFAULT_AnalysisParams.segment_startTime = 0;
                 DATA.DEFAULT_AnalysisParams.activeWin_startTime = 0;
-                DATA.DEFAULT_AnalysisParams.segment_endTime = DATA.Filt_MyDefaultWindowSize; % DATA.Filt_MaxSignalLength
-                %DATA.DEFAULT_AnalysisParams.activeWin_endTime = DATA.Filt_MyDefaultWindowSize;
+                DATA.DEFAULT_AnalysisParams.segment_endTime = DATA.Filt_MyDefaultWindowSize; % DATA.Filt_MaxSignalLength               
                 DATA.DEFAULT_AnalysisParams.segment_effectiveEndTime = DATA.DEFAULT_AnalysisParams.segment_endTime;
                 DATA.DEFAULT_AnalysisParams.activeWin_length = min(DATA.Filt_MaxSignalLength, DATA.Filt_MyDefaultWindowSize);
                 DATA.DEFAULT_AnalysisParams.segment_overlap = 0;
                 DATA.DEFAULT_AnalysisParams.winNum = 1;
-                DATA.active_window = 1;
-                
-                %clean_gui_batch_params();
+                DATA.active_window = 1;                              
                 
                 set(GUI.segment_startTime, 'String', calcDuration(DATA.DEFAULT_AnalysisParams.segment_startTime, 0));
                 set(GUI.segment_endTime, 'String', calcDuration(DATA.DEFAULT_AnalysisParams.segment_endTime, 0));
@@ -1846,8 +1819,7 @@ displayEndOfDemoMessage('');
                 
                 if DATA.filter_index ~= 1 % LowPass
                     FiltSignal();
-                end
-                
+                end                
                 
                 DATA.RRMinYLimit = DATA.AutoYLimit.RRMinYLimit;
                 DATA.RRMaxYLimit = DATA.AutoYLimit.RRMaxYLimit;
@@ -1864,39 +1836,24 @@ displayEndOfDemoMessage('');
                 plotDataQuality();
                 plotMultipleWindows();
                 calcStatistics();
-                
-%                 DATA.Filt_RRMinYLimit = min(nni);
-%                 DATA.Filt_RRMaxYLimit = max(nni);
-                
-%                 DATA.Filt_HRMinYLimit = min(60 / DATA.Filt_RRMinYLimit, 60 / DATA.Filt_RRMaxYLimit);
-%                 DATA.Filt_HRMaxYLimit = max(60 / DATA.Filt_RRMinYLimit, 60 / DATA.Filt_RRMaxYLimit);
-                
+                               
                 setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, [(double(DATA.AnalysisParams.activeWin_length)/10)/double(DATA.Filt_MaxSignalLength) , double(DATA.AnalysisParams.activeWin_length)/double(DATA.Filt_MaxSignalLength) ]);
-                
-                %                 set(GUI.Filt_MinYLimit_Edit, 'String', num2str(DATA.Filt_RRMinYLimit));
-                %                 set(GUI.Filt_MaxYLimit_Edit, 'String', num2str(DATA.Filt_RRMaxYLimit));
+                                
                 set(GUI.Filt_RawDataSlider, 'Enable', 'on');
-                set(GUI.Active_Window_Length, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));
-                %set(GUI.Filt_FirstSecond, 'String', calcDuration(DATA.AnalysisParams.startTime, 0));
+                set(GUI.Active_Window_Length, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));                
                 
                 set(GUI.MinYLimit_Edit, 'String', num2str(DATA.AutoYLimit.RRMinYLimit));
                 set(GUI.MaxYLimit_Edit, 'String', num2str(DATA.AutoYLimit.RRMaxYLimit));
-                                
-                %set(GUI.RawDataSlider, 'Enable', 'off');
-                
-                %ws = calcDuration(min(DATA.MyWindowSize, DATA.maxSignalLength), 1);
+                                                
                 set(GUI.WindowSize, 'String', calcDuration(DATA.MyWindowSize, 0));
                 set(GUI.RecordLength_text, 'String', [calcDuration(DATA.maxSignalLength, 1) '    h:min:sec.msec']);
                 set(GUI.RR_or_HR_plot_button, 'Enable', 'on', 'Value', 0, 'String', 'Plot HR');
-                %                 set(GUI.RR_or_HR_plot_button, 'Value', 0);
-                %                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot HR');
                 set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0)); % , 'Enable', 'off'
                    
                 XData_active_window = get(GUI.rect_handle(1), 'XData');
                 set(GUI.Active_Window_Start, 'String', calcDuration(XData_active_window(1), 0));
                 
-                if(DATA.AnalysisParams.activeWin_length >= DATA.Filt_MaxSignalLength)                    
-                    %set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.startTime, 0), 'Enable', 'off');
+                if(DATA.AnalysisParams.activeWin_length >= DATA.Filt_MaxSignalLength)                                    
                     set(GUI.Filt_RawDataSlider, 'Enable', 'off');
                 else
                     set(GUI.Active_Window_Start, 'Enable', 'on');
@@ -1904,19 +1861,7 @@ displayEndOfDemoMessage('');
                 end
                 GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};
                 
-                set(GUI.Active_Window_Length, 'Enable', 'on');
-                %set(GUI.Active_Window_Start, 'Enable', 'on');
-                
-                
-                % Show only 6*hrv_freq.window_minutes portion of the raw
-                % data
-                
-%                 set(GUI.RawDataAxes, 'XLim', [DATA.firstSecond2Show DATA.Filt_MyDefaultWindowSize*6]);
-                 %GUI.FirstSecond.Enable = 'on';
-%                 GUI.RawDataSlider.Enable = 'on';
-%                 set(GUI.WindowSize, 'String', calcDuration(DATA.Filt_MyDefaultWindowSize*6, 0));
-                
-                
+                set(GUI.Active_Window_Length, 'Enable', 'on');                                                                
             catch e
                 errordlg(['Reset Plot: ' e.message], 'Input Error');
             end
@@ -3408,11 +3353,7 @@ displayEndOfDemoMessage('');
         
         batch_win_num = DATA.AnalysisParams.winNum;
         
-        if batch_win_num > 0
-            %if batch_win_num ~= 1
-            %                 clear_statistics_plots();
-            %                 clearStatTables();
-            %end
+        if batch_win_num > 0            
             
             if isfield(GUI, 'first_rect_handle')
                 delete(GUI.first_rect_handle);
@@ -3424,8 +3365,7 @@ displayEndOfDemoMessage('');
                 end
             end
             
-            batch_window_start_time = DATA.AnalysisParams.segment_startTime;
-            %batch_window_end_time = DATA.AnalysisParams.endTime;
+            batch_window_start_time = DATA.AnalysisParams.segment_startTime;            
             batch_window_length = DATA.AnalysisParams.activeWin_length;
             batch_overlap = DATA.AnalysisParams.segment_overlap/100;
             
@@ -3453,19 +3393,17 @@ displayEndOfDemoMessage('');
                  GUI.rect_handle(i) = fill([batch_window_start_time batch_window_start_time batch_window_start_time + batch_window_length batch_window_start_time + batch_window_length], ...
                     [DATA.MinYLimit DATA.MaxYLimit DATA.MaxYLimit DATA.MinYLimit], DATA.rectangle_color, 'LineWidth', 0.5, 'FaceAlpha', 0.15, 'Parent', GUI.RawDataAxes, ...
                     'ButtonDownFcn', @WindowButtonDownFcn_rect_handle, 'Tag', 'DoNotIgnore', 'UserData', i);
-                
-                
-                %uistack(GUI.rect_handle(i), 'bottom');
-                
+                                              
                 if i == DATA.active_window
                     set(GUI.rect_handle(i), 'LineWidth', 2.5, 'FaceAlpha', 0.15);
-                    uistack(GUI.rect_handle(i), 'top');
-                    %set(GUI.rect_handle(i), 'LineStyle','none', 'FaceAlpha', 0);
+%                     uistack(GUI.rect_handle(i), 'top');                    
                     GUI.prev_act = GUI.rect_handle(i);
-                end
-                
+                end                
                 
                 batch_window_start_time = batch_window_start_time + (1-batch_overlap) * batch_window_length;
+            end
+            if isfield(GUI, 'RedLineHandle')
+                uistack(GUI.RedLineHandle, 'top');
             end
         end
     end
@@ -3773,6 +3711,7 @@ displayEndOfDemoMessage('');
         
         DATA.active_window = get(hObject, 'UserData');  
         set(GUI.active_winNum, 'String', DATA.active_window);
+        uistack(hObject, 'down');
         
         set_active_window(hObject);
     end
@@ -3844,31 +3783,24 @@ displayEndOfDemoMessage('');
 %%
     function AutoScaleY_pushbutton_Callback( src, ~ )
         
-%         if DATA.AutoY == 1
-%             DATA.AutoY = 0;
-%             set(src, 'String', 'Manual');
-%             set(GUI.MinYLimit_Edit, 'Enable', 'on');
-%             set(GUI.MaxYLimit_Edit, 'Enable', 'on');
-%         else
-%             DATA.AutoY = 1;
-%             set(src, 'String', 'Auto');
-%             set(GUI.MinYLimit_Edit, 'Enable', 'inactive');
-%             set(GUI.MaxYLimit_Edit, 'Enable', 'inactive');
-
-
             if get(src, 'Value') == 1 % Auto Scale Y
                 set(GUI.MinYLimit_Edit, 'String', num2str(DATA.AutoYLimit.MinYLimit));
                 set(GUI.MaxYLimit_Edit, 'String', num2str(DATA.AutoYLimit.MaxYLimit));
             else                
                 SetMinMaxYLimit();
             end
-
             
-            setYAxesLim();
-            %set(GUI.RawDataAxes, 'YLim', [DATA.AutoYLimit.MinYLimit DATA.AutoYLimit.MaxYLimit]);
+            setYAxesLim();            
             plotDataQuality();
             plotMultipleWindows();
-%         end        
+    end
+%%
+    function ShowLegend_checkbox_Callback( src, ~ )
+        if get(src, 'Value') == 1           
+            DATA.legend_handle.Visible = 'on';
+        else
+            DATA.legend_handle.Visible = 'off';
+        end
     end
 %%
     function onHelp( ~, ~ )

@@ -1089,11 +1089,9 @@ displayEndOfDemoMessage('');
         GUI.raw_data_handle = plot(ha, signal_time, data, 'b-', 'LineWidth', 2, 'DisplayName', 'Time series');
         hold(ha, 'on');
         
-        
-        
         %GUI.filtered_handle = plot(ha, filt_signal_time, filt_data, 'g-', 'LineWidth', 1);        
         %GUI.filtered_handle = line(ha, filt_signal_time, filt_data, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-');        
-        GUI.filtered_handle = line(ha, ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected time series');        
+        GUI.filtered_handle = line(ha, ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected filtered time series');        
         
         
         %set(ha, 'XLim', [signal_time(1) signal_time(end)]);
@@ -1103,12 +1101,8 @@ displayEndOfDemoMessage('');
         
         DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal'); % 
         DATA.legend_handle.AutoUpdate = 'off';
-        
-        %DATA.legend_handle = legend([GUI.raw_data_handle, GUI.filtered_handle], 'Time series', 'Selected [filtered] time series', 'AutoUpdate', 'off' );      
-        %DATA.legend_handle.Box = 'on';
+        %DATA.legend_handle.Box = 'off';
                 
-        %set(ha, 'XLim', [win_indexes(1), win_indexes(end)]);
-        
         set(ha, 'XLim', [DATA.firstSecond2Show, DATA.firstSecond2Show + DATA.MyWindowSize]);
         
         %x_ticks_array = get(ha, 'XTick');
@@ -1826,6 +1820,10 @@ displayEndOfDemoMessage('');
                 DATA.HRMinYLimit = DATA.AutoYLimit.HRMinYLimit;
                 DATA.HRMaxYLimit = DATA.AutoYLimit.HRMaxYLimit;
                 
+                if isfield(DATA, 'legend_handle') && ishandle(DATA.legend_handle) && isvalid(DATA.legend_handle)
+                    delete(DATA.legend_handle);
+                end
+                
                 cla(GUI.RawDataAxes);
                 clear_statistics_plots();
                 clearStatTables();
@@ -2317,6 +2315,13 @@ displayEndOfDemoMessage('');
                 calcStatistics();
             end
             DATA.filter_index = index_selected;
+            
+            if index_selected == length(DATA.Filters)            
+                DATA.legend_handle.String{2} = 'Selected time series';                
+            else
+                DATA.legend_handle.String{2} = 'Selected filtered time series';                
+            end
+                
         catch e
             errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');            
         end

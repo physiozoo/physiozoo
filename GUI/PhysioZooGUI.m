@@ -43,10 +43,6 @@ displayEndOfDemoMessage('');
         
         %DATA.currentDirectory = pwd;
         
-%         DATA.DEFAULT_WINDOW_MINUTES = Inf;
-%         DATA.DEFAULT_WINDOW_INDEX_LIMIT = Inf;
-%         DATA.DEFAULT_WINDOW_INDEX_OFFSET = 0;
-        
         DATA.PlotHR = 0;
         
         DATA.rec_name = [];
@@ -76,7 +72,8 @@ displayEndOfDemoMessage('');
         
         DATA.window_size = [screensize(3)*0.99 screensize(4)*0.85];
         
-        DATA.MyGreen = [39 232 51]/256;
+        %DATA.MyGreen = [39 232 51]/256;
+        DATA.MyGreen = [139 252 27]/256;
         
         %DATA.methods = {'Lomb'; 'Welch'; 'AR'};
         DATA.methods = {'Welch'; 'AR'};
@@ -92,7 +89,6 @@ displayEndOfDemoMessage('');
         DATA.rectangle_color = rec_colors(6, :);
         
         DATA.freq_yscale = 'linear';
-        %DATA.freq_yscale = 'log';
     end % createData
 %-------------------------------------------------------------------------%
 %%
@@ -114,14 +110,8 @@ displayEndOfDemoMessage('');
         DATA.RRMinYLimit = 0;
         DATA.RRMaxYLimit = 1000;
         
-        %DATA.Filt_FirstSecond2Show = 0;
         DATA.Filt_MyDefaultWindowSize = 300; % sec
-        %DATA.Filt_MyWindowSize = 300; % sec
         DATA.Filt_MaxSignalLength = 900;
-%         DATA.Filt_HRMinYLimit = 0;
-%         DATA.Filt_HRMaxYLimit = 1000;
-%         DATA.Filt_RRMinYLimit = 0;
-%         DATA.Filt_RRMaxYLimit = 1000;
         
         DATA.SamplingFrequency = 1000;
         
@@ -131,30 +121,14 @@ displayEndOfDemoMessage('');
         DATA.filt_FL_win_indexes = [];
         DATA.DataFileName = '';
         
-        %DATA.hrv_td = table;
-        %DATA.pd_time = struct([]);
         DATA.TimeStat.PlotData = [];
-        
-        %DATA.hrv_fd = table;
-        %DATA.pd_freq = struct([]);
         DATA.FrStat.PlotData = [];
-        
-        %DATA.hrv_nl = table;
-        %DATA.pd_nl = struct([]);
         DATA.NonLinStat.PlotData = [];
-        
-        %DATA.hrv_fd_lomb = table;
-        %DATA.hrv_fd_ar = table;
-        %DATA.hrv_fd_welch = table;
         
         DATA.timeData = [];
         DATA.timeRowsNames = [];
         DATA.timeDescriptions = [];
-        
-        %DATA.fd_lombData = [];
-        %DATA.fd_LombRowsNames = [];
-        %DATA.fd_lombDescriptions = [];
-        
+              
         DATA.fd_arData = [];
         DATA.fd_ArRowsNames = [];
         
@@ -175,14 +149,9 @@ displayEndOfDemoMessage('');
         
         DATA.formats_index = 1;
         DATA.freq_yscale = 'linear';
-        %DATA.freq_yscale = 'log';
         
         DATA.active_window = 1;
         DATA.AutoYLimit = [];
-        
-%         DATA.AutoY = 1;
-        
-        %DATA.AnalysisParams = DATA.DEFAULT_AnalysisParams;
     end
 %%
     function clean_gui()
@@ -193,7 +162,6 @@ displayEndOfDemoMessage('');
         set(GUI.SaveParamFileMenu,'Enable', 'off');
         set(GUI.LoadConfigFile, 'Enable', 'off');
         
-        %GUI.RawDataSlider.Enable = 'off';
         GUI.Filt_RawDataSlider.Enable = 'off';
         
         set(GUI.MinYLimit_Edit, 'String', '');
@@ -211,23 +179,7 @@ displayEndOfDemoMessage('');
         
         set(GUI.freq_yscale_Button, 'String', 'Log');
         set(GUI.freq_yscale_Button, 'Value', 1);
-        
-%         set(GUI.AutoScaleY_checkbox, 'String', 'Auto');
-%         set(GUI.AutoScaleY_checkbox, 'Value', 1);
-%         
-%         set(GUI.MinYLimit_Edit, 'Enable', 'inactive');
-%         set(GUI.MaxYLimit_Edit, 'Enable', 'inactive');
     end
-%%
-%     function clean_gui_batch_params()
-%         set(GUI.segment_startTime, 'String', calcDuration(DATA.DEFAULT_AnalysisParams.segment_startTime, 0));
-%         set(GUI.segment_endTime, 'String', calcDuration(DATA.DEFAULT_AnalysisParams.segment_endTime, 0));
-%         set(GUI.activeWindow_length, 'String', calcDuration(DATA.DEFAULT_AnalysisParams.activeWin_length, 0));
-%         set(GUI.segment_overlap, 'String', num2str(DATA.DEFAULT_AnalysisParams.segment_overlap));
-%         set(GUI.segment_winNum, 'String', num2str(DATA.DEFAULT_AnalysisParams.winNum));
-%         
-% %         DATA.AnalysisParams = DATA.DEFAULT_AnalysisParams;
-%     end
 %% Open the window
     function GUI = createInterface()
         
@@ -252,7 +204,13 @@ displayEndOfDemoMessage('');
             'HandleVisibility', 'off', ...
             'Position', [20, 50, DATA.window_size(1), DATA.window_size(2)], ...
             'Tag', 'fPhysioZoo'); %, 'WindowButtonDownFcn', @WindowButtonDownFcn_mainFigure
-              
+            %'Tag', 'fPhysioZoo',  
+            % , 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}
+                
+        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
+        set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
+        set(GUI.Window, 'WindowButtonDownFcn', {@my_clickOnAllData, 'aa'});
+        
         %set(GUI.Window, 'Color', [0.9 1 1]);
         
         % , 'WindowButtonMotionFcn', @WindowButtonMotionFcn_mainFigure
@@ -279,7 +237,7 @@ displayEndOfDemoMessage('');
         
         DATA.zoom_handle = zoom(GUI.Window);
         %DATA.zoom_handle.Motion = 'vertical';
-        DATA.zoom_handle.Enable = 'on';
+        DATA.zoom_handle.Enable = 'off';
         DATA.zoom_handle.ButtonDownFilter = @zoom_handle_ButtonDownFilter;
         
         % + File menu
@@ -334,27 +292,35 @@ displayEndOfDemoMessage('');
         
         GUI.CommandsButtons_Box = uix.VButtonBox('Parent', buttons_axes_Box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
         
-        GUI.RawDataAxes = axes('Parent', uicontainer('Parent', buttons_axes_Box), 'Tag', 'MainAxes'); % , 'ButtonDownFcn', {@ButtonDownFcn_mainAxes, 'test'}, 'CurrentPoint'
-        set( buttons_axes_Box, 'Widths', [70 -1]);
-        GUI.WindowSliderBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3);
-        GUI.Filt_WindowSliderBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3);
-        set( GUI.RawDataControls_Box, 'Heights', [-1, 22, 22]  );
+        two_axes_box = uix.VBox('Parent', buttons_axes_Box, 'Spacing', 3);
+                
+        GUI.RawDataAxes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'MainAxes'); %   buttons_axes_Box , 'ButtonDownFcn', {@ButtonDownFcn_mainAxes, 'test'}, 'CurrentPoint'
+        GUI.AllDataAxes = axes('Parent', uicontainer('Parent', two_axes_box));   %         , 'Tag', 'DoNotIgnore', 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}        
+        
+        set( two_axes_box, 'Heights', [-1, 100]  );
+        
+        set( buttons_axes_Box, 'Widths', [70 -1]);                                        
+
+%         GUI.WindowSliderBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3);
+        GUI.Filt_WindowSliderBox = uix.HBox('Parent', GUI.RawDataControls_Box, 'Spacing', 3, 'Visible', 'off');
+        set( GUI.RawDataControls_Box, 'Heights', [-1, 22]  ); % [-1, 22, 22]
         
         %--------------------------
         
-        field_size = [170 -5 -5 170 -5 -5 -30]; %[155 -5 -5 155 -5 -5 -70];
-        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.FirstSecond = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSliderBox, 'Callback', @FirstSecond_Callback, 'FontSize', BigFontSize); % , 'Enable', 'off'
-        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        field_size = [170 -5 -5 170 -5 -5 -30]; %[155 -5 -5 155 -5 -5 -70];                
         
-        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Window length:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.WindowSize = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSliderBox, 'Callback', @WindowSize_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        
-        GUI.RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', GUI.WindowSliderBox, 'Callback', @slider_Callback);
-        GUI.RawDataSlider.Enable = 'on';
-        addlistener(GUI.RawDataSlider, 'ContinuousValueChange', @sldrFrame_Motion);
-        set( GUI.WindowSliderBox, 'Widths', field_size );
+%         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+%         GUI.FirstSecond = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSliderBox, 'Callback', @FirstSecond_Callback, 'FontSize', BigFontSize); % , 'Enable', 'off'
+%         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+%         
+%         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'Window length:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+%         GUI.WindowSize = uicontrol( 'Style', 'edit', 'Parent', GUI.WindowSliderBox, 'Callback', @WindowSize_Callback, 'FontSize', BigFontSize);
+%         uicontrol( 'Style', 'text', 'Parent', GUI.WindowSliderBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+%         
+%         GUI.RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', GUI.WindowSliderBox, 'Callback', @slider_Callback);
+%         GUI.RawDataSlider.Enable = 'on';
+%         addlistener(GUI.RawDataSlider, 'ContinuousValueChange', @sldrFrame_Motion);
+%         set( GUI.WindowSliderBox, 'Widths', field_size );
         
         uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'Selected window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.Active_Window_Start = uicontrol( 'Style', 'edit', 'Parent', GUI.Filt_WindowSliderBox, 'Callback', @Active_Window_Start_Callback, 'FontSize', BigFontSize);
@@ -365,18 +331,18 @@ displayEndOfDemoMessage('');
         uicontrol( 'Style', 'text', 'Parent', GUI.Filt_WindowSliderBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         
         GUI.Filt_RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', GUI.Filt_WindowSliderBox, 'Callback', @filt_slider_Callback, 'Enable', 'off');
-        %GUI.Filt_RawDataSlider.Enable = 'off';
         
-         addlistener(GUI.Filt_RawDataSlider, 'ContinuousValueChange', @filt_sldrFrame_Motion);
-         set( GUI.Filt_WindowSliderBox, 'Widths', field_size );
+        addlistener(GUI.Filt_RawDataSlider, 'ContinuousValueChange', @filt_sldrFrame_Motion);
+        set( GUI.Filt_WindowSliderBox, 'Widths', field_size );
         
         GUI.RR_or_HR_plot_button = uicontrol( 'Style', 'ToggleButton', 'Parent', GUI.CommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
         GUI.Reset_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', GUI.CommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
         set( GUI.CommandsButtons_Box, 'ButtonSize', [70, 25], 'Spacing', 5  );
         
-        GUI.OptionsTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
-        GUI.AdvancedTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
+        GUI.OptionsTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);        
         GUI.BatchTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
+        GUI.DisplayTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
+        GUI.AdvancedTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
         
         tabs_widths = Left_Part_widths_in_pixels; %342 310;
         tabs_heights = 370;
@@ -387,7 +353,11 @@ displayEndOfDemoMessage('');
         
         GUI.BatchSclPanel = uix.ScrollingPanel( 'Parent', GUI.BatchTab);
         GUI.BatchBox = uix.VBox( 'Parent', GUI.BatchSclPanel, 'Spacing', 5);
-        set( GUI.BatchSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
+        set( GUI.BatchSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );        
+        
+        GUI.DisplaySclPanel = uix.ScrollingPanel( 'Parent', GUI.DisplayTab);
+        GUI.DisplayBox = uix.VBox( 'Parent', GUI.DisplaySclPanel, 'Spacing', 5);
+        set( GUI.DisplaySclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         
         %--------------------------------------------------------------------------------------------
         GUI.AdvancedBox = uix.VBox( 'Parent', GUI.AdvancedTab, 'Spacing', 5);
@@ -466,20 +436,20 @@ displayEndOfDemoMessage('');
         uix.Empty( 'Parent', DefaultMethodBox );
         set( DefaultMethodBox, 'Widths', field_size );
         
-        GUI.YLimitBox = uix.HBox('Parent', GUI.OptionsBox, 'Spacing', 3);
-        
-        uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', 'Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.MinYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MinMaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', '-', 'FontSize', BigFontSize);
-        GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MinMaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
-        uix.Empty( 'Parent', GUI.YLimitBox );
-        GUI.AutoScaleY_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1);
-        set( GUI.YLimitBox, 'Widths', [170, 67, 5, 65 10 95]  ); %[140, -17, -5, -17 100] [-37, -17, -5, -16 -16] [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]       
-        
-        GUI.ShowLegend_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.OptionsBox, 'Callback', @ShowLegend_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Show legend', 'Value', 1);
+%         GUI.YLimitBox = uix.HBox('Parent', GUI.OptionsBox, 'Spacing', 3);
+%         
+%         uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', 'Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+%         GUI.MinYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MinMaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
+%         uicontrol( 'Style', 'text', 'Parent', GUI.YLimitBox, 'String', '-', 'FontSize', BigFontSize);
+%         GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', GUI.YLimitBox, 'Callback', @MinMaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
+%         uix.Empty( 'Parent', GUI.YLimitBox );
+%         GUI.AutoScaleY_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1);
+%         set( GUI.YLimitBox, 'Widths', [170, 67, 5, 65 10 95]  ); %[140, -17, -5, -17 100] [-37, -17, -5, -16 -16] [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]       
+%         
+%         GUI.ShowLegend_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.OptionsBox, 'Callback', @ShowLegend_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Show legend', 'Value', 1);
                 
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 20 -20] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -20] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
         %---------------------------
         
         uix.Empty( 'Parent', GUI.BatchBox );
@@ -532,7 +502,52 @@ displayEndOfDemoMessage('');
         set( batch_Box, 'Widths', [125 100 -1] );
         
         uix.Empty( 'Parent', GUI.BatchBox );
-        set( GUI.BatchBox, 'Heights', [-10 -10 -10 -10 -10 -10 -10 -20 -15 -60] );
+        GUI.ShowClassicSlider_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.BatchBox, 'Callback', @ShowClassicSlider_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Show classic slider', 'Value', 0);
+        
+        
+        uix.Empty( 'Parent', GUI.BatchBox );
+        set( GUI.BatchBox, 'Heights', [-10 -10 -10 -10 -10 -10 -10 -20 -15 -10 -10 -60] );
+        
+        field_size = [170, 140, 10 -1];
+        
+        uix.Empty( 'Parent', GUI.DisplayBox );
+        
+        WindowStartBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', 5);
+        uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'Window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.FirstSecond = uicontrol( 'Style', 'edit', 'Parent', WindowStartBox, 'Callback', @FirstSecond_Callback, 'FontSize', BigFontSize); % , 'Enable', 'off'
+        uix.Empty( 'Parent', WindowStartBox );
+        uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        set( WindowStartBox, 'Widths', field_size  );
+        
+        WindowLengthBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', 5);
+        uicontrol( 'Style', 'text', 'Parent', WindowLengthBox, 'String', 'Window length:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.WindowSize = uicontrol( 'Style', 'edit', 'Parent', WindowLengthBox, 'Callback', @WindowSize_Callback, 'FontSize', BigFontSize);
+        uix.Empty( 'Parent', WindowLengthBox );
+        uicontrol( 'Style', 'text', 'Parent', WindowLengthBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        set( WindowLengthBox, 'Widths', field_size  );                
+         
+        YLimitBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', 5);        
+        uicontrol( 'Style', 'text', 'Parent', YLimitBox, 'String', 'Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.MinYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', YLimitBox, 'Callback', @MinMaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
+        uicontrol( 'Style', 'text', 'Parent', YLimitBox, 'String', '-', 'FontSize', BigFontSize);
+        GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', YLimitBox, 'Callback', @MinMaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
+        uix.Empty( 'Parent', YLimitBox );
+        GUI.AutoScaleY_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1);
+        set( YLimitBox, 'Widths', [170, 64, 4, 63 10 95]  ); %[140, -17, -5, -17 100] [-37, -17, -5, -16 -16] [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]       
+        
+        GUI.ShowLegend_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.DisplayBox, 'Callback', @ShowLegend_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Show legend', 'Value', 1);
+
+        RawDataSliderBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', 3);
+        uix.Empty( 'Parent', RawDataSliderBox );
+        GUI.RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', RawDataSliderBox, 'Callback', @slider_Callback);
+        GUI.RawDataSlider.Enable = 'on';
+        addlistener(GUI.RawDataSlider, 'ContinuousValueChange', @sldrFrame_Motion);
+        uix.Empty( 'Parent', RawDataSliderBox );
+        set( RawDataSliderBox, 'Widths', [15 -1 50]  ); 
+        
+        uix.Empty( 'Parent', GUI.DisplayBox );
+        set( GUI.DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -7 -75] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+        
         %---------------------------
         tables_field_size = [-85 -15];
         
@@ -603,7 +618,7 @@ displayEndOfDemoMessage('');
         GUI.Analysis_TabPanel.TabWidth = 90;
         GUI.Analysis_TabPanel.FontSize = BigFontSize;
         
-        GUI.Options_TabPanel.TabTitles = {'Record', 'Options', 'Analysis'};
+        GUI.Options_TabPanel.TabTitles = {'Record', 'Analysis', 'Display', 'Options'};
         GUI.Options_TabPanel.TabWidth = 90;
         GUI.Options_TabPanel.FontSize = BigFontSize;
         
@@ -847,41 +862,36 @@ displayEndOfDemoMessage('');
         set(findobj(GUI.NonLinearParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
         
     end
-
-%set( GUI.NonLinearParamBox, 'Widths', 600, 'Heights', 600, 'HorizontalOffsets', 100, 'VerticalOffsets', 100 )
 %%
-    function slider_Callback(~, ~)
-        %firstSecond2Show = int64(get(GUI.RawDataSlider, 'Value'));
-        %firstSecond2Show = get(GUI.RawDataSlider, 'Value');
+    function slider_Callback(~, ~)        
         DATA.firstSecond2Show = get(GUI.RawDataSlider, 'Value');
-        set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
-        %GetPlotSignal();
-        %plotRawData();
+        set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));        
         setXAxesLim();
         setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);
         setYAxesLim();
         plotDataQuality();
         plotMultipleWindows();
+        xdata = get(GUI.red_rect, 'XData');
+        xdata([1, 4, 5]) = DATA.firstSecond2Show;
+        xdata([2, 3]) = DATA.firstSecond2Show + DATA.MyWindowSize;
+        set(GUI.red_rect, 'XData', xdata);
     end
 %%
-    function sldrFrame_Motion(~, ~)
-        %firstSecond2Show = int64(get(GUI.RawDataSlider, 'Value'));
-        %firstSecond2Show = get(GUI.RawDataSlider, 'Value');
+    function sldrFrame_Motion(~, ~)        
         DATA.firstSecond2Show = get(GUI.RawDataSlider, 'Value');
-        set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
-        %GetPlotSignal();
-        %plotRawData();
+        set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));        
         setXAxesLim();
         setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);
         setYAxesLim();
         plotDataQuality();
         plotMultipleWindows();
+        xdata = get(GUI.red_rect, 'XData');
+        xdata([1, 4, 5]) = DATA.firstSecond2Show;
+        xdata([2, 3]) = DATA.firstSecond2Show + DATA.MyWindowSize;
+        set(GUI.red_rect, 'XData', xdata);
     end
 %%
-    function filt_slider_Callback(~, ~)
-        
-        %Filt_FirstSecond2Show = get(GUI.Filt_RawDataSlider, 'Value');
-        
+    function filt_slider_Callback(~, ~)                        
         DATA.AnalysisParams.activeWin_startTime = get(GUI.Filt_RawDataSlider, 'Value');
         DATA.AnalysisParams.segment_startTime = DATA.AnalysisParams.activeWin_startTime;
         DATA.AnalysisParams.segment_endTime = DATA.AnalysisParams.activeWin_startTime + DATA.AnalysisParams.activeWin_length;
@@ -899,21 +909,18 @@ displayEndOfDemoMessage('');
         calcStatistics();        
     end
 %%
-    function filt_sldrFrame_Motion(~, ~)        
-        %Filt_FirstSecond2Show = get(GUI.Filt_RawDataSlider, 'Value');
-        
+    function filt_sldrFrame_Motion(~, ~)                        
         DATA.AnalysisParams.activeWin_startTime = get(GUI.Filt_RawDataSlider, 'Value');
         DATA.AnalysisParams.segment_startTime = DATA.AnalysisParams.activeWin_startTime;
         str = calcDuration(DATA.AnalysisParams.activeWin_startTime, 0);
         set(GUI.Active_Window_Start, 'String', str);
         set(GUI.segment_startTime, 'String', str);
         
-         plotFilteredData();        
-         plotMultipleWindows();        
+        plotFilteredData();
+        plotMultipleWindows();
     end
 %%
     function setAutoYAxisLim(firstSecond2Show, WindowSize)
-%         ha = GUI.RawDataAxes;
         
         win_indexes = find(DATA.trr >= firstSecond2Show & DATA.trr <= firstSecond2Show + WindowSize);
         filt_win_indexes = find(DATA.tnn >= firstSecond2Show & DATA.tnn <= firstSecond2Show + WindowSize);
@@ -930,16 +937,12 @@ displayEndOfDemoMessage('');
                 max_rri_60 = max(60 ./ signal_data);
                 min_rri_60 = min(60 ./ signal_data);
                 DATA.AutoYLimit.HRMinYLimit = min(min_rri_60, max_rri_60);
-                DATA.AutoYLimit.HRMaxYLimit = max(min_rri_60, max_rri_60);
-                
+                DATA.AutoYLimit.HRMaxYLimit = max(min_rri_60, max_rri_60);                
             else
                 max_nni = max(filt_signal_data);
                 min_nni = min(filt_signal_data);
                 delta = (max_nni - min_nni)*1;
-                
-%                 DATA.AutoYLimit.RRMinYLimit = min_nni - delta;
-%                 DATA.AutoYLimit.RRMaxYLimit = max_nni + delta;
-                
+                                
                 DATA.AutoYLimit.RRMinYLimit = min(min_nni, max_nni) - delta;
                 DATA.AutoYLimit.RRMaxYLimit = max(min_nni, max_nni) + delta;
                 
@@ -957,41 +960,20 @@ displayEndOfDemoMessage('');
             else
                 MinYLimit = DATA.AutoYLimit.HRMinYLimit;
                 MaxYLimit = DATA.AutoYLimit.HRMaxYLimit;
-            end
-            
-%             set(GUI.MinYLimit_Edit, 'String', num2str(MinYLimit));
-%             set(GUI.MaxYLimit_Edit, 'String', num2str(MaxYLimit));
-            
+            end                        
             DATA.AutoYLimit.MaxYLimit = MaxYLimit;
             DATA.AutoYLimit.MinYLimit = MinYLimit;
-%             DATA.MaxYLimit = MaxYLimit;
-%             DATA.MinYLimit = MinYLimit;
-             
-%             set(ha, 'YLim', [MinYLimit MaxYLimit]);
-
-
-%             DATA.RRMinYLimit = DATA.AutoYLimit.RRMinYLimit;
-%             DATA.RRMaxYLimit = DATA.AutoYLimit.RRMaxYLimit;
-%             DATA.HRMinYLimit = DATA.AutoYLimit.HRMinYLimit;
-%             DATA.HRMaxYLimit = DATA.AutoYLimit.HRMaxYLimit;
-
-
         end
     end
 %%
     function setYAxesLim()
         ha = GUI.RawDataAxes;
-                
-        
-        if get(GUI.AutoScaleY_checkbox, 'Value') == 1
-
+                        
+        if get(GUI.AutoScaleY_checkbox, 'Value') == 1            
             DATA.RRMinYLimit = DATA.AutoYLimit.RRMinYLimit;
             DATA.RRMaxYLimit = DATA.AutoYLimit.RRMaxYLimit;
             DATA.HRMinYLimit = DATA.AutoYLimit.HRMinYLimit;
             DATA.HRMaxYLimit = DATA.AutoYLimit.HRMaxYLimit;
-            
-%         else
-%             [MinYLimit, MaxYLimit] = ReadFromMinMaxYLimit();
         end
         
         if (DATA.PlotHR == 0)
@@ -1019,113 +1001,91 @@ displayEndOfDemoMessage('');
 %%
     function setXAxesLim()
         ha = GUI.RawDataAxes;
-        
-%         win_indexes = find(DATA.trr >= DATA.firstSecond2Show & DATA.trr <= DATA.firstSecond2Show + DATA.MyWindowSize);
-        
-        %signal_time = DATA.trr(win_indexes(1) : win_indexes(end));
-        %signal_data = DATA.rri(win_indexes(1) : win_indexes(end));
-        
-        %set(ha, 'XLim', [signal_time(1) signal_time(end)]);
-        
-        
-        set(ha, 'XLim', [DATA.firstSecond2Show DATA.firstSecond2Show + DATA.MyWindowSize]);
-        
+             
+        set(ha, 'XLim', [DATA.firstSecond2Show DATA.firstSecond2Show + DATA.MyWindowSize]);        
         x_ticks_array = get(ha, 'XTick');
         set(ha, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0), x_ticks_array, 'UniformOutput', false));
     end
 %%
+    function plotAllData()
+        ha = GUI.AllDataAxes;
+        if (DATA.PlotHR == 0)
+            yString = 'RR (sec)'; 
+            data =  DATA.rri;
+            filtered_data = DATA.nni;
+        else
+            yString = 'HR (BPM)';
+            data =  60 ./ DATA.rri;
+            filtered_data = 60 ./ DATA.nni;
+        end
+        min_nni = min(min(filtered_data), max(filtered_data)); 
+        max_nni = max(min(filtered_data), max(filtered_data));         
+        delta = (max_nni - min_nni)*1;
+        
+        GUI.all_data_handle = line(DATA.trr, data, 'Color', 'b', 'LineWidth', 2, 'Parent', ha, 'DisplayName', 'Hole time series'); % , 'Tag', 'DoNotIgnore', 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}
+        %axis(ha, 'tight');
+        
+        set(ha, 'XLim', [0 max(DATA.trr)]);
+        set(ha, 'YLim', [min(min_nni, max_nni) - delta max(min_nni, max_nni) + delta]);    
+%         xlabel(ha, 'Time (sec)');
+%         ylabel(ha, yString);        
+        
+        % PLot red rectangle
+        ylim = get(ha, 'YLim');
+        x_box = [0 DATA.MyWindowSize DATA.MyWindowSize 0 0];
+        y_box = [ylim(1) ylim(1) ylim(2) ylim(2) ylim(1)];
+        
+         if isfield(GUI, 'red_rect') 
+            delete(GUI.red_rect);
+            GUI = rmfield(GUI, 'red_rect'); 
+         end
+         GUI.red_rect = line(x_box, y_box, 'Color', 'r', 'Linewidth', 2, 'Parent', ha);        % , 'Tag', 'DoNotIgnore', 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}
+        
+        x_ticks_array = get(ha, 'XTick');
+        set(ha, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0), x_ticks_array, 'UniformOutput', false));
+        
+        setAllowAxesZoom(DATA.zoom_handle, GUI.AllDataAxes, false);        
+    end
+%%
     function plotRawData()
         ha = GUI.RawDataAxes;
-        
-        %time_data = DATA.trr;
-        %data = DATA.rri;
-        
-        Filt_time_data = DATA.tnn;
-        Filt_data = DATA.nni;
-        filt_win_indexes = find(Filt_time_data >= DATA.firstSecond2Show & Filt_time_data <= DATA.firstSecond2Show + DATA.MyWindowSize);
-        
-%         filt_signal_time = Filt_time_data(filt_win_indexes(1) : filt_win_indexes(end));
-%         filt_signal_data = Filt_data(filt_win_indexes(1) : filt_win_indexes(end));
-        
-        filt_signal_time = Filt_time_data;
-        filt_signal_data = Filt_data;
-        
-        if (DATA.PlotHR == 0)
-            filt_data =  filt_signal_data;
-        else
-            filt_data =  60 ./ filt_signal_data;
-        end
-        
-        
-        win_indexes = find(DATA.trr >= DATA.firstSecond2Show & DATA.trr <= DATA.firstSecond2Show + DATA.MyWindowSize);
-        
-%         signal_time = DATA.trr(win_indexes(1) : win_indexes(end));
-%         signal_data = DATA.rri(win_indexes(1) : win_indexes(end));
-        
+                       
         signal_time = DATA.trr;
         signal_data = DATA.rri;
         
         if (DATA.PlotHR == 0)
             data =  signal_data;
-            yString = 'RR (sec)';
-            %             MinYLimit = min(DATA.RRMinYLimit, DATA.RRMaxYLimit);
-            %             MaxYLimit = max(DATA.RRMinYLimit, DATA.RRMaxYLimit);
-            %
-            %             Filt_MinYLimit = min(DATA.Filt_RRMinYLimit, DATA.Filt_RRMaxYLimit);
-            %             Filt_MaxYLimit = max(DATA.Filt_RRMinYLimit, DATA.Filt_RRMaxYLimit);
+            yString = 'RR (sec)';                        
         else
             data =  60 ./ signal_data;
-            yString = 'HR (BPM)';
-            %             MinYLimit = min(DATA.HRMinYLimit, DATA.HRMaxYLimit);
-            %             MaxYLimit = max(DATA.HRMinYLimit, DATA.HRMaxYLimit);
-            %
-            %             Filt_MinYLimit = min(DATA.Filt_HRMinYLimit, DATA.Filt_HRMaxYLimit);
-            %             Filt_MaxYLimit = max(DATA.Filt_HRMinYLimit, DATA.Filt_HRMaxYLimit);
-        end
+            yString = 'HR (BPM)';            
+        end                        
         
-        %         DATA.MaxYLimit = MaxYLimit;
-        %         DATA.MinYLimit = MinYLimit;
-        %
         GUI.raw_data_handle = plot(ha, signal_time, data, 'b-', 'LineWidth', 2, 'DisplayName', 'Time series');
         hold(ha, 'on');
-        
-        %GUI.filtered_handle = plot(ha, filt_signal_time, filt_data, 'g-', 'LineWidth', 1);        
-        %GUI.filtered_handle = line(ha, filt_signal_time, filt_data, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-');        
+                
         GUI.filtered_handle = line(ha, ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected filtered time series');        
-        
-        
-        %set(ha, 'XLim', [signal_time(1) signal_time(end)]);
-        %set(ha, 'YLim', [MinYLimit MaxYLimit]);
+                        
         xlabel(ha, 'Time (sec)');
-        ylabel(ha, yString);
+        ylabel(ha, yString);                
         
-        DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal'); % 
-        DATA.legend_handle.AutoUpdate = 'off';
-        %DATA.legend_handle.Box = 'off';
+        DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal', 'AutoUpdate', 'off'); % 
+        %DATA.legend_handle.AutoUpdate = 'off';        
                 
         set(ha, 'XLim', [DATA.firstSecond2Show, DATA.firstSecond2Show + DATA.MyWindowSize]);
-        
-        %x_ticks_array = get(ha, 'XTick');
-        %set(ha, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0), x_ticks_array, 'UniformOutput', false));
         
         setAllowAxesZoom(DATA.zoom_handle, GUI.RawDataAxes, false);
     end
 %%
-    function plotFilteredData()
-        %ha = GUI.RawDataAxes;
+    function plotFilteredData()        
                 
         Filt_time_data = DATA.tnn;
         Filt_data = DATA.nni;
-        
-        %filt_win_indexes = find(Filt_time_data >= DATA.AnalysisParams.startTime & Filt_time_data <= DATA.AnalysisParams.endTime);        % DATA.Filt_MyWindowSize
+                
         filt_win_indexes = find(Filt_time_data >= DATA.AnalysisParams.segment_startTime & Filt_time_data <= DATA.AnalysisParams.segment_effectiveEndTime);
         
         if ~isempty(filt_win_indexes)
-            
-%             if isfield(GUI, 'filtered_handle')
-%                 delete(GUI.filtered_handle);
-%             end
-            
+                       
             filt_signal_time = Filt_time_data(filt_win_indexes(1) : filt_win_indexes(end));
             filt_signal_data = Filt_data(filt_win_indexes(1) : filt_win_indexes(end));
             
@@ -1134,11 +1094,6 @@ displayEndOfDemoMessage('');
             else
                 filt_data =  60 ./ filt_signal_data;
             end
-            %GUI.filtered_handle = plot(ha, filt_signal_time, filt_data, 'g-', 'LineWidth', 1);
-            
-%             if ~isfield(GUI, 'filtered_handle') || ~isvalid(GUI.filtered_handle)
-%                 GUI.filtered_handle = line(ha, filt_signal_time, filt_data, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-');
-%             else
                 filt_data_time = ones(1, length(DATA.tnn))*NaN;
                 filt_data_vector = ones(1, length(DATA.nni))*NaN;
                 
@@ -1147,8 +1102,6 @@ displayEndOfDemoMessage('');
                 
                 GUI.filtered_handle.XData = filt_data_time;
                 GUI.filtered_handle.YData = filt_data_vector;
-%             end
-            %line(ha, filt_signal_time, filt_data, 'LineWidth', 1, 'Color', 'y', 'LineStyle', '-');
         end
     end
 %%
@@ -1158,11 +1111,7 @@ displayEndOfDemoMessage('');
                 ha = GUI.RawDataAxes;
                 MaxYLimit = DATA.MaxYLimit;
                 time_data = DATA.trr;
-                data = DATA.rri;
-                                
-                win_indexes = find(time_data >= DATA.firstSecond2Show & time_data <= DATA.firstSecond2Show + DATA.MyWindowSize);
-                %signal_time = time_data(DATA.FL_win_indexes(1) : DATA.FL_win_indexes(2));
-                signal_time = time_data(win_indexes(1) : win_indexes(end));
+                data = DATA.rri;                                                
                 
                 qd_size = size(DATA.QualityAnnotations_Data);
                 intervals_num = qd_size(1);
@@ -1171,12 +1120,10 @@ displayEndOfDemoMessage('');
                     data = 60 ./ data;
                 end
                 
-                if ~isfield(GUI, 'GreenLineHandle') || ~isvalid(GUI.GreenLineHandle)
-                    %GUI.GreenLineHandle = line([signal_time(1) signal_time(end)], [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3, 'Parent', ha);
+                if ~isfield(GUI, 'GreenLineHandle') || ~isvalid(GUI.GreenLineHandle)                    
                     GUI.GreenLineHandle = line([DATA.firstSecond2Show DATA.firstSecond2Show + DATA.MyWindowSize], [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3, 'Parent', ha);
                 else
-                    GUI.GreenLineHandle.XData = [DATA.firstSecond2Show DATA.firstSecond2Show + DATA.MyWindowSize];
-                    %GUI.GreenLineHandle.Color = DATA.MyGreen;
+                    GUI.GreenLineHandle.XData = [DATA.firstSecond2Show DATA.firstSecond2Show + DATA.MyWindowSize];                    
                     GUI.GreenLineHandle.YData = [MaxYLimit MaxYLimit];
                 end
                 uistack(GUI.GreenLineHandle, 'down')
@@ -1190,8 +1137,7 @@ displayEndOfDemoMessage('');
                     else
                         for i = 1 : intervals_num
                             GUI.RedLineHandle(i).XData = (DATA.QualityAnnotations_Data(i, :)-time_data(1))';
-                            GUI.RedLineHandle(i).YData = [MaxYLimit MaxYLimit]';
-                            %uistack(GUI.RedLineHandle(i), 'top');
+                            GUI.RedLineHandle(i).YData = [MaxYLimit MaxYLimit]';                            
                         end
                     end
                     
@@ -1210,11 +1156,7 @@ displayEndOfDemoMessage('');
                         else
                             low_quality_indexes = [a1(1)-2 : a2(end)+1];
                         end
-                        
-                        %line(time_data(a1(1):a2(end)+1), data(a1(1):a2(end)+1), 'LineStyle', '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha)
-                        
-                        %plot(time_data(low_quality_indexes), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
-%                         i
+                                                
                         if ~isempty(low_quality_indexes)
                             GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
                             if length(DATA.legend_handle.String) < 3
@@ -1222,79 +1164,7 @@ displayEndOfDemoMessage('');
                             end
                         end
                     end
-                end
-
-                
-                %-----------------------------------------
-                %                 if ~isfield(GUI, 'GreenLineHandle') || ~isvalid(GUI.GreenLineHandle)
-                %                     if verLessThan('matlab','9.1')
-                %                         GUI.GreenLineHandle = line([signal_time(1) signal_time(end)], [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3, 'Parent', ha);
-                %                     else
-                %                         GUI.GreenLineHandle = line(ha, seconds([signal_time(1) signal_time(end)]), [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3);
-                %                     end
-                %                 else
-                %                     if verLessThan('matlab','9.1')
-                %                         GUI.GreenLineHandle.XData = [signal_time(1) signal_time(end)];
-                %                     else
-                %                         GUI.GreenLineHandle.XData = seconds([signal_time(1) signal_time(end)]);
-                %                         GUI.GreenLineHandle.Color = DATA.MyGreen;
-                %                     end
-                %                     GUI.GreenLineHandle.YData = [MaxYLimit MaxYLimit];
-                %                 end
-                
-                %                 if ~(DATA.QualityAnnotations_Data(1, 1) + DATA.QualityAnnotations_Data(1,2))==0
-                %
-                %                     if ~isfield(GUI, 'RedLineHandle') || ~isvalid(GUI.RedLineHandle(1))
-                %                         if verLessThan('matlab','9.1')
-                %                             GUI.RedLineHandle = line((DATA.QualityAnnotations_Data-time_data(1))', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3, 'Parent', ha);
-                %                         else
-                %                             GUI.RedLineHandle = line(ha, seconds((DATA.QualityAnnotations_Data-time_data(1))'), [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3);
-                %                         end
-                %                     else
-                %                         for i = 1 : intervals_num
-                %                             %GUI.RedLineHandle(i).XData = seconds((DATA.QualityAnnotations_Data(i, :))');
-                %                             if verLessThan('matlab','9.1')
-                %                                 GUI.RedLineHandle(i).XData = (DATA.QualityAnnotations_Data(i, :)-time_data(1))';
-                %                             else
-                %                                 GUI.RedLineHandle(i).XData = seconds((DATA.QualityAnnotations_Data(i, :)-time_data(1))');
-                %                             end
-                %                             GUI.RedLineHandle(i).YData = [MaxYLimit MaxYLimit]';
-                %                         end
-                %                     end
-                %
-                %                     %fr=time_data(5)-time_data(4);
-                %                     %win_indexes = find(time_data >= DATA.QualityAnnotations_Data(1,1)-2*fr & time_data <= DATA.QualityAnnotations_Data(1,2)+2*fr);
-                %
-                %                     for i = 1 : intervals_num
-                %
-                %                         a1=find(time_data >= DATA.QualityAnnotations_Data(i,1));
-                %                         a2=find(time_data <= DATA.QualityAnnotations_Data(i,2));
-                %
-                %                         %                         a2_start = a2(end);
-                %                         %                         a1_stop = a1(1)+1;
-                %                         if isempty(a2); a2 = 1; end % case where the bad quality starts before the first annotated peak
-                %                         if isempty(a1); a1 = length(time_data); end
-                %                         if length(a1)<2
-                %                             low_quality_indexes = [a2(end) : a1(1)];
-                %                         else
-                %                             low_quality_indexes = [a2(end)-1 : a1(1)];
-                %                         end
-                %
-                %                         %plot(ha, seconds(data_quality_time), data(win_indexes(1) : win_indexes(end)), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);
-                %                         %                         plot(ha, seconds(data_quality_time), data(win_indexes(1) : win_indexes(end)), '-s', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'MarkerSize',5,...
-                %                         %                             'MarkerEdgeColor',[255 157 189]/255,...
-                %                         %                             'MarkerFaceColor',[255 157 189]/255);
-                %
-                %                         if verLessThan('matlab','9.1')
-                %                             % -- Code to run in MATLAB R2014a and earlier here --
-                %                             plot(time_data(low_quality_indexes), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
-                %                         else
-                %                             % -- Code to run in MATLAB R2014b and later here --
-                %                             plot(ha, seconds(time_data(low_quality_indexes)), data(low_quality_indexes), '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5);
-                %                         end
-                %                     end
-                %                 end
-                
+                end            
             end
         end
         setAllowAxesZoom(DATA.zoom_handle, GUI.RawDataAxes, false);
@@ -1498,6 +1368,7 @@ displayEndOfDemoMessage('');
                     errordlg('Please, choose the file with the QRS data.', 'Input Error');
                     clean_gui();
                     cla(GUI.RawDataAxes);
+                    cla(GUI.AllDataAxes);
                     return;
                 end
             elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
@@ -1522,6 +1393,7 @@ displayEndOfDemoMessage('');
                     errordlg('Cann''t get sampling frequency or mammal.', 'Input Error');
                     clean_gui();
                     cla(GUI.RawDataAxes);
+                    cla(GUI.AllDataAxes);
                     return;
                 end
                 %                 fileID = fopen([PathName DATA.DataFileName '.hea' ],'r');
@@ -1542,6 +1414,7 @@ displayEndOfDemoMessage('');
                         errordlg('Please, choose the file with the QRS data.', 'Input Error');
                         clean_gui();
                         cla(GUI.RawDataAxes);
+                        cla(GUI.AllDataAxes);
                         return;
                     end                 
                 catch e
@@ -1552,6 +1425,7 @@ displayEndOfDemoMessage('');
                     clearStatTables();
                     clean_gui();
                     cla(GUI.RawDataAxes);
+                    cla(GUI.AllDataAxes);
                     return;
                 end
             elseif strcmpi(ExtensionFileName, 'txt')
@@ -1578,6 +1452,7 @@ displayEndOfDemoMessage('');
                         errordlg('Please, choose the file with the QRS data.', 'Input Error');
                         clean_gui();
                         cla(GUI.RawDataAxes);
+                        cla(GUI.AllDataAxes);
                         return;
                     end
                 end
@@ -1669,11 +1544,11 @@ displayEndOfDemoMessage('');
         GUI.TimeParametersTableData = [GUI.TimeParametersTableData; GUI.FragParametersTableData];
         GUI.TimeParametersTable.Data = [GUI.TimeParametersTable.Data; GUI.FragParametersTable.Data];
     end
-%%
-    function updateStatisticsTable()
-        GUI.StatisticsTable.RowName = cat(1, GUI.TimeParametersTableRowName, GUI.FrequencyParametersTableMethodRowName, GUI.NonLinearTableRowName);
-        GUI.StatisticsTable.Data = cat(1, GUI.TimeParametersTableData, GUI.FrequencyParametersTableData, GUI.NonLinearTableData);
-    end
+% %%
+%     function updateStatisticsTable()
+%         GUI.StatisticsTable.RowName = cat(1, GUI.TimeParametersTableRowName, GUI.FrequencyParametersTableMethodRowName, GUI.NonLinearTableRowName);
+%         GUI.StatisticsTable.Data = cat(1, GUI.TimeParametersTableData, GUI.FrequencyParametersTableData, GUI.NonLinearTableData);
+%     end
 %%
     function clear_statistics_plots()
         clear_time_statistics_results();
@@ -1758,6 +1633,9 @@ displayEndOfDemoMessage('');
         
         if ~isempty(DATA.rri)
             
+            
+            DATA.prev_point = 0;
+            
             trr = DATA.trr;            
             DATA.maxSignalLength = trr(end);
                         
@@ -1766,7 +1644,7 @@ displayEndOfDemoMessage('');
             DATA.PlotHR = 0;
             DATA.firstSecond2Show = 0;            
             % Show only 6*hrv_freq.window_minutes portion of the raw data            
-            DATA.MyWindowSize = min(6 * DATA.Filt_MyDefaultWindowSize, DATA.maxSignalLength);
+            DATA.MyWindowSize = min(3 * DATA.Filt_MyDefaultWindowSize, DATA.maxSignalLength); % 6
             
             if DATA.MyWindowSize == DATA.maxSignalLength
                 enable_slider = 'off';                
@@ -1825,8 +1703,10 @@ displayEndOfDemoMessage('');
                 end
                 
                 cla(GUI.RawDataAxes);
+                cla(GUI.AllDataAxes);
                 clear_statistics_plots();
                 clearStatTables();
+                plotAllData();
                 plotRawData();
                 setXAxesLim();
                 setYAxesLim();
@@ -1900,10 +1780,16 @@ displayEndOfDemoMessage('');
                     errordlg('The window size must be greater then 2 sec and less then signal length!', 'Input Error');
                     return;
                 end
-                    
-                %if(DATA.firstSecond2Show + MyWindowSize == DATA.maxSignalLength) % -0.0005
-                if abs(DATA.maxSignalLength - DATA.firstSecond2Show - MyWindowSize ) <=  1 %0.0005
-                %if DATA.MyWindowSize == DATA.maxSignalLength
+                                    
+%                 if abs(DATA.maxSignalLength - DATA.firstSecond2Show - MyWindowSize ) <=  1 %0.0005                
+%                     set(GUI.RawDataSlider, 'Enable', 'off');
+%                     set(GUI.FirstSecond, 'Enable', 'off');
+%                 else
+%                     set(GUI.RawDataSlider, 'Enable', 'on');
+%                     set(GUI.FirstSecond, 'Enable', 'on');
+%                 end  
+
+                if abs(DATA.maxSignalLength - MyWindowSize ) <=  1 %0.0005
                     set(GUI.RawDataSlider, 'Enable', 'off');
                     set(GUI.FirstSecond, 'Enable', 'off');
                 else
@@ -1911,19 +1797,19 @@ displayEndOfDemoMessage('');
                     set(GUI.FirstSecond, 'Enable', 'on');
                 end
                 
-                %set(GUI.FirstSecond, 'Enable', 'on');
-                
                 DATA.MyWindowSize = MyWindowSize;
                 setSliderProperties(GUI.RawDataSlider, DATA.maxSignalLength, DATA.MyWindowSize, [(DATA.MyWindowSize/10)/double(DATA.maxSignalLength) , (DATA.MyWindowSize)/double(DATA.maxSignalLength) ]);
                 set(GUI.RawDataSlider, 'Value', DATA.firstSecond2Show);
-                %plotRawData();
                 setXAxesLim();
-                %if DATA.AutoY == 1
-                    setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);
-                %end
+                setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);
                 setYAxesLim();
                 plotDataQuality();
                 plotMultipleWindows();
+                
+                xdata = get(GUI.red_rect, 'XData');
+%                 xdata([1, 4, 5]) = DATA.firstSecond2Show;
+                xdata([2, 3]) = DATA.firstSecond2Show + DATA.MyWindowSize;
+                set(GUI.red_rect, 'XData', xdata);
             end            
         end
     end
@@ -1940,25 +1826,14 @@ displayEndOfDemoMessage('');
                     errordlg('The filt window size must be greater then 10 sec and less then signal length!', 'Input Error');
                     return;
                 end
-                                
-                
-%                 XData_active_window = get(GUI.rect_handle(1), 'XData');
-%                 start_time = XData_active_window(1);
-                
-                
-%                 DATA.AnalysisParams.segment_startTime = DATA.AnalysisParams.activeWin_startTime; %start_time;
-%                 DATA.AnalysisParams.activeWin_startTime = DATA.AnalysisParams.activeWin_startTime; %start_time;
-                
+                                               
                 DATA.AnalysisParams.segment_endTime = DATA.AnalysisParams.activeWin_startTime + Active_Window_Length; %start_time + Active_Window_Length;
                 DATA.AnalysisParams.activeWin_length = Active_Window_Length;
                 
                 setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, [(double(DATA.AnalysisParams.activeWin_length)/10)/double(DATA.Filt_MaxSignalLength) , double(DATA.AnalysisParams.activeWin_length)/double(DATA.Filt_MaxSignalLength) ]);
-%                 set(GUI.Filt_FirstSecond, 'String', calcDuration(DATA.AnalysisParams.startTime, 0));
                
                 set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
 
-                %set(GUI.segment_startTime, 'String', calcDuration(DATA.AnalysisParams.segment_startTime, 0));
-                %set(GUI.Active_Window_Start, 'String', calcDuration(start_time, 0));
                 set(GUI.segment_endTime, 'String', calcDuration(DATA.AnalysisParams.segment_endTime, 0));
                 set(GUI.activeWindow_length, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));                
                 
@@ -2026,112 +1901,31 @@ displayEndOfDemoMessage('');
         SetMinMaxYLimit();
     end
 %%
-    function MinYLimit_Edit_Callback(~, ~)
-        if ~isempty(DATA.rri)
-            MinYLimit = str2double(get(GUI.MinYLimit_Edit,'String'));
-            if (DATA.PlotHR == 0)
-                OldMinYLimit = DATA.RRMinYLimit;
-            else
-                OldMinYLimit = DATA.HRMinYLimit;
-            end
-            if isInputNumeric(GUI.MinYLimit_Edit, MinYLimit, OldMinYLimit)
-                
-                if (DATA.PlotHR == 0)
-                    DATA.ManualYLim.RRMinYLimit = MinYLimit;
-                    MinYLimit = min(DATA.RRMinYLimit, DATA.RRMaxYLimit);
-                    MaxYLimit = max(DATA.RRMinYLimit, DATA.RRMaxYLimit);
-                else
-                    DATA.HRMinYLimit = MinYLimit;
-                    MinYLimit = min(DATA.HRMinYLimit, DATA.HRMaxYLimit);
-                    MaxYLimit = max(DATA.HRMinYLimit, DATA.HRMaxYLimit);
-                end
-                
-                if(MinYLimit ~= MaxYLimit)
-                    set(GUI.RawDataAxes, 'YLim', [MinYLimit MaxYLimit]);
-                    DATA.MinYLimit = MinYLimit;
-                    DATA.MaxYLimit = MaxYLimit;
-                    plotDataQuality();
-                    plotMultipleWindows();
-                else
-                    errordlg('Please, enter correct values!', 'Input Error');
-                end
-            end
-        end
-    end
-%%
-    function MaxYLimit_Edit_Callback( ~, ~ )
-        if ~isempty(DATA.rri)
-            MaxYLimit = str2double(get(GUI.MaxYLimit_Edit,'String'));
-            if (DATA.PlotHR == 0)
-                OldMaxYLimit = DATA.RRMaxYLimit;
-            else
-                OldMaxYLimit = DATA.HRMaxYLimit;
-            end
-            if isInputNumeric(GUI.MaxYLimit_Edit, MaxYLimit, OldMaxYLimit)
-                
-                if (DATA.PlotHR == 0)
-                    DATA.RRMaxYLimit = MaxYLimit;
-                    MinYLimit = min(DATA.RRMinYLimit, DATA.RRMaxYLimit);
-                    MaxYLimit = max(DATA.RRMinYLimit, DATA.RRMaxYLimit);
-                else
-                    DATA.HRMaxYLimit = MaxYLimit;
-                    MinYLimit = min(DATA.HRMinYLimit, DATA.HRMaxYLimit);
-                    MaxYLimit = max(DATA.HRMinYLimit, DATA.HRMaxYLimit);
-                end
-                if(MinYLimit ~= MaxYLimit)
-                    set(GUI.RawDataAxes, 'YLim', [MinYLimit MaxYLimit]);
-                       DATA.MinYLimit = MinYLimit;
-                    DATA.MaxYLimit = MaxYLimit;
-                    plotDataQuality();
-                    plotMultipleWindows();                    
-                else
-                    errordlg('Please, Enter correct values!', 'Input Error');
-                end
-            end
-        end
-    end
-%%
     function RR_or_HR_plot_button_Callback( ~, ~ )
         if ~isempty(DATA.rri)
             if(DATA.PlotHR == 1)
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot HR');
                 DATA.PlotHR = 0;
-                                MinYLimit = min(DATA.RRMinYLimit, DATA.RRMaxYLimit);
-                                MaxYLimit = max(DATA.RRMinYLimit, DATA.RRMaxYLimit);
-                %
-                %                 Filt_MinYLimit = min(DATA.Filt_RRMinYLimit, DATA.Filt_RRMaxYLimit);
-                %                 Filt_MaxYLimit = max(DATA.Filt_RRMinYLimit, DATA.Filt_RRMaxYLimit);
+                MinYLimit = min(DATA.RRMinYLimit, DATA.RRMaxYLimit);
+                MaxYLimit = max(DATA.RRMinYLimit, DATA.RRMaxYLimit);
             else
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot RR');
                 DATA.PlotHR = 1;
-                                MinYLimit = min(DATA.HRMinYLimit, DATA.HRMaxYLimit);
-                                MaxYLimit = max(DATA.HRMinYLimit, DATA.HRMaxYLimit);
-                %
-                %                 Filt_MinYLimit = min(DATA.Filt_HRMinYLimit, DATA.Filt_HRMaxYLimit);
-                %                 Filt_MaxYLimit = max(DATA.Filt_HRMinYLimit, DATA.Filt_HRMaxYLimit);
+                MinYLimit = min(DATA.HRMinYLimit, DATA.HRMaxYLimit);
+                MaxYLimit = max(DATA.HRMinYLimit, DATA.HRMaxYLimit);
             end
             
             set(GUI.MinYLimit_Edit, 'String', num2str(MinYLimit));
             set(GUI.MaxYLimit_Edit, 'String', num2str(MaxYLimit));
             
             cla(GUI.RawDataAxes);
+            plotAllData();
             plotRawData();  
             setXAxesLim();
             setYAxesLim();
             plotFilteredData();
             plotDataQuality();
-            plotMultipleWindows();
-            
-%             set(GUI.MinYLimit_Edit, 'String', num2str(DATA.MinYLimit));
-%             set(GUI.MaxYLimit_Edit, 'String', num2str(DATA.MaxYLimit));
-%             
-            %             set(GUI.Filt_MinYLimit_Edit, 'String', num2str(Filt_MinYLimit));
-            %             set(GUI.Filt_MaxYLimit_Edit, 'String', num2str(Filt_MaxYLimit));
-            
-            %             DATA.MinYLimit = MinYLimit;
-            %             DATA.MaxYLimit = MaxYLimit;
-            
-            %GetPlotSignal();
+            plotMultipleWindows();            
         end
     end
 %%
@@ -2189,15 +1983,8 @@ displayEndOfDemoMessage('');
         GUI.Integration_popupmenu.Value = 1;
         GUI.DefaultMethod_popupmenu.Value = DATA.default_method_index;
         
-%         set(GUI.AutoScaleY_checkbox, 'String', 'Auto');
-%         set(GUI.AutoScaleY_checkbox, 'Value', 1);
-%         DATA.AutoY = 1;
-
-%         set(GUI.MinYLimit_Edit, 'Enable', 'inactive');
-%         set(GUI.MaxYLimit_Edit, 'Enable', 'inactive');        
-%             
-         set(GUI.AutoScaleY_checkbox, 'Value', 1);
-
+        set(GUI.AutoScaleY_checkbox, 'Value', 1);
+        
         reset_plot();
     end
 
@@ -2259,7 +2046,6 @@ displayEndOfDemoMessage('');
             % Load user-specified default parameters
             rhrv_load_defaults(DATA.mammals{index_selected});
         end
-        %run_after_mammal_change(index_selected);
         createConfigParametersInterface();
         reset_plot();
         DATA.mammal_index = index_selected;
@@ -2329,18 +2115,13 @@ displayEndOfDemoMessage('');
 %%
     function DefaultMethod_popupmenu_Callback( ~, ~ )
         DATA.default_method_index = get(GUI.DefaultMethod_popupmenu, 'Value');
-        %         setFrequencyParametersTableMethodRowName();
-        %         updateStatisticsTable();
         
-        %updateMainStatisticsTable_FrequencyPart();
         [StatRowsNames, StatData] = setFrequencyMethodData();
         updateMainStatisticsTable(DATA.timeStatPartRowNumber, StatRowsNames, StatData);
     end
 %%
     function [StatRowsNames, StatData] = setFrequencyMethodData()
-%         if DATA.default_method_index == 1 % Lomb
-%             StatRowsNames = DATA.FrStat.LombWindowsData.RowsNames;
-%             StatData = DATA.FrStat.LombWindowsData.Data;
+
         if DATA.default_method_index == 2 % AR
             StatRowsNames = DATA.FrStat.ArWindowsData.RowsNames;
             StatData = DATA.FrStat.ArWindowsData.Data;
@@ -2350,32 +2131,11 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-%     function updateMainStatisticsTable_NonLinearPart()
-%         prevPartRowNumber = DATA.frequencyStatPartRowNumber;
-%         [rn, ~] = size(DATA.NonLinStat.RowsNames);
-%         GUI.StatisticsTable.RowName(prevPartRowNumber + 1 : prevPartRowNumber + rn) = DATA.NonLinStat.RowsNames;
-%         [rn, ~] = size(DATA.NonLinStat.Data);
-%         GUI.StatisticsTable.Data(prevPartRowNumber + 1 : prevPartRowNumber + rn, :) = DATA.NonLinStat.Data;
-%     end
-%%
     function updateMainStatisticsTable(prevPartRowNumber, RowsNames, Data)
         [rowNumber, colNumber] = size(Data);
         GUI.StatisticsTable.RowName(prevPartRowNumber + 1 : prevPartRowNumber + rowNumber) = RowsNames;
         GUI.StatisticsTable.Data(prevPartRowNumber + 1 : prevPartRowNumber + rowNumber, 1 : colNumber) = Data;
-    end
-%%
-%     function setFrequencyParametersTableMethodRowName()
-%         if DATA.default_method_index == 1 % Lomb
-%             GUI.FrequencyParametersTableMethodRowName = DATA.fd_LombRowsNames;
-%             GUI.FrequencyParametersTableData = [DATA.fd_lombDescriptions DATA.fd_lombData];
-%         elseif DATA.default_method_index == 3 % AR
-%             GUI.FrequencyParametersTableMethodRowName = DATA.fd_ArRowsNames;
-%             GUI.FrequencyParametersTableData = [DATA.fd_ArDescriptions DATA.fd_arData];
-%         elseif DATA.default_method_index == 2 % Welch
-%             GUI.FrequencyParametersTableMethodRowName = DATA.fd_WelchRowsNames;
-%             GUI.FrequencyParametersTableData = [DATA.fd_WelchDescriptions DATA.fd_welchData];
-%         end
-%     end    
+    end 
 %%
     function set_filters(Filter)
         
@@ -2419,16 +2179,16 @@ displayEndOfDemoMessage('');
                 end
                                
                 set(GUI.RawDataSlider, 'Value', firstSecond2Show);
-                DATA.firstSecond2Show = firstSecond2Show;
-                %GetPlotSignal();
-                %plotRawData();
+                DATA.firstSecond2Show = firstSecond2Show;                
                 setXAxesLim();
-                %if DATA.AutoY == 1
-                    setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);
-                %end
+                setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);
                 setYAxesLim();
                 plotDataQuality();
                 plotMultipleWindows();
+                xdata = get(GUI.red_rect, 'XData');
+                xdata([1, 4, 5]) = DATA.firstSecond2Show;
+                xdata([2, 3]) = DATA.firstSecond2Show + DATA.MyWindowSize;
+                set(GUI.red_rect, 'XData', xdata);
             end
         end
     end
@@ -2442,8 +2202,7 @@ displayEndOfDemoMessage('');
                     set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
                     errordlg('The filt first second value must be grater than 0 and less then signal length!', 'Input Error');
                 else
-                    set(GUI.Filt_RawDataSlider, 'Value', active_window_start);                    
-                    %DATA.Filt_FirstSecond2Show = Filt_FirstSecond2Show;
+                    set(GUI.Filt_RawDataSlider, 'Value', active_window_start);                                       
                     
                     % ??????????????????                    
                     DATA.AnalysisParams.activeWin_startTime = active_window_start; 
@@ -2456,8 +2215,7 @@ displayEndOfDemoMessage('');
                     clearStatTables();
                     calcBatchWinNum();
                     plotFilteredData();
-                    plotMultipleWindows();                    
-                    %GetPlotSignal();
+                    plotMultipleWindows();                                       
                     calcStatistics();
                 end
             end
@@ -2898,9 +2656,7 @@ displayEndOfDemoMessage('');
             
             if strcmp(button, 'Yes')                
                 if ~isempty(DATA.TimeStat) && ~isempty(DATA.FrStat) && ~isempty(DATA.NonLinStat)
-%                     AllRowsNames = [DATA.TimeStat.RowsNames; DATA.FrStat.WelchWindowsData.RowsNames; DATA.FrStat.LombWindowsData.RowsNames; DATA.FrStat.ArWindowsData.RowsNames; DATA.NonLinStat.RowsNames];
-%                     statistics_params = [DATA.TimeStat.Data; DATA.FrStat.WelchWindowsData.Data; DATA.FrStat.LombWindowsData.Data; DATA.FrStat.ArWindowsData.Data; DATA.NonLinStat.Data];
-                    
+                 
                     AllRowsNames = [DATA.TimeStat.RowsNames; DATA.FrStat.WelchWindowsData.RowsNames_NO_GreekLetters; DATA.FrStat.ArWindowsData.RowsNames_NO_GreekLetters; DATA.NonLinStat.RowsNames_NO_GreekLetters];
                     statistics_params = [DATA.TimeStat.Data; DATA.FrStat.WelchWindowsData.Data; DATA.FrStat.ArWindowsData.Data; DATA.NonLinStat.Data];
                     
@@ -2995,30 +2751,14 @@ displayEndOfDemoMessage('');
             calcStatistics();
             close(waitbar_handle);
         elseif strcmp(param_category, 'hrv_time')
-            %             old_calcTimeStatistics();
-            %             plot_time_statistics_results();
-            %             clear_time_statistics_results();
-            %             clearStatTables();
-            %clear_time_data();
-            %clear_fragmentation_data();
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
             calcTimeStatistics(waitbar_handle);
             close(waitbar_handle);
         elseif strcmp(param_category, 'hrv_freq') % strcmp(param_category, 'hrv_nl') ||
-            %             old_calcFrequencyStatistics();
-            %             plot_frequency_statistics_results();
-            %             clear_frequency_statistics_results();
-            %             clearStatTables();
-            %clear_frequency_data();
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
             calcFrequencyStatistics(waitbar_handle);
             close(waitbar_handle);
         elseif strcmp(param_category, 'dfa') || strcmp(param_category, 'mse')
-            %             old_calcNolinearStatistics();
-            %             plot_nonlinear_statistics_results();
-            %             clear_nonlinear_statistics_results();
-            %             clearStatTables();
-            %clear_nonlinear_data();
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
             calcNonlinearStatistics(waitbar_handle);
             close(waitbar_handle);
@@ -3030,15 +2770,7 @@ displayEndOfDemoMessage('');
         cp_param_array = [];
         do_couple = false;
         param_category = strsplit(param_name, '.');
-        %DATA.flag = 0;
         
-        %         if strcmp(get(src, 'Style'), 'popupmenu')
-        %             prev_default_method_index = DATA.default_method_index;
-        %             DATA.default_method_index = get(src, 'Value');
-        % %             methods_str = get(src, 'String');
-        % %             value = methods_str{index_selected};
-        %             screen_value = 0;
-        %else
         min_suffix_ind = strfind(param_name, '.min');
         max_suffix_ind = strfind(param_name, '.max');
         
@@ -3141,17 +2873,13 @@ displayEndOfDemoMessage('');
             prev_param_value = prev_param_array.value;
         end
         rhrv_set_default( param_name, param_value );
-        %end
+        
         try
             update_statistics(param_category(1));
             set(src, 'UserData', screen_value);
         catch e
             errordlg(['set_config_Callback error: ' e.message], 'Input Error');
-            %close(waitbar_handle);
-            %             if strcmp(get(src, 'Style'), 'popupmenu')
-            %                 DATA.default_method_index = prev_default_method_index;
-            %                 set(src, 'Value', prev_default_method_index);
-            %             else
+            
             rhrv_set_default( param_name, prev_param_array );
             set(src, 'String', num2str(prev_param_value));
             
@@ -3164,8 +2892,7 @@ displayEndOfDemoMessage('');
                     set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(prev_param_value))
                 end
             end
-            %update_statistics(param_category(1));
-            %end
+            
         end
     end
 %%
@@ -3183,7 +2910,7 @@ displayEndOfDemoMessage('');
             rhrv_load_defaults([pathstr filesep name]);
             DIRS.configDirectory = PathName;
             GUI.Mammal_popupmenu.Value = 5;
-            %run_after_mammal_change(5);
+            
             createConfigParametersInterface();
             reset_plot();
             DATA.mammal_index = 5;
@@ -3247,7 +2974,7 @@ displayEndOfDemoMessage('');
             else
                 old_param_val = DATA.AnalysisParams.(src_tag);
                 set(src, 'String', num2str(old_param_val));
-                %isInputNumeric = 0;
+                
                 warndlg('Please, check your input');
                 return;
             end
@@ -3262,18 +2989,7 @@ displayEndOfDemoMessage('');
                 if param_value > DATA.Filt_MaxSignalLength - DATA.AnalysisParams.activeWin_length + 1
                     set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
                     errordlg('Selected window start time must be less then signal length!', 'Input Error');
-                    return;
-                else
-                    %set(GUI.Filt_RawDataSlider, 'Value', param_value);
-                    %DATA.Filt_FirstSecond2Show = param_value;
-                    
-                    
-                    % ??????????????????????????                    
-                    %set( GUI.Filt_FirstSecond, 'String', calcDuration(param_value, 0));
-                    
-                    
-                    
-                    
+                    return;                   
                 end
             elseif strcmp(src_tag, 'segment_endTime')
                 if param_value < 0 || param_value > DATA.Filt_MaxSignalLength
@@ -3291,7 +3007,6 @@ displayEndOfDemoMessage('');
                     errordlg('Selected window size must be greater then 10 sec!', 'Input Error');
                     return;
                 else
-                    %DATA.Filt_MyWindowSize = param_value;
                     setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, param_value, [(double(param_value)/10)/double(DATA.Filt_MaxSignalLength) , double(param_value)/double(DATA.Filt_MaxSignalLength) ]);
                     set( GUI.Active_Window_Length, 'String', calcDuration(param_value, 0));
                 end
@@ -3366,8 +3081,8 @@ displayEndOfDemoMessage('');
             
             if isfield(GUI, 'rect_handle')
                 for i = 1 : length(GUI.rect_handle)
-                    delete(GUI.rect_handle(i));
-                end
+                    delete(GUI.rect_handle(i));                    
+                end                
             end
             
             batch_window_start_time = DATA.AnalysisParams.segment_startTime;            
@@ -3392,9 +3107,7 @@ displayEndOfDemoMessage('');
 %                 GUI.rect_handle(i) = fill([DATA.tnn(filt_win_indexes(1)) DATA.tnn(filt_win_indexes(1)) DATA.tnn(filt_win_indexes(end)) DATA.tnn(filt_win_indexes(end))], ...
 %                     [DATA.MinYLimit DATA.MaxYLimit DATA.MaxYLimit DATA.MinYLimit], DATA.rectangle_color, 'LineWidth', 0.5, 'FaceAlpha', 0.15, 'Parent', GUI.RawDataAxes, ...
 %                     'ButtonDownFcn', @WindowButtonDownFcn_rect_handle, 'Tag', 'DoNotIgnore', 'UserData', i);
-%                 
-                
-                
+%                                                 
                  GUI.rect_handle(i) = fill([batch_window_start_time batch_window_start_time batch_window_start_time + batch_window_length batch_window_start_time + batch_window_length], ...
                     [DATA.MinYLimit DATA.MaxYLimit DATA.MaxYLimit DATA.MinYLimit], DATA.rectangle_color, 'LineWidth', 0.5, 'FaceAlpha', 0.15, 'Parent', GUI.RawDataAxes, ...
                     'ButtonDownFcn', @WindowButtonDownFcn_rect_handle, 'Tag', 'DoNotIgnore', 'UserData', i);
@@ -3407,8 +3120,10 @@ displayEndOfDemoMessage('');
                 
                 batch_window_start_time = batch_window_start_time + (1-batch_overlap) * batch_window_length;
             end
-            if isfield(GUI, 'RedLineHandle')
-                uistack(GUI.RedLineHandle, 'top');
+            if isfield(GUI, 'RedLineHandle') 
+                if isvalid(GUI.RedLineHandle)
+                    uistack(GUI.RedLineHandle, 'top');
+                end
             end
         end
     end
@@ -3536,16 +3251,9 @@ displayEndOfDemoMessage('');
                 
                 if i == DATA.active_window
                     
-                    %                     GUI.FrequencyParametersTableLombRowName = fd_LombRowsNames;
-                    %                     GUI.FrequencyParametersTableRowName = strrep(fd_LombRowsNames,'_LOMB','');
-                    
-                    %GUI.FrequencyParametersTableLombRowName = fd_WelchRowsNames;
-                    GUI.FrequencyParametersTableRowName = strrep(fd_WelchRowsNames,'_WELCH','');
-                    
-                    %GUI.FrequencyParametersTable.Data = [GUI.FrequencyParametersTableRowName fd_lombData fd_welchData fd_arData];
-                    GUI.FrequencyParametersTable.Data = [GUI.FrequencyParametersTableRowName fd_welchData fd_arData];
-                    
-                    %DATA.pd_freq = pd_freq;
+                   
+                    GUI.FrequencyParametersTableRowName = strrep(fd_WelchRowsNames,'_WELCH','');                                      
+                    GUI.FrequencyParametersTable.Data = [GUI.FrequencyParametersTableRowName fd_welchData fd_arData];                  
                     plot_frequency_statistics_results(i);
                 end
             catch e
@@ -3553,24 +3261,23 @@ displayEndOfDemoMessage('');
                 close(waitbar_handle);
                 errordlg(['hrv_freq: ' e.message], 'Input Error');
                 rethrow(e);
-                %return;
+                
             end
             
             if i == 1
                 
-                %DATA.FrStat.LombWindowsData.RowsNames = fd_LombRowsNames;
+                
                 DATA.FrStat.ArWindowsData.RowsNames = fd_ArRowsNames;
                 DATA.FrStat.WelchWindowsData.RowsNames = fd_WelchRowsNames;
                 
                 DATA.FrStat.ArWindowsData.RowsNames_NO_GreekLetters = fd_ArRowsNames_NO_GreekLetters;
                 DATA.FrStat.WelchWindowsData.RowsNames_NO_GreekLetters = fd_WelchRowsNames_NO_GreekLetters;
                 
-                %DATA.FrStat.LombWindowsData.Data = [fd_lombDescriptions fd_lombData];
+                
                 DATA.FrStat.ArWindowsData.Data = [fd_ArDescriptions fd_arData];
                 DATA.FrStat.WelchWindowsData.Data = [fd_WelchDescriptions fd_welchData];
             else
-                
-                %DATA.FrStat.LombWindowsData.Data = [DATA.FrStat.LombWindowsData.Data fd_lombData];
+              
                 DATA.FrStat.ArWindowsData.Data = [DATA.FrStat.ArWindowsData.Data fd_arData];
                 DATA.FrStat.WelchWindowsData.Data = [DATA.FrStat.WelchWindowsData.Data fd_welchData];
             end
@@ -3805,6 +3512,141 @@ displayEndOfDemoMessage('');
             DATA.legend_handle.Visible = 'on';
         else
             DATA.legend_handle.Visible = 'off';
+        end
+    end
+%%
+    function my_WindowButtonUpFcn (src, callbackdata, handles)
+        
+        
+%         if hittest(GUI.Window) == GUI.AllDataAxes
+%             hittest(GUI.Window)
+%             disp('WindowButtonUpFcn');
+%             DATA.hObject
+%             my_clickOnAllData('', '', '');
+%         else
+            set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
+%         end                        
+    end
+%%
+    function my_WindowButtonMotionFcn(src, callbackdata, type)
+        %hittest(GUI.Window)
+        switch type
+            case 'init'
+                if hittest(GUI.Window) == GUI.AllDataAxes || get(hittest(GUI.Window), 'Parent') == GUI.AllDataAxes
+                    try                        
+                        xdata = get(GUI.red_rect, 'XData');
+                        point1 = get(GUI.AllDataAxes, 'CurrentPoint');
+                        if point1(1,1) < max(xdata) && point1(1,1) > min(xdata)
+                            setptr(GUI.Window, 'hand');
+                            DATA.hObject = 'window';
+                        else
+                            setptr(GUI.Window, 'arrow');
+                            DATA.hObject = 'overall';
+                        end
+                    catch
+                    end
+                else
+                    setptr(GUI.Window, 'arrow');
+                    DATA.hObject = 'figure';
+                end
+            case 'window_move'
+                %disp('window_move in my_WindowButtonMotionFcn');
+                Window_Move('normal');
+            case 'window_resize'
+                Window_Move('open');
+            otherwise
+        end
+        
+    end
+%%
+    function my_clickOnAllData(src, callbackdata, handles, aa)
+        %disp('my_clickOnAllData');
+        %hittest(GUI.Window)
+        switch DATA.hObject
+            case 'window'
+                switch get(GUI.Window, 'selectiontype')
+                    case 'normal'
+                        %disp('window_move');
+                        prev_point = get(GUI.AllDataAxes, 'CurrentPoint');
+                        DATA.prev_point = prev_point(1, 1);
+                        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_move'}); %'windowbuttonmotionfcn','testGui1(''testGUI_figure_WindowButtonMotionFcn'',gcbo,[],guidata(gcbo),''window_move'')');
+                    case 'open'
+                        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_resize'}); %'windowbuttonmotionfcn','testGui1(''testGUI_figure_WindowButtonMotionFcn'',gcbo,[],guidata(gcbo),''window_resize'')');
+                    otherwise
+                end            
+            otherwise
+        end        
+    end
+%%
+    function Window_Move(type)
+        %disp(['In Window_Move, type ', type]); %type
+        xdata = get(GUI.red_rect, 'XData');
+        point1 = get(GUI.AllDataAxes, 'CurrentPoint');
+        
+        xofs = (point1(1,1) -  DATA.prev_point);
+        %xofs = abs(point1(1,1) - xdata(2));
+        %xofs = (xdata(2)-xdata(1))/2;
+        DATA.prev_point = point1(1, 1);
+        %xofs = -point1(1,1) + xdata(2);
+        switch type
+            case 'normal'
+                
+%                 if point1(1,1) > max(xdata)
+                    xdata = xdata + xofs;
+%                 else
+%                     xdata = xdata - xofs;
+%                 end
+                 xdata;
+            case 'open'
+                if point1(1,1) < min(xdata)
+                else
+                    xdata([2,3]) = point1(1,1);
+                end
+        end
+        if max(xdata) > max(get(GUI.AllDataAxes, 'XLim')) || min(xdata) < min(get(GUI.AllDataAxes, 'XLim'))
+%             disp('return');
+%             xdata;
+%             get(GUI.AllDataAxes, 'XLim')
+            return;
+        end
+        ChangePlot(xdata);
+        set(GUI.red_rect, 'XData', xdata);
+    end
+%%
+    function ChangePlot(xdata)                     
+                        
+%         get(GUI.AllDataAxes, 'XTick');               
+        set(GUI.RawDataAxes, 'XLim', [xdata(1) xdata(2)]); 
+                
+        DATA.firstSecond2Show = xdata(1);
+        DATA.MyWindowSize = xdata(2) - xdata(1);
+                
+        if abs(DATA.maxSignalLength - DATA.MyWindowSize ) <=  1 %0.0005
+            set(GUI.RawDataSlider, 'Enable', 'off');
+            set(GUI.FirstSecond, 'Enable', 'off');
+        else
+            set(GUI.RawDataSlider, 'Enable', 'on');
+            set(GUI.FirstSecond, 'Enable', 'on');
+        end
+        
+        set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
+        set(GUI.WindowSize,'String', calcDuration(DATA.MyWindowSize, 0));
+                                
+        setSliderProperties(GUI.RawDataSlider, DATA.maxSignalLength, DATA.MyWindowSize, [(DATA.MyWindowSize/10)/double(DATA.maxSignalLength) , (DATA.MyWindowSize)/double(DATA.maxSignalLength)]);
+        set(GUI.RawDataSlider, 'Value', DATA.firstSecond2Show);
+               
+        setXAxesLim();
+        setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);
+        setYAxesLim();
+        plotDataQuality();
+        plotMultipleWindows();                                        
+    end
+%%
+    function ShowClassicSlider_checkbox_Callback( src, ~ )
+        if get(src, 'Value') == 1 
+            GUI.Filt_WindowSliderBox.Visible = 'on';
+        else
+            GUI.Filt_WindowSliderBox.Visible = 'off';
         end
     end
 %%

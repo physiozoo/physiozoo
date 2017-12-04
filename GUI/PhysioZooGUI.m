@@ -1069,8 +1069,10 @@ displayEndOfDemoMessage('');
         xlabel(ha, 'Time (sec)');
         ylabel(ha, yString);                
         
-        DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal', 'AutoUpdate', 'off'); % 
-        %DATA.legend_handle.AutoUpdate = 'off';        
+        DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal'); % 
+        if sum(ismember(properties(DATA.legend_handle), 'AutoUpdate'))
+            DATA.legend_handle.AutoUpdate = 'off';   
+        end
                 
         set(ha, 'XLim', [DATA.firstSecond2Show, DATA.firstSecond2Show + DATA.MyWindowSize]);
         
@@ -1159,7 +1161,7 @@ displayEndOfDemoMessage('');
                                                 
                         if ~isempty(low_quality_indexes)
                             GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
-                            if length(DATA.legend_handle.String) < 3
+                            if isvalid(DATA.legend_handle) && length(DATA.legend_handle.String) < 3 %  
                                 legend([GUI.raw_data_handle, GUI.filtered_handle GUI.PinkLineHandle(1)], [DATA.legend_handle.String 'Bad quality']);
                             end
                         end

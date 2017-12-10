@@ -89,6 +89,7 @@ displayEndOfDemoMessage('');
         DATA.rectangle_color = rec_colors(6, :);
         
         DATA.freq_yscale = 'linear';
+        
     end % createData
 %-------------------------------------------------------------------------%
 %%
@@ -209,7 +210,7 @@ displayEndOfDemoMessage('');
                 
         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
         set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
-        set(GUI.Window, 'WindowButtonDownFcn', {@my_clickOnAllData, 'aa'});
+        set(GUI.Window, 'WindowButtonDownFcn', @my_clickOnAllData);
         
         %set(GUI.Window, 'Color', [0.9 1 1]);
         
@@ -237,7 +238,7 @@ displayEndOfDemoMessage('');
         
         DATA.zoom_handle = zoom(GUI.Window);
         %DATA.zoom_handle.Motion = 'vertical';
-        DATA.zoom_handle.Enable = 'off';
+        DATA.zoom_handle.Enable = 'on';
         DATA.zoom_handle.ButtonDownFilter = @zoom_handle_ButtonDownFilter;
         
         % + File menu
@@ -1640,6 +1641,7 @@ displayEndOfDemoMessage('');
             
             trr = DATA.trr;            
             DATA.maxSignalLength = trr(end);
+            DATA.eps = DATA.maxSignalLength*0.01;
                         
             DATA.Filt_MyDefaultWindowSize = rhrv_get_default('hrv_freq.window_minutes', 'value') * 60; % min to sec
                         
@@ -3093,30 +3095,14 @@ displayEndOfDemoMessage('');
             
             GUI.rect_handle = gobjects(batch_win_num, 1);            
             
-            for i = 1 : batch_win_num
-                
-                
-%                 batch_window_start_time
-%                 batch_window_start_time + batch_window_length
-%                 i
-                
-%                 if batch_window_start_time + batch_window_length > batch_window_end_time %DATA.tnn(end)
-%                     break;
-%                 end
-                
-               % filt_win_indexes = find(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
-                
-%                 GUI.rect_handle(i) = fill([DATA.tnn(filt_win_indexes(1)) DATA.tnn(filt_win_indexes(1)) DATA.tnn(filt_win_indexes(end)) DATA.tnn(filt_win_indexes(end))], ...
-%                     [DATA.MinYLimit DATA.MaxYLimit DATA.MaxYLimit DATA.MinYLimit], DATA.rectangle_color, 'LineWidth', 0.5, 'FaceAlpha', 0.15, 'Parent', GUI.RawDataAxes, ...
-%                     'ButtonDownFcn', @WindowButtonDownFcn_rect_handle, 'Tag', 'DoNotIgnore', 'UserData', i);
-%                                                 
+            for i = 1 : batch_win_num                
+                                                 
                  GUI.rect_handle(i) = fill([batch_window_start_time batch_window_start_time batch_window_start_time + batch_window_length batch_window_start_time + batch_window_length], ...
                     [DATA.MinYLimit DATA.MaxYLimit DATA.MaxYLimit DATA.MinYLimit], DATA.rectangle_color, 'LineWidth', 0.5, 'FaceAlpha', 0.15, 'Parent', GUI.RawDataAxes, ...
-                    'ButtonDownFcn', @WindowButtonDownFcn_rect_handle, 'Tag', 'DoNotIgnore', 'UserData', i);
+                    'ButtonDownFcn', @WindowButtonDownFcn_rect_handle, 'Tag', 'DoNotIgnore',  'UserData', i); % 
                                               
                 if i == DATA.active_window
                     set(GUI.rect_handle(i), 'LineWidth', 2.5, 'FaceAlpha', 0.15);
-%                     uistack(GUI.rect_handle(i), 'top');                    
                     GUI.prev_act = GUI.rect_handle(i);
                 end                
                 
@@ -3428,6 +3414,29 @@ displayEndOfDemoMessage('');
         uistack(hObject, 'down');
         
         set_active_window(hObject);
+        
+        
+        
+        prev_point = get(GUI.RawDataAxes, 'CurrentPoint');
+        DATA.prev_point = prev_point(1, 1);
+        switch DATA.hObject
+            case 'window_blue_rect'
+                switch get(GUI.Window, 'selectiontype')
+                    case 'normal'
+                        disp('window_move_blue_rect');                        
+                        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_move_blue_rect'}); 
+                    case 'open'
+                        %disp('double click');
+%                         Window_Move('open');
+%                         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_resize'});
+                    otherwise
+                end
+            case 'left_resize_blue_rect'
+                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'left_resize_move_blue_rect'});
+            case 'right_resize_blue_rect'
+                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'right_resize_move_blue_rect'});
+            otherwise
+        end                
     end
 %%
     function set_active_window(hObject)
@@ -3530,54 +3539,206 @@ displayEndOfDemoMessage('');
 %         end                        
     end
 %%
-    function my_WindowButtonMotionFcn(src, callbackdata, type)
-        %hittest(GUI.Window)
+    function my_WindowButtonMotionFcn(src, callbackdata, type)   
+        
         switch type
             case 'init'
-                if hittest(GUI.Window) == GUI.AllDataAxes || get(hittest(GUI.Window), 'Parent') == GUI.AllDataAxes
+                if hittest(GUI.Window) == GUI.RawDataAxes || get(hittest(GUI.Window), 'Parent') == GUI.RawDataAxes
+%                     try
+%                         if isfield(GUI, 'rect_handle')
+%                             xdata = get(GUI.rect_handle, 'XData');
+%                             point1 = get(GUI.RawDataAxes, 'CurrentPoint');
+%                             if DATA.AnalysisParams.winNum == 1
+%                                 max_xdata = max(xdata);
+%                                 min_xdata = min(xdata);
+%                             else
+%                                 max_xdata = max(xdata{length(xdata)});
+%                                 min_xdata = min(xdata{1});
+%                             end
+%                             if  point1(1,1) <= max_xdata + DATA.eps && point1(1,1) >= max_xdata - DATA.eps
+%                                 setptr(GUI.Window, 'lrdrag');
+%                                 DATA.hObject = 'right_resize_blue_rect';
+%                             elseif  point1(1,1) <= min_xdata + DATA.eps && point1(1,1) >= min_xdata - DATA.eps
+%                                 setptr(GUI.Window, 'lrdrag');
+%                                 DATA.hObject = 'left_resize_blue_rect';
+%                             elseif point1(1,1) < max_xdata && point1(1,1) > min_xdata
+%                                 setptr(GUI.Window, 'hand');
+%                                 DATA.hObject = 'window_blue_rect';
+%                             else
+%                                 setptr(GUI.Window, 'arrow');
+%                                 DATA.hObject = 'overall';
+%                             end
+%                         end
+%                     catch e
+%                         disp('++++++++');
+%                         disp(e);
+%                     end
+                elseif hittest(GUI.Window) == GUI.AllDataAxes || get(hittest(GUI.Window), 'Parent') == GUI.AllDataAxes
                     try                        
                         xdata = get(GUI.red_rect, 'XData');
                         point1 = get(GUI.AllDataAxes, 'CurrentPoint');
-                        if point1(1,1) < max(xdata) && point1(1,1) > min(xdata)
-                            setptr(GUI.Window, 'hand');
-                            DATA.hObject = 'window';
-                        else
-                            setptr(GUI.Window, 'arrow');
-                            DATA.hObject = 'overall';
+                        if point1(1, 1) >= 0 && point1(1, 1) <= DATA.maxSignalLength  
+                            DATA.zoom_handle.Enable = 'off';
+                            if  point1(1,1) <= max(xdata) + DATA.eps && point1(1,1) >= max(xdata) - DATA.eps
+                                setptr(GUI.Window, 'lrdrag');
+                                DATA.hObject = 'right_resize';
+                            elseif  point1(1,1) <= min(xdata) + DATA.eps && point1(1,1) >= min(xdata) - DATA.eps
+                                setptr(GUI.Window, 'lrdrag');
+                                DATA.hObject = 'left_resize';
+                            elseif point1(1,1) < max(xdata) && point1(1,1) > min(xdata)
+                                setptr(GUI.Window, 'hand');
+                                DATA.hObject = 'window';
+                            else
+                                setptr(GUI.Window, 'arrow');
+                                DATA.hObject = 'overall';
+                            end
                         end
                     catch
                     end
                 else
                     setptr(GUI.Window, 'arrow');
                     DATA.hObject = 'figure';
+                    DATA.zoom_handle.Enable = 'on';
                 end
             case 'window_move'
+%                 disp('window_move');
                 %disp('window_move in my_WindowButtonMotionFcn');
                 Window_Move('normal');
             case 'window_resize'
+%                 disp('window_resize');
                 Window_Move('open');
+            case 'right_resize_move'
+%                  disp('right_resize_move');
+                LR_Resize('right');
+            case 'left_resize_move'
+%                  disp('left_resize_move');
+                LR_Resize('left');
+%             case 'window_move_blue_rect'
+% %               disp('window_move_blue_rect');
+%                 %disp('window_move in my_WindowButtonMotionFcn');
+%                 Segment_Move('normal');
+%             case 'right_resize_move_blue_rect'
+% %               disp('right_resize_move_blue_rect');
+%                 Segment_LR_Resize('right');
+%             case 'left_resize_move_blue_rect'
+% %               disp('left_resize_move_blue_rect');
+%                 Segment_LR_Resize('left');
             otherwise
         end
         
     end
 %%
-    function my_clickOnAllData(src, callbackdata, handles, aa)
-        %disp('my_clickOnAllData');
-        %hittest(GUI.Window)
+    function my_clickOnAllData(src, callbackdata, handles)
+%         disp('my_clickOnAllData');
+        hittest(GUI.Window);
+        prev_point = get(GUI.AllDataAxes, 'CurrentPoint');
+        DATA.prev_point = prev_point(1, 1);
         switch DATA.hObject
             case 'window'
                 switch get(GUI.Window, 'selectiontype')
                     case 'normal'
-                        %disp('window_move');
-                        prev_point = get(GUI.AllDataAxes, 'CurrentPoint');
-                        DATA.prev_point = prev_point(1, 1);
-                        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_move'}); %'windowbuttonmotionfcn','testGui1(''testGUI_figure_WindowButtonMotionFcn'',gcbo,[],guidata(gcbo),''window_move'')');
+                        %disp('window_move');                        
+                        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_move'}); 
                     case 'open'
-                        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_resize'}); %'windowbuttonmotionfcn','testGui1(''testGUI_figure_WindowButtonMotionFcn'',gcbo,[],guidata(gcbo),''window_resize'')');
+                        %disp('double click');
+                        Window_Move('open');
+%                         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_resize'});
                     otherwise
-                end            
+                end
+            case 'left_resize'
+                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'left_resize_move'});
+            case 'right_resize'
+                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'right_resize_move'});
+                
+                
+%             case 'window_blue_rect'
+%                 switch get(GUI.Window, 'selectiontype')
+%                     case 'normal'
+%                         disp('window_move_blue_rect');                        
+%                         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_move_blue_rect'}); 
+%                     case 'open'
+%                         %disp('double click');
+% %                         Window_Move('open');
+% %                         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_resize'});
+%                     otherwise
+%                 end
+%             case 'left_resize_blue_rect'
+%                 set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'left_resize_move_blue_rect'});
+%             case 'right_resize_blue_rect'
+%                 set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'right_resize_move_blue_rect'});    
+%                 
+                
             otherwise
-        end        
+        end
+    end
+%%
+function Segment_LR_Resize(type)
+    disp('Segment_LR_Resize');
+end
+%%
+function LR_Resize(type)
+        xdata = get(GUI.red_rect, 'XData');
+        point1 = get(GUI.AllDataAxes, 'CurrentPoint');
+        xofs = point1(1,1) - DATA.prev_point;
+        DATA.prev_point = point1(1, 1);
+        switch type
+            case 'left'
+                xdata([1, 4, 5]) = xdata([1,4, 5]) + xofs;
+            case 'right'
+                xdata([2,3]) = xdata([2,3]) + xofs;                
+        end
+        if xdata(2) <= xdata(1)
+            return;
+        end
+        if max(xdata) > max(get(GUI.AllDataAxes,  'XLim')) || min(xdata) < min(get(GUI.AllDataAxes, 'XLim'))
+            return;
+        end
+        xdata;
+        ChangePlot(xdata);
+        set(GUI.red_rect, 'XData', xdata);
+end
+%%
+    function Segment_Move(type)
+        disp('Segment_Move');
+        disp(type);
+        xdata = get(GUI.rect_handle, 'XData');
+        point1 = get(GUI.RawDataAxes, 'CurrentPoint');
+
+        xofs = point1(1,1) -  DATA.prev_point;
+        try
+        switch type
+            case 'normal'
+                if DATA.AnalysisParams.winNum == 1
+                    xdata = xdata + xofs;
+                else
+                    for i = 1 : length(xdata)
+                        xdata{i} = xdata{i} + xofs;
+                    end
+                end
+        end
+        catch e
+            disp(e);
+        end
+        xdata;
+        if DATA.AnalysisParams.winNum == 1
+            max_xdata = max(xdata);
+            min_xdata = min(xdata);
+        else
+            max_xdata = max(xdata{length(xdata)});
+            min_xdata = min(xdata{1});
+        end
+        if max_xdata > max(get(GUI.RawDataAxes, 'XLim')) || min_xdata < min(get(GUI.RawDataAxes, 'XLim'))
+            return;
+        end
+        %ChangePlot(xdata);
+        
+        if DATA.AnalysisParams.winNum == 1
+            set(GUI.rect_handle, 'XData', xdata);
+        else
+            for i = 1 : length(xdata)
+                set(GUI.rect_handle(i), 'XData', xdata{i});
+            end
+        end
     end
 %%
     function Window_Move(type)
@@ -3600,10 +3761,8 @@ displayEndOfDemoMessage('');
 %                 end
                  xdata;
             case 'open'
-                if point1(1,1) < min(xdata)
-                else
-                    xdata([2,3]) = point1(1,1);
-                end
+                xdata([1,4, 5]) = 0;
+                xdata([2,3]) = DATA.maxSignalLength;                
         end
         if max(xdata) > max(get(GUI.AllDataAxes, 'XLim')) || min(xdata) < min(get(GUI.AllDataAxes, 'XLim'))
 %             disp('return');
@@ -3622,26 +3781,36 @@ displayEndOfDemoMessage('');
                 
         DATA.firstSecond2Show = xdata(1);
         DATA.MyWindowSize = xdata(2) - xdata(1);
-                
+        
+        set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
+        set(GUI.WindowSize,'String', calcDuration(DATA.MyWindowSize, 0));
+        
         if abs(DATA.maxSignalLength - DATA.MyWindowSize ) <=  1 %0.0005
             set(GUI.RawDataSlider, 'Enable', 'off');
             set(GUI.FirstSecond, 'Enable', 'off');
         else
             set(GUI.RawDataSlider, 'Enable', 'on');
             set(GUI.FirstSecond, 'Enable', 'on');
-        end
-        
-        set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
-        set(GUI.WindowSize,'String', calcDuration(DATA.MyWindowSize, 0));
-                                
-        setSliderProperties(GUI.RawDataSlider, DATA.maxSignalLength, DATA.MyWindowSize, [(DATA.MyWindowSize/10)/double(DATA.maxSignalLength) , (DATA.MyWindowSize)/double(DATA.maxSignalLength)]);
-        set(GUI.RawDataSlider, 'Value', DATA.firstSecond2Show);
+            
+            setSliderProperties(GUI.RawDataSlider, DATA.maxSignalLength, DATA.MyWindowSize, [(DATA.MyWindowSize/10)/double(DATA.maxSignalLength) , (DATA.MyWindowSize)/double(DATA.maxSignalLength)]);
+            set(GUI.RawDataSlider, 'Value', DATA.firstSecond2Show);
+        end        
                
+%         DATA.maxSignalLength
+%         DATA.MyWindowSize
+%         DATA.maxSignalLength-DATA.MyWindowSize
+%         DATA.firstSecond2Show
+
+%         get(GUI.RawDataSlider, 'Min')
+%         get(GUI.RawDataSlider, 'Max')
+%         get(GUI.RawDataSlider, 'Value')
+        
         setXAxesLim();
         setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);
         setYAxesLim();
         plotDataQuality();
-        plotMultipleWindows();                                        
+        plotMultipleWindows();   
+        
     end
 %%
     function ShowClassicSlider_checkbox_Callback( src, ~ )

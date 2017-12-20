@@ -664,18 +664,16 @@ displayEndOfDemoMessage('');
             uicontrol( 'Style', 'text', 'Parent', HBox, 'String', symbol_field_name, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
             
             fields_size = [150, 125, -1]; %[125, -1, 90] [-40, -27, -25]
-            %             if ischar(current_field_value)
-            %                 PopUpMenu_control = uicontrol( 'Style', 'PopUpMenu', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description);
-            %                 PopUpMenu_control.String = DATA.methods;
-            %                 DATA.default_method_index = find(cellfun(@(x) strcmpi(x, current_field_value),DATA.methods ));
-            %                 set(PopUpMenu_control, 'Value', DATA.default_method_index);
-            %                 uix.Empty( 'Parent', HBox );
-            %                 set( HBox, 'Widths', fields_size  );
-            % else
-            if length(current_field_value) < 2
+            
+            if length(current_field_value) < 2                
                 current_value = num2str(current_field_value);
-                param_control = uicontrol( 'Style', 'edit', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description);
-                set(param_control, 'String', current_value, 'UserData', current_value);
+                param_control = uicontrol( 'Style', 'edit', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description);                
+                if strcmp(symbol_field_name, 'Spectral window length')
+                    GUI.SpectralWindowLengthHandle = param_control;
+                    set(param_control, 'String', calcDuration(current_field_value*60, 0), 'UserData', current_field_value*60);
+                else
+                    set(param_control, 'String', current_value, 'UserData', current_value);
+                end
             else
                 field_name_min = [field_name '.min'];
                 current_value = num2str(current_field_value(1));
@@ -687,7 +685,11 @@ displayEndOfDemoMessage('');
                 param_control = uicontrol( 'Style', 'edit', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name_max}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description, 'Tag', field_name_max);
                 set(param_control, 'String', current_value, 'UserData', current_value);
             end
-            uicontrol( 'Style', 'text', 'Parent', HBox, 'String', current_field.units, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
+            if strcmp(symbol_field_name, 'Spectral window length')
+                uicontrol( 'Style', 'text', 'Parent', HBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
+            else
+                uicontrol( 'Style', 'text', 'Parent', HBox, 'String', current_field.units, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
+            end
             
             if length(current_field_value) < 2
                 %set( HBox, 'Widths', [-67, -40, -33]  );
@@ -1718,7 +1720,10 @@ displayEndOfDemoMessage('');
                 end
                 GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};
                 
-                set(GUI.Active_Window_Length, 'Enable', 'on');                                                                
+                set(GUI.Active_Window_Length, 'Enable', 'on');  
+                if isfield(GUI, 'SpectralWindowLengthHandle') && isvalid(GUI.SpectralWindowLengthHandle)
+                    GUI.SpectralWindowLengthHandle.Enable = 'on';
+                end
             catch e
                 errordlg(['Reset Plot: ' e.message], 'Input Error');
             end
@@ -1781,45 +1786,61 @@ displayEndOfDemoMessage('');
             end            
         end
     end
-
+%%
+    function Spectral_Window_Length(GUI_Field_handle, Active_Window_Length)
+        if ~isempty(DATA.rri)
+            
+            [Active_Window_Length, isInputNumeric] = calcDurationInSeconds(GUI_Field_handle, Active_Window_Length, DATA.AnalysisParams.activeWin_length);
+            
+            if isInputNumeric
+                if Active_Window_Length < 10 || DATA.AnalysisParams.activeWin_startTime + Active_Window_Length > DATA.Filt_MaxSignalLength %Active_Window_Length > DATA.Filt_MaxSignalLength
+                    set(GUI_Field_handle, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));
+                    ME = MException('Spectral_Window_Length:text', 'The selected window length must be greater then 10 sec and less then signal length!');
+                    throw(ME);
+                    %                     errordlg('The filt window size must be greater then 10 sec and less then signal length!', 'Input Error');
+                    %                     return;
+                else
+                    
+                    DATA.AnalysisParams.segment_endTime = DATA.AnalysisParams.activeWin_startTime + Active_Window_Length; %start_time + Active_Window_Length;
+                    DATA.AnalysisParams.activeWin_length = Active_Window_Length;
+                    
+                    setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);
+                    
+                    set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
+                    
+                    set(GUI.segment_endTime, 'String', calcDuration(DATA.AnalysisParams.segment_endTime, 0));
+                    set(GUI.activeWindow_length, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));
+                    
+                    if Active_Window_Length == DATA.Filt_MaxSignalLength
+                        set(GUI.Filt_RawDataSlider, 'Enable', 'off');
+                        set(GUI.Active_Window_Start, 'Enable', 'off');
+                    else
+                        set(GUI.Filt_RawDataSlider, 'Enable', 'on');
+                        set(GUI.Active_Window_Start, 'Enable', 'on');
+                    end
+                    
+                    clear_statistics_plots();
+                    clearStatTables();
+                    calcBatchWinNum();
+                    plotFilteredData();
+                    plotMultipleWindows();
+                    calcStatistics();
+                end
+            else
+                throw(MException('Spectral_Window_Length:text', 'The selected window length must be numeric!'));
+            end
+        end
+    end
 %%
     function Active_Window_Length_Callback(~, ~)
         if ~isempty(DATA.rri)
             Active_Window_Length = get(GUI.Active_Window_Length, 'String');
-            [Active_Window_Length, isInputNumeric]  = calcDurationInSeconds(GUI.Active_Window_Length, Active_Window_Length, DATA.AnalysisParams.activeWin_length);
-            
-            if isInputNumeric
-                if Active_Window_Length < 10 || DATA.AnalysisParams.activeWin_startTime + Active_Window_Length > DATA.Filt_MaxSignalLength %Active_Window_Length > DATA.Filt_MaxSignalLength
-                    set(GUI.Active_Window_Length,'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));
-                    errordlg('The filt window size must be greater then 10 sec and less then signal length!', 'Input Error');
-                    return;
-                end
-                                               
-                DATA.AnalysisParams.segment_endTime = DATA.AnalysisParams.activeWin_startTime + Active_Window_Length; %start_time + Active_Window_Length;
-                DATA.AnalysisParams.activeWin_length = Active_Window_Length;
-                
-                setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);
-               
-                set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
-
-                set(GUI.segment_endTime, 'String', calcDuration(DATA.AnalysisParams.segment_endTime, 0));
-                set(GUI.activeWindow_length, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));                
-                
-                clear_statistics_plots();
-                clearStatTables();
-                calcBatchWinNum();
-                plotFilteredData();
-                plotMultipleWindows();                
-                calcStatistics();
-                
-                if Active_Window_Length == DATA.Filt_MaxSignalLength
-                    set(GUI.Filt_RawDataSlider, 'Enable', 'off');
-                    set(GUI.Active_Window_Start, 'Enable', 'off');
-                else
-                    set(GUI.Filt_RawDataSlider, 'Enable', 'on');
-                    set(GUI.Active_Window_Start, 'Enable', 'on');
-                end                                
-            end
+            try
+                Spectral_Window_Length(GUI.Active_Window_Length, Active_Window_Length);
+                set(GUI.SpectralWindowLengthHandle, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));                                
+            catch e
+                errordlg(e.message, 'Input Error');
+            end            
         end
     end
 %%
@@ -2736,6 +2757,7 @@ displayEndOfDemoMessage('');
 %%
     function set_config_Callback(src, ~, param_name)
         
+        doCalc = true;
         cp_param_array = [];
         do_couple = false;
         param_category = strsplit(param_name, '.');
@@ -2745,6 +2767,8 @@ displayEndOfDemoMessage('');
         
         screen_value = str2double(get(src, 'String'));
         prev_screen_value = get(src, 'UserData');
+        
+        string_screen_value = get(src, 'String');
         
         if strcmp(param_name, 'hrv_freq.welch_overlap')
             if isnan(screen_value) || screen_value < 0 || screen_value >= 100
@@ -2765,9 +2789,18 @@ displayEndOfDemoMessage('');
                 return;
             end
         elseif strcmp(param_name, 'hrv_freq.window_minutes')
-            if isnan(screen_value) || screen_value > double(DATA.maxSignalLength)/60 || screen_value < 0.5
-                errordlg(['set_config_Callback error: ' 'The value must be greater than 30 sec and less than ' num2str(DATA.maxSignalLength/60), ' sec!'], 'Input Error');
-                set(src, 'String', prev_screen_value);
+%             if isnan(screen_value) || screen_value > DATA.maxSignalLength/60 || screen_value < 0.5
+%                 errordlg(['set_config_Callback error: ' 'The value must be greater than 30 sec and less than ' num2str(DATA.maxSignalLength/60), ' sec!'], 'Input Error');
+%                 set(src, 'String', prev_screen_value);
+%                 return;             
+%             end
+            try
+                Spectral_Window_Length(GUI.SpectralWindowLengthHandle, string_screen_value);
+                set(GUI.Active_Window_Length, 'String', string_screen_value);
+                screen_value = calcDurationInSeconds(GUI.SpectralWindowLengthHandle, string_screen_value, 0)/60; % to minutes
+                doCalc = false;
+            catch e
+                errordlg(e.message, 'Input Error');
                 return;
             end
         elseif  isnan(screen_value) || ~(screen_value > 0)
@@ -2844,7 +2877,9 @@ displayEndOfDemoMessage('');
         
         rhrv_set_default( param_name, param_value );        
         try
-            update_statistics(param_category(1));
+            if doCalc
+                update_statistics(param_category(1));
+            end
             set(src, 'UserData', screen_value);
         catch e
             errordlg(['set_config_Callback error: ' e.message], 'Input Error');
@@ -2860,8 +2895,7 @@ displayEndOfDemoMessage('');
                 elseif ~isempty(max_suffix_ind)
                     set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(prev_param_value))
                 end
-            end
-            
+            end            
         end
     end
 %%
@@ -2948,7 +2982,7 @@ displayEndOfDemoMessage('');
             end
         else
             gui_value = get(src, 'String');
-            [param_value, isInputNumeric]  = calcDurationInSeconds(src, gui_value, DATA.AnalysisParams.(src_tag));
+            [param_value, isInputNumeric] = calcDurationInSeconds(src, gui_value, DATA.AnalysisParams.(src_tag));
         end        
         if isInputNumeric            
             if strcmp(src_tag, 'segment_startTime')                
@@ -2977,28 +3011,39 @@ displayEndOfDemoMessage('');
             end
             
             old_param_val = DATA.AnalysisParams.(src_tag);
+            old_winNum = DATA.AnalysisParams.winNum;
             
             DATA.AnalysisParams.(src_tag) = param_value;
             calcBatchWinNum();
             
             if DATA.AnalysisParams.winNum < 1
-               DATA.AnalysisParams.(src_tag) = old_param_val;
-               set(src, 'String', calcDuration(old_param_val, 0));
-               calcBatchWinNum();
-               errordlg('Please, check your parameters.', 'Input Error');
-               return;
+                DATA.AnalysisParams.(src_tag) = old_param_val;
+                set(src, 'String', calcDuration(old_param_val, 0));
+                %                calcBatchWinNum();
+                DATA.AnalysisParams.winNum = old_winNum;
+                set(GUI.segment_winNum, 'String', num2str(DATA.AnalysisParams.winNum)); 
+%                 errordlg('Please, check your parameters.', 'Input Error');
+                return;
             else
                 DATA.active_window = 1;
                 clear_statistics_plots();
                 clearStatTables();
                 plotFilteredData();
-                plotMultipleWindows();
+                plotMultipleWindows();                                
                 
                 XData_active_window = get(GUI.rect_handle(1), 'XData');
-                set(GUI.Active_Window_Start, 'String', calcDuration(XData_active_window(1), 0));
-                set( GUI.Active_Window_Length, 'String', calcDuration(XData_active_window(3) - XData_active_window(2), 0)); 
+                %window_length = calcDuration(XData_active_window(3) - XData_active_window(2), 0);
+                window_length = calcDuration(DATA.AnalysisParams.activeWin_length, 0);
+                
+                DATA.AnalysisParams.activeWin_startTime = XData_active_window(1);
+                
+%                 set(GUI.Active_Window_Start, 'String', calcDuration(XData_active_window(1), 0));
+                set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
+                set(GUI.Active_Window_Length, 'String', window_length); 
+                set(GUI.SpectralWindowLengthHandle, 'String', window_length);   
                 setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);
-                set(GUI.Filt_RawDataSlider, 'Value', XData_active_window(1));
+%                 set(GUI.Filt_RawDataSlider, 'Value', XData_active_window(1));
+                set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
             end
         end
     end
@@ -3023,7 +3068,10 @@ displayEndOfDemoMessage('');
             i = i + 1;
         end        
         DATA.AnalysisParams.winNum = i;
-        DATA.AnalysisParams.segment_effectiveEndTime = DATA.AnalysisParams.segment_startTime + activeWin_length + (DATA.AnalysisParams.winNum - 1) * (1 - segment_overlap) * activeWin_length;        
+        if DATA.AnalysisParams.winNum > 0
+            DATA.AnalysisParams.segment_effectiveEndTime = DATA.AnalysisParams.segment_startTime + activeWin_length + (DATA.AnalysisParams.winNum - 1) * (1 - segment_overlap) * activeWin_length;        
+            
+        end
         
 %         disp(['while winNum = ', num2str(i)]);
 %         disp(['formula winNum = ', num2str(DATA.AnalysisParams.winNum)]);
@@ -3036,11 +3084,13 @@ displayEndOfDemoMessage('');
             GUI.Filt_RawDataSlider.Enable = 'on';
             GUI.Active_Window_Start.Enable = 'on';
             GUI.Active_Window_Length.Enable = 'on';
+            GUI.SpectralWindowLengthHandle.Enable = 'on';
             GUI.active_winNum.Enable = 'inactive';
         else
             GUI.Filt_RawDataSlider.Enable = 'off';
             GUI.Active_Window_Start.Enable = 'inactive';
             GUI.Active_Window_Length.Enable = 'inactive';
+            GUI.SpectralWindowLengthHandle.Enable = 'inactive';
             GUI.active_winNum.Enable = 'on';
         end
     end
@@ -3308,8 +3358,7 @@ displayEndOfDemoMessage('');
         
         if DATA.AnalysisParams.winNum == 1
             GUI.StatisticsTable.ColumnName = cat(1, GUI.StatisticsTable.ColumnName, 'Values');
-        else
-            
+        else            
             for i = 1 : DATA.AnalysisParams.winNum
                 GUI.StatisticsTable.ColumnName = cat(1, GUI.StatisticsTable.ColumnName, ['W' num2str(i)]);
             end
@@ -3347,7 +3396,7 @@ displayEndOfDemoMessage('');
         
         set(GUI.Active_Window_Length, 'Enable', 'inactive');
         set(GUI.Active_Window_Start, 'Enable', 'inactive');
-        
+        set(GUI.SpectralWindowLengthHandle, 'Enable', 'inactive');        
         calcStatistics();
     end
 %%
@@ -3458,7 +3507,7 @@ displayEndOfDemoMessage('');
             case 'init'
                 if (hittest(GUI.Window) == GUI.RawDataAxes || get(hittest(GUI.Window), 'Parent') == GUI.RawDataAxes)
                     DATA.zoom_handle.Enable = 'off';
-                    if DATA.AnalysisParams.winNum == 1
+                    if isfield(DATA, 'AnalysisParams') && DATA.AnalysisParams.winNum == 1
                         try
                             if isfield(GUI, 'rect_handle')
                                 DATA.zoom_handle.Enable = 'off';
@@ -3748,6 +3797,7 @@ displayEndOfDemoMessage('');
         set(GUI.segment_startTime, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
         set(GUI.segment_endTime, 'String', calcDuration(DATA.AnalysisParams.segment_endTime, 0));
         set(GUI.activeWindow_length, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));
+        set(GUI.SpectralWindowLengthHandle, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));   
         
         setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);        
         set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);

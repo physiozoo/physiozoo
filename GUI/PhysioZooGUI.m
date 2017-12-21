@@ -6,7 +6,7 @@ addpath(genpath([gui_basepath filesep 'lib']));
 basepath = fileparts(gui_basepath);
 
 
-%rhrv_init;
+% rhrv_init;
 
 %myBackgroundColor = [0.9 1 1];
 myUpBackgroundColor = [0.863 0.941 0.906];
@@ -882,6 +882,8 @@ displayEndOfDemoMessage('');
         set(GUI.segment_startTime, 'String', str);
         set(GUI.segment_endTime, 'String', calcDuration(DATA.AnalysisParams.segment_endTime, 0));
         
+        set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
+        
         clear_statistics_plots();
         clearStatTables();
         calcBatchWinNum();
@@ -896,6 +898,8 @@ displayEndOfDemoMessage('');
         str = calcDuration(DATA.AnalysisParams.activeWin_startTime, 0);
         set(GUI.Active_Window_Start, 'String', str);
         set(GUI.segment_startTime, 'String', str);
+        
+        set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
         
         plotFilteredData();
         plotMultipleWindows();        
@@ -1020,10 +1024,14 @@ displayEndOfDemoMessage('');
             delete(GUI.red_rect);
             GUI = rmfield(GUI, 'red_rect');
         end
-        GUI.red_rect = line(x_box, y_box, 'Color', 'r', 'Linewidth', 2, 'Parent', ha);        % , 'Tag', 'DoNotIgnore', 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}
+        GUI.red_rect = line(x_box, y_box, 'Color', 'r', 'Linewidth', 3, 'Parent', ha);        % , 'Tag', 'DoNotIgnore', 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}
 
-%         get(GUI.red_rect)
-        
+        if isfield(GUI, 'blue_line')
+            delete(GUI.blue_line);
+            GUI = rmfield(GUI, 'blue_line');
+        end
+        GUI.blue_line = line([DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime], [ylim(1) ylim(2)], 'Color', DATA.rectangle_color, 'Marker', '^', 'MarkerSize', 7, 'MarkerFaceColor', DATA.rectangle_color, 'Linewidth', 2, 'Parent', ha);
+%         'MarkerEdgeColor', 'b', 
         
         x_ticks_array = get(ha, 'XTick');
         set(ha, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0), x_ticks_array, 'UniformOutput', false));
@@ -1915,7 +1923,10 @@ displayEndOfDemoMessage('');
             setYAxesLim();
             plotFilteredData();
             plotDataQuality();
-            plotMultipleWindows();            
+            plotMultipleWindows();  
+            
+            set(GUI.red_rect, 'XData', [DATA.firstSecond2Show DATA.MyWindowSize DATA.MyWindowSize DATA.firstSecond2Show DATA.firstSecond2Show]);
+            
         end
     end
 %%
@@ -2186,7 +2197,7 @@ displayEndOfDemoMessage('');
     function Active_Window_Start_Callback ( ~, ~ )
         if ~isempty(DATA.rri)
             active_window_start = get(GUI.Active_Window_Start, 'String');
-            [active_window_start, isInputNumeric]  = calcDurationInSeconds(GUI.Active_Window_Start, active_window_start, DATA.AnalysisParams.activeWin_startTime);
+            [active_window_start, isInputNumeric] = calcDurationInSeconds(GUI.Active_Window_Start, active_window_start, DATA.AnalysisParams.activeWin_startTime);
             if isInputNumeric
                 if active_window_start < 0 || active_window_start > DATA.Filt_MaxSignalLength - DATA.AnalysisParams.activeWin_length % + 1
                     set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
@@ -2206,7 +2217,9 @@ displayEndOfDemoMessage('');
                     calcBatchWinNum();
                     plotFilteredData();
                     plotMultipleWindows();                                       
-                    calcStatistics();                    
+                    calcStatistics();   
+                    
+                    set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
                 end
             end
         end
@@ -3044,6 +3057,7 @@ displayEndOfDemoMessage('');
                 setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);
 %                 set(GUI.Filt_RawDataSlider, 'Value', XData_active_window(1));
                 set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
+                set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
             end
         end
     end
@@ -3187,7 +3201,7 @@ displayEndOfDemoMessage('');
             catch e
                 DATA.timeStatPartRowNumber = 0;
                 close(waitbar_handle);
-                errordlg(['hrv_nonlinear: ' e.message], 'Input Error');
+                errordlg(['hrv_time: ' e.message], 'Input Error');
                 rethrow(e);
                 %return;
             end
@@ -3798,6 +3812,8 @@ displayEndOfDemoMessage('');
         set(GUI.segment_endTime, 'String', calcDuration(DATA.AnalysisParams.segment_endTime, 0));
         set(GUI.activeWindow_length, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));
         set(GUI.SpectralWindowLengthHandle, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));   
+        
+        set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
         
         setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);        
         set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);

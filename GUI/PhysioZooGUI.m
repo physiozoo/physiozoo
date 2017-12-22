@@ -1622,6 +1622,7 @@ displayEndOfDemoMessage('');
             
             DATA.prev_point = 0;
             DATA.prev_point_segment = 0;   
+            DATA.prev_point_blue_line = 0;
             DATA.doCalc = false;
             
             trr = DATA.trr;            
@@ -2998,8 +2999,7 @@ displayEndOfDemoMessage('');
             [param_value, isInputNumeric] = calcDurationInSeconds(src, gui_value, DATA.AnalysisParams.(src_tag));
         end        
         if isInputNumeric            
-            if strcmp(src_tag, 'segment_startTime')                
-                %if param_value > DATA.Filt_MaxSignalLength - DATA.AnalysisParams.activeWin_length + 1                
+            if strcmp(src_tag, 'segment_startTime')                                
                 if param_value < 0 || param_value > DATA.AnalysisParams.segment_endTime || param_value > DATA.Filt_MaxSignalLength
                     set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
                     errordlg('Selected segment start time must be grater than 0 and less then segment end!', 'Input Error');
@@ -3032,7 +3032,6 @@ displayEndOfDemoMessage('');
             if DATA.AnalysisParams.winNum < 1
                 DATA.AnalysisParams.(src_tag) = old_param_val;
                 set(src, 'String', calcDuration(old_param_val, 0));
-                %                calcBatchWinNum();
                 DATA.AnalysisParams.winNum = old_winNum;
                 set(GUI.segment_winNum, 'String', num2str(DATA.AnalysisParams.winNum)); 
 %                 errordlg('Please, check your parameters.', 'Input Error');
@@ -3044,18 +3043,16 @@ displayEndOfDemoMessage('');
                 plotFilteredData();
                 plotMultipleWindows();                                
                 
-                XData_active_window = get(GUI.rect_handle(1), 'XData');
-                %window_length = calcDuration(XData_active_window(3) - XData_active_window(2), 0);
+                XData_active_window = get(GUI.rect_handle(1), 'XData');                
                 window_length = calcDuration(DATA.AnalysisParams.activeWin_length, 0);
                 
+                set(GUI.active_winNum, 'String', DATA.active_window);
                 DATA.AnalysisParams.activeWin_startTime = XData_active_window(1);
                 
-%                 set(GUI.Active_Window_Start, 'String', calcDuration(XData_active_window(1), 0));
                 set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
                 set(GUI.Active_Window_Length, 'String', window_length); 
                 set(GUI.SpectralWindowLengthHandle, 'String', window_length);   
                 setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);
-%                 set(GUI.Filt_RawDataSlider, 'Value', XData_active_window(1));
                 set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
                 set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
             end
@@ -3069,11 +3066,7 @@ displayEndOfDemoMessage('');
         activeWin_length = DATA.AnalysisParams.activeWin_length;
         segment_overlap = DATA.AnalysisParams.segment_overlap/100;
         
-        %DATA.AnalysisParams.winNum = floor(round((DATA.AnalysisParams.endTime - DATA.AnalysisParams.startTime)) / (DATA.AnalysisParams.windowLength * (1 - DATA.AnalysisParams.overlap/100)));
-        
-%         DATA.AnalysisParams.winNum = floor(round(((analysis_segment_end_time - analysis_segment_start_time)/activeWin_length) - 1) * (1/(1-segment_overlap/100)) + 1);
-
-        % Last formula version
+         % Last formula version
 %         DATA.AnalysisParams.winNum = floor((DATA.AnalysisParams.segment_endTime - DATA.AnalysisParams.segment_startTime - DATA.AnalysisParams.activeWin_length)/(DATA.AnalysisParams.activeWin_length*(1 - DATA.AnalysisParams.segment_overlap/100))) + 1;
         
         i = 0;
@@ -3083,14 +3076,9 @@ displayEndOfDemoMessage('');
         end        
         DATA.AnalysisParams.winNum = i;
         if DATA.AnalysisParams.winNum > 0
-            DATA.AnalysisParams.segment_effectiveEndTime = DATA.AnalysisParams.segment_startTime + activeWin_length + (DATA.AnalysisParams.winNum - 1) * (1 - segment_overlap) * activeWin_length;        
-            
+            DATA.AnalysisParams.segment_effectiveEndTime = DATA.AnalysisParams.segment_startTime + activeWin_length + (DATA.AnalysisParams.winNum - 1) * (1 - segment_overlap) * activeWin_length;                    
         end
-        
-%         disp(['while winNum = ', num2str(i)]);
-%         disp(['formula winNum = ', num2str(DATA.AnalysisParams.winNum)]);
-%         
-        
+                
         set(GUI.segment_winNum, 'String', num2str(DATA.AnalysisParams.winNum));        
         if DATA.AnalysisParams.winNum <= 0
             errordlg('Please, check your input! Windows number must be greater than 0!', 'Input Error');
@@ -3109,12 +3097,10 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function plotMultipleWindows()
-        
+    function plotMultipleWindows()        
         batch_win_num = DATA.AnalysisParams.winNum;
         
-        if batch_win_num > 0            
-            
+        if batch_win_num > 0                        
             if isfield(GUI, 'rect_handle')
                 for i = 1 : length(GUI.rect_handle)
                     delete(GUI.rect_handle(i));                    
@@ -3148,21 +3134,14 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function calcTimeStatistics(waitbar_handle)
-        
+    function calcTimeStatistics(waitbar_handle)        
         batch_window_start_time = DATA.AnalysisParams.segment_startTime;
         %batch_window_end_time = DATA.AnalysisParams.endTime;
         batch_window_length = DATA.AnalysisParams.activeWin_length;
         batch_overlap = DATA.AnalysisParams.segment_overlap/100;
         batch_win_num = DATA.AnalysisParams.winNum;
         
-        for i = 1 : batch_win_num
-            
-%             if batch_window_start_time + batch_window_length > batch_window_end_time %DATA.tnn(end)
-%                 break;
-%             end
-%             batch_window_start_time
-                        
+        for i = 1 : batch_win_num                                  
             t0 = cputime;
             
             filt_win_indexes = find(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
@@ -3193,17 +3172,14 @@ displayEndOfDemoMessage('');
                     GUI.FragParametersTableData = [fragDescriptions fragData];
                     GUI.FragParametersTable.Data = [fragRowsNames fragData];
                     
-                    updateTimeStatistics();
-                    
-                    %DATA.pd_time = pd_time;
+                    updateTimeStatistics();                                       
                     plot_time_statistics_results(i);
                 end
             catch e
                 DATA.timeStatPartRowNumber = 0;
                 close(waitbar_handle);
                 errordlg(['hrv_time: ' e.message], 'Input Error');
-                rethrow(e);
-                %return;
+                rethrow(e);                
             end
             
             if i == 1
@@ -3215,8 +3191,7 @@ displayEndOfDemoMessage('');
             batch_window_start_time = batch_window_start_time + (1-batch_overlap) * batch_window_length;
         end
         updateMainStatisticsTable(0, DATA.TimeStat.RowsNames, DATA.TimeStat.Data);
-        [rn, ~] = size(DATA.TimeStat.RowsNames);
-        %DATA.timeStatPartRowNumber = DATA.TimeStat.RowsNamesength(GUI.StatisticsTable.RowName);
+        [rn, ~] = size(DATA.TimeStat.RowsNames);        
         DATA.timeStatPartRowNumber = rn;
     end
 %%
@@ -3335,23 +3310,18 @@ displayEndOfDemoMessage('');
                         nonlinRowsNames{j} = [sprintf('SD\x2082') strrep(nonlinRowsNames{j}, 'SD2', '')];
                     end
                 end
-                
-                 %nonlinRowsNames = cellfun(@(x) [sprintf('\x3b1') strrep(x, 'alpha', '')], nonlinRowsNames, 'UniformOutput',  false);
-                
-                
+                                 
                 if i == DATA.active_window
                     GUI.NonLinearTableRowName = nonlinRowsNames;
                     GUI.NonLinearTableData = [nonlinDescriptions nonlinData];
                     GUI.NonLinearTable.Data = [nonlinRowsNames nonlinData];
-                    
-                    %DATA.pd_nl = pd_nl;
+                                        
                     plot_nonlinear_statistics_results(i);
                 end
             catch e
                 close(waitbar_handle);
                 errordlg(['hrv_nonlinear: ' e.message], 'Input Error');
-                rethrow(e);
-                %return;
+                rethrow(e);                
             end
             if i == 1
                 DATA.NonLinStat.RowsNames = nonlinRowsNames;
@@ -3382,20 +3352,17 @@ displayEndOfDemoMessage('');
         
         try
             calcTimeStatistics(waitbar_handle);
-        catch e
-            %errordlg(['calcStatistics - calcTimeStatistics error: ' e.message], 'Input Error');
+        catch           
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
         end
         try
             calcFrequencyStatistics(waitbar_handle);
-        catch e
-            %errordlg(['calcStatistics - calcFrequencyStatistics error: ' e.message], 'Input Error');
+        catch            
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
         end
         try
             calcNonlinearStatistics(waitbar_handle);
-        catch e
-            %errordlg(['calcStatistics - calcNonlinearStatistics error: ' e.message], 'Input Error');
+        catch            
         end
         
         if ishandle(waitbar_handle)
@@ -3403,8 +3370,7 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function RunMultSegments_pushbutton_Callback( ~, ~ )
-        
+    function RunMultSegments_pushbutton_Callback( ~, ~ )        
         clear_statistics_plots();
         clearStatTables();
         
@@ -3422,14 +3388,14 @@ displayEndOfDemoMessage('');
         GUI.prev_act = hObject;
         
         XData_active_window = get(hObject, 'XData');
-        set(GUI.Active_Window_Start, 'String', calcDuration(XData_active_window(1), 0));
+        DATA.AnalysisParams.activeWin_startTime = XData_active_window(1);
+        set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
         
         if isfield(DATA, 'TimeStat') && ~isempty(DATA.TimeStat)            
             GUI.TimeParametersTable.Data = [DATA.TimeStat.RowsNames DATA.TimeStat.Data(:, DATA.active_window + 1)];
             plot_time_statistics_results(DATA.active_window);
         end
-        if isfield(DATA, 'FrStat') && ~isempty(DATA.FrStat)
-            %GUI.FrequencyParametersTable.Data = [strrep(DATA.FrStat.WelchWindowsData.RowsNames,'_WELCH', '') DATA.FrStat.LombWindowsData.Data(:, DATA.active_window + 1) DATA.FrStat.WelchWindowsData.Data(:, DATA.active_window + 1) DATA.FrStat.ArWindowsData.Data(:, DATA.active_window + 1)];
+        if isfield(DATA, 'FrStat') && ~isempty(DATA.FrStat)            
             GUI.FrequencyParametersTable.Data = [strrep(DATA.FrStat.WelchWindowsData.RowsNames,'_WELCH', '') DATA.FrStat.WelchWindowsData.Data(:, DATA.active_window + 1) DATA.FrStat.ArWindowsData.Data(:, DATA.active_window + 1)];
             plot_frequency_statistics_results(DATA.active_window);
         end
@@ -3476,7 +3442,7 @@ displayEndOfDemoMessage('');
         
         XData_active_window = get(GUI.rect_handle(1), 'XData');
         set(GUI.Active_Window_Start, 'String', calcDuration(XData_active_window(1), 0));
-        
+        set(GUI.active_winNum, 'String', DATA.active_window);
     end
 %%
     function AutoScaleY_pushbutton_Callback( src, ~ )
@@ -3503,8 +3469,8 @@ displayEndOfDemoMessage('');
 %%
     function my_WindowButtonUpFcn (src, callbackdata, handles)                
         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});  
-        if DATA.doCalc
-            if strcmp(DATA.hObject, 'window_blue_rect') || strcmp(DATA.hObject, 'right_resize_blue_rect') || strcmp(DATA.hObject, 'left_resize_blue_rect')
+        if DATA.doCalc            
+            if strcmp(DATA.hObject, 'window_blue_rect') || strcmp(DATA.hObject, 'right_resize_blue_rect') || strcmp(DATA.hObject, 'left_resize_blue_rect')|| strcmp(DATA.hObject, 'segment_marker')
                 clear_statistics_plots();
                 clearStatTables();
                 calcBatchWinNum();
@@ -3547,6 +3513,10 @@ displayEndOfDemoMessage('');
                         catch                            
                         end
                     end
+                elseif hittest(GUI.Window) == GUI.blue_line
+                    DATA.zoom_handle.Enable = 'off';
+                    setptr(GUI.Window, 'closedhand');
+                    DATA.hObject = 'segment_marker';
                 elseif hittest(GUI.Window) == GUI.AllDataAxes || get(hittest(GUI.Window), 'Parent') == GUI.AllDataAxes
                     try                        
                         xdata = get(GUI.red_rect, 'XData');
@@ -3588,6 +3558,8 @@ displayEndOfDemoMessage('');
                 Segment_LR_Resize('right');
             case 'left_resize_move_blue_rect'
                 Segment_LR_Resize('left');
+            case 'segment_marker_move'
+                Segment_Marker_Move('normal');
             otherwise
         end        
     end
@@ -3640,6 +3612,11 @@ displayEndOfDemoMessage('');
                 set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'left_resize_move_blue_rect'});
             case 'right_resize_blue_rect'
                 set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'right_resize_move_blue_rect'});
+            case 'segment_marker'
+                switch get(GUI.Window, 'selectiontype')
+                    case 'normal'
+                        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'segment_marker_move'});
+                end
             otherwise
         end
     end
@@ -3681,11 +3658,8 @@ displayEndOfDemoMessage('');
             xdata([1, 2]) = xdata_saved([1, 2]) + xofs_updated;
         elseif max(xdata) > max_XLim
             xofs_updated = max_XLim - max(xdata_saved);
-            xdata([3, 4]) = xdata_saved([3, 4]) + xofs_updated;
-            %         elseif min(xdata) < min_XLim || max(xdata) > max_XLim
-            %             return;
+            xdata([3, 4]) = xdata_saved([3, 4]) + xofs_updated;           
         end
-%         xdata          
         set(GUI.rect_handle, 'XData', xdata);
         DATA.doCalc = true;
         UpdateParametersFields(xdata);
@@ -3717,12 +3691,44 @@ displayEndOfDemoMessage('');
             xofs_updated = max_XLim - max(xdata_saved);
             xdata([2, 3]) = xdata_saved([2, 3]) + xofs_updated;
         end
-%         if max(xdata) > max(get(GUI.AllDataAxes,  'XLim')) || min(xdata) < min(get(GUI.AllDataAxes, 'XLim'))
-%             return;
-%         end
-%         xdata
         ChangePlot(xdata);
         set(GUI.red_rect, 'XData', xdata);
+    end
+%%
+    function Segment_Marker_Move(type)
+        xdata = get(GUI.blue_line, 'XData');
+        xdata_saved = xdata;
+        point1 = get(GUI.AllDataAxes, 'CurrentPoint');        
+        xofs = point1(1,1) - DATA.prev_point;
+        DATA.prev_point = point1(1, 1);
+        
+        switch type
+            case 'normal'
+                xdata = xdata + xofs;            
+        end
+                        
+        if xdata(1) < 0            
+            xdata([1, 2]) = 0;
+        elseif DATA.AnalysisParams.segment_endTime + xofs > DATA.Filt_MaxSignalLength
+            xofs_updated = DATA.Filt_MaxSignalLength - DATA.AnalysisParams.segment_endTime;
+            xdata = xdata_saved + xofs_updated;                          
+        end
+        set(GUI.blue_line, 'XData', xdata);        
+        
+        DATA.AnalysisParams.segment_startTime = xdata(1);
+        
+        segment_effectiveEndTime = DATA.AnalysisParams.segment_startTime + DATA.AnalysisParams.activeWin_length + (DATA.AnalysisParams.winNum - 1) * (1 - DATA.AnalysisParams.segment_overlap/100) * DATA.AnalysisParams.activeWin_length;                
+        DATA.AnalysisParams.segment_endTime = segment_effectiveEndTime;
+
+        DATA.AnalysisParams.activeWin_startTime = DATA.AnalysisParams.activeWin_startTime + (xdata(1) - xdata_saved(1));
+        
+        set(GUI.Filt_RawDataSlider, 'Value', xdata(1));
+        set(GUI.segment_startTime, 'String', calcDuration(DATA.AnalysisParams.segment_startTime, 0));
+        set(GUI.segment_endTime, 'String', calcDuration(DATA.AnalysisParams.segment_endTime, 0));
+        set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
+                
+        plotMultipleWindows();
+        DATA.doCalc = true;         
     end
 %%
     function Segment_Move(type)        
@@ -3756,9 +3762,7 @@ displayEndOfDemoMessage('');
         elseif max(xdata) > max_XLim
             xofs_updated = max_XLim - max(xdata_saved);
             xdata = xdata_saved + xofs_updated;
-        end
-                
-%         xdata
+        end                
         DATA.left_limit = xdata(1);
         DATA.right_limit = xdata(3);
         set(GUI.rect_handle, 'XData', xdata);
@@ -3791,10 +3795,6 @@ displayEndOfDemoMessage('');
             xofs_updated = max_XLim - max(xdata_saved);
             xdata = xdata_saved + xofs_updated;
         end
-%         if max(xdata) > max(get(GUI.AllDataAxes, 'XLim')) || min(xdata) < min(get(GUI.AllDataAxes, 'XLim'))
-%             return;
-%         end
-%         xdata
         ChangePlot(xdata);
         set(GUI.red_rect, 'XData', xdata);
     end

@@ -39,9 +39,7 @@ displayEndOfDemoMessage('');
 %%-------------------------------------------------------------------------%
     function DATA = createData()
         
-        screensize = get( 0, 'Screensize' );
-        
-        %DATA.currentDirectory = pwd;
+        DATA.screensize = get( 0, 'Screensize' );                
         
         DATA.PlotHR = 0;
         
@@ -62,7 +60,7 @@ displayEndOfDemoMessage('');
         DATA.filter_lowpass = true;
         DATA.filter_range = false;
         
-        if screensize(3) < 1920 %1080
+        if DATA.screensize(3) < 1920 %1080
             DATA.BigFontSize = 9;
             DATA.SmallFontSize = 9;
         else
@@ -70,7 +68,7 @@ displayEndOfDemoMessage('');
             DATA.SmallFontSize = 11;
         end
         
-        DATA.window_size = [screensize(3)*0.99 screensize(4)*0.85];
+        DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
         
         %DATA.MyGreen = [39 232 51]/256;
         DATA.MyGreen = [139 252 27]/256;
@@ -82,8 +80,8 @@ displayEndOfDemoMessage('');
         DATA.LowPassFilteringFields = [];
         DATA.PoincareFilteringFields = [];
         
-        DATA.FiguresFormats = {'fig', 'bmp', 'eps', 'emf', 'jpg', 'pcx', 'pbm', 'pdf', 'pgm', 'png', 'ppm', 'svg', 'tif', 'tiff'};
-        DATA.formats_index = 1;
+        DATA.FiguresFormats = {'all', 'fig', 'bmp', 'eps', 'emf', 'jpg', 'pcx', 'pbm', 'pdf', 'pgm', 'png', 'ppm', 'svg', 'tif', 'tiff'};
+%         DATA.formats_index = 2;
         
         rec_colors = lines;
         DATA.rectangle_color = rec_colors(6, :);
@@ -148,7 +146,7 @@ displayEndOfDemoMessage('');
         
         DATA.flag = '';
         
-        DATA.formats_index = 1;
+%         DATA.formats_index = 2;
         DATA.freq_yscale = 'linear';
         
         DATA.active_window = 1;
@@ -212,6 +210,8 @@ displayEndOfDemoMessage('');
         set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
         set(GUI.Window, 'WindowButtonDownFcn', @my_clickOnAllData);
         
+        GUI.blue_line = [];
+                
         %set(GUI.Window, 'Color', [0.9 1 1]);
         
         % , 'WindowButtonMotionFcn', @WindowButtonMotionFcn_mainFigure
@@ -362,19 +362,19 @@ displayEndOfDemoMessage('');
         field_size = [170, -1, 1]; % [-37, -40, -15]
         
         GUI.RecordNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'String', 'Record file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'String', 'Peaks file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.RecordName_text = uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', GUI.RecordNameBox );
         set( GUI.RecordNameBox, 'Widths', field_size  );
         
         GUI.DataQualityBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'String', 'Data quality file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'String', 'Quality file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.DataQuality_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', GUI.DataQualityBox );
         set( GUI.DataQualityBox, 'Widths', field_size );
         
         GUI.DataLengthBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'String', 'Record length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'String', 'Time series length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.RecordLength_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         %uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'String', 'h:min:sec');
         uix.Empty( 'Parent', GUI.DataLengthBox );
@@ -409,9 +409,16 @@ displayEndOfDemoMessage('');
         GUI.DefaultMethod_popupmenu.Value = 1;
         uix.Empty( 'Parent', DefaultMethodBox );
         set( DefaultMethodBox, 'Widths', field_size );
-                      
+               
+        AutoCalcBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
+        GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', AutoCalcBox, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Auto Compute', 'Value', 1);
+        GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', AutoCalcBox, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'inactive');
+        uix.Empty( 'Parent', AutoCalcBox );
+        set( AutoCalcBox, 'Widths', field_size );                
+        
+        
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -20] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -15] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
         %---------------------------
         
         uix.Empty( 'Parent', GUI.BatchBox );
@@ -459,16 +466,16 @@ displayEndOfDemoMessage('');
         
         batch_Box = uix.HBox('Parent', GUI.BatchBox, 'Spacing', 5);
         uix.Empty( 'Parent', batch_Box );
-        uicontrol( 'Style', 'PushButton', 'Parent', batch_Box, 'Callback', @RunMultSegments_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Process');
+        uicontrol( 'Style', 'PushButton', 'Parent', batch_Box, 'Callback', @RunMultSegments_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute');
         uix.Empty( 'Parent', batch_Box );
-        set( batch_Box, 'Widths', [125 100 -1] );
+        set( batch_Box, 'Widths',  field_size);      % [125 100 -1]          
         
 %         uix.Empty( 'Parent', GUI.BatchBox );
 %         GUI.ShowClassicSlider_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.BatchBox, 'Callback', @ShowClassicSlider_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Show classic slider', 'Value', 0);
         
         
         uix.Empty( 'Parent', GUI.BatchBox );
-        set( GUI.BatchBox, 'Heights', [-10 -10 -10 -10 -10 -10 -10 -20 -15 -60] );
+        set( GUI.BatchBox, 'Heights', [-10 -10 -10 -10 -10 -10 -10 -10 -15 -70] ); % -60
         
         field_size = [170, 140, 10 -1];
         
@@ -597,7 +604,7 @@ displayEndOfDemoMessage('');
         GUI.Analysis_TabPanel.TabWidth = 90;
         GUI.Analysis_TabPanel.FontSize = BigFontSize;
         
-        GUI.Options_TabPanel.TabTitles = {'Record', 'Analysis', 'Options', 'Display'};
+        GUI.Options_TabPanel.TabTitles = {'Records', 'Analysis', 'Options', 'Display'};
         GUI.Options_TabPanel.TabWidth = 90;
         GUI.Options_TabPanel.FontSize = BigFontSize;
         
@@ -889,7 +896,9 @@ displayEndOfDemoMessage('');
         calcBatchWinNum();
         plotFilteredData();
         plotMultipleWindows();
-        calcStatistics();        
+        if get(GUI.AutoCalc_checkbox, 'Value')
+            calcStatistics();  
+        end
     end
 %%
     function filt_sldrFrame_Motion(~, ~)                        
@@ -995,25 +1004,20 @@ displayEndOfDemoMessage('');
     function plotAllData()
         ha = GUI.AllDataAxes;
         if (DATA.PlotHR == 0)
-%             yString = 'RR (sec)'; 
             data =  DATA.rri;
             filtered_data = DATA.nni;
         else
-%             yString = 'HR (BPM)';
             data =  60 ./ DATA.rri;
             filtered_data = 60 ./ DATA.nni;
         end
         min_nni = min(min(filtered_data), max(filtered_data)); 
         max_nni = max(min(filtered_data), max(filtered_data));         
-        delta = (max_nni - min_nni)*1;
+        delta = (max_nni - min_nni)*0.1;
         
-        GUI.all_data_handle = line(DATA.trr, data, 'Color', 'b', 'LineWidth', 2, 'Parent', ha, 'DisplayName', 'Hole time series'); % , 'Tag', 'DoNotIgnore', 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}
-        %axis(ha, 'tight');
+        GUI.all_data_handle = line(DATA.trr, data, 'Color', 'b', 'LineWidth', 1.5, 'Parent', ha, 'DisplayName', 'Hole time series'); % , 'Tag', 'DoNotIgnore', 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}       
         
         set(ha, 'XLim', [0 max(DATA.trr)]);
         set(ha, 'YLim', [min(min_nni, max_nni) - delta max(min_nni, max_nni) + delta]);    
-%         xlabel(ha, 'Time (sec)');
-%         ylabel(ha, yString);        
         
         % PLot red rectangle
         ylim = get(ha, 'YLim');
@@ -1024,14 +1028,13 @@ displayEndOfDemoMessage('');
             delete(GUI.red_rect);
             GUI = rmfield(GUI, 'red_rect');
         end
-        GUI.red_rect = line(x_box, y_box, 'Color', 'r', 'Linewidth', 3, 'Parent', ha);        % , 'Tag', 'DoNotIgnore', 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}
+        GUI.red_rect = line(x_box, y_box, 'Color', 'r', 'Linewidth', 3, 'Parent', ha);        
 
         if isfield(GUI, 'blue_line')
             delete(GUI.blue_line);
             GUI = rmfield(GUI, 'blue_line');
         end
-        GUI.blue_line = line([DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime], [ylim(1) ylim(2)], 'Color', DATA.rectangle_color, 'Marker', '^', 'MarkerSize', 7, 'MarkerFaceColor', DATA.rectangle_color, 'Linewidth', 2, 'Parent', ha);
-%         'MarkerEdgeColor', 'b', 
+        GUI.blue_line = line([DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime], [ylim(1) ylim(2)], 'Color', DATA.rectangle_color, 'Marker', '^', 'MarkerSize', 7, 'MarkerFaceColor', DATA.rectangle_color, 'Linewidth', 2, 'Parent', ha); 
         
         x_ticks_array = get(ha, 'XTick');
         set(ha, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0), x_ticks_array, 'UniformOutput', false));
@@ -1058,7 +1061,7 @@ displayEndOfDemoMessage('');
                 
         GUI.filtered_handle = line(ha, ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected filtered time series');        
                         
-        xlabel(ha, 'Time (sec)');
+        xlabel(ha, 'Time (h:min:sec)');
         ylabel(ha, yString);                
         
         DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal'); % 
@@ -1280,12 +1283,10 @@ displayEndOfDemoMessage('');
 
 %%
     function onOpenFile(~, ~)
-        
-        
+               
 %         get(GUI.RawDataAxes, 'PickableParts')
 %         get(GUI.RawDataAxes, 'HitTest')
-        
-        
+                
         %         persistent dataDirectory;
         
         %         if isempty(dataDirectory)
@@ -1833,7 +1834,9 @@ displayEndOfDemoMessage('');
                     calcBatchWinNum();
                     plotFilteredData();
                     plotMultipleWindows();
-                    calcStatistics();
+                    if get(GUI.AutoCalc_checkbox, 'Value')
+                        calcStatistics();
+                    end
                 end
             else
                 throw(MException('Spectral_Window_Length:text', 'The selected window length must be numeric!'));
@@ -1931,24 +1934,12 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function set_defaults_path()
-        
-        %         persistent ExportResultsDirectory;
-        %         persistent dataDirectory;
-        %         persistent configDirectory;
-        %         persistent dataQualityDirectory;
-        
-        if ~isfield(DIRS, 'dataDirectory') %isempty(DIRS.dataDirectory)
-            DIRS.dataDirectory = [basepath filesep 'Examples'];
+    function set_defaults_path()                                
+        if isempty(who('DIRS')) || isempty(DIRS)
+            reset_defaults_path();                   
         end
-        if ~isfield(DIRS, 'configDirectory') %isempty(DIRS.configDirectory)
-            DIRS.configDirectory = [basepath filesep 'Config'];
-        end
-        if ~isfield(DIRS, 'ExportResultsDirectory') %isempty(DIRS.ExportResultsDirectory)
-            DIRS.ExportResultsDirectory = [basepath filesep 'Results'];
-        end
-        if ~isfield(DIRS, 'dataQualityDirectory') %isempty(DIRS.dataQualityDirectory)
-            DIRS.dataQualityDirectory = [basepath filesep 'Examples'];
+        if isempty(who('DATA_Fig')) || isempty(DATA_Fig)
+            reset_defaults_path();                   
         end
     end
 %%
@@ -1956,13 +1947,14 @@ displayEndOfDemoMessage('');
         DIRS.dataDirectory = [basepath filesep 'Examples'];
         DIRS.configDirectory = [basepath filesep 'Config'];
         DIRS.ExportResultsDirectory = [basepath filesep 'Results'];
+        
+        DATA_Fig.export_figures = [1 1 1 1 1 1 1];
+%         DATA_Fig.export_figures_formats_index = 1;
+        DATA_Fig.Ext = 'fig';
     end
 %%
-    function Reset_pushbutton_Callback( ~, ~ )
-        
-        reset_defaults_path();
-        DATA_Fig.export_figures = [1 1 1 1 1 1 1];
-        DATA_Fig.export_figures_formats_index = 1;
+    function Reset_pushbutton_Callback( ~, ~ )                       
+        reset_defaults_path();        
         
         DATA.filter_index = 1;
         set_filters(DATA.Filters{DATA.filter_index});
@@ -1986,7 +1978,10 @@ displayEndOfDemoMessage('');
         GUI.DefaultMethod_popupmenu.Value = DATA.default_method_index;
         
         set(GUI.AutoScaleY_checkbox, 'Value', 1);
-        
+        set(GUI.ShowLegend_checkbox, 'Value', 1);
+        set(GUI.AutoCalc_checkbox, 'Value', 1);
+        GUI.AutoCompute_pushbutton.Enable = 'inactive';
+                
         reset_plot();
     end
 
@@ -2024,16 +2019,10 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function Mammal_popupmenu_Callback( ~, ~ )
-        
-        set_defaults_path();
-        
-        %persistent configDirectory;
+    function Mammal_popupmenu_Callback( ~, ~ )        
+        set_defaults_path();                
         index_selected = get(GUI.Mammal_popupmenu,'Value');
-        if index_selected == 5
-            %             if isempty(configDirectory)
-            %                 configDirectory = [basepath filesep 'Config'];
-            %             end
+        if index_selected == 5        
             [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
             if ~isequal(Config_FileName, 0)
                 params_filename = fullfile(PathName, Config_FileName);
@@ -2100,7 +2089,9 @@ displayEndOfDemoMessage('');
                     GUI.filtered_handle.YData = ones(1, length(DATA.nni))*NaN;
                 end
                 plotFilteredData();               
-                calcStatistics();
+                if get(GUI.AutoCalc_checkbox, 'Value')
+                    calcStatistics();
+                end
             end
             DATA.filter_index = index_selected;
             
@@ -2119,17 +2110,27 @@ displayEndOfDemoMessage('');
         DATA.default_method_index = get(GUI.DefaultMethod_popupmenu, 'Value');
         
         [StatRowsNames, StatData] = setFrequencyMethodData();
-        updateMainStatisticsTable(DATA.timeStatPartRowNumber, StatRowsNames, StatData);
+        if ~isempty(StatRowsNames) && ~isempty(StatData)
+            updateMainStatisticsTable(DATA.timeStatPartRowNumber, StatRowsNames, StatData);
+        end
     end
 %%
     function [StatRowsNames, StatData] = setFrequencyMethodData()
 
-        if DATA.default_method_index == 2 % AR
-            StatRowsNames = DATA.FrStat.ArWindowsData.RowsNames;
-            StatData = DATA.FrStat.ArWindowsData.Data;
-        elseif DATA.default_method_index == 1 % Welch
-            StatRowsNames = DATA.FrStat.WelchWindowsData.RowsNames;
-            StatData = DATA.FrStat.WelchWindowsData.Data;
+        StatRowsNames = [];
+        StatData = [];
+        if ~isempty(DATA.FrStat)
+            if DATA.default_method_index == 2 % AR
+                if isfield(DATA.FrStat, 'ArWindowsData')
+                    StatRowsNames = DATA.FrStat.ArWindowsData.RowsNames;
+                    StatData = DATA.FrStat.ArWindowsData.Data;
+                end
+            elseif DATA.default_method_index == 1 % Welch
+                if isfield(DATA.FrStat, 'WelchWindowsData')
+                    StatRowsNames = DATA.FrStat.WelchWindowsData.RowsNames;
+                    StatData = DATA.FrStat.WelchWindowsData.Data;
+                end
+            end
         end
     end
 %%
@@ -2217,8 +2218,11 @@ displayEndOfDemoMessage('');
                     clearStatTables();
                     calcBatchWinNum();
                     plotFilteredData();
-                    plotMultipleWindows();                                       
-                    calcStatistics();   
+                    plotMultipleWindows();     
+                    
+                    if get(GUI.AutoCalc_checkbox, 'Value')
+                        calcStatistics();
+                    end
                     
                     set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
                 end
@@ -2271,55 +2275,59 @@ displayEndOfDemoMessage('');
         delete( GUI.SaveFiguresWindow );
     end
 %%
-    function dir_button_Callback( ~, ~ )
-        %         if isempty(ExportResultsDirectory)
-        %             ExportResultsDirectory = basepath;
-        %         end
-        set_defaults_path();
+    function dir_button_Callback( ~, ~ )       
+        set_defaults_path();        
         
-        [fig_name, fig_path, FilterIndex] = uiputfile({'*.fig','MATLAB Figure (*.fig)';...
-            '*.bmp','Bitmap file (*.bmp)';...
-            '*.eps','EPS file (*.eps)';...
-            '*.emf','Enhanced metafile (*.emf)';...
-            '*.jpg','JPEG image (*.jpg)';...
-            '*.pcx','Paintbrush 24-bit file (*.pcx)';...
-            '*.pbm','Portable Bitmap file (*.pbm)';...
-            '*.pdf','Portable Document Format (*.pdf)';...
-            '*.pgm','Portable Graymap file (*.pgm)';...
-            '*.png','Portable Network Grafics file (*.png)';...
-            '*.ppm','Portable Pixmap file (*.ppm)';...
-            '*.svg','Scalable Vector Graphics file (*.svg)';...
-            '*.tif','TIFF image (*.tif)';...
-            '*.tif','TIFF no compression image (*.tif)'},'Choose Figures file Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName ]);
-        
+        [fig_full_name, fig_path, FilterIndex] = uiputfile({'*.*', 'All files';...
+                                                            '*.fig','MATLAB Figure (*.fig)';...
+                                                            '*.bmp','Bitmap file (*.bmp)';...
+                                                            '*.eps','EPS file (*.eps)';...
+                                                            '*.emf','Enhanced metafile (*.emf)';...
+                                                            '*.jpg','JPEG image (*.jpg)';...
+                                                            '*.pcx','Paintbrush 24-bit file (*.pcx)';...
+                                                            '*.pbm','Portable Bitmap file (*.pbm)';...
+                                                            '*.pdf','Portable Document Format (*.pdf)';...
+                                                            '*.pgm','Portable Graymap file (*.pgm)';...
+                                                            '*.png','Portable Network Grafics file (*.png)';...
+                                                            '*.ppm','Portable Pixmap file (*.ppm)';...
+                                                            '*.svg','Scalable Vector Graphics file (*.svg)';...
+                                                            '*.tif','TIFF image (*.tif)';...
+                                                            '*.tif','TIFF no compression image (*.tif)'},...
+                                                            'Choose Figures file Name',...
+                                                            [DIRS.ExportResultsDirectory, filesep, [DATA.DataFileName, '.', DATA_Fig.Ext]]); % DATA.DataFileName  DATA.FiguresFormats{DATA_Fig.export_figures_formats_index}                                                                                                                                                                                
         if ~isequal(fig_path, 0)
             DIRS.ExportResultsDirectory = fig_path;
-            GUI.path_edit.String = [fig_path, fig_name];
-            
-            [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
-            
-            if ~isempty(fig_path) && ~isempty(fig_name)
-                set(GUI.Formats_popupmenu, 'Value', FilterIndex);
+%             GUI.path_edit.String = [fig_path, fig_name];
+                    
+            [~, fig_name, fig_ext] = fileparts(fig_full_name);
+
+            DATA_Fig.FigFileName = fig_name;
+            if ~isempty(fig_ext)
+                DATA_Fig.Ext = fig_ext(2:end);
+            else
+                DATA_Fig.Ext = 'fig';
             end
+%             DATA_Fig.export_figures_formats_index = FilterIndex;
+
+            saveAs_figures_button();
+        
+%             [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
+            
+%             if ~isempty(fig_path) && ~isempty(fig_name)
+%                 set(GUI.Formats_popupmenu, 'Value', FilterIndex);
+%             end
         end
     end
 %%
-    function onSaveFiguresAsFile( ~, ~ )
+    function onSaveFiguresAsFile( ~, ~ )               
         
-        %         if isempty(ExportResultsDirectory)
-        %             ExportResultsDirectory = basepath;
-        %         end
         set_defaults_path();
         
         GUIFiguresNames = {'NN Interval Distribution'; 'Power Spectral Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare Ellipse'; 'RR Time Series'};
-        DATA.FiguresNames = {'_NN_Interval_Distribution'; '_Power_Spectral_Density'; '_Beta'; '_DFA'; '_MSE'; '_Poincare_Ellipse'; '_RR_Time_Series'};
-        
-        if ~isfield(DATA_Fig, 'export_figures')
-            DATA_Fig.export_figures = [1 1 1 1 1 1 1];
-        end
-        if ~isfield(DATA_Fig, 'export_figures_formats_index')
-            DATA_Fig.export_figures_formats_index = DATA.formats_index;
-        end
+%         DATA.FiguresNames = {'_NN_Interval_Distribution'; '_Power_Spectral_Density'; '_Beta'; '_DFA'; '_MSE'; '_Poincare_Ellipse'; '_RR_Time_Series'};
+        DATA.FiguresNames = {'_NND'; '_PSD'; '_Beta'; '_DFA'; '_MSE'; '_Poincare'; '_RR'};
+             
+        main_screensize = DATA.screensize;
         
         GUI.SaveFiguresWindow = figure( ...
             'Name', 'Export Figures Options', ...
@@ -2327,7 +2335,7 @@ displayEndOfDemoMessage('');
             'MenuBar', 'none', ...
             'Toolbar', 'none', ...
             'HandleVisibility', 'off', ...
-            'Position', [700, 300, 800, 400]);
+            'Position', [(main_screensize(3)-400)/2, (main_screensize(4)-300)/2, 400, 300]); %[700, 300, 800, 400] 
         
         mainSaveFigurestLayout = uix.VBox('Parent',GUI.SaveFiguresWindow, 'Spacing', 3);
         figures_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Select figures to save:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
@@ -2338,31 +2346,36 @@ displayEndOfDemoMessage('');
                 'Tag', ['Fig' num2str(i)], 'String', GUIFiguresNames{i}, 'FontName', 'Calibri', 'Value', DATA_Fig.export_figures(i));            
         end
         
-        main_path_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures path:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
-        main_path_box = uix.VBox('Parent', main_path_panel, 'Spacing', 3);
-        path_box = uix.HBox('Parent', main_path_box, 'Spacing', 3);
-        GUI.path_edit = uicontrol( 'Style', 'edit', 'Parent', path_box, ...
-            'String', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '.' DATA.FiguresFormats{DATA_Fig.export_figures_formats_index}], ...
-            'FontSize', DATA.BigFontSize, 'FontName', 'Calibri', 'HorizontalAlignment', 'left');
-        uix.Empty( 'Parent', path_box );
-        set( path_box, 'Widths', [-80 -10 ] );
-        dir_button_Box = uix.HButtonBox('Parent', main_path_box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'ButtonSize', [100 25]);
-        uicontrol( 'Style', 'ToggleButton', 'Parent', dir_button_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Change Path', 'FontName', 'Calibri');
-        set( main_path_box, 'Heights', [-30 -70] );
-        
-        main_formats_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures format:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
-        format_box = uix.HBox('Parent', main_formats_panel, 'Spacing', 3);
-        GUI.Formats_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', format_box, 'Callback', @Formats_popupmenu_Callback, 'FontSize', DATA.BigFontSize, 'FontName', 'Calibri');
-        GUI.Formats_popupmenu.String = DATA.FiguresFormats;
-        set(GUI.Formats_popupmenu, 'Value', DATA_Fig.export_figures_formats_index);
-        uix.Empty( 'Parent', format_box );
-        set( format_box, 'Widths', [-20 -80 ] );
-        
-        CommandsButtons_Box = uix.HButtonBox('Parent', mainSaveFigurestLayout, 'Spacing', 3, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', 'ButtonSize', [125 30]);
-        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @save_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Export Figures', 'FontName', 'Calibri');
+%         main_path_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures path:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
+%         main_path_box = uix.VBox('Parent', main_path_panel, 'Spacing', 3);
+%         path_box = uix.HBox('Parent', main_path_box, 'Spacing', 3);
+%         GUI.path_edit = uicontrol( 'Style', 'edit', 'Parent', path_box, ...
+%             'String', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '.' DATA.FiguresFormats{DATA_Fig.export_figures_formats_index}], ...
+%             'FontSize', DATA.BigFontSize, 'FontName', 'Calibri', 'HorizontalAlignment', 'left');
+%         uix.Empty( 'Parent', path_box );
+%         set( path_box, 'Widths', [-80 -10 ] );
+%         dir_button_Box = uix.HButtonBox('Parent', main_path_box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'ButtonSize', [100 25]);
+%         uicontrol( 'Style', 'ToggleButton', 'Parent', dir_button_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Select Path and format', 'FontName', 'Calibri');
+%         set( main_path_box, 'Heights', [-30 -70] );
+%         
+%         main_formats_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures format:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
+%         format_box = uix.HBox('Parent', main_formats_panel, 'Spacing', 3);
+%         GUI.Formats_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', format_box, 'Callback', @Formats_popupmenu_Callback, 'FontSize', DATA.BigFontSize, 'FontName', 'Calibri');
+%         GUI.Formats_popupmenu.String = DATA.FiguresFormats;
+%         set(GUI.Formats_popupmenu, 'Value', DATA_Fig.export_figures_formats_index);
+%         uix.Empty( 'Parent', format_box );
+%         set( format_box, 'Widths', [-20 -80 ] );
+%         
+
+% , 'HorizontalAlignment', 'right'
+% Select Path and Format
+% Export Figures
+        CommandsButtons_Box = uix.HButtonBox('Parent', mainSaveFigurestLayout, 'Spacing', 3, 'VerticalAlignment', 'middle', 'ButtonSize', [100 30]);
+        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Save As', 'FontName', 'Calibri');
+%         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @save_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Export Figures', 'FontName', 'Calibri');
         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @cancel_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
         
-        set( mainSaveFigurestLayout, 'Heights', [-70 -45 -25 -20] );
+        set( mainSaveFigurestLayout, 'Heights',  [-70 -30]); % [-70 -45 -25]
     end
 %%
     function figures_checkbox_Callback( src, ~, param_name )
@@ -2380,18 +2393,24 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function save_button_Callback( ~, ~ )
+    function saveAs_figures_button()
+                
+%         [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '.' DATA.FiguresFormats{DATA_Fig.export_figures_formats_index}]
         
-        [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
+        %[fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
+                
+        fig_path = DIRS.ExportResultsDirectory;
+        fig_name = DATA_Fig.FigFileName;        
+%         fig_ext = DATA.FiguresFormats{DATA_Fig.export_figures_formats_index};
+        fig_ext = DATA_Fig.Ext;
         
         if ~isempty(fig_path) && ~isempty(fig_name) && ~isempty(fig_ext)
             
-            DATA_Fig.export_figures_formats_index = DATA.formats_index;
+%             DATA_Fig.export_figures_formats_index = DATA.formats_index;
             
-            DIRS.ExportResultsDirectory = fig_path;
-            
-            ext = fig_ext(2:end);
-            
+%             DIRS.ExportResultsDirectory = fig_path;            
+%             ext = fig_ext(2:end);
+            ext = fig_ext;
             if strcmpi(ext, 'pcx')
                 ext = 'pcx24b';
             elseif strcmpi(ext, 'emf')
@@ -2404,7 +2423,8 @@ displayEndOfDemoMessage('');
                 ext = 'tiffn';
             end
             
-            export_path_name = [fig_path filesep fig_name];
+%             export_path_name = [fig_path filesep fig_name];
+            export_path_name = fullfile(fig_path, fig_name);
             
             yes_no = zeros(length(DATA.FiguresNames));
             for i = 1 : length(DATA.FiguresNames)
@@ -2418,8 +2438,7 @@ displayEndOfDemoMessage('');
                         yes_no(i) = 1;
                     end
                 end
-            end            
-            
+            end                        
             if ~isempty(DATA.TimeStat) || ~isempty(DATA.FrStat) || ~isempty(DATA.NonLinStat)
                 
                 if ~strcmpi(ext, 'fig')                    
@@ -2571,7 +2590,7 @@ displayEndOfDemoMessage('');
             plot(ax, DATA.tnn(filt_win_indexes), 60 ./ DATA.nni(filt_win_indexes), 'g-', 'LineWidth', 1);
             yString = 'HR (BPM)';
         end
-        xlabel(ax, 'Time (sec)');
+        xlabel(ax, 'Time (h:min:sec)');
         ylabel(ax, yString);
         
         set(ax, 'XLim', [XData_active_window(1), XData_active_window(3)]);                
@@ -2889,27 +2908,30 @@ displayEndOfDemoMessage('');
             prev_param_value = prev_param_array.value;
         end
         
-        rhrv_set_default( param_name, param_value );        
-        try
-            if doCalc
-                update_statistics(param_category(1));
-            end
-            set(src, 'UserData', screen_value);
-        catch e
-            errordlg(['set_config_Callback error: ' e.message], 'Input Error');
-            
-            rhrv_set_default( param_name, prev_param_array );
-            set(src, 'String', num2str(prev_param_value));
-            
-            if ~isempty(cp_param_array)
-                rhrv_set_default( couple_name, cp_param_array );
-                couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
-                if ~isempty(min_suffix_ind)
-                    set(findobj(couple_handle, 'Tag', [couple_name '.max']), 'String', num2str(prev_param_value))
-                elseif ~isempty(max_suffix_ind)
-                    set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(prev_param_value))
+        rhrv_set_default( param_name, param_value );
+        
+        if get(GUI.AutoCalc_checkbox, 'Value')
+            try
+                if doCalc
+                    update_statistics(param_category(1));
                 end
-            end            
+                set(src, 'UserData', screen_value);
+            catch e
+                errordlg(['set_config_Callback error: ' e.message], 'Input Error');
+                
+                rhrv_set_default( param_name, prev_param_array );
+                set(src, 'String', num2str(prev_param_value));
+                
+                if ~isempty(cp_param_array)
+                    rhrv_set_default( couple_name, cp_param_array );
+                    couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
+                    if ~isempty(min_suffix_ind)
+                        set(findobj(couple_handle, 'Tag', [couple_name '.max']), 'String', num2str(prev_param_value))
+                    elseif ~isempty(max_suffix_ind)
+                        set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(prev_param_value))
+                    end
+                end
+            end
         end
     end
 %%
@@ -3336,37 +3358,37 @@ displayEndOfDemoMessage('');
     end
 
 %%
-    function calcStatistics()
-        
-        GUI.StatisticsTable.ColumnName = {'Description'};
-        
-        if DATA.AnalysisParams.winNum == 1
-            GUI.StatisticsTable.ColumnName = cat(1, GUI.StatisticsTable.ColumnName, 'Values');
-        else            
-            for i = 1 : DATA.AnalysisParams.winNum
-                GUI.StatisticsTable.ColumnName = cat(1, GUI.StatisticsTable.ColumnName, ['W' num2str(i)]);
+    function calcStatistics()        
+        if isfield(DATA, 'AnalysisParams')
+            GUI.StatisticsTable.ColumnName = {'Description'};
+            
+            if DATA.AnalysisParams.winNum == 1
+                GUI.StatisticsTable.ColumnName = cat(1, GUI.StatisticsTable.ColumnName, 'Values');
+            else
+                for i = 1 : DATA.AnalysisParams.winNum
+                    GUI.StatisticsTable.ColumnName = cat(1, GUI.StatisticsTable.ColumnName, ['W' num2str(i)]);
+                end
             end
-        end
-        
-        waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-        
-        try
-            calcTimeStatistics(waitbar_handle);
-        catch           
+            
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-        end
-        try
-            calcFrequencyStatistics(waitbar_handle);
-        catch            
-            waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-        end
-        try
-            calcNonlinearStatistics(waitbar_handle);
-        catch            
-        end
-        
-        if ishandle(waitbar_handle)
-            close(waitbar_handle);
+            
+            try
+                calcTimeStatistics(waitbar_handle);
+            catch
+                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+            end
+            try
+                calcFrequencyStatistics(waitbar_handle);
+            catch
+                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+            end
+            try
+                calcNonlinearStatistics(waitbar_handle);
+            catch
+            end
+            if ishandle(waitbar_handle)
+                close(waitbar_handle);
+            end
         end
     end
 %%
@@ -3377,6 +3399,12 @@ displayEndOfDemoMessage('');
         set(GUI.Active_Window_Length, 'Enable', 'inactive');
         set(GUI.Active_Window_Start, 'Enable', 'inactive');
         set(GUI.SpectralWindowLengthHandle, 'Enable', 'inactive');        
+        calcStatistics();
+    end
+%%
+    function AutoCompute_pushbutton_Callback( ~, ~ )
+        clear_statistics_plots();
+        clearStatTables();
         calcStatistics();
     end
 %%
@@ -3476,7 +3504,9 @@ displayEndOfDemoMessage('');
                 calcBatchWinNum();
                 plotFilteredData();
                 plotMultipleWindows();
-                calcStatistics();
+                if get(GUI.AutoCalc_checkbox, 'Value')
+                    calcStatistics();
+                end
             end
         end
         DATA.doCalc = false;
@@ -3865,6 +3895,14 @@ displayEndOfDemoMessage('');
 %             GUI.Filt_WindowSliderBox.Visible = 'off';
 %         end
 %     end
+%%
+    function AutoCalc_checkbox_Callback( src, ~ )
+        if get(src, 'Value') == 1        
+            GUI.AutoCompute_pushbutton.Enable = 'inactive';
+        else
+            GUI.AutoCompute_pushbutton.Enable = 'on';
+        end        
+    end
 %%
     function onHelp( ~, ~ )
     end

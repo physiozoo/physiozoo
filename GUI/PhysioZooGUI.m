@@ -160,6 +160,7 @@ displayEndOfDemoMessage('');
         set(GUI.SaveFiguresAsMenu,'Enable', 'off');
         set(GUI.SaveParamFileMenu,'Enable', 'off');
         set(GUI.LoadConfigFile, 'Enable', 'off');
+        set(GUI.SaveFilteredDataFileMenu, 'Enable', 'off'); 
         
         GUI.Filt_RawDataSlider.Enable = 'off';
         
@@ -250,6 +251,7 @@ displayEndOfDemoMessage('');
         GUI.SavePSDAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save PSD as', 'Callback', @onSavePSDAsFile, 'Accelerator','D', 'Enable', 'off');
         GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Export Figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');        
         GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Config File', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');
+        GUI.SaveFilteredDataFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Filtered Data File', 'Callback', @onSaveFilteredDataFile, 'Accelerator','G', 'Enable', 'off');
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @onExit, 'Separator', 'on', 'Accelerator', 'E');
         
         % + Help menu
@@ -295,9 +297,19 @@ displayEndOfDemoMessage('');
         GUI.CommandsButtons_Box = uix.VButtonBox('Parent', buttons_axes_Box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
         
         two_axes_box = uix.VBox('Parent', buttons_axes_Box, 'Spacing', 3);
-                
-        GUI.RawDataAxes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'MainAxes'); %   buttons_axes_Box , 'ButtonDownFcn', {@ButtonDownFcn_mainAxes, 'test'}, 'CurrentPoint'
-        GUI.AllDataAxes = axes('Parent', uicontainer('Parent', two_axes_box));   %         , 'Tag', 'DoNotIgnore', 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}        
+%                 
+%         GUI.RawDataAxes = axes('Parent', two_axes_box, 'Tag', 'MainAxes'); %   buttons_axes_Box , 'ButtonDownFcn', {@ButtonDownFcn_mainAxes, 'test'}, 'CurrentPoint'
+% %         GUI.selectedDataAxes = axes('Parent', uicontainer('Parent', two_axes_box), 'ActivePositionProperty', 'Position');
+% %         GUI.selectedDataAxes = axes('Parent', two_axes_box, 'ActivePositionProperty', 'Position');
+%         GUI.AllDataAxes = axes('Parent', two_axes_box);   %         , 'Tag', 'DoNotIgnore', 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}        
+        
+        GUI.RawDataAxes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'MainAxes');
+%         GUI.selectedDataAxes = axes('Parent', uicontainer('Parent', two_axes_box), 'ActivePositionProperty', 'Position'); % , 'ActivePositionProperty', 'Position'
+        GUI.AllDataAxes = axes('Parent', uicontainer('Parent', two_axes_box));
+        
+%         set(GUI.selectedDataAxes.YAxis, 'Visible', 'off');
+%         set(GUI.selectedDataAxes.XAxis, 'Visible', 'off');
+%         set(GUI.selectedDataAxes, 'Color', myUpBackgroundColor); % myUpBackgroundColor green
         
         set( two_axes_box, 'Heights', [-1, 100]  );
         
@@ -389,8 +401,8 @@ displayEndOfDemoMessage('');
         set( GUI.MammalBox, 'Widths', field_size );
         
         GUI.IntegrationBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.IntegrationBox, 'String', 'Integration Level', 'FontSize', SmallFontSize, 'Enable', 'off', 'HorizontalAlignment', 'left');
-        GUI.Integration_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.IntegrationBox, 'Callback', @Integration_popupmenu_Callback, 'FontSize', SmallFontSize, 'Enable', 'off');
+        uicontrol( 'Style', 'text', 'Parent', GUI.IntegrationBox, 'String', 'Integration Level', 'FontSize', SmallFontSize, 'Enable', 'on', 'HorizontalAlignment', 'left');
+        GUI.Integration_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.IntegrationBox, 'Callback', @Integration_popupmenu_Callback, 'FontSize', SmallFontSize, 'Enable', 'on');
         GUI.Integration_popupmenu.String = DATA.GUI_Integration;
         uix.Empty( 'Parent', GUI.IntegrationBox );
         set( GUI.IntegrationBox, 'Widths', field_size );
@@ -887,9 +899,7 @@ displayEndOfDemoMessage('');
         str = calcDuration(DATA.AnalysisParams.activeWin_startTime, 0);
         set(GUI.Active_Window_Start, 'String', str);
         set(GUI.segment_startTime, 'String', str);
-        set(GUI.segment_endTime, 'String', calcDuration(DATA.AnalysisParams.segment_endTime, 0));
-        
-        set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
+        set(GUI.segment_endTime, 'String', calcDuration(DATA.AnalysisParams.segment_endTime, 0));                
         
         clear_statistics_plots();
         clearStatTables();
@@ -899,6 +909,7 @@ displayEndOfDemoMessage('');
         if get(GUI.AutoCalc_checkbox, 'Value')
             calcStatistics();  
         end
+        set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
     end
 %%
     function filt_sldrFrame_Motion(~, ~)                        
@@ -906,12 +917,13 @@ displayEndOfDemoMessage('');
         DATA.AnalysisParams.segment_startTime = DATA.AnalysisParams.activeWin_startTime;
         str = calcDuration(DATA.AnalysisParams.activeWin_startTime, 0);
         set(GUI.Active_Window_Start, 'String', str);
-        set(GUI.segment_startTime, 'String', str);
-        
-        set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
+        set(GUI.segment_startTime, 'String', str);                
         
         plotFilteredData();
         plotMultipleWindows();        
+        
+        DATA.AnalysisParams.segment_effectiveEndTime = DATA.AnalysisParams.segment_startTime + DATA.AnalysisParams.activeWin_length + (DATA.AnalysisParams.winNum - 1) * (1 - DATA.AnalysisParams.segment_overlap/100) * DATA.AnalysisParams.activeWin_length;                    
+        set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
     end
 %%
     function setAutoYAxisLim(firstSecond2Show, WindowSize)
@@ -989,8 +1001,12 @@ displayEndOfDemoMessage('');
         
         DATA.MaxYLimit = MaxYLimit;
         DATA.MinYLimit = MinYLimit;
-        
-        set(ha, 'YLim', [MinYLimit MaxYLimit]);
+
+        try
+            set(ha, 'YLim', [MinYLimit MaxYLimit]);
+        catch e
+%             disp(e);
+        end
     end
 %%
     function setXAxesLim()
@@ -999,6 +1015,12 @@ displayEndOfDemoMessage('');
         set(ha, 'XLim', [DATA.firstSecond2Show DATA.firstSecond2Show + DATA.MyWindowSize]);        
         x_ticks_array = get(ha, 'XTick');
         set(ha, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0), x_ticks_array, 'UniformOutput', false));
+        
+        if DATA.MyWindowSize <= 300
+           set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 5, 'MarkerEdgeColor', [180 74 255]/255, 'MarkerFaceColor', [1, 1, 1]);            
+        else
+            set(GUI.raw_data_handle, 'Marker', 'none'); 
+        end        
     end
 %%
     function plotAllData()
@@ -1028,18 +1050,37 @@ displayEndOfDemoMessage('');
             delete(GUI.red_rect);
             GUI = rmfield(GUI, 'red_rect');
         end
-        GUI.red_rect = line(x_box, y_box, 'Color', 'r', 'Linewidth', 3, 'Parent', ha);        
+%         GUI.red_rect = line(x_box, y_box, 'Color', 'r', 'Linewidth', 3, 'Parent', ha);        
 
         if isfield(GUI, 'blue_line')
             delete(GUI.blue_line);
             GUI = rmfield(GUI, 'blue_line');
         end
-        GUI.blue_line = line([DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime], [ylim(1) ylim(2)], 'Color', DATA.rectangle_color, 'Marker', '^', 'MarkerSize', 7, 'MarkerFaceColor', DATA.rectangle_color, 'Linewidth', 2, 'Parent', ha); 
+        
+        x_segment_start = DATA.AnalysisParams.segment_startTime;
+        x_segment_stop = DATA.AnalysisParams.segment_effectiveEndTime;
+        y_segment_start = ylim(1);
+        y_segment_stop = ylim(2);
+        
+        v = [x_segment_start y_segment_start; x_segment_stop y_segment_start; x_segment_stop y_segment_stop; x_segment_start y_segment_stop];
+        f = [1 2 3 4];                
+        
+%         get(GUI.selectedDataAxes, 'YLim')
+%         GUI.blue_line = line([DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime], [0 1], 'Color', DATA.rectangle_color, 'Marker', '^', 'MarkerSize', 7, 'MarkerFaceColor', DATA.rectangle_color, 'Linewidth', 2, 'Parent', ha); 
+%         GUI.blue_line = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.rectangle_color, 'EdgeColor', DATA.rectangle_color, 'FaceAlpha', 0.3, 'EdgeAlpha', 0.3, 'Parent', GUI.selectedDataAxes); % , 'Marker', '^', 'MarkerSize', 7, 'MarkerFaceColor', DATA.rectangle_color, 'Linewidth', 2
+        GUI.blue_line = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.rectangle_color, 'EdgeColor', DATA.rectangle_color, 'LineWidth', 2, 'FaceAlpha', 0.3, 'EdgeAlpha', 0.9, 'Parent', ha); % , 'Marker', '^', 'MarkerSize', 7, 'MarkerFaceColor', DATA.rectangle_color, 'Linewidth', 2
+%         set(GUI.selectedDataAxes, 'XLim', [0 max(DATA.trr)]);
+%         set(GUI.selectedDataAxes, 'YLim', [0 1]);
+        
         
         x_ticks_array = get(ha, 'XTick');
         set(ha, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0), x_ticks_array, 'UniformOutput', false));
 
+        
+        GUI.red_rect = line(x_box, y_box, 'Color', 'r', 'Linewidth', 3, 'Parent', ha);        
+        
         setAllowAxesZoom(DATA.zoom_handle, GUI.AllDataAxes, false);
+%         setAllowAxesZoom(DATA.zoom_handle, GUI.selectedDataAxes, false);
     end
 %%
     function plotRawData()
@@ -1284,16 +1325,6 @@ displayEndOfDemoMessage('');
 %%
     function onOpenFile(~, ~)
                
-%         get(GUI.RawDataAxes, 'PickableParts')
-%         get(GUI.RawDataAxes, 'HitTest')
-                
-        %         persistent dataDirectory;
-        
-        %         if isempty(dataDirectory)
-        %             dataDirectory = [basepath filesep 'Examples'];
-        %         end
-        
-        %'*.qrs;*.hea; *.atr',  'WFDB Files (*.qrs,*.hea,*.atr)'; ...
         set_defaults_path();
         
         [QRS_FileName, PathName] = uigetfile( ...
@@ -1484,6 +1515,7 @@ displayEndOfDemoMessage('');
             set(GUI.SaveFiguresAsMenu, 'Enable', 'on');
             set(GUI.SaveParamFileMenu, 'Enable', 'on');
             set(GUI.LoadConfigFile, 'Enable', 'on');
+            set(GUI.SaveFilteredDataFileMenu, 'Enable', 'on');            
         end
     end
 %%
@@ -1621,8 +1653,16 @@ displayEndOfDemoMessage('');
         
         if ~isempty(DATA.rri)            
             
+            set(GUI.AutoScaleY_checkbox, 'Value', 1);
+            set(GUI.ShowLegend_checkbox, 'Value', 1);
+            set(GUI.AutoCalc_checkbox, 'Value', 1);
+            GUI.AutoCompute_pushbutton.Enable = 'inactive';
+            GUI.Integration_popupmenu.Value = 1;
+            GUI.DefaultMethod_popupmenu.Value = DATA.default_method_index;
+            DATA.default_method_index = 1;
+            
             DATA.prev_point = 0;
-            DATA.prev_point_segment = 0;   
+            DATA.prev_point_segment = 0;
             DATA.prev_point_blue_line = 0;
             DATA.doCalc = false;
             
@@ -1837,6 +1877,7 @@ displayEndOfDemoMessage('');
                     if get(GUI.AutoCalc_checkbox, 'Value')
                         calcStatistics();
                     end
+                    set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
                 end
             else
                 throw(MException('Spectral_Window_Length:text', 'The selected window length must be numeric!'));
@@ -1947,6 +1988,7 @@ displayEndOfDemoMessage('');
         DIRS.dataDirectory = [basepath filesep 'Examples'];
         DIRS.configDirectory = [basepath filesep 'Config'];
         DIRS.ExportResultsDirectory = [basepath filesep 'Results'];
+        DIRS.dataQualityDirectory = [basepath filesep 'Examples'];
         
         DATA_Fig.export_figures = [1 1 1 1 1 1 1];
 %         DATA_Fig.export_figures_formats_index = 1;
@@ -1963,10 +2005,8 @@ displayEndOfDemoMessage('');
             mammal_index = 1;
         else
             mammal_index = find(strcmp(DATA.mammals, DATA.mammal));
-        end
-        
-        DATA.mammal_index = mammal_index;
-        DATA.default_method_index = 1;
+        end        
+        DATA.mammal_index = mammal_index;        
         
         % Load user-specified default parameters
         rhrv_load_defaults(DATA.mammals{ DATA.mammal_index} );
@@ -1974,13 +2014,6 @@ displayEndOfDemoMessage('');
         
         GUI.Mammal_popupmenu.Value = mammal_index;
         GUI.Filtering_popupmenu.Value = DATA.filter_index;
-        GUI.Integration_popupmenu.Value = 1;
-        GUI.DefaultMethod_popupmenu.Value = DATA.default_method_index;
-        
-        set(GUI.AutoScaleY_checkbox, 'Value', 1);
-        set(GUI.ShowLegend_checkbox, 'Value', 1);
-        set(GUI.AutoCalc_checkbox, 'Value', 1);
-        GUI.AutoCompute_pushbutton.Enable = 'inactive';
                 
         reset_plot();
     end
@@ -2224,7 +2257,7 @@ displayEndOfDemoMessage('');
                         calcStatistics();
                     end
                     
-                    set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
+                    set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
                 end
             end
         end
@@ -2645,24 +2678,13 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function onSaveResultsAsFile( ~, ~ )
-        
-        %         persistent statDirectory;
-        %
-        %         if isempty(statDirectory)
-        %             statDirectory = basepath;
-        %         end
-        
-        set_defaults_path();
-        
+    function onSaveResultsAsFile( ~, ~ )                        
+        set_defaults_path();        
         [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Result File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName ]);
         
-        if ~isequal(results_folder_name, 0)
-            
-            DIRS.ExportResultsDirectory = results_folder_name;
-            
-            [~, filename, ~] = fileparts(filename);
-            
+        if ~isequal(results_folder_name, 0)            
+            DIRS.ExportResultsDirectory = results_folder_name;            
+            [~, filename, ~] = fileparts(filename);            
             if FilterIndex == 1
                 ext = '.txt';
             else
@@ -2956,13 +2978,48 @@ displayEndOfDemoMessage('');
         end
     end
 %%
+    function onSaveFilteredDataFile(~, ~)
+        set_defaults_path();
+        [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Filtered Data File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '_filt']);
+        if ~isequal(results_folder_name, 0)
+            DIRS.ExportResultsDirectory = results_folder_name;
+            [~, filename, ~] = fileparts(filename);
+            if FilterIndex == 1
+                ext = '.txt';
+            else
+                ext = '.mat';
+            end
+            
+            full_file_name_filtered = fullfile(results_folder_name, filename);
+            
+            button = 'Yes';
+            if exist([full_file_name_filtered ext], 'file')
+                button = questdlg([full_file_name_filtered ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
+            end
+            
+            if strcmp(button, 'Yes')
+                FilteredData_tnn = GUI.filtered_handle.XData';
+                FilteredData_nni = GUI.filtered_handle.YData';
+                
+                FilteredData_tnn = FilteredData_tnn(~isnan(FilteredData_tnn));
+                FilteredData_nni = FilteredData_nni(~isnan(FilteredData_nni));
+                
+                if FilterIndex == 1
+                    psd_fileID = fopen([full_file_name_filtered ext], 'w');
+                    
+                    dlmwrite([full_file_name_filtered ext], [FilteredData_tnn FilteredData_nni], ...
+                        'precision', '%10.5f\t\n', 'delimiter', '\t', 'newline', 'pc', '-append');
+                    
+                    fclose(psd_fileID);                    
+                else                    
+                    save([full_file_name_filtered ext], 'FilteredData_tnn', 'FilteredData_nni');
+                end
+            end
+        end
+    end
+%%
     function onSaveParamFile( ~, ~ )
-        
-        %         persistent paramDirectory;
-        %
-        %         if isempty(paramDirectory)
-        %             paramDirectory = [basepath filesep 'Config'];
-        %         end
+                
         set_defaults_path();
         
         [filename, results_folder_name] = uiputfile({'*.yml','Yaml Files (*.yml)'},'Choose Parameters File Name', [DIRS.configDirectory, filesep, [DATA.DataFileName '_' DATA.mammal] ]);
@@ -3076,7 +3133,7 @@ displayEndOfDemoMessage('');
                 set(GUI.SpectralWindowLengthHandle, 'String', window_length);   
                 setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);
                 set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
-                set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
+                set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
             end
         end
     end
@@ -3091,11 +3148,12 @@ displayEndOfDemoMessage('');
          % Last formula version
 %         DATA.AnalysisParams.winNum = floor((DATA.AnalysisParams.segment_endTime - DATA.AnalysisParams.segment_startTime - DATA.AnalysisParams.activeWin_length)/(DATA.AnalysisParams.activeWin_length*(1 - DATA.AnalysisParams.segment_overlap/100))) + 1;
         
-        i = 0;
-        while analysis_segment_start_time + activeWin_length <= analysis_segment_end_time
+        i = 0;        
+        while int32(analysis_segment_start_time + activeWin_length) <= int32(analysis_segment_end_time)
             analysis_segment_start_time = analysis_segment_start_time + (1-segment_overlap) * activeWin_length;
             i = i + 1;
-        end        
+        end     
+        
         DATA.AnalysisParams.winNum = i;
         if DATA.AnalysisParams.winNum > 0
             DATA.AnalysisParams.segment_effectiveEndTime = DATA.AnalysisParams.segment_startTime + activeWin_length + (DATA.AnalysisParams.winNum - 1) * (1 - segment_overlap) * activeWin_length;                    
@@ -3134,15 +3192,21 @@ displayEndOfDemoMessage('');
             batch_overlap = DATA.AnalysisParams.segment_overlap/100;
             
             GUI.rect_handle = gobjects(batch_win_num, 1);            
+            f = [1 2 3 4];
             
-            for i = 1 : batch_win_num                
-                                                 
-                 GUI.rect_handle(i) = fill([batch_window_start_time batch_window_start_time batch_window_start_time + batch_window_length batch_window_start_time + batch_window_length], ...
-                    [DATA.MinYLimit DATA.MaxYLimit DATA.MaxYLimit DATA.MinYLimit], DATA.rectangle_color, 'LineWidth', 0.5, 'FaceAlpha', 0.15, 'Parent', GUI.RawDataAxes, ...
-                      'UserData', i); % 'ButtonDownFcn', @WindowButtonDownFcn_rect_handle, 'Tag', 'DoNotIgnore',
+            for i = 1 : batch_win_num                                          
+                
+                v = [batch_window_start_time DATA.MinYLimit; batch_window_start_time + batch_window_length DATA.MinYLimit; batch_window_start_time + batch_window_length DATA.MaxYLimit; batch_window_start_time DATA.MaxYLimit];
+                
+                GUI.rect_handle(i) = patch('Faces' ,f, 'Vertices', v, 'FaceColor', DATA.rectangle_color, 'EdgeColor', DATA.rectangle_color, 'LineWidth', 0.5, 'FaceAlpha', 0.15, ...
+                    'Parent', GUI.RawDataAxes, 'UserData', i);
+                
+%                  GUI.rect_handle(i) = fill([batch_window_start_time batch_window_start_time batch_window_start_time + batch_window_length batch_window_start_time + batch_window_length], ...
+%                     [DATA.MinYLimit DATA.MaxYLimit DATA.MaxYLimit DATA.MinYLimit], DATA.rectangle_color, 'LineWidth', 0.5, 'FaceAlpha', 0.15, 'Parent', GUI.RawDataAxes, ...
+%                       'UserData', i); % 'ButtonDownFcn', @WindowButtonDownFcn_rect_handle, 'Tag', 'DoNotIgnore',
                                               
                 if i == DATA.active_window
-                    set(GUI.rect_handle(i), 'LineWidth', 2.5, 'FaceAlpha', 0.15);
+                    set(GUI.rect_handle(i), 'LineWidth', 2.5); % , 'FaceAlpha', 0.15
                     GUI.prev_act = GUI.rect_handle(i);
                 end                
                 
@@ -3496,8 +3560,9 @@ displayEndOfDemoMessage('');
     end
 %%
     function my_WindowButtonUpFcn (src, callbackdata, handles)                
-        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});  
-        if DATA.doCalc            
+        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
+        pause(0.5);
+        if DATA.doCalc
             if strcmp(DATA.hObject, 'window_blue_rect') || strcmp(DATA.hObject, 'right_resize_blue_rect') || strcmp(DATA.hObject, 'left_resize_blue_rect')|| strcmp(DATA.hObject, 'segment_marker')
                 clear_statistics_plots();
                 clearStatTables();
@@ -3611,10 +3676,12 @@ displayEndOfDemoMessage('');
         
         if DATA.AnalysisParams.winNum == 1
             blue_rect_xdata = get(GUI.rect_handle, 'XData');
-            DATA.minXLimRawDataAxes = min(get(GUI.RawDataAxes, 'XLim'));
-            DATA.left_limit = blue_rect_xdata(1);
-            DATA.maxXLimRawDataAxes = max(get(GUI.RawDataAxes, 'XLim'));
-            DATA.right_limit = blue_rect_xdata(3);
+            RawDataAxes_XLim = get(GUI.RawDataAxes, 'XLim');
+            DATA.minXLimRawDataAxes = min(RawDataAxes_XLim);
+            DATA.left_limit = min(blue_rect_xdata);
+            DATA.maxXLimRawDataAxes = max(RawDataAxes_XLim);
+%             DATA.right_limit = blue_rect_xdata(3);
+            DATA.right_limit = max(blue_rect_xdata);
         end
         
         switch DATA.hObject
@@ -3662,19 +3729,23 @@ displayEndOfDemoMessage('');
         xofs = point1(1,1) - DATA.prev_point_segment;
         DATA.prev_point_segment = point1(1, 1);
         
-        min_XLim = min(get(GUI.RawDataAxes,  'XLim'));
-        max_XLim = max(get(GUI.RawDataAxes,  'XLim')); 
+        RawDataAxes_XLim = get(GUI.RawDataAxes,  'XLim');
+        
+        min_XLim = min(RawDataAxes_XLim);
+        max_XLim = max(RawDataAxes_XLim); 
         
         switch type
             case 'left'
-                xdata = set_rect_limits(xdata, [1, 2], xofs);
+%                 xdata = set_rect_limits(xdata, [1, 2], xofs);
+                xdata = set_rect_limits(xdata, [1, 4], xofs);
             case 'right'
-                xdata = set_rect_limits(xdata, [3, 4], xofs);
+%                 xdata = set_rect_limits(xdata, [3, 4], xofs);
+                xdata = set_rect_limits(xdata, [2, 3], xofs);
         end        
-        if xdata(3) - xdata(2) < 11 % 11 sec min segment length
+%         if xdata(3) - xdata(2) < 11 % 11 sec min segment length
+        if xdata(2) - xdata(1) < 11 % 11 sec min segment length    
             return;
-        end
-        
+        end        
         if DATA.right_limit > DATA.maxXLimRawDataAxes
             if min(xdata) < min_XLim || min(xdata) > max_XLim
                 return;
@@ -3685,14 +3756,17 @@ displayEndOfDemoMessage('');
             end
         elseif min(xdata) < min_XLim
             xofs_updated = min_XLim - min(xdata_saved);
-            xdata([1, 2]) = xdata_saved([1, 2]) + xofs_updated;
+%             xdata([1, 2]) = xdata_saved([1, 2]) + xofs_updated;
+            xdata([1, 4]) = xdata_saved([1, 4]) + xofs_updated;
         elseif max(xdata) > max_XLim
             xofs_updated = max_XLim - max(xdata_saved);
-            xdata([3, 4]) = xdata_saved([3, 4]) + xofs_updated;           
+%             xdata([3, 4]) = xdata_saved([3, 4]) + xofs_updated;           
+            xdata([2, 3]) = xdata_saved([2, 3]) + xofs_updated;           
         end
         set(GUI.rect_handle, 'XData', xdata);
         DATA.doCalc = true;
-        UpdateParametersFields(xdata);
+        UpdateParametersFields(xdata); 
+        
     end
 %%
     function LR_Resize(type)
@@ -3703,7 +3777,7 @@ displayEndOfDemoMessage('');
         DATA.prev_point = point1(1, 1);
         
         min_XLim = min(get(GUI.AllDataAxes,  'XLim'));
-        max_XLim = max(get(GUI.AllDataAxes,  'XLim')); 
+        max_XLim = max(get(GUI.AllDataAxes,  'XLim'));
         
         switch type
             case 'left'
@@ -3735,10 +3809,11 @@ displayEndOfDemoMessage('');
         switch type
             case 'normal'
                 xdata = xdata + xofs;            
-        end
-                        
+        end                        
         if xdata(1) < 0            
-            xdata([1, 2]) = 0;
+            %xdata([1, 2]) = 0;
+            xdata([1, 4]) = 0;
+            xdata([2, 3]) = DATA.AnalysisParams.segment_endTime;
         elseif DATA.AnalysisParams.segment_endTime + xofs > DATA.Filt_MaxSignalLength
             xofs_updated = DATA.Filt_MaxSignalLength - DATA.AnalysisParams.segment_endTime;
             xdata = xdata_saved + xofs_updated;                          
@@ -3752,13 +3827,13 @@ displayEndOfDemoMessage('');
 
         DATA.AnalysisParams.activeWin_startTime = DATA.AnalysisParams.activeWin_startTime + (xdata(1) - xdata_saved(1));
         
-        set(GUI.Filt_RawDataSlider, 'Value', xdata(1));
+        set(GUI.Filt_RawDataSlider, 'Value', min(xdata(1), get(GUI.Filt_RawDataSlider, 'Max')));
         set(GUI.segment_startTime, 'String', calcDuration(DATA.AnalysisParams.segment_startTime, 0));
         set(GUI.segment_endTime, 'String', calcDuration(DATA.AnalysisParams.segment_endTime, 0));
         set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
                 
         plotMultipleWindows();
-        DATA.doCalc = true;         
+        DATA.doCalc = true;            
     end
 %%
     function Segment_Move(type)        
@@ -3793,11 +3868,13 @@ displayEndOfDemoMessage('');
             xofs_updated = max_XLim - max(xdata_saved);
             xdata = xdata_saved + xofs_updated;
         end                
-        DATA.left_limit = xdata(1);
-        DATA.right_limit = xdata(3);
+%         DATA.left_limit = xdata(1);
+%         DATA.right_limit = xdata(3);
+        DATA.left_limit = min(xdata);
+        DATA.right_limit = max(xdata);
         set(GUI.rect_handle, 'XData', xdata);
         DATA.doCalc = true;
-        UpdateParametersFields(xdata);
+        UpdateParametersFields(xdata);        
     end
 %%
     function Window_Move(type)
@@ -3830,31 +3907,45 @@ displayEndOfDemoMessage('');
     end
 %%
     function UpdateParametersFields(xdata)
-        set(GUI.Active_Window_Start, 'String', calcDuration(xdata(1), 0));
-        set(GUI.Active_Window_Length, 'String', calcDuration(xdata(3) - xdata(2), 0));        
         
-        DATA.AnalysisParams.activeWin_startTime = xdata(1);
-        DATA.AnalysisParams.segment_startTime = xdata(1);
-        DATA.AnalysisParams.segment_endTime = xdata(3);
-        DATA.AnalysisParams.activeWin_length = xdata(3) - xdata(2);
+        min_x = min(xdata);
+        max_x = max(xdata);        
+        delta_x = max_x - min_x;
                 
-        set(GUI.segment_startTime, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
-        set(GUI.segment_endTime, 'String', calcDuration(DATA.AnalysisParams.segment_endTime, 0));
-        set(GUI.activeWindow_length, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));
-        set(GUI.SpectralWindowLengthHandle, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));   
+        min_x_string = calcDuration(floor(min_x), 0);
+        max_x_string = calcDuration(floor(max_x), 0);
+        delta_x_string = calcDuration(floor(delta_x), 0);
         
-        set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_startTime]);
+        DATA.AnalysisParams.activeWin_startTime = min_x;
+        DATA.AnalysisParams.segment_startTime = min_x;
+        DATA.AnalysisParams.segment_endTime = max_x;
+        DATA.AnalysisParams.activeWin_length = delta_x;
+        DATA.AnalysisParams.segment_effectiveEndTime = DATA.AnalysisParams.segment_endTime;
+                
+        set(GUI.Active_Window_Start, 'String', min_x_string);
+        set(GUI.Active_Window_Length, 'String', delta_x_string);  
+        
+        set(GUI.segment_startTime, 'String', min_x_string);
+        set(GUI.segment_endTime, 'String', max_x_string);
+        set(GUI.activeWindow_length, 'String', delta_x_string);
+        set(GUI.SpectralWindowLengthHandle, 'String', delta_x_string);   
+        
+        set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
         
         setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);        
-        set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
+        set(GUI.Filt_RawDataSlider, 'Value', min(DATA.AnalysisParams.activeWin_startTime, get(GUI.Filt_RawDataSlider, 'Max')));
         
-        if (xdata(3) - xdata(2)) == DATA.Filt_MaxSignalLength
-            set(GUI.Filt_RawDataSlider, 'Enable', 'off');
-            set(GUI.Active_Window_Start, 'Enable', 'off');
+        if ~get(GUI.Filt_RawDataSlider, 'Max') %int32(delta_x) == int32(DATA.Filt_MaxSignalLength)
+            status = 'off';
+            %             set(GUI.Filt_RawDataSlider, 'Enable', 'off');
+            %             set(GUI.Active_Window_Start, 'Enable', 'off');
         else
-            set(GUI.Filt_RawDataSlider, 'Enable', 'on');
-            set(GUI.Active_Window_Start, 'Enable', 'on');
-        end        
+            status = 'on';
+            %             set(GUI.Filt_RawDataSlider, 'Enable', 'on');
+            %             set(GUI.Active_Window_Start, 'Enable', 'on');
+        end
+        set(GUI.Filt_RawDataSlider, 'Enable', status);
+        set(GUI.Active_Window_Start, 'Enable', status);
     end
 %%
     function ChangePlot(xdata)                     

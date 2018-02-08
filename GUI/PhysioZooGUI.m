@@ -6,7 +6,7 @@ addpath(genpath([gui_basepath filesep 'lib']));
 basepath = fileparts(gui_basepath);
 
 
-% rhrv_init;
+rhrv_init;
 
 %myBackgroundColor = [0.9 1 1];
 myUpBackgroundColor = [0.863 0.941 0.906];
@@ -45,13 +45,13 @@ displayEndOfDemoMessage('');
         
         DATA.rec_name = [];
         
-        DATA.mammals = {'human', 'rabbit', 'mouse', 'dog', 'custom'};
-        DATA.GUI_mammals = {'Human'; 'Rabbit'; 'Mouse'; 'Dog'; 'Custom'};
+        DATA.mammals = {'human', 'dog', 'rabbit', 'mouse', 'custom'};
+        DATA.GUI_mammals = {'Human'; 'Dog'; 'Rabbit'; 'Mouse'; 'Custom'};
         DATA.mammal_index = 1;
         
-        DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};
-        
+        DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};        
         DATA.Integration = 'ECG';
+        DATA.integration_index = 1;
         
         DATA.Filters = {'LowPass', 'Range', 'Quotient', 'Combined filters', 'No filtering'};
         DATA.filter_index = 1;
@@ -616,7 +616,7 @@ displayEndOfDemoMessage('');
         GUI.Analysis_TabPanel.TabWidth = 90;
         GUI.Analysis_TabPanel.FontSize = BigFontSize;
         
-        GUI.Options_TabPanel.TabTitles = {'Records', 'Analysis', 'Options', 'Display'};
+        GUI.Options_TabPanel.TabTitles = {'Record', 'Analysis', 'Options', 'Display'};
         GUI.Options_TabPanel.TabWidth = 90;
         GUI.Options_TabPanel.FontSize = BigFontSize;
         
@@ -1657,7 +1657,7 @@ displayEndOfDemoMessage('');
             set(GUI.ShowLegend_checkbox, 'Value', 1);
             set(GUI.AutoCalc_checkbox, 'Value', 1);
             GUI.AutoCompute_pushbutton.Enable = 'inactive';
-            GUI.Integration_popupmenu.Value = 1;
+%             GUI.Integration_popupmenu.Value = 1;
             GUI.DefaultMethod_popupmenu.Value = DATA.default_method_index;
             DATA.default_method_index = 1;
             
@@ -2052,9 +2052,8 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function Mammal_popupmenu_Callback( ~, ~ )        
+    function choose_new_mammal(index_selected)
         set_defaults_path();                
-        index_selected = get(GUI.Mammal_popupmenu,'Value');
         if index_selected == 5        
             [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
             if ~isequal(Config_FileName, 0)
@@ -2075,12 +2074,62 @@ displayEndOfDemoMessage('');
         DATA.mammal_index = index_selected;
     end
 %%
+    function Mammal_popupmenu_Callback( ~, ~ )                
+        index_selected = get(GUI.Mammal_popupmenu, 'Value');
+        choose_new_mammal(index_selected);
+    end
+%%
     function Integration_popupmenu_Callback( ~, ~ )
         items = get(GUI.Integration_popupmenu, 'String');
-        index_selected = get(GUI.Integration_popupmenu,'Value');
-        DATA.Integration = items{index_selected};
+        index_selected = get(GUI.Integration_popupmenu, 'Value');
+        set_defaults_path();
+        
+         if index_selected == 1 % ECG           
+             [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
+             if ~isequal(Config_FileName, 0)
+                 params_filename = fullfile(PathName, Config_FileName);
+                 [pathstr, name, ~] = fileparts(params_filename);
+                 rhrv_load_defaults([pathstr filesep name]);
+                 DIRS.configDirectory = PathName;
+                 createConfigParametersInterface();
+                 reset_plot();
+                 
+                 preset_mammals = DATA.mammals(1:end-1);
+                 mammal_ind = find(cellfun(@(x) strcmp(x, name), preset_mammals));
+                 if ~isempty(mammal_ind)
+                     set(GUI.Mammal_popupmenu, 'Value', mammal_ind); 
+                     DATA.mammal_index = mammal_ind;
+                 else
+                     set(GUI.Mammal_popupmenu, 'Value', 5); % Custom
+                     DATA.mammal_index = 5;
+                 end
+                 
+             else
+                 GUI.Mammal_popupmenu.Value = DATA.mammal_index;
+                 GUI.Integration_popupmenu.Value = DATA.integration_index;
+                 return;
+             end
+         else % NO ECG
+             set(GUI.Mammal_popupmenu, 'Value', 5); % Custom
+             
+             [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
+             if ~isequal(Config_FileName, 0)
+                 params_filename = fullfile(PathName, Config_FileName);
+                 [pathstr, name, ~] = fileparts(params_filename);
+                 rhrv_load_defaults([pathstr filesep name]);
+                 DIRS.configDirectory = PathName;
+                 DATA.mammal_index = 5;
+                 createConfigParametersInterface();
+                 reset_plot();
+             else % Cancel by user
+                 GUI.Mammal_popupmenu.Value = DATA.mammal_index;
+                 GUI.Integration_popupmenu.Value = DATA.integration_index;
+                 return;
+             end
+         end     
+        DATA.Integration = items{index_selected};    
+        DATA.integration_index = index_selected;
     end
-
 %%
 %     function enable_disable_filtering_params()
 %
@@ -3087,7 +3136,8 @@ displayEndOfDemoMessage('');
             elseif strcmp(src_tag, 'segment_endTime')
                 if param_value < DATA.AnalysisParams.segment_startTime || param_value > DATA.Filt_MaxSignalLength
                     set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
-                    errordlg('Selected segment end time must be grater than 0 and less then segment length!', 'Input Error');
+                    %                     errordlg('Selected segment end time must be grater than 0 and less then segment length!', 'Input Error');
+                    errordlg('Segment end time must be more than zero and less then the segment total length!', 'Input Error');
                     return;
                 end
             elseif strcmp(src_tag, 'activeWin_length')
@@ -3561,7 +3611,8 @@ displayEndOfDemoMessage('');
 %%
     function my_WindowButtonUpFcn (src, callbackdata, handles)                
         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
-        pause(0.5);
+%         pause(0.75);
+        refresh(GUI.Window);
         if DATA.doCalc
             if strcmp(DATA.hObject, 'window_blue_rect') || strcmp(DATA.hObject, 'right_resize_blue_rect') || strcmp(DATA.hObject, 'left_resize_blue_rect')|| strcmp(DATA.hObject, 'segment_marker')
                 clear_statistics_plots();

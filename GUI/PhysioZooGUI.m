@@ -1352,6 +1352,11 @@ displayEndOfDemoMessage('');
                 if isfield(QRS, 'Fs')
                     DATA.SamplingFrequency = QRS.Fs;
                 end
+                if isfield(QRS, 'Integration')
+                    DATA.Integration = QRS.Integration;
+                    DATA.integration_index = find(strcmpi(DATA.GUI_Integration, DATA.Integration));
+                    GUI.Integration_popupmenu.Value = DATA.integration_index;
+                end
                 if isfield(QRS, 'mammal')
                     mammal = QRS.mammal;
                 elseif isfield(QRS, 'Mammal')
@@ -1408,11 +1413,15 @@ displayEndOfDemoMessage('');
                     if ~isempty(mammal)
                         DATA.mammal = mammal;
                         DATA.mammal_index = find(strcmpi(DATA.mammals, DATA.mammal));
-                        GUI.Mammal_popupmenu.Value = DATA.mammal_index;
-                        DATA.integration = integration;
+                        GUI.Mammal_popupmenu.Value = DATA.mammal_index;                        
                     else
                         GUI.Mammal_popupmenu.Value = 1;
                         DATA.mammal = 'human';
+                    end
+                    if ~isempty(integration)
+                        DATA.Integration = integration;
+                        DATA.integration_index = find(strcmpi(DATA.GUI_Integration, DATA.Integration));
+                        GUI.Integration_popupmenu.Value = DATA.integration_index;
                     end
                 catch
                     close(waitbar_handle);
@@ -1465,7 +1474,14 @@ displayEndOfDemoMessage('');
                         DATA.mammal = mammal;
                     end
                     DATA.SamplingFrequency = fscanf(fileID, '%*s %d', 1);
-                    DATA.integration = fscanf(fileID, '%*s %s', 1);
+                    DATA.Integration = fscanf(fileID, '%*s %s', 1);
+                    if strcmpi(DATA.Integration, 'AP') || strcmpi(DATA.Integration, 'Action')
+                        DATA.Integration = 'Action Potential';
+                    end
+                                        
+                    DATA.integration_index = find(strcmpi(DATA.GUI_Integration, DATA.Integration));
+                    GUI.Integration_popupmenu.Value = DATA.integration_index;
+                    
                     txt_data = dlmread(file_name,' ',4,0);
                     fclose(fileID);
                     DATA.mammal_index = find(strcmpi(DATA.mammals, DATA.mammal));

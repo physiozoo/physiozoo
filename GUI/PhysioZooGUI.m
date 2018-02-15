@@ -6,7 +6,7 @@ addpath(genpath([gui_basepath filesep 'lib']));
 basepath = fileparts(gui_basepath);
 
 
-rhrv_init;
+% rhrv_init;
 
 %myBackgroundColor = [0.9 1 1];
 myUpBackgroundColor = [0.863 0.941 0.906];
@@ -1212,18 +1212,20 @@ displayEndOfDemoMessage('');
         
         set_defaults_path();
         
-        [DataQuality_FileName, PathName] = uigetfile(...
-            {'*.mat','MAT-files (*.mat)'; ...
-            '*.qrs; *.atr',  'WFDB Files (*.qrs, *.atr)'; ...
+        [DataQuality_FileName, PathName] = uigetfile({'*.*', 'All files';...
+            '*.mat','MAT-files (*.mat)'; ...
+            '*.atr',  'WFDB Files (*.atr)'; ... '*.qrs; 
             '*.txt','Text Files (*.txt)'}, ...
-            'Open Data-Quality-Annotations File', [DIRS.dataQualityDirectory filesep]);
+            'Open Data-Quality-Annotations File', [DIRS.dataQualityDirectory filesep '*.' DIRS.Ext_open]);
         
         if ~isequal(DataQuality_FileName, 0)
-            
-            DIRS.dataQualityDirectory = PathName;
-            
+                                    
             [~, QualityFileName, ExtensionFileName] = fileparts(DataQuality_FileName);
             ExtensionFileName = ExtensionFileName(2:end);
+            
+            DIRS.dataQualityDirectory = PathName;
+            DIRS.Ext_open = ExtensionFileName;
+            
             if strcmpi(ExtensionFileName, 'mat')                                
                 %QualityAnnotations = load([PathName DataQuality_FileName], 'quality_anno*');
                 %QualityAnnotations = load([PathName DataQuality_FileName], 'Quality_anns');
@@ -1249,7 +1251,7 @@ displayEndOfDemoMessage('');
                 end
             elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                 if DATA.SamplingFrequency ~= 0
-                    quality_data = rdann( [PathName DATA.DataFileName], ExtensionFileName, 'ann_types', '"F"')/DATA.SamplingFrequency;
+                    quality_data = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"')/DATA.SamplingFrequency;
                     DATA.QualityAnnotations_Data = [quality_data(1:2:end), quality_data(2:2:end)];
                 else
                     errordlg('Cann''t get sampling frequency.', 'Input Error');
@@ -1321,17 +1323,16 @@ displayEndOfDemoMessage('');
         DATA.FrStat = [];
         DATA.NonLinStat = [];
     end
-
 %%
     function onOpenFile(~, ~)
                
         set_defaults_path();
         
-        [QRS_FileName, PathName] = uigetfile( ...
-            {'*.mat','MAT-files (*.mat)'; ...
-            '*.qrs; *.atr',  'WFDB Files (*.qrs, *.atr)'; ...
+        [QRS_FileName, PathName] = uigetfile({'*.*', 'All files';... 
+            '*.mat','MAT-files (*.mat)'; ...
+            '*.qrs',  'WFDB Files (*.qrs)'; ... % , *.atr    ; *.atr
             '*.txt','Text Files (*.txt)'}, ...
-            'Open QRS File', [DIRS.dataDirectory filesep]);
+            'Open QRS File', [DIRS.dataDirectory filesep '*.' DIRS.Ext_open]);
         
         if ~isequal(QRS_FileName, 0)
             waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Working on it...');
@@ -1339,13 +1340,15 @@ displayEndOfDemoMessage('');
             clearData();
             clear_statistics_plots();
             clearStatTables();
-            clean_gui();
-            
-            DIRS.dataDirectory = PathName;
+            clean_gui();                        
             
             [~, DATA.DataFileName, ExtensionFileName] = fileparts(QRS_FileName);
             
             ExtensionFileName = ExtensionFileName(2:end);
+            
+            DIRS.dataDirectory = PathName;
+            DIRS.Ext_open = ExtensionFileName;
+                        
             if strcmpi(ExtensionFileName, 'mat')
                 QRS = load([PathName QRS_FileName]);
                 QRS_field_names = fieldnames(QRS);
@@ -1997,7 +2000,7 @@ displayEndOfDemoMessage('');
         end
         if isempty(who('DATA_Fig')) || isempty(DATA_Fig)
             reset_defaults_path();                   
-        end
+        end        
     end
 %%
     function reset_defaults_path()
@@ -2005,10 +2008,12 @@ displayEndOfDemoMessage('');
         DIRS.configDirectory = [basepath filesep 'Config'];
         DIRS.ExportResultsDirectory = [basepath filesep 'Results'];
         DIRS.dataQualityDirectory = [basepath filesep 'Examples'];
+        DIRS.Ext_save = 'mat';
+        DIRS.Ext_open = 'mat';
         
         DATA_Fig.export_figures = [1 1 1 1 1 1 1];
 %         DATA_Fig.export_figures_formats_index = 1;
-        DATA_Fig.Ext = 'fig';
+        DATA_Fig.Ext = 'fig';        
     end
 %%
     function Reset_pushbutton_Callback( ~, ~ )                       

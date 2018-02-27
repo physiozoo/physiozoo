@@ -260,6 +260,12 @@ displayEndOfDemoMessage('');
         uimenu( helpMenu, 'Label', 'PhysioZoo Home', 'Callback', @onPhysioZooHome );
         %uimenu( helpMenu, 'Label', 'About', 'Callback', @onAbout );
         
+        
+        % + Peak Detection menu
+        GUI.PeakDetectionMenu = uimenu( GUI.Window, 'Label', 'Peak Detection', 'Callback', @onPeakDetection);
+        
+        
+        
         % Create the layout (Arrange the main interface)
         GUI.mainLayout = uix.VBoxFlex('Parent', GUI.Window, 'Spacing', 3);        
         
@@ -4065,6 +4071,10 @@ displayEndOfDemoMessage('');
         else
             GUI.AutoCompute_pushbutton.Enable = 'on';
         end        
+    end
+%%
+    function onPeakDetection( ~, ~ )
+        PhysioZooGUI_Part2();
     end
 %%
     function onHelp( ~, ~ )

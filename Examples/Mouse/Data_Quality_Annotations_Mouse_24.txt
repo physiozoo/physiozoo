@@ -1,2 +1,0 @@
-Beginning	End		Class
-0.000000	0.000000	F

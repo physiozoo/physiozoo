@@ -15,10 +15,12 @@ rhrv_init_script = [rhrv_path filesep 'rhrv_init'];
 run(rhrv_init_script);
 
 %% Start PhysioZoo GUI
+% addpath('D:\Temp\wfdb-app-toolbox-0-9-10\mcode');
 addpath(gui_A_path);
 addpath(gui_PZ_path);
 addpath(config_path);
 addpath(wfdb_path);
+
 
 PhysioZooGUI();
 

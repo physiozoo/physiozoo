@@ -6,7 +6,7 @@ addpath(genpath([gui_basepath filesep 'lib']));
 basepath = fileparts(gui_basepath);
 
 
-rhrv_init;
+% rhrv_init;
 
 %myBackgroundColor = [0.9 1 1];
 myUpBackgroundColor = [0.863 0.941 0.906];
@@ -291,7 +291,7 @@ displayEndOfDemoMessage('');
         GUI.NonLinearTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', 5);
         
         temp_panel = uix.Panel( 'Parent', GUI.RawData_Box, 'Padding', 5);
-        GUI.Options_TabPanel = uix.TabPanel('Parent', temp_panel, 'Padding', 0');
+        GUI.Options_TabPanel = uix.TabPanel('Parent', temp_panel, 'Padding', 0);
         
         temp_panel = uix.Panel( 'Parent', GUI.RawData_Box, 'Padding', 5);
 %         GUI.RawDataControls_Box = uix.VBox('Parent', temp_panel, 'Spacing', 3);
@@ -414,7 +414,7 @@ displayEndOfDemoMessage('');
         set( GUI.IntegrationBox, 'Widths', field_size );
         
         GUI.FilteringBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringBox, 'String', 'Filtering', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringBox, 'String', 'Preprocessing', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Filtering_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.FilteringBox, 'Callback', @Filtering_popupmenu_Callback, 'FontSize', SmallFontSize);
         GUI.Filtering_popupmenu.String = DATA.Filters;
         uix.Empty( 'Parent', GUI.FilteringBox );
@@ -657,13 +657,15 @@ displayEndOfDemoMessage('');
     function param_keys_length = FillParamFields(VBoxHandle, param_map)
         
         SmallFontSize = DATA.SmallFontSize;
+        estimateBands = false;
+        estimatepNNxx = false;        
         
         param_keys = keys(param_map);
         param_keys_length = length(param_keys);
         
         for i = 1 : param_keys_length
             
-            HBox = uix.HBox( 'Parent', VBoxHandle, 'Spacing', 3);
+            HBox = uix.HBox( 'Parent', VBoxHandle, 'Spacing', 3, 'BackgroundColor', myUpBackgroundColor);
             
             field_name = param_keys{i};
             
@@ -699,16 +701,25 @@ displayEndOfDemoMessage('');
                 else
                     set(param_control, 'String', current_value, 'UserData', current_value);
                 end
+                if ~isempty(strfind(field_name, 'hrv_time'))
+                    GUI.ConfigParamHandlesMap(field_name) = param_control;
+                end
             else
                 field_name_min = [field_name '.min'];
                 current_value = num2str(current_field_value(1));
-                param_control = uicontrol( 'Style', 'edit', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name_min}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description, 'Tag', field_name_min);
-                set(param_control, 'String', current_value, 'UserData', current_value);
+                param_control1 = uicontrol( 'Style', 'edit', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name_min}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description, 'Tag', field_name_min);
+                
+                set(param_control1, 'String', current_value, 'UserData', current_value);
                 uicontrol( 'Style', 'text', 'Parent', HBox, 'String', '-', 'FontSize', SmallFontSize, 'TooltipString', current_field.description);
                 field_name_max = [field_name '.max'];
                 current_value = num2str(current_field_value(2));
-                param_control = uicontrol( 'Style', 'edit', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name_max}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description, 'Tag', field_name_max);
-                set(param_control, 'String', current_value, 'UserData', current_value);
+                param_control2 = uicontrol( 'Style', 'edit', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name_max}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description, 'Tag', field_name_max);
+                
+                set(param_control2, 'String', current_value, 'UserData', current_value);   
+                if ~isempty(strfind(field_name, 'hrv_freq'))
+                    GUI.ConfigParamHandlesMap(field_name_min) = param_control1;
+                    GUI.ConfigParamHandlesMap(field_name_max) = param_control2;
+                end
             end
             if strcmp(symbol_field_name, 'Spectral window length')
                 uicontrol( 'Style', 'text', 'Parent', HBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
@@ -716,12 +727,29 @@ displayEndOfDemoMessage('');
                 uicontrol( 'Style', 'text', 'Parent', HBox, 'String', current_field.units, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
             end
             
-            if length(current_field_value) < 2
+            if strcmp(symbol_field_name, 'LF Band')
+                    uicontrol('Style', 'PushButton', 'Parent', HBox, 'Callback', @EstimateLFBand_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'E',...
+                        'TooltipString', 'Click here to estimate the frequency bands based on the mammalian typical heart rate');
+                    estimateBands = true;
+            end
+            if strcmp(symbol_field_name, 'PNN Threshold')
+                    uicontrol('Style', 'PushButton', 'Parent', HBox, 'Callback', @EstimatePNNThreshold_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'E',...
+                        'TooltipString', 'Click here to estimate the pNNxx threshold based on the mammalian breathing rate');
+                    estimatepNNxx = true;
+            end
+            
+            if estimatepNNxx
+                set(HBox, 'Widths', [150, 125, 20, 20]);
+                estimatepNNxx = false;  
+            elseif length(current_field_value) < 2
                 %set( HBox, 'Widths', [-67, -40, -33]  );
-                set( HBox, 'Widths', fields_size  );
+                set(HBox, 'Widths', fields_size);
+            elseif estimateBands
+                set(HBox, 'Widths', [150, 58, 5, 56, 20, 20]);
+                estimateBands = false;               
             else
                 %set( HBox, 'Widths', [-67, -18, -2, -18, -33]  );
-                set( HBox, 'Widths', [150, 58, 5, 56, -1]  );%[125, -12, -2, -12, 90] [-40, -12, -2, -12, -25] %  [-30, -8, -2, -8, -10]
+                set(HBox, 'Widths', [150, 58, 5, 56, -1]);%[125, -12, -2, -12, 90] [-40, -12, -2, -12, -25] %  [-30, -8, -2, -8, -10]
             end
             %end
         end
@@ -739,6 +767,8 @@ displayEndOfDemoMessage('');
         not_in_use_params_mse = param_struct.(param_name{2});
         
         SmallFontSize = DATA.SmallFontSize;
+        
+        GUI.ConfigParamHandlesMap = containers.Map;
         
         defaults_map = rhrv_get_all_defaults();
         param_keys = keys(defaults_map);
@@ -860,9 +890,11 @@ displayEndOfDemoMessage('');
         
         set(findobj(GUI.TimeParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
         set(findobj(GUI.TimeParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
+        set(findobj(GUI.TimeParamBox,'Style', 'PushButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
         
         set(findobj(GUI.FrequencyParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
         set(findobj(GUI.FrequencyParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
+        set(findobj(GUI.FrequencyParamBox,'Style', 'PushButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
         
         set(findobj(GUI.NonLinearParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
         set(findobj(GUI.NonLinearParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
@@ -1021,8 +1053,14 @@ displayEndOfDemoMessage('');
         set(ha, 'XLim', [DATA.firstSecond2Show DATA.firstSecond2Show + DATA.MyWindowSize]);        
         x_ticks_array = get(ha, 'XTick');
         set(ha, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0), x_ticks_array, 'UniformOutput', false));
+                
+        blue_line_handle = get(GUI.all_data_handle);
+        all_x = blue_line_handle.XData;
         
-        if DATA.MyWindowSize <= 300
+        window_size_in_data_points = size(find(all_x > DATA.firstSecond2Show & all_x < DATA.firstSecond2Show + DATA.MyWindowSize));
+        
+        %if DATA.MyWindowSize <= 300
+        if window_size_in_data_points < 300
            set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 5, 'MarkerEdgeColor', [180 74 255]/255, 'MarkerFaceColor', [1, 1, 1]);            
         else
             set(GUI.raw_data_handle, 'Marker', 'none'); 
@@ -1220,7 +1258,7 @@ displayEndOfDemoMessage('');
         
         [DataQuality_FileName, PathName] = uigetfile({'*.*', 'All files';...
             '*.mat','MAT-files (*.mat)'; ...
-            '*.atr',  'WFDB Files (*.atr)'; ... '*.qrs; 
+            '*.atr',  'WFDB Files (*.atr)'; ... %'*.qrs; 
             '*.txt','Text Files (*.txt)'}, ...
             'Open Data-Quality-Annotations File', [DIRS.dataQualityDirectory filesep '*.' DIRS.Ext_open]);
         
@@ -1995,7 +2033,8 @@ displayEndOfDemoMessage('');
             plotDataQuality();
             plotMultipleWindows();  
             
-            set(GUI.red_rect, 'XData', [DATA.firstSecond2Show DATA.MyWindowSize DATA.MyWindowSize DATA.firstSecond2Show DATA.firstSecond2Show]);
+%             set(GUI.red_rect, 'XData', [DATA.firstSecond2Show DATA.MyWindowSize DATA.MyWindowSize DATA.firstSecond2Show DATA.firstSecond2Show]);
+            set(GUI.red_rect, 'XData', [DATA.firstSecond2Show DATA.firstSecond2Show+DATA.MyWindowSize DATA.firstSecond2Show+DATA.MyWindowSize DATA.firstSecond2Show DATA.firstSecond2Show]);
             
         end
     end
@@ -2380,8 +2419,9 @@ displayEndOfDemoMessage('');
         end                
     end
 %%
-    function cancel_button_Callback( ~, ~ )
-        delete( GUI.SaveFiguresWindow );
+    function cancel_button_Callback( ~, ~, Window2Close )
+        %delete( GUI.SaveFiguresWindow );
+        delete( Window2Close );
     end
 %%
     function dir_button_Callback( ~, ~ )       
@@ -2482,7 +2522,7 @@ displayEndOfDemoMessage('');
         CommandsButtons_Box = uix.HButtonBox('Parent', mainSaveFigurestLayout, 'Spacing', 3, 'VerticalAlignment', 'middle', 'ButtonSize', [100 30]);
         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Save As', 'FontName', 'Calibri');
 %         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @save_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Export Figures', 'FontName', 'Calibri');
-        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @cancel_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
+        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', {@cancel_button_Callback, GUI.SaveFiguresWindow}, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
         
         set( mainSaveFigurestLayout, 'Heights',  [-70 -30]); % [-70 -45 -25]
     end
@@ -4064,6 +4104,197 @@ displayEndOfDemoMessage('');
 %             GUI.Filt_WindowSliderBox.Visible = 'off';
 %         end
 %     end
+%%
+    function openEstimateWindow(title, typical_parameter_rate, tag)
+        main_screensize = DATA.screensize;
+        SmallFontSize = DATA.SmallFontSize;
+        
+%         persistent defaultRate;
+               
+        GUI.EstimateLFBandWindow = figure( ...
+            'Name', title, ...
+            'NumberTitle', 'off', ...
+            'MenuBar', 'none', ...
+            'Toolbar', 'none', ...
+            'HandleVisibility', 'off', ...
+            'Position', [(main_screensize(3)-350)/2, (main_screensize(4)-150)/2, 350, 150]); %[700, 300, 800, 400]
+        
+        EstimateLayout = uix.VBox('Parent', GUI.EstimateLFBandWindow, 'Spacing', 5);
+        
+        EstimatePanel = uix.Panel('Parent', EstimateLayout, 'Padding', 5);
+        EstimateBox = uix.VBox('Parent', EstimatePanel, 'Spacing', 5);
+        
+        uix.Empty( 'Parent', EstimateBox );
+        HRBox = uix.HBox('Parent', EstimateBox, 'Spacing', 5);
+        
+        uicontrol( 'Style', 'text', 'Parent', HRBox, 'String', typical_parameter_rate, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.Estimate_edit = uicontrol( 'Style', 'edit', 'Parent', HRBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'Callback', @estimate_Edit_Callback, 'Tag', tag);        
+        uicontrol( 'Style', 'text', 'Parent', HRBox, 'String', 'BPM', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        set(HRBox, 'Widths', [150, 110, -1]);
+        
+        uix.Empty( 'Parent', EstimateBox );
+        
+        set(EstimateBox, 'Heights', [-15 -20 -45]);
+        
+        CommandsButtons_Box = uix.HButtonBox('Parent', EstimateLayout, 'Spacing', 3, 'VerticalAlignment', 'middle', 'ButtonSize', [100 30]);
+        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', {@ok_estimate_button_Callback, tag}, 'FontSize', DATA.BigFontSize, 'String', 'OK', 'FontName', 'Calibri');
+        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', {@cancel_button_Callback, GUI.EstimateLFBandWindow}, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
+        
+        set( EstimateLayout, 'Heights',  [-70 -30]);
+        
+        set(findobj(EstimateLayout, 'Type', 'uicontainer'), 'BackgroundColor', myUpBackgroundColor);
+        set(findobj(EstimateLayout, 'Type', 'uipanel'), 'BackgroundColor', myUpBackgroundColor);
+        set(findobj(EstimateLayout, 'Style', 'edit'), 'BackgroundColor', myEditTextColor);
+        set(findobj(EstimateLayout, 'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
+        
+%         if strcmp(tag, 'Frequency_Bands')
+%             GUI.Estimate_edit.String = defaultRate.HeartRate;
+%         else
+%             GUI.Estimate_edit.String = defaultRate.BreathingRate;
+%         end
+    end
+%%
+    function EstimateLFBand_pushbutton_Callback(~, ~)
+        openEstimateWindow('Estimate PSD Frequency Bands', 'Typical Heart Rate', 'Frequency_Bands');
+    end
+%%
+    function EstimatePNNThreshold_pushbutton_Callback(~, ~)
+        openEstimateWindow('Estimate pNNxx Threshold Bands', 'Typical Breathing Rate', 'PNN_Threshold');
+    end
+%%
+    function HR = check_input(edit_field_handle)
+        value = str2double(get(edit_field_handle, 'String'));
+        if strcmp(get(edit_field_handle, 'Tag'), 'Frequency_Bands')
+            min_val = 5;
+            max_val = 1500;
+            rate = 'Heart';
+        else
+            min_val = 1;
+            max_val = 200;
+            rate = 'Breathing';
+        end
+        if isnan(value) || value < min_val || value > max_val
+            errordlg(['Typical ' rate ' Rate must be greater than '  num2str(min_val) ' BMP and less than ' num2str(max_val) ' BMP!'], 'Input Error');
+            HR = 0;
+            return;
+        else
+            HR = value;            
+        end
+    end
+%%
+    function estimate_Edit_Callback(src, ~)
+%         DATA.HR = check_input(src);
+        estimate_button(get(src, 'Tag'));
+    end
+%%
+    function estimate_button(tag)
+        HR = check_input(GUI.Estimate_edit);
+        if HR
+            if strcmp(tag, 'Frequency_Bands')
+                [f_VLF_LF, f_LF_HF, f_HF_up] = compute_bands(HR);
+                
+                prev_vlf = rhrv_get_default('hrv_freq.vlf_band');
+                prev_lf = rhrv_get_default('hrv_freq.lf_band');
+                prev_hf = rhrv_get_default('hrv_freq.hf_band');
+                beta_band = rhrv_get_default('hrv_freq.beta_band');
+                
+                rhrv_set_default('hrv_freq.hf_band', [f_LF_HF f_HF_up]);
+                rhrv_set_default('hrv_freq.lf_band', [f_VLF_LF f_LF_HF]);
+                rhrv_set_default('hrv_freq.vlf_band', [prev_vlf.value(1) f_VLF_LF]);
+                rhrv_set_default('hrv_freq.beta_band', [prev_vlf.value(1) f_VLF_LF]);
+                
+                if get(GUI.AutoCalc_checkbox, 'Value')
+                    try
+                        update_statistics('hrv_freq');
+                    catch e
+                        errordlg(['ok_estimate_button_Callback error: ' e.message], 'Input Error');
+                        
+                        rhrv_set_default('hrv_freq.hf_band', prev_hf);
+                        rhrv_set_default('hrv_freq.lf_band', prev_lf);
+                        rhrv_set_default('hrv_freq.vlf_band', prev_vlf);
+                        rhrv_set_default('hrv_freq.beta_band', beta_band);
+                        delete(GUI.EstimateLFBandWindow);
+                        return;
+                    end
+                end
+                set(GUI.ConfigParamHandlesMap('hrv_freq.vlf_band.max'), 'String', num2str(f_VLF_LF), 'UserData', num2str(f_VLF_LF));
+                set(GUI.ConfigParamHandlesMap('hrv_freq.lf_band.min'), 'String', num2str(f_VLF_LF), 'UserData', num2str(f_VLF_LF));
+                set(GUI.ConfigParamHandlesMap('hrv_freq.beta_band.max'), 'String', num2str(f_VLF_LF), 'UserData', num2str(f_VLF_LF));
+                
+                set(GUI.ConfigParamHandlesMap('hrv_freq.lf_band.max'), 'String', num2str(f_LF_HF), 'UserData', num2str(f_LF_HF));
+                set(GUI.ConfigParamHandlesMap('hrv_freq.hf_band.min'), 'String', num2str(f_LF_HF), 'UserData', num2str(f_LF_HF));
+                
+                set(GUI.ConfigParamHandlesMap('hrv_freq.hf_band.max'), 'String', num2str(f_HF_up), 'UserData', num2str(f_HF_up));
+            else
+                xx = compute_pnnxx(HR);
+                param_name = 'hrv_time.pnn_thresh_ms';
+                
+                prev_pnn_thresh = rhrv_get_default(param_name);
+                rhrv_set_default(param_name, xx);
+                
+                if get(GUI.AutoCalc_checkbox, 'Value')
+                    try
+                        update_statistics('hrv_time');
+                    catch e
+                        errordlg(['ok_estimate_button_Callback error: ' e.message], 'Input Error');
+                        rhrv_set_default(param_name, prev_pnn_thresh);
+                        delete(GUI.EstimateLFBandWindow);
+                        return;
+                    end
+                end
+                set(GUI.ConfigParamHandlesMap(param_name), 'String', num2str(xx));
+            end
+        end
+        delete(GUI.EstimateLFBandWindow);
+    end
+%%
+    function ok_estimate_button_Callback(~, ~, tag)        
+%         estimate_button(tag);
+    end
+%%
+    function [f_VLF_LF,f_LF_HF,f_HF_up] = compute_bands(HR)
+        % input
+        % - typical HR of a given mammal
+        % - wz: window size
+        %
+        % output
+        % - f_VLF_LF: cutoff frequency between VLF and LF bands
+        % - f_LF_HF: cutoff frequency between LF and HF bands
+        % - f_HF_up: upper bound of the HF band
+        %
+        % These formula were published in:
+        % Behar et al. "A universal scaling relation for
+        % defining power spectral bands in mammalian
+        % heart rate variability analysis". In submission.
+        
+        try
+            % use power law to predict bands
+            f_VLF_LF = 0.0037*HR^0.58;
+            f_LF_HF = 0.0017*HR^1.01;
+            f_HF_up = 0.0128*HR^0.86;
+        catch
+            f_VLF_LF = [];
+            f_LF_HF = [];
+            f_HF_up = [];
+        end        
+    end
+%%
+    function [xx] = compute_pnnxx(BR)
+        % this function returns an estimate of the xx for the pNNxx measures
+        % provided an estimate of the typical breathing rate (BR) of a given
+        % mammal.
+        % It is assumed that the xx value is proportional to the breathing cycle
+        % length.
+        %
+        % input
+        %   BR: breathing rate (bpm)
+        % output
+        %   xx: parameter for the pNNxx (ms)
+        BR_human = 15;
+        CL_human = 60/BR_human;
+        CL_mammal = 60/BR;
+        xx = 50*(CL_mammal/CL_human);
+    end
 %%
     function AutoCalc_checkbox_Callback( src, ~ )
         if get(src, 'Value') == 1        

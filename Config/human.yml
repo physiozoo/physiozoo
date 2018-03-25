@@ -1,4 +1,4 @@
-# Canine parameter values of the rhrv toolbox
+# Human parameter values of the rhrv toolbox
 ---
    
 # RR Interval filtering
@@ -10,12 +10,12 @@ filtrr:
             name: Enable range filter
             units: boolean
         rr_min:
-            value: 0.32
+            value: 0.28
             description: Minimal allowed RR interval duration
             name: RR min
             units: sec
         rr_max:
-            value: 1.5
+            value: 2.4
             description: Maximal allowed RR interval duration
             name: RR max
             units: sec
@@ -42,7 +42,7 @@ filtrr:
             name: Enable quotient filter
             units: boolean
         rr_max_change:
-            value: 25
+            value: 20
             description: Maximal allowed change between adjacent RR intervals
             name: RR max change
             units: '%'
@@ -58,17 +58,17 @@ hrv_time:
 # Frequency-domain HRV parameters
 hrv_freq:    
     vlf_band:
-        value: [0.003, 0.04]
+        value: [0.0033, 0.046]
         description: VLF frequency band range
         name: VLF Band
         units: Hz
     lf_band:
-        value: [0.04,  0.15]
+        value: [0.046,  0.158]
         description: LF frequency band range
         name: LF Band
         units: Hz
     hf_band:
-        value: [0.15,   0.4]
+        value: [0.158,   0.588]
         description: HF frequency band range
         name: HF Band
         units: Hz    
@@ -83,12 +83,12 @@ hrv_freq:
         name: Welch overlap
         units: '%'
     ar_order:
-        value: 24
+        value: 20
         description: Order of AR model to fit
         name: AR order
         units: n.u.
     beta_band:
-        value: [0.003, 0.04]
+        value: [0.0033, 0.046]
         description: Frequency range for log-log slope calculation (beta)
         name: Beta band
         units: Hz 

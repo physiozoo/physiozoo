@@ -10,12 +10,12 @@ filtrr:
             name: Enable range filter
             units: boolean
         rr_min:
-            value: 0.06
+            value: 0.05
             description: Minimal allowed RR interval duration
             name: RR min
             units: sec
         rr_max:
-            value: 0.3
+            value: 0.24
             description: Maximal allowed RR interval duration
             name: RR max
             units: sec
@@ -42,7 +42,7 @@ filtrr:
             name: Enable quotient filter
             units: boolean
         rr_max_change:
-            value: 25
+            value: 20
             description: Maximal allowed change between adjacent RR intervals
             name: RR max change
             units: '%'
@@ -58,17 +58,17 @@ hrv_time:
 # Frequency-domain HRV parameters
 hrv_freq:    
     vlf_band:
-        value: [0.003, 0.1]
+        value: [0.0056, 0.152]
         description: VLF frequency band range
         name: VLF Band
         units: Hz
     lf_band:
-        value: [0.1,  1.5]
+        value: [0.152,  1.240]
         description: LF frequency band range
         name: LF Band
         units: Hz
     hf_band:
-        value: [1.5,   5]
+        value: [1.240,   5]
         description: HF frequency band range
         name: HF Band
         units: Hz    
@@ -83,12 +83,12 @@ hrv_freq:
         name: Welch overlap
         units: '%'
     ar_order:
-        value: 24
+        value: 30
         description: Order of AR model to fit
         name: AR order
         units: n.u.
     beta_band:
-        value: [0.003, 0.1]
+        value: [0.0056, 0.152]
         description: Frequency range for log-log slope calculation (beta)
         name: Beta band
         units: Hz    

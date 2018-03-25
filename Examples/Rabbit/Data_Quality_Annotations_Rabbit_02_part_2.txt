@@ -1,2 +1,0 @@
-Beginning	End		Class
-283.560000	284.742000	F

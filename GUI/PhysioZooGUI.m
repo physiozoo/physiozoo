@@ -18,6 +18,7 @@ myPanelColor = [0.58 0.69 0.73];
 
 persistent DIRS;
 persistent DATA_Fig;
+persistent defaultRate;
 
 %rhrv_init();
 %% Load default toolbox parameters
@@ -45,8 +46,8 @@ displayEndOfDemoMessage('');
         
         DATA.rec_name = [];
         
-        DATA.mammals = {'human', 'dog', 'rabbit', 'mouse', 'custom'};
-        DATA.GUI_mammals = {'Human'; 'Dog'; 'Rabbit'; 'Mouse'; 'Custom'};
+        DATA.mammals = {'human', 'human (task force)','dog', 'rabbit', 'mouse', 'custom'};
+        DATA.GUI_mammals = {'Human'; 'Human (Task Force)'; 'Dog'; 'Rabbit'; 'Mouse'; 'Custom'};
         DATA.mammal_index = 1;
         
         DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};        
@@ -55,6 +56,11 @@ displayEndOfDemoMessage('');
         
         DATA.Filters = {'LowPass', 'Range', 'Quotient', 'Combined filters', 'No filtering'};
         DATA.filter_index = 1;
+        
+        DATA.default_filter_level_index = 1;
+        DATA.FilterLevel = {'Default', 'Weak', 'Moderate', 'Strong'};
+        DATA.filter_level_index = DATA.default_filter_level_index;
+        DATA.filters_level_value = [60 20 10];
         
         DATA.filter_quotient = false;
         DATA.filter_lowpass = true;
@@ -398,7 +404,7 @@ displayEndOfDemoMessage('');
         uix.Empty( 'Parent', GUI.DataLengthBox );
         set( GUI.DataLengthBox, 'Widths', field_size );
         
-        field_size = [170, 140, -1]; % [180, -1, 300]
+        field_size = [170, 160, -1]; % [180, -1, 300]
         GUI.MammalBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', GUI.MammalBox, 'String', 'Mammal', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Mammal_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.MammalBox, 'Callback', @Mammal_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', DATA.GUI_mammals);
@@ -407,7 +413,7 @@ displayEndOfDemoMessage('');
         set( GUI.MammalBox, 'Widths', field_size );
         
         GUI.IntegrationBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.IntegrationBox, 'String', 'Integration Level', 'FontSize', SmallFontSize, 'Enable', 'on', 'HorizontalAlignment', 'left');
+        uicontrol( 'Style', 'text', 'Parent', GUI.IntegrationBox, 'String', 'Integration level', 'FontSize', SmallFontSize, 'Enable', 'on', 'HorizontalAlignment', 'left');
         GUI.Integration_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.IntegrationBox, 'Callback', @Integration_popupmenu_Callback, 'FontSize', SmallFontSize, 'Enable', 'on');
         GUI.Integration_popupmenu.String = DATA.GUI_Integration;
         uix.Empty( 'Parent', GUI.IntegrationBox );
@@ -419,6 +425,14 @@ displayEndOfDemoMessage('');
         GUI.Filtering_popupmenu.String = DATA.Filters;
         uix.Empty( 'Parent', GUI.FilteringBox );
         set( GUI.FilteringBox, 'Widths', field_size );
+        
+        GUI.FilteringLevelBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
+        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringLevelBox, 'String', 'Preprocessing level', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.FilteringLevel_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.FilteringLevelBox, 'Callback', @FilteringLevel_popupmenu_Callback, 'FontSize', SmallFontSize);
+        GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
+        GUI.FilteringLevel_popupmenu.Value = DATA.default_filter_level_index;
+        uix.Empty( 'Parent', GUI.FilteringLevelBox );
+        set( GUI.FilteringLevelBox, 'Widths', field_size );
         
         DefaultMethodBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
         uicontrol( 'Style', 'text', 'Parent', DefaultMethodBox, 'String', 'Default frequency method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
@@ -436,9 +450,11 @@ displayEndOfDemoMessage('');
         
         
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -15] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
-        %---------------------------
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -15] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+        %---------------------------                       
         
+        uicontrol( 'Style', 'text', 'Parent', GUI.BatchBox, 'String', 'Batch analysis', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold', ...
+            'Tooltip', 'You can use this module to batch process the RR time series by overlapping windows. This is useful for tracking the HRV measures as they evolve over time.');
         uix.Empty( 'Parent', GUI.BatchBox );
         
         field_size = [130, 110, -1]; %150, 120, -1
@@ -493,7 +509,7 @@ displayEndOfDemoMessage('');
         
         
         uix.Empty( 'Parent', GUI.BatchBox );
-        set( GUI.BatchBox, 'Heights', [-10 -10 -10 -10 -10 -10 -10 -10 -15 -70] ); % -60
+        set( GUI.BatchBox, 'Heights', [-10 -5 -10 -10 -10 -10 -10 -10 -10 -15 -70] ); % -60
         
         field_size = [170, 140, 10 -1];
         
@@ -675,7 +691,7 @@ displayEndOfDemoMessage('');
             symbol_field_name = current_field.name;
             if ~isempty(strfind(symbol_field_name, 'Alpha1'))
                 symbol_field_name = strrep(symbol_field_name, 'Alpha1', '');
-                symbol_field_name = [sprintf('\x3b1\x2081') symbol_field_name];
+                symbol_field_name = [sprintf('\x3b1\x2081') symbol_field_name]; % https://unicode-table.com/en/
             end
             
             if ~isempty(strfind(symbol_field_name, 'Alpha2'))
@@ -702,6 +718,8 @@ displayEndOfDemoMessage('');
                     set(param_control, 'String', current_value, 'UserData', current_value);
                 end
                 if ~isempty(strfind(field_name, 'hrv_time'))
+                    GUI.ConfigParamHandlesMap(field_name) = param_control;
+                elseif ~isempty(strfind(field_name, 'filtrr'))
                     GUI.ConfigParamHandlesMap(field_name) = param_control;
                 end
             else
@@ -740,13 +758,13 @@ displayEndOfDemoMessage('');
             
             if estimatepNNxx
                 set(HBox, 'Widths', [150, 125, 20, 20]);
-                estimatepNNxx = false;  
+                estimatepNNxx = false;                
+            elseif estimateBands
+                set(HBox, 'Widths', [150, 58, 5, 56, 20, 20]);
+                estimateBands = false;
             elseif length(current_field_value) < 2
                 %set( HBox, 'Widths', [-67, -40, -33]  );
                 set(HBox, 'Widths', fields_size);
-            elseif estimateBands
-                set(HBox, 'Widths', [150, 58, 5, 56, 20, 20]);
-                estimateBands = false;               
             else
                 %set( HBox, 'Widths', [-67, -18, -2, -18, -33]  );
                 set(HBox, 'Widths', [150, 58, 5, 56, -1]);%[125, -12, -2, -12, 90] [-40, -12, -2, -12, -25] %  [-30, -8, -2, -8, -10]
@@ -784,7 +802,10 @@ displayEndOfDemoMessage('');
         
         DATA.filter_quotient = rhrv_get_default('filtrr.quotient.enable', 'value');
         DATA.filter_lowpass = rhrv_get_default('filtrr.lowpass.enable', 'value');
-        DATA.filter_range = rhrv_get_default('filtrr.range.enable', 'value');
+        DATA.filter_range = rhrv_get_default('filtrr.range.enable', 'value');        
+        
+        DATA.default_filters_thresholds.lowpass = rhrv_get_default('filtrr.lowpass.win_threshold', 'value');
+        DATA.default_filters_thresholds.quotient = rhrv_get_default('filtrr.quotient.rr_max_change', 'value');        
         
         if DATA.filter_quotient && DATA.filter_lowpass && DATA.filter_range
             DATA.filter_index = 4;
@@ -1374,7 +1395,7 @@ displayEndOfDemoMessage('');
         
         [QRS_FileName, PathName] = uigetfile({'*.*', 'All files';... 
             '*.mat','MAT-files (*.mat)'; ...
-            '*.qrs',  'WFDB Files (*.qrs)'; ... % , *.atr    ; *.atr
+            '*.qrs; *.atr',  'WFDB Files (*.qrs, *.atr)'; ... %     ; *.atr
             '*.txt','Text Files (*.txt)'}, ...
             'Open QRS File', [DIRS.dataDirectory filesep '*.' DIRS.Ext_open]);
         
@@ -1728,6 +1749,7 @@ displayEndOfDemoMessage('');
             DATA.prev_point_segment = 0;
             DATA.prev_point_blue_line = 0;
             DATA.doCalc = false;
+            DATA.callback_was_called = false;
             
             trr = DATA.trr;            
             DATA.maxSignalLength = trr(end);
@@ -1747,6 +1769,10 @@ displayEndOfDemoMessage('');
                 enable_slider = 'on';
                 set(GUI.FirstSecond, 'Enable', 'on');
             end
+                       
+            GUI.FilteringLevel_popupmenu.Enable = 'on';
+            DATA.filter_level_index = DATA.default_filter_level_index;       
+            set(GUI.FilteringLevel_popupmenu, 'Value', DATA.default_filter_level_index);
             
             setSliderProperties(GUI.RawDataSlider, DATA.maxSignalLength, DATA.MyWindowSize, 0.1);
             GUI.RawDataSlider.Enable = enable_slider;
@@ -2214,11 +2240,69 @@ displayEndOfDemoMessage('');
 %         end
 %     end
 %%
-    function Filtering_popupmenu_Callback( ~, ~ )
+    function set_default_filters_threshoulds(param_field, param_value)
+        set(GUI.ConfigParamHandlesMap(param_field), 'String', num2str(param_value));        
+        rhrv_set_default(param_field, param_value);                
+    end
+%%
+    function FilteringLevel_popupmenu_Callback(src, ~)
+        items = get(src, 'String');
+        index_selected_level = get(src,'Value');
+        FilterLevel = items{index_selected_level};
+        
         items = get(GUI.Filtering_popupmenu, 'String');
         index_selected = get(GUI.Filtering_popupmenu,'Value');
         Filter = items{index_selected};
         
+        if index_selected_level == DATA.default_filter_level_index
+            set_default_filters_threshoulds('filtrr.lowpass.win_threshold', DATA.default_filters_thresholds.lowpass);
+            set_default_filters_threshoulds('filtrr.quotient.rr_max_change', DATA.default_filters_thresholds.quotient);
+        else
+            fil_level = DATA.filters_level_value(find(cellfun(@(x) strcmp(x, FilterLevel), DATA.FilterLevel))-1);
+            
+            if strcmp(Filter, 'LowPass')
+                set_default_filters_threshoulds('filtrr.lowpass.win_threshold', fil_level);
+            elseif strcmp(Filter, 'Quotient')
+                set_default_filters_threshoulds('filtrr.quotient.rr_max_change', fil_level);
+            elseif strcmp(Filter, 'Combined filters')
+                set_default_filters_threshoulds('filtrr.lowpass.win_threshold', fil_level);
+                set_default_filters_threshoulds('filtrr.quotient.rr_max_change', fil_level);
+            end
+        end
+        calc_filt_signal();
+    end
+%%
+    function calc_filt_signal()
+        if(isfield(DATA, 'rri') && ~isempty(DATA.rri) )
+            FiltSignal();
+            clear_statistics_plots();
+            clearStatTables();
+            if isfield(GUI, 'filtered_handle')
+                GUI.filtered_handle.XData = ones(1, length(DATA.tnn))*NaN;
+                GUI.filtered_handle.YData = ones(1, length(DATA.nni))*NaN;
+            end
+            plotFilteredData();
+            if get(GUI.AutoCalc_checkbox, 'Value')
+                calcStatistics();
+            end
+        end
+    end
+%%
+    function Filtering_popupmenu_Callback(~, ~)
+        items = get(GUI.Filtering_popupmenu, 'String');
+        index_selected = get(GUI.Filtering_popupmenu, 'Value');
+        Filter = items{index_selected};                
+        
+        set(GUI.FilteringLevel_popupmenu, 'Value', DATA.default_filter_level_index);
+        set_default_filters_threshoulds('filtrr.lowpass.win_threshold', DATA.default_filters_thresholds.lowpass);
+        set_default_filters_threshoulds('filtrr.quotient.rr_max_change', DATA.default_filters_thresholds.quotient);
+        
+        if strcmp(Filter, 'Range') || strcmp(Filter, 'No filtering')
+            GUI.FilteringLevel_popupmenu.Enable = 'inactive';
+        else
+            GUI.FilteringLevel_popupmenu.Enable = 'on';
+        end
+                
         try
             set_filters(Filter);
         catch e
@@ -2228,19 +2312,20 @@ displayEndOfDemoMessage('');
             return;
         end        
         try            
-            if(isfield(DATA, 'rri') && ~isempty(DATA.rri) )
-                FiltSignal();                
-                clear_statistics_plots();
-                clearStatTables();                                
-                if isfield(GUI, 'filtered_handle')                    
-                    GUI.filtered_handle.XData = ones(1, length(DATA.tnn))*NaN;
-                    GUI.filtered_handle.YData = ones(1, length(DATA.nni))*NaN;
-                end
-                plotFilteredData();               
-                if get(GUI.AutoCalc_checkbox, 'Value')
-                    calcStatistics();
-                end
-            end
+%             if(isfield(DATA, 'rri') && ~isempty(DATA.rri) )
+%                 FiltSignal();                
+%                 clear_statistics_plots();
+%                 clearStatTables();                                
+%                 if isfield(GUI, 'filtered_handle')                    
+%                     GUI.filtered_handle.XData = ones(1, length(DATA.tnn))*NaN;
+%                     GUI.filtered_handle.YData = ones(1, length(DATA.nni))*NaN;
+%                 end
+%                 plotFilteredData();               
+%                 if get(GUI.AutoCalc_checkbox, 'Value')
+%                     calcStatistics();
+%                 end
+%             end
+            calc_filt_signal();
             DATA.filter_index = index_selected;
             
             if index_selected == length(DATA.Filters)            
@@ -2832,7 +2917,8 @@ displayEndOfDemoMessage('');
                         fprintf(header_fileID, 'Record name: %s\r\n\r\n', DATA.DataFileName);
                         fprintf(header_fileID, 'Mammal: %s\r\n', DATA.mammals{ DATA.mammal_index});
                         fprintf(header_fileID, 'Integration level: %s\r\n', DATA.Integration);
-                        fprintf(header_fileID, 'Filtering: %s\r\n', DATA.Filters{DATA.filter_index});
+                        fprintf(header_fileID, 'Preprocessing: %s\r\n', DATA.Filters{DATA.filter_index});
+                        fprintf(header_fileID, 'Preprocessing level: %s\r\n', DATA.FilterLevel{DATA.filter_level_index});
                         fprintf(header_fileID, 'Window start: %s\r\n', calcDuration(DATA.AnalysisParams.segment_startTime));
                         fprintf(header_fileID, 'Window end: %s\r\n', calcDuration(DATA.AnalysisParams.segment_endTime));
                         fprintf(header_fileID, 'Window length: %s\r\n', calcDuration(DATA.AnalysisParams.activeWin_length));
@@ -2856,7 +2942,8 @@ displayEndOfDemoMessage('');
                         RecordName = DATA.DataFileName;
                         Mammal = DATA.mammals{ DATA.mammal_index};
                         IntegrationLevel = DATA.Integration;
-                        Filtering = DATA.Filters{DATA.filter_index};
+                        Preprocessing = DATA.Filters{DATA.filter_index};
+                        PreprocessingLevel = DATA.FilterLevel{DATA.filter_level_index};
                         WindowStart = calcDuration(DATA.AnalysisParams.segment_startTime);
                         WindowEnd = calcDuration(DATA.AnalysisParams.segment_endTime);
                         WindowLength = calcDuration(DATA.AnalysisParams.activeWin_length);
@@ -2939,7 +3026,7 @@ displayEndOfDemoMessage('');
         screen_value = str2double(get(src, 'String'));
         prev_screen_value = get(src, 'UserData');
         
-        string_screen_value = get(src, 'String');
+        string_screen_value = get(src, 'String');                
         
         if strcmp(param_name, 'hrv_freq.welch_overlap')
             if isnan(screen_value) || screen_value < 0 || screen_value >= 100
@@ -2952,12 +3039,16 @@ displayEndOfDemoMessage('');
                 errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
                 set(src, 'String', prev_screen_value);
                 return;
+            else
+                set(GUI.FilteringLevel_popupmenu, 'Value', DATA.default_filter_level_index);
             end
         elseif strcmp(param_name, 'filtrr.lowpass.win_threshold')
             if isnan(screen_value) || screen_value < 0 || screen_value > 100
                 errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
                 set(src, 'String', prev_screen_value);
                 return;
+            else
+                set(GUI.FilteringLevel_popupmenu, 'Value', DATA.default_filter_level_index);
             end
         elseif strcmp(param_name, 'hrv_freq.window_minutes')
 %             if isnan(screen_value) || screen_value > DATA.maxSignalLength/60 || screen_value < 0.5
@@ -3417,7 +3508,7 @@ displayEndOfDemoMessage('');
                 % Freq domain metrics
                 fprintf('[win % d: %.3f] >> rhrv: Calculating frequency-domain metrics...\n', i, cputime-t0);
 
-                [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'});
+                [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', []);
                                 
                 DATA.FrStat.PlotData{i} = pd_freq;
                 
@@ -4147,11 +4238,15 @@ displayEndOfDemoMessage('');
         set(findobj(EstimateLayout, 'Style', 'edit'), 'BackgroundColor', myEditTextColor);
         set(findobj(EstimateLayout, 'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
         
-%         if strcmp(tag, 'Frequency_Bands')
-%             GUI.Estimate_edit.String = defaultRate.HeartRate;
-%         else
-%             GUI.Estimate_edit.String = defaultRate.BreathingRate;
-%         end
+        if isempty(who('defaultRate')) || isempty(defaultRate)
+            defaultRate.HeartRate = 0;
+            defaultRate.BreathingRate = 15;
+        end        
+        if strcmp(tag, 'Frequency_Bands')
+            GUI.Estimate_edit.String = defaultRate.HeartRate;
+        else
+            GUI.Estimate_edit.String = defaultRate.BreathingRate;
+        end
     end
 %%
     function EstimateLFBand_pushbutton_Callback(~, ~)
@@ -4178,16 +4273,25 @@ displayEndOfDemoMessage('');
             HR = 0;
             return;
         else
-            HR = value;            
+            HR = value;    
+            if strcmp(get(edit_field_handle, 'Tag'), 'Frequency_Bands')
+                 defaultRate.HeartRate = HR;
+            else
+                 defaultRate.BreathingRate = HR;
+            end
         end
     end
 %%
     function estimate_Edit_Callback(src, ~)
-%         DATA.HR = check_input(src);
+        %         DATA.HR = check_input(src);
+        disp('1111111')
         estimate_button(get(src, 'Tag'));
+%         DATA.callback_was_called = true;
     end
 %%
     function estimate_button(tag)
+        
+        disp('22222222')
         HR = check_input(GUI.Estimate_edit);
         if HR
             if strcmp(tag, 'Frequency_Bands')
@@ -4244,12 +4348,17 @@ displayEndOfDemoMessage('');
                 end
                 set(GUI.ConfigParamHandlesMap(param_name), 'String', num2str(xx));
             end
+            DATA.callback_was_called = true;
+            delete(GUI.EstimateLFBandWindow);
         end
-        delete(GUI.EstimateLFBandWindow);
     end
 %%
-    function ok_estimate_button_Callback(~, ~, tag)        
-%         estimate_button(tag);
+    function ok_estimate_button_Callback(~, ~, tag)
+        disp('33333333')
+        if ~DATA.callback_was_called
+            estimate_button(tag);
+        end
+        DATA.callback_was_called = false;
     end
 %%
     function [f_VLF_LF,f_LF_HF,f_HF_up] = compute_bands(HR)
@@ -4305,7 +4414,7 @@ displayEndOfDemoMessage('');
     end
 %%
     function onPeakDetection( ~, ~ )
-        PhysioZooGUI_Part2();
+        PhysioZooGUI_PeakDetection();
     end
 %%
     function onHelp( ~, ~ )

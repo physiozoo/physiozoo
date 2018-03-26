@@ -872,15 +872,13 @@ displayEndOfDemoMessage('');
         uix.Empty( 'Parent', GUI.FrequencyParamBox );
         freq_param_length = FillParamFields(GUI.FrequencyParamBox, containers.Map(hrv_freq_keys, values(defaults_map, hrv_freq_keys)));
         
-        
-        % NonLinear Parameters - Beta
-        %uix.Empty( 'Parent', GUI.FrequencyParamBox );
-        %nl_param_length = FillParamFields(GUI.FrequencyParamBox, containers.Map(hrv_nl_keys, values(defaults_map, hrv_nl_keys)));
-        
         uix.Empty( 'Parent', GUI.FrequencyParamBox );
-        rs = 19; %19;
-        %set( GUI.FrequencyParamBox, 'Height', [-10, rs * ones(1, freq_param_length), -10, rs, -17, -50]  );
-        set( GUI.FrequencyParamBox, 'Height', [-10, rs * ones(1, freq_param_length), -50]  );
+        
+        GUI.WinAverage_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.FrequencyParamBox, 'Callback', @WinAverage_checkbox_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Use window average', 'Value', 0);
+                
+        uix.Empty( 'Parent', GUI.FrequencyParamBox );
+        rs = 19;        
+        set( GUI.FrequencyParamBox, 'Height', [-10, rs * ones(1, freq_param_length), -10, -10, -50]  );
         
         %-----------------------------------
         
@@ -903,8 +901,7 @@ displayEndOfDemoMessage('');
         ts = 19; % -18
         es = 2; % -15
         %set( GUI.NonLinearParamBox, 'Heights', [ts, rs * ones(1, dfa_param_length), es, ts,  rs * ones(1, mse_param_length), ts/2, rs, -35] );
-        set( GUI.NonLinearParamBox, 'Heights', [ts, rs * ones(1, dfa_param_length), es, ts,  rs * ones(1, mse_param_length), -25] );
-        
+        set( GUI.NonLinearParamBox, 'Heights', [ts, rs * ones(1, dfa_param_length), es, ts,  rs * ones(1, mse_param_length), -25] );        
         
         set(findobj(GUI.FilteringParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
         set(findobj(GUI.FilteringParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
@@ -916,6 +913,7 @@ displayEndOfDemoMessage('');
         set(findobj(GUI.FrequencyParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
         set(findobj(GUI.FrequencyParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
         set(findobj(GUI.FrequencyParamBox,'Style', 'PushButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
+        set(findobj(GUI.FrequencyParamBox,'Style', 'Checkbox'), 'BackgroundColor', myUpBackgroundColor);
         
         set(findobj(GUI.NonLinearParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
         set(findobj(GUI.NonLinearParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
@@ -1081,8 +1079,8 @@ displayEndOfDemoMessage('');
         window_size_in_data_points = size(find(all_x > DATA.firstSecond2Show & all_x < DATA.firstSecond2Show + DATA.MyWindowSize));
         
         %if DATA.MyWindowSize <= 300
-        if window_size_in_data_points < 300
-           set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 5, 'MarkerEdgeColor', [180 74 255]/255, 'MarkerFaceColor', [1, 1, 1]);            
+        if window_size_in_data_points < 350
+           set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 4, 'MarkerEdgeColor', [180 74 255]/255, 'MarkerFaceColor', [1, 1, 1]);            
         else
             set(GUI.raw_data_handle, 'Marker', 'none'); 
         end        
@@ -1460,8 +1458,17 @@ displayEndOfDemoMessage('');
                 end
                 
                 if ~isempty(QRS_data)
-                    DATA.rri = diff(QRS_data)/DATA.SamplingFrequency;
-                    DATA.trr = QRS_data(1:end-1)/DATA.SamplingFrequency; % moving first peak at zero ms
+                    if sum(QRS_data < 0)
+                        close(waitbar_handle);
+                        errordlg('Error: could not Load the file. The file contains negative values.', 'Input Error');
+                        clean_gui();
+                        cla(GUI.RawDataAxes);
+                        cla(GUI.AllDataAxes);
+                        return;
+                    else
+                        DATA.rri = diff(QRS_data)/DATA.SamplingFrequency;
+                        DATA.trr = QRS_data(1:end-1)/DATA.SamplingFrequency; % moving first peak at zero ms
+                    end
                 else
                     close(waitbar_handle);
                     errordlg('Please, choose the file with the QRS data.', 'Input Error');
@@ -1511,8 +1518,17 @@ displayEndOfDemoMessage('');
                     %set(GUI.Window, 'Pointer', 'arrow');
                     
                     if ~isempty(qrs_data)
-                        DATA.rri = diff(qrs_data)/DATA.SamplingFrequency;
-                        DATA.trr = qrs_data(1:end-1)/DATA.SamplingFrequency;
+                        if sum(qrs_data < 0)
+                            close(waitbar_handle);
+                            errordlg('Error: could not Load the file. The file contains negative values.', 'Input Error');
+                            clean_gui();
+                            cla(GUI.RawDataAxes);
+                            cla(GUI.AllDataAxes);
+                            return;
+                        else
+                            DATA.rri = diff(qrs_data)/DATA.SamplingFrequency;
+                            DATA.trr = qrs_data(1:end-1)/DATA.SamplingFrequency;
+                        end
                     else
                         errordlg('Please, choose the file with the QRS data.', 'Input Error');
                         clean_gui();
@@ -1555,8 +1571,17 @@ displayEndOfDemoMessage('');
                     DATA.mammal_index = find(strcmpi(DATA.mammals, DATA.mammal));
                     GUI.Mammal_popupmenu.Value = DATA.mammal_index;
                     if ~isempty(txt_data)
-                        DATA.rri = diff(txt_data)/DATA.SamplingFrequency;
-                        DATA.trr = txt_data(1:end-1)/DATA.SamplingFrequency;
+                        if sum(txt_data < 0)
+                            close(waitbar_handle);
+                            errordlg('Error: could not Load the file. The file contains negative values.', 'Input Error');
+                            clean_gui();
+                            cla(GUI.RawDataAxes);
+                            cla(GUI.AllDataAxes);
+                            return;
+                        else
+                            DATA.rri = diff(txt_data)/DATA.SamplingFrequency;
+                            DATA.trr = txt_data(1:end-1)/DATA.SamplingFrequency;
+                        end
                     else
                         close(waitbar_handle);
                         errordlg('Please, choose the file with the QRS data.', 'Input Error');
@@ -3508,7 +3533,11 @@ displayEndOfDemoMessage('');
                 % Freq domain metrics
                 fprintf('[win % d: %.3f] >> rhrv: Calculating frequency-domain metrics...\n', i, cputime-t0);
 
-                [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', []);
+                if get(GUI.WinAverage_checkbox, 'Value')
+                    [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', []);
+                else
+                    [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'});
+                end
                                 
                 DATA.FrStat.PlotData{i} = pd_freq;
                 
@@ -4186,6 +4215,14 @@ displayEndOfDemoMessage('');
         setYAxesLim();
         plotDataQuality();
         plotMultipleWindows();           
+    end
+%%
+    function WinAverage_checkbox_Callback(~, ~)
+        if get(GUI.AutoCalc_checkbox, 'Value')
+            waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+            calcFrequencyStatistics(waitbar_handle);
+            close(waitbar_handle);
+        end
     end
 %%
 %     function ShowClassicSlider_checkbox_Callback( src, ~ )

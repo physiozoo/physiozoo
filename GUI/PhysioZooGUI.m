@@ -40,7 +40,9 @@ displayEndOfDemoMessage('');
 %%-------------------------------------------------------------------------%
     function DATA = createData()
         
-        DATA.screensize = get( 0, 'Screensize' );                
+        DATA.screensize = get( 0, 'ScreenSize' );
+%         get(0 , 'ScreenPixelsPerInch') 
+%         get(0, 'MonitorPositions')
         
         DATA.PlotHR = 0;
         
@@ -78,6 +80,10 @@ displayEndOfDemoMessage('');
         
         %DATA.MyGreen = [39 232 51]/256;
         DATA.MyGreen = [139 252 27]/256;
+        
+        
+        DATA.Spacing = 3;
+        DATA.Padding = 0;
         
         %DATA.methods = {'Lomb'; 'Welch'; 'AR'};
         DATA.methods = {'Welch'; 'AR'};
@@ -268,47 +274,47 @@ displayEndOfDemoMessage('');
         
         
         % + Peak Detection menu
-        GUI.PeakDetectionMenu = uimenu( GUI.Window, 'Label', 'Peak Detection', 'Callback', @onPeakDetection);
+%         GUI.PeakDetectionMenu = uimenu( GUI.Window, 'Label', 'Peak Detection', 'Callback', @onPeakDetection);
         
         
         
         % Create the layout (Arrange the main interface)
-        GUI.mainLayout = uix.VBoxFlex('Parent', GUI.Window, 'Spacing', 3);        
+        GUI.mainLayout = uix.VBoxFlex('Parent', GUI.Window, 'Spacing', DATA.Spacing);        
         
         % + Create the panels
-        GUI.RawData_Box = uix.HBoxFlex('Parent', GUI.mainLayout, 'Spacing', 5); % Upper Part
-        GUI.Statistics_BoxPanel = uix.BoxPanel( 'Parent', GUI.mainLayout, 'Title', '  ', 'Padding', 5 ); %Low Part
+        GUI.RawData_Box = uix.HBoxFlex('Parent', GUI.mainLayout, 'Spacing', DATA.Spacing); % Upper Part
+        GUI.Statistics_BoxPanel = uix.BoxPanel( 'Parent', GUI.mainLayout, 'Title', '  ', 'Padding', DATA.Padding+2 ); %Low Part
         
         raw_data_part = 0.5;
         statistics_part = 1 - raw_data_part;
         set( GUI.mainLayout, 'Heights', [(-1)*raw_data_part, (-1)*statistics_part]  );
         
         %---------------------------------
-        GUI.Statistics_Box = uix.HBoxFlex('Parent', GUI.Statistics_BoxPanel, 'Spacing', 3);
-        GUI.Analysis_TabPanel = uix.TabPanel('Parent', GUI.Statistics_Box, 'Padding', 0');
+        GUI.Statistics_Box = uix.HBoxFlex('Parent', GUI.Statistics_BoxPanel, 'Spacing', DATA.Spacing);
+        GUI.Analysis_TabPanel = uix.TabPanel('Parent', GUI.Statistics_Box, 'Padding', DATA.Padding);
         
-        options_part = 0.25; % 0.27
+        options_part = 0.3; % 0.25
         analysis_part = 1 - options_part;
         Left_Part_widths_in_pixels = options_part*(DATA.window_size(1));
         %---------------------------------
-        GUI.StatisticshTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', 5);
-        GUI.TimeTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', 5);
-        GUI.FrequencyTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', 5);
-        GUI.NonLinearTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', 5);
+        GUI.StatisticshTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.TimeTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.FrequencyTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.NonLinearTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
         
-        temp_panel = uix.Panel( 'Parent', GUI.RawData_Box, 'Padding', 5);
-        GUI.Options_TabPanel = uix.TabPanel('Parent', temp_panel, 'Padding', 0);
+        temp_panel = uix.Panel( 'Parent', GUI.RawData_Box, 'Padding', DATA.Padding+2);
+        GUI.Options_TabPanel = uix.TabPanel('Parent', temp_panel, 'Padding', DATA.Padding);
         
-        temp_panel = uix.Panel( 'Parent', GUI.RawData_Box, 'Padding', 5);
+        temp_panel = uix.Panel( 'Parent', GUI.RawData_Box, 'Padding', DATA.Padding+2);
 %         GUI.RawDataControls_Box = uix.VBox('Parent', temp_panel, 'Spacing', 3);
                  
         set( GUI.RawData_Box, 'Widths', [(-1)*options_part (-1)*analysis_part] ); % [-22 -75]
         
-        buttons_axes_Box = uix.HBox( 'Parent', temp_panel, 'Spacing', 5);
+        buttons_axes_Box = uix.HBox( 'Parent', temp_panel, 'Spacing', DATA.Spacing);
         
-        GUI.CommandsButtons_Box = uix.VButtonBox('Parent', buttons_axes_Box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
+        GUI.CommandsButtons_Box = uix.VButtonBox('Parent', buttons_axes_Box, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
         
-        two_axes_box = uix.VBox('Parent', buttons_axes_Box, 'Spacing', 3);
+        two_axes_box = uix.VBox('Parent', buttons_axes_Box, 'Spacing', DATA.Spacing);
 %                 
 %         GUI.RawDataAxes = axes('Parent', two_axes_box, 'Tag', 'MainAxes'); %   buttons_axes_Box , 'ButtonDownFcn', {@ButtonDownFcn_mainAxes, 'test'}, 'CurrentPoint'
 % %         GUI.selectedDataAxes = axes('Parent', uicontainer('Parent', two_axes_box), 'ActivePositionProperty', 'Position');
@@ -335,119 +341,129 @@ displayEndOfDemoMessage('');
               
         GUI.RR_or_HR_plot_button = uicontrol( 'Style', 'ToggleButton', 'Parent', GUI.CommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
         GUI.Reset_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', GUI.CommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
-        set( GUI.CommandsButtons_Box, 'ButtonSize', [70, 25], 'Spacing', 5  );
+        set( GUI.CommandsButtons_Box, 'ButtonSize', [70, 25], 'Spacing', DATA.Spacing  );
         
-        GUI.OptionsTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);        
-        GUI.BatchTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);        
-        GUI.AdvancedTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
-        GUI.DisplayTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', 5);
+        GUI.OptionsTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', DATA.Padding+2);        
+        GUI.BatchTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', DATA.Padding+2);        
+        GUI.AdvancedTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.DisplayTab = uix.Panel( 'Parent', GUI.Options_TabPanel, 'Padding', DATA.Padding+2);
         
         tabs_widths = Left_Part_widths_in_pixels; %342 310;
         tabs_heights = 370;
         
         GUI.OptionsSclPanel = uix.ScrollingPanel( 'Parent', GUI.OptionsTab);
-        GUI.OptionsBox = uix.VBox( 'Parent', GUI.OptionsSclPanel, 'Spacing', 5);
+        GUI.OptionsBox = uix.VBox( 'Parent', GUI.OptionsSclPanel, 'Spacing', DATA.Spacing);
         set( GUI.OptionsSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         
         GUI.BatchSclPanel = uix.ScrollingPanel( 'Parent', GUI.BatchTab);
-        GUI.BatchBox = uix.VBox( 'Parent', GUI.BatchSclPanel, 'Spacing', 5);
+        GUI.BatchBox = uix.VBox( 'Parent', GUI.BatchSclPanel, 'Spacing', DATA.Spacing);
         set( GUI.BatchSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );        
         
         GUI.DisplaySclPanel = uix.ScrollingPanel( 'Parent', GUI.DisplayTab);
-        GUI.DisplayBox = uix.VBox( 'Parent', GUI.DisplaySclPanel, 'Spacing', 5);
+        GUI.DisplayBox = uix.VBox( 'Parent', GUI.DisplaySclPanel, 'Spacing', DATA.Spacing);
         set( GUI.DisplaySclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         
         %--------------------------------------------------------------------------------------------
-        GUI.AdvancedBox = uix.VBox( 'Parent', GUI.AdvancedTab, 'Spacing', 5);
-        GUI.Advanced_TabPanel = uix.TabPanel('Parent', GUI.AdvancedBox, 'Padding', 0');
+        GUI.AdvancedBox = uix.VBox( 'Parent', GUI.AdvancedTab, 'Spacing', DATA.Spacing);
+        GUI.Advanced_TabPanel = uix.TabPanel('Parent', GUI.AdvancedBox, 'Padding', DATA.Padding);
         
-        GUI.FilteringParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', 5);
-        GUI.TimeParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', 5);
-        GUI.FrequencyParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', 5);
-        GUI.NonLinearParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', 5);
+        GUI.FilteringParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.TimeParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.FrequencyParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.NonLinearParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+2);
         
         GUI.FilteringSclPanel = uix.ScrollingPanel('Parent', GUI.FilteringParamTab);
-        GUI.FilteringParamBox = uix.VBox('Parent', GUI.FilteringSclPanel, 'Spacing', 7);
+        GUI.FilteringParamBox = uix.VBox('Parent', GUI.FilteringSclPanel, 'Spacing', DATA.Spacing+2);
         set( GUI.FilteringSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         
         GUI.TimeSclPanel = uix.ScrollingPanel('Parent', GUI.TimeParamTab);
-        GUI.TimeParamBox = uix.VBox('Parent', GUI.TimeSclPanel, 'Spacing', 7);
+        GUI.TimeParamBox = uix.VBox('Parent', GUI.TimeSclPanel, 'Spacing', DATA.Spacing+2);
         set( GUI.TimeSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         
         GUI.FrequencySclPanel = uix.ScrollingPanel('Parent', GUI.FrequencyParamTab);
-        GUI.FrequencyParamBox = uix.VBox('Parent', GUI.FrequencySclPanel, 'Spacing', 7);
+        GUI.FrequencyParamBox = uix.VBox('Parent', GUI.FrequencySclPanel, 'Spacing', DATA.Spacing+2);
         set( GUI.FrequencySclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         
         GUI.NonLinearParamSclPanel = uix.ScrollingPanel('Parent', GUI.NonLinearParamTab);
-        GUI.NonLinearParamBox = uix.VBox('Parent', GUI.NonLinearParamSclPanel, 'Spacing', 7);
+        GUI.NonLinearParamBox = uix.VBox('Parent', GUI.NonLinearParamSclPanel, 'Spacing', DATA.Spacing+2);
         set( GUI.NonLinearParamSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         %------------------------------------------------------------------------------
         
-        field_size = [170, -1, 1]; % [-37, -40, -15]
+%         field_size = [170, -1, 1]; % [-37, -40, -15]
         
-        GUI.RecordNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'String', 'Peaks file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.RecordNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
+        a{1} = uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'String', 'Peaks file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.RecordName_text = uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', GUI.RecordNameBox );
-        set( GUI.RecordNameBox, 'Widths', field_size  );
-        
-        GUI.DataQualityBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'String', 'Quality file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+                                           
+        GUI.DataQualityBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
+        a{2} = uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'String', 'Quality file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.DataQuality_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', GUI.DataQualityBox );
-        set( GUI.DataQualityBox, 'Widths', field_size );
-        
-        GUI.DataLengthBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'String', 'Time series length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+                
+        GUI.DataLengthBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
+        a{3} = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'String', 'Time series length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.RecordLength_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         %uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'String', 'h:min:sec');
         uix.Empty( 'Parent', GUI.DataLengthBox );
-        set( GUI.DataLengthBox, 'Widths', field_size );
+                
+%         field_size = [170, -2/3, -1/3]; % [170, 160, -1]
+        GUI.MammalBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
+        a{4} = uicontrol( 'Style', 'text', 'Parent', GUI.MammalBox, 'String', 'Mammal', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.Mammal_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.MammalBox, 'Callback', @Mammal_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', DATA.GUI_mammals);        
+        uix.Empty( 'Parent', GUI.MammalBox );        
         
-        field_size = [170, 160, -1]; % [180, -1, 300]
-        GUI.MammalBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.MammalBox, 'String', 'Mammal', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.Mammal_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.MammalBox, 'Callback', @Mammal_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', DATA.GUI_mammals);
-        %GUI.Mammal_popupmenu.String = DATA.GUI_mammals;
-        uix.Empty( 'Parent', GUI.MammalBox );
-        set( GUI.MammalBox, 'Widths', field_size );
-        
-        GUI.IntegrationBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.IntegrationBox, 'String', 'Integration level', 'FontSize', SmallFontSize, 'Enable', 'on', 'HorizontalAlignment', 'left');
+        GUI.IntegrationBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
+        a{5} = uicontrol( 'Style', 'text', 'Parent', GUI.IntegrationBox, 'String', 'Integration level', 'FontSize', SmallFontSize, 'Enable', 'on', 'HorizontalAlignment', 'left');
         GUI.Integration_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.IntegrationBox, 'Callback', @Integration_popupmenu_Callback, 'FontSize', SmallFontSize, 'Enable', 'on');
         GUI.Integration_popupmenu.String = DATA.GUI_Integration;
         uix.Empty( 'Parent', GUI.IntegrationBox );
-        set( GUI.IntegrationBox, 'Widths', field_size );
-        
-        GUI.FilteringBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringBox, 'String', 'Preprocessing', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+                
+        GUI.FilteringBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
+        a{6} = uicontrol( 'Style', 'text', 'Parent', GUI.FilteringBox, 'String', 'Preprocessing', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Filtering_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.FilteringBox, 'Callback', @Filtering_popupmenu_Callback, 'FontSize', SmallFontSize);
         GUI.Filtering_popupmenu.String = DATA.Filters;
-        uix.Empty( 'Parent', GUI.FilteringBox );
-        set( GUI.FilteringBox, 'Widths', field_size );
+        uix.Empty( 'Parent', GUI.FilteringBox );        
         
-        GUI.FilteringLevelBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringLevelBox, 'String', 'Preprocessing level', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.FilteringLevelBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
+        a{7} = uicontrol( 'Style', 'text', 'Parent', GUI.FilteringLevelBox, 'String', 'Preprocessing level', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.FilteringLevel_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.FilteringLevelBox, 'Callback', @FilteringLevel_popupmenu_Callback, 'FontSize', SmallFontSize);
         GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
         GUI.FilteringLevel_popupmenu.Value = DATA.default_filter_level_index;
-        uix.Empty( 'Parent', GUI.FilteringLevelBox );
-        set( GUI.FilteringLevelBox, 'Widths', field_size );
+        uix.Empty( 'Parent', GUI.FilteringLevelBox );        
         
-        DefaultMethodBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', DefaultMethodBox, 'String', 'Default frequency method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        DefaultMethodBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
+        a{8} = uicontrol( 'Style', 'text', 'Parent', DefaultMethodBox, 'String', 'Default frequency method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.DefaultMethod_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DefaultMethodBox, 'Callback', @DefaultMethod_popupmenu_Callback, 'FontSize', SmallFontSize, 'TooltipString', 'Default frequency method to use to display under statistics');
         GUI.DefaultMethod_popupmenu.String = DATA.methods;
         GUI.DefaultMethod_popupmenu.Value = 1;
-        uix.Empty( 'Parent', DefaultMethodBox );
-        set( DefaultMethodBox, 'Widths', field_size );
+        uix.Empty( 'Parent', DefaultMethodBox );        
                
-        AutoCalcBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', 5);
+        AutoCalcBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', AutoCalcBox, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Auto Compute', 'Value', 1);
         GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', AutoCalcBox, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'inactive');
         uix.Empty( 'Parent', AutoCalcBox );
-        set( AutoCalcBox, 'Widths', field_size );                
+                
+        max_extent_control = calc_max_control_x_extend(a);
+%         max_extent_control = 0;        
+%         for i = 1 : length(a)
+%             extent_control = get(a{i}, 'Extent');            
+%             max_extent_control = max(max_extent_control, extent_control(3));
+%         end        
+        field_size = [max_extent_control + 5, -1, 1]; % -1, 1
         
+        set( GUI.RecordNameBox, 'Widths', field_size  );
+        set( GUI.DataQualityBox, 'Widths', field_size );
+        set( GUI.DataLengthBox, 'Widths', field_size );
+        
+        field_size = [max_extent_control + 5, -2/5, -3/5];
+        
+        set( GUI.MammalBox, 'Widths', field_size );
+        set( GUI.IntegrationBox, 'Widths', field_size );
+        set( GUI.FilteringBox, 'Widths', field_size );
+        set( GUI.FilteringLevelBox, 'Widths', field_size );
+        set( DefaultMethodBox, 'Widths', field_size );
+        set( AutoCalcBox, 'Widths', field_size );
         
         uix.Empty( 'Parent', GUI.OptionsBox );
         set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -15] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
@@ -457,90 +473,92 @@ displayEndOfDemoMessage('');
             'Tooltip', 'You can use this module to batch process the RR time series by overlapping windows. This is useful for tracking the HRV measures as they evolve over time.');
         uix.Empty( 'Parent', GUI.BatchBox );
         
-        field_size = [130, 110, -1]; %150, 120, -1
-        
-        BatchStartTimeBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', BatchStartTimeBox, 'String', 'Segment start', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+%         field_size = [130, 110, -1]; %150, 120, -1
+        a = [];
+        BatchStartTimeBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing',DATA.Spacing);
+        a{1} = uicontrol( 'Style', 'text', 'Parent', BatchStartTimeBox, 'String', 'Segment start', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.segment_startTime = uicontrol( 'Style', 'edit', 'Parent', BatchStartTimeBox, 'FontSize', SmallFontSize, 'Callback', @batch_Edit_Callback, 'Tag', 'segment_startTime');        
-        uicontrol( 'Style', 'text', 'Parent', BatchStartTimeBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        set( BatchStartTimeBox, 'Widths', field_size  );
+        units_control_handle = uicontrol( 'Style', 'text', 'Parent', BatchStartTimeBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');        
         
-        BatchEndTimeBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', BatchEndTimeBox, 'String', 'Segment end', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        BatchEndTimeBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', DATA.Spacing);
+        a{2} = uicontrol( 'Style', 'text', 'Parent', BatchEndTimeBox, 'String', 'Segment end', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.segment_endTime = uicontrol( 'Style', 'edit', 'Parent', BatchEndTimeBox, 'FontSize', SmallFontSize, 'Callback', @batch_Edit_Callback, 'Tag', 'segment_endTime');      
         uicontrol( 'Style', 'text', 'Parent', BatchEndTimeBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        uicontrol( 'Style', 'PushButton', 'Parent', BatchEndTimeBox, 'Callback', @Full_Length_pushbutton_Callback, 'FontSize', 10, 'String', 'Use full length');
-        set( BatchEndTimeBox, 'Widths', [130, 110, 90, 95] ); % 85
+        pushpbutton_control_handle = uicontrol( 'Style', 'PushButton', 'Parent', BatchEndTimeBox, 'Callback', @Full_Length_pushbutton_Callback, 'FontSize', SmallFontSize - 2, 'String', 'Use full length');        
         
-        BatchWindowLengthBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', BatchWindowLengthBox, 'String', 'Window length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        BatchWindowLengthBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', DATA.Spacing);
+        a{3} = uicontrol( 'Style', 'text', 'Parent', BatchWindowLengthBox, 'String', 'Window length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.activeWindow_length = uicontrol( 'Style', 'edit', 'Parent', BatchWindowLengthBox, 'FontSize', SmallFontSize, 'Callback', @batch_Edit_Callback, 'Tag', 'activeWin_length');     
-        uicontrol( 'Style', 'text', 'Parent', BatchWindowLengthBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        set( BatchWindowLengthBox, 'Widths', field_size  );
+        uicontrol( 'Style', 'text', 'Parent', BatchWindowLengthBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');        
         
-        BatchOverlapBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', BatchOverlapBox, 'String', 'Overlap', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        BatchOverlapBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', DATA.Spacing);
+        a{4} = uicontrol( 'Style', 'text', 'Parent', BatchOverlapBox, 'String', 'Overlap', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.segment_overlap = uicontrol( 'Style', 'edit', 'Parent', BatchOverlapBox, 'FontSize', SmallFontSize, 'Callback', @batch_Edit_Callback, 'Tag', 'segment_overlap');        
-        uicontrol( 'Style', 'text', 'Parent', BatchOverlapBox, 'String', '%', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        set( BatchOverlapBox, 'Widths', field_size  );
+        uicontrol( 'Style', 'text', 'Parent', BatchOverlapBox, 'String', '%', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');        
         
-        BatchActWinNumBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', BatchActWinNumBox, 'String', 'Selected window', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        BatchActWinNumBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', DATA.Spacing);
+        a{5} = uicontrol( 'Style', 'text', 'Parent', BatchActWinNumBox, 'String', 'Selected window', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.active_winNum = uicontrol( 'Style', 'edit', 'Parent', BatchActWinNumBox, 'FontSize', SmallFontSize, 'Callback', @active_winNum_Edit_Callback, 'Tag', 'active_winNum', 'Enable', 'inactive');      
-        uix.Empty( 'Parent', BatchActWinNumBox );
-        set( BatchActWinNumBox, 'Widths', field_size );
+        uix.Empty( 'Parent', BatchActWinNumBox );        
         
-        BatchWinNumBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', BatchWinNumBox, 'String', 'Number of windows', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        BatchWinNumBox = uix.HBox( 'Parent', GUI.BatchBox, 'Spacing', DATA.Spacing);
+        a{6} = uicontrol( 'Style', 'text', 'Parent', BatchWinNumBox, 'String', 'Number of windows', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.segment_winNum = uicontrol( 'Style', 'text', 'Parent', BatchWinNumBox, 'FontSize', SmallFontSize, 'Callback', @batch_Edit_Callback, 'Tag', 'winNum', 'Enable', 'inactive');      
-        uix.Empty( 'Parent', BatchWinNumBox );
+        uix.Empty( 'Parent', BatchWinNumBox );                
+        
+        max_extent_control = calc_max_control_x_extend(a);
+        units_control_extent = get(units_control_handle, 'Extent');
+        pushpbutton_control_extent = get(pushpbutton_control_handle, 'Extent');
+                
+        field_size = [max_extent_control + 2, 90, units_control_extent(3) + 2];
+        set( BatchStartTimeBox, 'Widths', field_size  );
+        set( BatchEndTimeBox, 'Widths', [max_extent_control + 2, 90, units_control_extent(3) + 2, pushpbutton_control_extent(3)] );
+        set( BatchWindowLengthBox, 'Widths', field_size  );
+        set( BatchOverlapBox, 'Widths', field_size  );
+        set( BatchActWinNumBox, 'Widths', field_size );
         set( BatchWinNumBox, 'Widths', field_size );              
         
         uix.Empty( 'Parent', GUI.BatchBox );
         
-        batch_Box = uix.HBox('Parent', GUI.BatchBox, 'Spacing', 5);
+        batch_Box = uix.HBox('Parent', GUI.BatchBox, 'Spacing', DATA.Spacing);
         uix.Empty( 'Parent', batch_Box );
         uicontrol( 'Style', 'PushButton', 'Parent', batch_Box, 'Callback', @RunMultSegments_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute');
         uix.Empty( 'Parent', batch_Box );
-        set( batch_Box, 'Widths',  field_size);      % [125 100 -1]          
-        
-%         uix.Empty( 'Parent', GUI.BatchBox );
-%         GUI.ShowClassicSlider_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.BatchBox, 'Callback', @ShowClassicSlider_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Show classic slider', 'Value', 0);
-        
+        set( batch_Box, 'Widths',  field_size);      % [125 100 -1]                         
         
         uix.Empty( 'Parent', GUI.BatchBox );
         set( GUI.BatchBox, 'Heights', [-10 -5 -10 -10 -10 -10 -10 -10 -10 -15 -70] ); % -60
-        
-        field_size = [170, 140, 10 -1];
+                
+% -----------------------------------------        
+                
+%         field_size = [170, 140, 10 -1];
         
         uix.Empty( 'Parent', GUI.DisplayBox );
-        
-        WindowStartBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'Window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        b = [];
+        WindowStartBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
+        b{1} = uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'Window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.FirstSecond = uicontrol( 'Style', 'edit', 'Parent', WindowStartBox, 'Callback', @FirstSecond_Callback, 'FontSize', BigFontSize); % , 'Enable', 'off'
-        uix.Empty( 'Parent', WindowStartBox );
-        uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        set( WindowStartBox, 'Widths', field_size  );
+%         uix.Empty( 'Parent', WindowStartBox );
+        units_control_handle = uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');        
         
-        WindowLengthBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', WindowLengthBox, 'String', 'Window length:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        WindowLengthBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
+        b{2} = uicontrol( 'Style', 'text', 'Parent', WindowLengthBox, 'String', 'Window length:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.WindowSize = uicontrol( 'Style', 'edit', 'Parent', WindowLengthBox, 'Callback', @WindowSize_Callback, 'FontSize', BigFontSize);
-        uix.Empty( 'Parent', WindowLengthBox );
-        uicontrol( 'Style', 'text', 'Parent', WindowLengthBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        set( WindowLengthBox, 'Widths', field_size  );                
+%         uix.Empty( 'Parent', WindowLengthBox );
+        uicontrol( 'Style', 'text', 'Parent', WindowLengthBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');        
          
-        YLimitBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', 5);        
-        uicontrol( 'Style', 'text', 'Parent', YLimitBox, 'String', 'Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        YLimitBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);        
+        b{3} = uicontrol( 'Style', 'text', 'Parent', YLimitBox, 'String', 'Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.MinYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', YLimitBox, 'Callback', @MinMaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
         uicontrol( 'Style', 'text', 'Parent', YLimitBox, 'String', '-', 'FontSize', BigFontSize);
         GUI.MaxYLimit_Edit = uicontrol( 'Style', 'edit', 'Parent', YLimitBox, 'Callback', @MinMaxYLimit_Edit_Callback, 'FontSize', BigFontSize);
-        uix.Empty( 'Parent', YLimitBox );
-        GUI.AutoScaleY_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1);
-        set( YLimitBox, 'Widths', [170, 64, 4, 63 10 95]  ); %[140, -17, -5, -17 100] [-37, -17, -5, -16 -16] [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]       
+%         uix.Empty( 'Parent', YLimitBox );
+        GUI.AutoScaleY_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Auto Scale Y', 'Value', 1);
+%         set( YLimitBox, 'Widths', [170, 64, 4, 63 10 95]  ); %[140, -17, -5, -17 100] [-37, -17, -5, -16 -16] [-37, -20, -5, -19 -16] [-37, -15, -5, -15] [-37, -20, -5, -19 -15]       
         
         GUI.ShowLegend_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.DisplayBox, 'Callback', @ShowLegend_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Show legend', 'Value', 1);
 
-        RawDataSliderBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', 3);
+        RawDataSliderBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
         uix.Empty( 'Parent', RawDataSliderBox );
         GUI.RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', RawDataSliderBox, 'Callback', @slider_Callback);
         GUI.RawDataSlider.Enable = 'on';
@@ -550,35 +568,45 @@ displayEndOfDemoMessage('');
         
         uix.Empty( 'Parent', GUI.DisplayBox );
         
-        WindowStartBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'Selected window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.Active_Window_Start = uicontrol( 'Style', 'edit', 'Parent', WindowStartBox, 'Callback', @Active_Window_Start_Callback, 'FontSize', BigFontSize);
-        uix.Empty( 'Parent', WindowStartBox );
-        uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        set( WindowStartBox, 'Widths', field_size  );
+        SelectedWindowStartBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
+        b{4} = uicontrol( 'Style', 'text', 'Parent', SelectedWindowStartBox, 'String', 'Selected window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.Active_Window_Start = uicontrol( 'Style', 'edit', 'Parent', SelectedWindowStartBox, 'Callback', @Active_Window_Start_Callback, 'FontSize', BigFontSize);
+%         uix.Empty( 'Parent', SelectedWindowStartBox );
+        uicontrol( 'Style', 'text', 'Parent', SelectedWindowStartBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');        
         
-        WindowStartBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', 5);
-        uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'Selected window length:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.Active_Window_Length = uicontrol( 'Style', 'edit', 'Parent', WindowStartBox, 'Callback', @Active_Window_Length_Callback, 'FontSize', BigFontSize);
-        uix.Empty( 'Parent', WindowStartBox );
-        uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        set( WindowStartBox, 'Widths', field_size  );
+        SelectedWindowLengthtBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
+        b{5} = uicontrol( 'Style', 'text', 'Parent', SelectedWindowLengthtBox, 'String', 'Selected window length:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.Active_Window_Length = uicontrol( 'Style', 'edit', 'Parent', SelectedWindowLengthtBox, 'Callback', @Active_Window_Length_Callback, 'FontSize', BigFontSize);
+%         uix.Empty( 'Parent', SelectedWindowLengthtBox );
+        uicontrol( 'Style', 'text', 'Parent', SelectedWindowLengthtBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');        
         
-        Filt_RawDataSliderBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', 3);
+        Filt_RawDataSliderBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
         uix.Empty( 'Parent', Filt_RawDataSliderBox );
         GUI.Filt_RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', Filt_RawDataSliderBox, 'Callback', @filt_slider_Callback, 'Enable', 'off');        
         addlistener(GUI.Filt_RawDataSlider, 'ContinuousValueChange', @filt_sldrFrame_Motion);
         uix.Empty( 'Parent', Filt_RawDataSliderBox );
         set( Filt_RawDataSliderBox, 'Widths', [15 -1 50]  );                
+                
+        max_extent_control = calc_max_control_x_extend(b);
+        units_control_extent = get(units_control_handle, 'Extent');
+%         checkbox_extent = get(GUI.AutoScaleY_checkbox, 'Extent');
         
+        field_size = [max_extent_control + 2, 92, units_control_extent(3) + 2];
+        
+        set( WindowStartBox, 'Widths', field_size  );
+        set( WindowLengthBox, 'Widths', field_size  );    
+        set( YLimitBox, 'Widths', [max_extent_control + 2, 45, 2, 39 -1]  );
+        set( SelectedWindowStartBox, 'Widths', field_size  );
+        set( SelectedWindowLengthtBox, 'Widths', field_size  );
+                        
         uix.Empty( 'Parent', GUI.DisplayBox );
         set( GUI.DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -7 -10 -7 -7 -7 -40] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
         
         %---------------------------
         tables_field_size = [-85 -15];
         
-        GUI.TimeBox = uix.HBox( 'Parent', GUI.TimeTab, 'Spacing', 5);
-        GUI.ParamTimeBox = uix.VBox( 'Parent', GUI.TimeBox, 'Spacing', 5);
+        GUI.TimeBox = uix.HBox( 'Parent', GUI.TimeTab, 'Spacing', DATA.Spacing);
+        GUI.ParamTimeBox = uix.VBox( 'Parent', GUI.TimeBox, 'Spacing', DATA.Spacing);
         GUI.TimeParametersTable = uitable( 'Parent', GUI.ParamTimeBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
         GUI.TimeParametersTable.ColumnName = {'    Measures Name    ', 'Values'};
         uix.Empty( 'Parent', GUI.ParamTimeBox );
@@ -588,23 +616,23 @@ displayEndOfDemoMessage('');
         set( GUI.TimeBox, 'Widths', [-14 -80] );  % [-11 -90]
         %---------------------------
         
-        GUI.FrequencyBox = uix.HBox( 'Parent', GUI.FrequencyTab, 'Spacing', 5);
-        GUI.ParamFrequencyBox = uix.VBox( 'Parent', GUI.FrequencyBox, 'Spacing', 5);
+        GUI.FrequencyBox = uix.HBox( 'Parent', GUI.FrequencyTab, 'Spacing', DATA.Spacing);
+        GUI.ParamFrequencyBox = uix.VBox( 'Parent', GUI.FrequencyBox, 'Spacing', DATA.Spacing);
         GUI.FrequencyParametersTable = uitable( 'Parent', GUI.ParamFrequencyBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
         %GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Lomb', 'Values Welch', 'Values AR'};
         GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Welch', 'Values AR'};
         uix.Empty( 'Parent', GUI.ParamFrequencyBox );
         set( GUI.ParamFrequencyBox, 'Heights', tables_field_size );
         
-        PSD_Box = uix.VBox( 'Parent', GUI.FrequencyBox, 'Spacing', 5);
-        PSD_HBox = uix.HBox('Parent', PSD_Box, 'Spacing', 3);  % , 'VerticalAlignment', 'top'
-        FrAxesBox = uix.HBox( 'Parent', PSD_Box, 'Spacing', 1);
+        PSD_Box = uix.VBox( 'Parent', GUI.FrequencyBox, 'Spacing', DATA.Spacing);
+        PSD_HBox = uix.HBox('Parent', PSD_Box, 'Spacing', DATA.Spacing);  % , 'VerticalAlignment', 'top'
+        FrAxesBox = uix.HBox( 'Parent', PSD_Box, 'Spacing', DATA.Spacing-1);
                 
         GUI.FrequencyAxes1 = axes('Parent', uicontainer('Parent', FrAxesBox) );
         GUI.FrequencyAxes2 = axes('Parent', uicontainer('Parent', FrAxesBox) );
         
         set( PSD_Box, 'Heights', [-7 -93] );
-        set( FrAxesBox, 'Widths', [-50 -50], 'Padding', 1 );
+        set( FrAxesBox, 'Widths', [-50 -50], 'Padding', DATA.Padding+1 );
         
         uix.Empty( 'Parent', PSD_HBox );
         GUI.freq_yscale_Button = uicontrol( 'Style', 'ToggleButton', 'Parent', PSD_HBox, 'Callback', @PSD_pushbutton_Callback, 'FontSize', BigFontSize, 'Value', 1, 'String', 'Log');
@@ -614,8 +642,8 @@ displayEndOfDemoMessage('');
         set( GUI.FrequencyBox, 'Widths', [-34 -64] );   % [-34 -64] [-34 -32 -32]
         %---------------------------
         
-        GUI.NonLinearBox = uix.HBox( 'Parent', GUI.NonLinearTab, 'Spacing', 5);
-        GUI.ParamNonLinearBox = uix.VBox( 'Parent', GUI.NonLinearBox, 'Spacing', 5);
+        GUI.NonLinearBox = uix.HBox( 'Parent', GUI.NonLinearTab, 'Spacing', DATA.Spacing);
+        GUI.ParamNonLinearBox = uix.VBox( 'Parent', GUI.NonLinearBox, 'Spacing', DATA.Spacing);
         GUI.NonLinearTable = uitable( 'Parent', GUI.ParamNonLinearBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
         GUI.NonLinearTable.ColumnName = {'    Measures Name    ', 'Values'};
         uix.Empty( 'Parent', GUI.ParamNonLinearBox );
@@ -632,14 +660,14 @@ displayEndOfDemoMessage('');
         
         GUI.Advanced_TabPanel.TabTitles = {'Filtering', 'Time', 'Frequency', 'NonLinear'};
         GUI.Advanced_TabPanel.TabWidth = 65; %(Left_Part_widths_in_pixels - 60)/4; %65;
-        GUI.Advanced_TabPanel.FontSize = SmallFontSize-2;
+        GUI.Advanced_TabPanel.FontSize = SmallFontSize - 2;
         
         GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear'};
         GUI.Analysis_TabPanel.TabWidth = 90;
         GUI.Analysis_TabPanel.FontSize = BigFontSize;
         
         GUI.Options_TabPanel.TabTitles = {'Record', 'Analysis', 'Options', 'Display'};
-        GUI.Options_TabPanel.TabWidth = 90;
+        GUI.Options_TabPanel.TabWidth = 70;
         GUI.Options_TabPanel.FontSize = BigFontSize;
         
         % Upper Part         
@@ -661,7 +689,14 @@ displayEndOfDemoMessage('');
         set(findobj(GUI.Statistics_BoxPanel,'Type', 'uipanel'), 'BackgroundColor', myLowBackgroundColor);     
         
     end % createInterface
-
+%%
+    function max_extent_control = calc_max_control_x_extend(uitext_handle)
+        max_extent_control = 0;
+        for i = 1 : length(uitext_handle)
+            extent_control = get(uitext_handle{i}, 'Extent');
+            max_extent_control = max(max_extent_control, extent_control(3));
+        end
+    end
 %%
     function clearParametersBox(VBoxHandle)
         param_boxes_handles = allchild(VBoxHandle);
@@ -670,23 +705,27 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function param_keys_length = FillParamFields(VBoxHandle, param_map)
+    function [param_keys_length, max_extent_control, handles_boxes] = FillParamFields(VBoxHandle, param_map)
         
         SmallFontSize = DATA.SmallFontSize;
-        estimateBands = false;
-        estimatepNNxx = false;        
+%         estimateBands = false;
+%         estimatepNNxx = false;        
         
         param_keys = keys(param_map);
         param_keys_length = length(param_keys);
         
+        text_fields_handles_cell = cell(1, param_keys_length);
+        handles_boxes = cell(4, param_keys_length);
         for i = 1 : param_keys_length
             
-            HBox = uix.HBox( 'Parent', VBoxHandle, 'Spacing', 3, 'BackgroundColor', myUpBackgroundColor);
-            
+            HBox = uix.HBox( 'Parent', VBoxHandle, 'Spacing', DATA.Spacing, 'BackgroundColor', myUpBackgroundColor);
+            handles_boxes{1, i} = HBox;
+                        
             field_name = param_keys{i};
             
             current_field = param_map(field_name);
             current_field_value = current_field.value;
+            handles_boxes{2, i} = current_field_value;
             
             symbol_field_name = current_field.name;
             if ~isempty(strfind(symbol_field_name, 'Alpha1'))
@@ -704,9 +743,9 @@ displayEndOfDemoMessage('');
                 symbol_field_name = [sprintf('\x3b2') symbol_field_name];
             end
             
-            uicontrol( 'Style', 'text', 'Parent', HBox, 'String', symbol_field_name, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
+            text_fields_handles_cell{i} = uicontrol( 'Style', 'text', 'Parent', HBox, 'String', symbol_field_name, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
             
-            fields_size = [150, 125, -1]; %[125, -1, 90] [-40, -27, -25]
+%             fields_size = [150, 125, -1]; %[125, -1, 90] [-40, -27, -25]
             
             if length(current_field_value) < 2                
                 current_value = num2str(current_field_value);
@@ -746,33 +785,47 @@ displayEndOfDemoMessage('');
             end
             
             if strcmp(symbol_field_name, 'LF Band')
-                    uicontrol('Style', 'PushButton', 'Parent', HBox, 'Callback', @EstimateLFBand_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'E',...
-                        'TooltipString', 'Click here to estimate the frequency bands based on the mammalian typical heart rate');
-                    estimateBands = true;
+                uicontrol('Style', 'PushButton', 'Parent', HBox, 'Callback', @EstimateLFBand_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'E',...
+                    'TooltipString', 'Click here to estimate the frequency bands based on the mammalian typical heart rate');
+%                 estimateBands = true;
+                handles_boxes{3, i} = true; % estimateBands
+            else
+                handles_boxes{3, i} = false;
             end
             if strcmp(symbol_field_name, 'PNN Threshold')
-                    uicontrol('Style', 'PushButton', 'Parent', HBox, 'Callback', @EstimatePNNThreshold_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'E',...
-                        'TooltipString', 'Click here to estimate the pNNxx threshold based on the mammalian breathing rate');
-                    estimatepNNxx = true;
-            end
-            
-            if estimatepNNxx
-                set(HBox, 'Widths', [150, 125, 20, 20]);
-                estimatepNNxx = false;                
-            elseif estimateBands
-                set(HBox, 'Widths', [150, 58, 5, 56, 20, 20]);
-                estimateBands = false;
-            elseif length(current_field_value) < 2
-                %set( HBox, 'Widths', [-67, -40, -33]  );
-                set(HBox, 'Widths', fields_size);
+                uicontrol('Style', 'PushButton', 'Parent', HBox, 'Callback', @EstimatePNNThreshold_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'E',...
+                    'TooltipString', 'Click here to estimate the pNNxx threshold based on the mammalian breathing rate');
+%                 estimatepNNxx = true;
+                handles_boxes{4, i} = true; % estimatepNNxx
             else
-                %set( HBox, 'Widths', [-67, -18, -2, -18, -33]  );
-                set(HBox, 'Widths', [150, 58, 5, 56, -1]);%[125, -12, -2, -12, 90] [-40, -12, -2, -12, -25] %  [-30, -8, -2, -8, -10]
+                handles_boxes{4, i} = false;
             end
-            %end
+        end
+                        
+        max_extent_control = calc_max_control_x_extend(text_fields_handles_cell);        
+    end
+%%
+    function setWidthsConfigParams(max_extent_control, handles_boxes)
+        handles_boxes_size = size(handles_boxes);
+        fields_size = [max_extent_control + 2, 125, -1];
+%         sum([max_extent_control + 2, 125, -1])
+        for j = 1 : handles_boxes_size(2)
+            if  handles_boxes{4, j} % estimatepNNxx
+                set(handles_boxes{1, j}, 'Widths', [max_extent_control + 2, 125, 30, 20]);
+%                 sum([max_extent_control + 2, 125, 30, 20])
+%                 estimatepNNxx = false;
+            elseif handles_boxes{3, j}
+                set(handles_boxes{1, j}, 'Widths', [max_extent_control + 2, 58, 5, 56, 20, 20]);
+%                 sum([max_extent_control + 2, 58, 5, 56, 20, 20])
+%                 estimateBands = false;
+            elseif length(handles_boxes{2, j}) < 2
+                set(handles_boxes{1, j}, 'Widths', fields_size);
+            else
+                set(handles_boxes{1, j}, 'Widths', [max_extent_control + 2, 58, 5, 56, -1]);%[125, -12, -2, -12, 90] [-40, -12, -2, -12, -25] %  [-30, -8, -2, -8, -10]
+%                 sum([max_extent_control + 2, 58, 5, 56, -1])
+            end
         end
     end
-
 %%
     function createConfigParametersInterface()
         
@@ -836,21 +889,29 @@ displayEndOfDemoMessage('');
         %             hrv_nl_keys(find(cellfun(@(x) ~isempty(regexpi(x, not_in_use_params_nl{i})), hrv_nl_keys))) = [];
         %         end
         
-        
+        max_extent_control = [];
+        handles_boxes = [];
         % Filtering Parameters
         clearParametersBox(GUI.FilteringParamBox);
         uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Range', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
-        filt_range_keys_length = FillParamFields(GUI.FilteringParamBox, containers.Map(filt_range_keys, values(defaults_map, filt_range_keys)));
+        [filt_range_keys_length, max_extent_control(1), handles_boxes_1] = FillParamFields(GUI.FilteringParamBox, containers.Map(filt_range_keys, values(defaults_map, filt_range_keys)));
         uix.Empty( 'Parent', GUI.FilteringParamBox );
         
         uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Lowpass', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
-        filt_lowpass_keys_length = FillParamFields(GUI.FilteringParamBox, containers.Map(lowpass_range_keys, values(defaults_map, lowpass_range_keys)));
+        [filt_lowpass_keys_length, max_extent_control(2), handles_boxes_2] = FillParamFields(GUI.FilteringParamBox, containers.Map(lowpass_range_keys, values(defaults_map, lowpass_range_keys)));
         uix.Empty( 'Parent', GUI.FilteringParamBox );
         
         uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Quotient', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
-        filt_quotient_keys_length = FillParamFields(GUI.FilteringParamBox, containers.Map(quotient_range_keys, values(defaults_map, quotient_range_keys)));
+        [filt_quotient_keys_length, max_extent_control(3), handles_boxes_3] = FillParamFields(GUI.FilteringParamBox, containers.Map(quotient_range_keys, values(defaults_map, quotient_range_keys)));
         uix.Empty( 'Parent', GUI.FilteringParamBox );
         
+        
+        max_extent = max(max_extent_control);
+        
+        setWidthsConfigParams(max_extent, handles_boxes_1);
+        setWidthsConfigParams(max_extent, handles_boxes_2);
+        setWidthsConfigParams(max_extent, handles_boxes_3);
+                
         rs = 19; %-22;
         ts = 19; % -18
         es = 2;
@@ -859,8 +920,11 @@ displayEndOfDemoMessage('');
         % Time Parameters
         clearParametersBox(GUI.TimeParamBox);
         uix.Empty( 'Parent', GUI.TimeParamBox );
-        time_keys_length = FillParamFields(GUI.TimeParamBox, containers.Map(hrv_time_keys, values(defaults_map, hrv_time_keys)));
+        [time_keys_length, max_extent_control, handles_boxes] = FillParamFields(GUI.TimeParamBox, containers.Map(hrv_time_keys, values(defaults_map, hrv_time_keys)));
         uix.Empty( 'Parent', GUI.TimeParamBox );
+        
+        setWidthsConfigParams(max_extent_control, handles_boxes);
+        
         rs = 19; %-10;
         ts = 19;
         set( GUI.TimeParamBox, 'Height', [ts, rs * ones(1, time_keys_length), -167]  );
@@ -870,9 +934,10 @@ displayEndOfDemoMessage('');
         % Frequency Parameters
         clearParametersBox(GUI.FrequencyParamBox);
         uix.Empty( 'Parent', GUI.FrequencyParamBox );
-        freq_param_length = FillParamFields(GUI.FrequencyParamBox, containers.Map(hrv_freq_keys, values(defaults_map, hrv_freq_keys)));
-        
+        [freq_param_length, max_extent_control, handles_boxes] = FillParamFields(GUI.FrequencyParamBox, containers.Map(hrv_freq_keys, values(defaults_map, hrv_freq_keys)));        
         uix.Empty( 'Parent', GUI.FrequencyParamBox );
+        
+        setWidthsConfigParams(max_extent_control, handles_boxes);
         
         GUI.WinAverage_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.FrequencyParamBox, 'Callback', @WinAverage_checkbox_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Use window average', 'Value', 0);
                 
@@ -885,18 +950,23 @@ displayEndOfDemoMessage('');
         % NonLinear Parameters - DFA
         clearParametersBox(GUI.NonLinearParamBox);
         uicontrol( 'Style', 'text', 'Parent', GUI.NonLinearParamBox, 'String', 'Detrended Fluctuation Analysis (DFA)', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
-        dfa_param_length = FillParamFields(GUI.NonLinearParamBox, containers.Map(dfa_keys, values(defaults_map, dfa_keys)));
+        [dfa_param_length, max_extent_control(1), handles_boxes_1] = FillParamFields(GUI.NonLinearParamBox, containers.Map(dfa_keys, values(defaults_map, dfa_keys)));
         
         % NonLinear Parameters - MSE
         uix.Empty( 'Parent', GUI.NonLinearParamBox );
         uicontrol( 'Style', 'text', 'Parent', GUI.NonLinearParamBox, 'String', 'Multi Scale Entropy (MSE)', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
-        mse_param_length = FillParamFields(GUI.NonLinearParamBox, containers.Map(mse_keys, values(defaults_map, mse_keys)));
+        [mse_param_length, max_extent_control(2), handles_boxes_2] = FillParamFields(GUI.NonLinearParamBox, containers.Map(mse_keys, values(defaults_map, mse_keys)));
         
         %         % NonLinear Parameters - Beta
         %         uix.Empty( 'Parent', GUI.NonLinearParamBox );
         %         FillParamFields(GUI.NonLinearParamBox, containers.Map(hrv_nl_keys, values(defaults_map, hrv_nl_keys)));
         uix.Empty( 'Parent', GUI.NonLinearParamBox );
         
+        max_extent = max(max_extent_control);
+        
+        setWidthsConfigParams(max_extent, handles_boxes_1);
+        setWidthsConfigParams(max_extent, handles_boxes_2);
+                
         rs = 19; %-22;
         ts = 19; % -18
         es = 2; % -15
@@ -916,8 +986,7 @@ displayEndOfDemoMessage('');
         set(findobj(GUI.FrequencyParamBox,'Style', 'Checkbox'), 'BackgroundColor', myUpBackgroundColor);
         
         set(findobj(GUI.NonLinearParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
-        set(findobj(GUI.NonLinearParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
-        
+        set(findobj(GUI.NonLinearParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);        
     end
 %%
     function slider_Callback(~, ~)        
@@ -2419,7 +2488,7 @@ displayEndOfDemoMessage('');
             DATA.filter_lowpass = false;
             DATA.filter_range = false;
         elseif strcmp(Filter, DATA.Filters{4}) % Combined Filters
-            DATA.filter_quotient = true;
+            DATA.filter_quotient = false;
             DATA.filter_lowpass = true;
             DATA.filter_range = true;
         else
@@ -2596,9 +2665,9 @@ displayEndOfDemoMessage('');
             'HandleVisibility', 'off', ...
             'Position', [(main_screensize(3)-400)/2, (main_screensize(4)-300)/2, 400, 300]); %[700, 300, 800, 400] 
         
-        mainSaveFigurestLayout = uix.VBox('Parent',GUI.SaveFiguresWindow, 'Spacing', 3);
-        figures_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Select figures to save:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
-        figures_box = uix.VButtonBox('Parent', figures_panel, 'Spacing', 2, 'HorizontalAlignment', 'left', 'ButtonSize', [200 25]);
+        mainSaveFigurestLayout = uix.VBox('Parent',GUI.SaveFiguresWindow, 'Spacing', DATA.Spacing);
+        figures_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', DATA.Padding+2, 'Title', 'Select figures to save:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
+        figures_box = uix.VButtonBox('Parent', figures_panel, 'Spacing', DATA.Spacing-1, 'HorizontalAlignment', 'left', 'ButtonSize', [200 25]);
         
         for i = 1 : 7
             uicontrol( 'Style', 'checkbox', 'Parent', figures_box, 'Callback', {@figures_checkbox_Callback, i}, 'FontSize', DATA.BigFontSize, ...
@@ -2629,7 +2698,7 @@ displayEndOfDemoMessage('');
 % , 'HorizontalAlignment', 'right'
 % Select Path and Format
 % Export Figures
-        CommandsButtons_Box = uix.HButtonBox('Parent', mainSaveFigurestLayout, 'Spacing', 3, 'VerticalAlignment', 'middle', 'ButtonSize', [100 30]);
+        CommandsButtons_Box = uix.HButtonBox('Parent', mainSaveFigurestLayout, 'Spacing', DATA.Spacing, 'VerticalAlignment', 'middle', 'ButtonSize', [100 30]);
         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Save As', 'FontName', 'Calibri');
 %         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @save_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Export Figures', 'FontName', 'Calibri');
         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', {@cancel_button_Callback, GUI.SaveFiguresWindow}, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
@@ -3004,7 +3073,7 @@ displayEndOfDemoMessage('');
             'HandleVisibility', 'off', ...
             'Position', [700, 300, 400, 400]);
         
-        GUI.mainAboutLayout = uix.VBox('Parent', GUI.AboutWindow, 'Spacing', 3);
+        GUI.mainAboutLayout = uix.VBox('Parent', GUI.AboutWindow, 'Spacing', DATA.Spacing);
         GUI.ImageAxes = axes('Parent', GUI.mainAboutLayout, 'ActivePositionProperty', 'Position');
         
         logoImage = imread('D:\PhysioZoo\Physio Zoo Logo Dina 1.jpg');
@@ -4247,13 +4316,13 @@ displayEndOfDemoMessage('');
             'HandleVisibility', 'off', ...
             'Position', [(main_screensize(3)-350)/2, (main_screensize(4)-150)/2, 350, 150]); %[700, 300, 800, 400]
         
-        EstimateLayout = uix.VBox('Parent', GUI.EstimateLFBandWindow, 'Spacing', 5);
+        EstimateLayout = uix.VBox('Parent', GUI.EstimateLFBandWindow, 'Spacing', DATA.Spacing);
         
-        EstimatePanel = uix.Panel('Parent', EstimateLayout, 'Padding', 5);
-        EstimateBox = uix.VBox('Parent', EstimatePanel, 'Spacing', 5);
+        EstimatePanel = uix.Panel('Parent', EstimateLayout, 'Padding', DATA.Padding+2);
+        EstimateBox = uix.VBox('Parent', EstimatePanel, 'Spacing', DATA.Spacing);
         
         uix.Empty( 'Parent', EstimateBox );
-        HRBox = uix.HBox('Parent', EstimateBox, 'Spacing', 5);
+        HRBox = uix.HBox('Parent', EstimateBox, 'Spacing', DATA.Spacing);
         
         uicontrol( 'Style', 'text', 'Parent', HRBox, 'String', typical_parameter_rate, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Estimate_edit = uicontrol( 'Style', 'edit', 'Parent', HRBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'Callback', @estimate_Edit_Callback, 'Tag', tag);        
@@ -4264,7 +4333,7 @@ displayEndOfDemoMessage('');
         
         set(EstimateBox, 'Heights', [-15 -20 -45]);
         
-        CommandsButtons_Box = uix.HButtonBox('Parent', EstimateLayout, 'Spacing', 3, 'VerticalAlignment', 'middle', 'ButtonSize', [100 30]);
+        CommandsButtons_Box = uix.HButtonBox('Parent', EstimateLayout, 'Spacing', DATA.Spacing, 'VerticalAlignment', 'middle', 'ButtonSize', [100 30]);
         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', {@ok_estimate_button_Callback, tag}, 'FontSize', DATA.BigFontSize, 'String', 'OK', 'FontName', 'Calibri');
         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', {@cancel_button_Callback, GUI.EstimateLFBandWindow}, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
         

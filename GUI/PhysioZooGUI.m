@@ -5,7 +5,7 @@ gui_basepath = fileparts(mfilename('fullpath'));
 addpath(genpath([gui_basepath filesep 'lib']));
 basepath = fileparts(gui_basepath);
 
-% rhrv_init;
+rhrv_init;
 
 %myBackgroundColor = [0.9 1 1];
 myUpBackgroundColor = [0.863 0.941 0.906];

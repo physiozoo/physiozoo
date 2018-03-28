@@ -5,7 +5,7 @@ gui_basepath = fileparts(mfilename('fullpath'));
 addpath(genpath([gui_basepath filesep 'lib']));
 basepath = fileparts(gui_basepath);
 
-% rhrv_init;
+rhrv_init;
 
 %myBackgroundColor = [0.9 1 1];
 myUpBackgroundColor = [0.863 0.941 0.906];
@@ -292,9 +292,9 @@ displayEndOfDemoMessage('');
         GUI.Statistics_Box = uix.HBoxFlex('Parent', GUI.Statistics_BoxPanel, 'Spacing', DATA.Spacing);
         GUI.Analysis_TabPanel = uix.TabPanel('Parent', GUI.Statistics_Box, 'Padding', DATA.Padding);
         
-        options_part = 0.3; % 0.25
+        options_part = 0.22; % 0.25
         analysis_part = 1 - options_part;
-        Left_Part_widths_in_pixels = options_part*(DATA.window_size(1));
+        Left_Part_widths_in_pixels = 0.3*(DATA.window_size(1));
         %---------------------------------
         GUI.StatisticshTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
         GUI.TimeTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
@@ -455,7 +455,7 @@ displayEndOfDemoMessage('');
         set( GUI.DataQualityBox, 'Widths', field_size );
         set( GUI.DataLengthBox, 'Widths', field_size );
         
-        field_size = [max_extent_control + 5, -2/5, -3/5];
+        field_size = [max_extent_control + 5, -0.5, -0.5];
         
         set( GUI.MammalBox, 'Widths', field_size );
         set( GUI.IntegrationBox, 'Widths', field_size );
@@ -509,9 +509,9 @@ displayEndOfDemoMessage('');
         units_control_extent = get(units_control_handle, 'Extent');
         pushpbutton_control_extent = get(pushpbutton_control_handle, 'Extent');
                 
-        field_size = [max_extent_control + 2, 90, units_control_extent(3) + 2];
+        field_size = [max_extent_control + 2, 85, units_control_extent(3) + 2];
         set( BatchStartTimeBox, 'Widths', field_size  );
-        set( BatchEndTimeBox, 'Widths', [max_extent_control + 2, 90, units_control_extent(3) + 2, pushpbutton_control_extent(3)] );
+        set( BatchEndTimeBox, 'Widths', [max_extent_control + 2, 85, units_control_extent(3) + 2, pushpbutton_control_extent(3)] );
         set( BatchWindowLengthBox, 'Widths', field_size  );
         set( BatchOverlapBox, 'Widths', field_size  );
         set( BatchActWinNumBox, 'Widths', field_size );
@@ -563,7 +563,7 @@ displayEndOfDemoMessage('');
         GUI.RawDataSlider.Enable = 'on';
         addlistener(GUI.RawDataSlider, 'ContinuousValueChange', @sldrFrame_Motion);
         uix.Empty( 'Parent', RawDataSliderBox );
-        set( RawDataSliderBox, 'Widths', [15 -1 50]  ); 
+        set( RawDataSliderBox, 'Widths', [-0.1 300 -1]  ); 
         
         uix.Empty( 'Parent', GUI.DisplayBox );
         
@@ -579,13 +579,15 @@ displayEndOfDemoMessage('');
 %         uix.Empty( 'Parent', SelectedWindowLengthtBox );
         uicontrol( 'Style', 'text', 'Parent', SelectedWindowLengthtBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');        
         
+        uix.Empty( 'Parent', GUI.DisplayBox );
+        
         Filt_RawDataSliderBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
         uix.Empty( 'Parent', Filt_RawDataSliderBox );
         GUI.Filt_RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', Filt_RawDataSliderBox, 'Callback', @filt_slider_Callback, 'Enable', 'off');        
         addlistener(GUI.Filt_RawDataSlider, 'ContinuousValueChange', @filt_sldrFrame_Motion);
         uix.Empty( 'Parent', Filt_RawDataSliderBox );
-        set( Filt_RawDataSliderBox, 'Widths', [15 -1 50]  );                
-                
+        set( Filt_RawDataSliderBox, 'Widths', [-0.1 300 -1]  ); % [15 -1 50]                                       
+        
         max_extent_control = calc_max_control_x_extend(b);
         units_control_extent = get(units_control_handle, 'Extent');
 %         checkbox_extent = get(GUI.AutoScaleY_checkbox, 'Extent');
@@ -599,7 +601,7 @@ displayEndOfDemoMessage('');
         set( SelectedWindowLengthtBox, 'Widths', field_size  );
                         
         uix.Empty( 'Parent', GUI.DisplayBox );
-        set( GUI.DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -7 -10 -7 -7 -7 -40] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+        set( GUI.DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -7 -10 -7 -7 -7 -7 -40] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
         
         %---------------------------
         tables_field_size = [-85 -15];
@@ -658,8 +660,8 @@ displayEndOfDemoMessage('');
         %---------------------------
         
         GUI.Advanced_TabPanel.TabTitles = {'Filtering', 'Time', 'Frequency', 'NonLinear'};
-        GUI.Advanced_TabPanel.TabWidth = 65; %(Left_Part_widths_in_pixels - 60)/4; %65;
-        GUI.Advanced_TabPanel.FontSize = SmallFontSize - 2;
+        GUI.Advanced_TabPanel.TabWidth = 70; %(Left_Part_widths_in_pixels - 60)/4; %65;
+        GUI.Advanced_TabPanel.FontSize = SmallFontSize-1;
         
         GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear'};
         GUI.Analysis_TabPanel.TabWidth = 90;

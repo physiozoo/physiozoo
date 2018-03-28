@@ -5,7 +5,7 @@ gui_basepath = fileparts(mfilename('fullpath'));
 addpath(genpath([gui_basepath filesep 'lib']));
 basepath = fileparts(gui_basepath);
 
-rhrv_init;
+% rhrv_init;
 
 %myBackgroundColor = [0.9 1 1];
 myUpBackgroundColor = [0.863 0.941 0.906];
@@ -455,7 +455,7 @@ displayEndOfDemoMessage('');
         set( GUI.DataQualityBox, 'Widths', field_size );
         set( GUI.DataLengthBox, 'Widths', field_size );
         
-        field_size = [max_extent_control + 5, -0.5, -0.5];
+        field_size = [max_extent_control + 5, -0.6, -0.5];
         
         set( GUI.MammalBox, 'Widths', field_size );
         set( GUI.IntegrationBox, 'Widths', field_size );
@@ -509,9 +509,9 @@ displayEndOfDemoMessage('');
         units_control_extent = get(units_control_handle, 'Extent');
         pushpbutton_control_extent = get(pushpbutton_control_handle, 'Extent');
                 
-        field_size = [max_extent_control + 2, 85, units_control_extent(3) + 2];
+        field_size = [max_extent_control + 2, 75, units_control_extent(3) + 2];
         set( BatchStartTimeBox, 'Widths', field_size  );
-        set( BatchEndTimeBox, 'Widths', [max_extent_control + 2, 85, units_control_extent(3) + 2, pushpbutton_control_extent(3)] );
+        set( BatchEndTimeBox, 'Widths', [max_extent_control + 2, 75, units_control_extent(3) + 2, pushpbutton_control_extent(3)] );
         set( BatchWindowLengthBox, 'Widths', field_size  );
         set( BatchOverlapBox, 'Widths', field_size  );
         set( BatchActWinNumBox, 'Widths', field_size );

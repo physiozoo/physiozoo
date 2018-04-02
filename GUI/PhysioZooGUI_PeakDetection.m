@@ -614,16 +614,13 @@ GUI = createInterface();
         end
     end
 %%
-    function delete_temp_wfdb_files()
-        %         if isfield(handles, 'DATA')
-        pwd
-        if exist([DATA.temp_rec_name4wfdb '.hea'], 'file')
-            delete([DATA.temp_rec_name4wfdb '.hea']);
+    function delete_temp_wfdb_files()        
+        if exist([pwd '\' DATA.temp_rec_name4wfdb '.hea'], 'file')
+            delete([pwd '\' DATA.temp_rec_name4wfdb '.hea']);
         end
-        if exist([DATA.temp_rec_name4wfdb '.dat'], 'file')
-            delete([DATA.temp_rec_name4wfdb '.dat']);
-        end
-        %         end
+        if exist([pwd '\' DATA.temp_rec_name4wfdb '.dat'], 'file')
+            delete([pwd '\' DATA.temp_rec_name4wfdb '.dat']);
+        end        
     end
 %%
     function SavePeaks_Callback(~, ~)       

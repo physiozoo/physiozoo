@@ -1,0 +1,11 @@
+##
+# Prevent ignoring example files
+
+# Physionet data files
+!*.dat
+!*.hea
+!*.atr
+!*.qrs*
+
+# Matlab files
+!*.mat

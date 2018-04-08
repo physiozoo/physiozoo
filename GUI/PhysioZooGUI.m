@@ -68,7 +68,7 @@ displayEndOfDemoMessage('');
         DATA.filter_range = false;
         
         % DEBUGGING MODE - Small Screen
-        DATA.screensize = [0 0 1250 800];
+%         DATA.screensize = [0 0 1250 800];
         
         DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
         

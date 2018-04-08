@@ -6,21 +6,27 @@ myEditTextColor = [1 1 1];
 mySliderColor = [0.8 0.9 0.9];
 myPushButtonColor = [0.26 0.37 0.41];
 
-
 DATA = createData();
 GUI = createInterface();
 
     function DATA = createData()
         
         DATA.screensize = get( 0, 'Screensize' );
+       
+        % DEBUGGING MODE - Small Screen
+%         DATA.screensize = [0 0 1250 800];
+
+        DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
+                
         if DATA.screensize(3) < 1920 %1080
-            DATA.BigFontSize = 9;
-            DATA.SmallFontSize = 9;
+            DATA.BigFontSize = 10;
+            DATA.SmallFontSize = 10;
+            DATA.SmallScreen = 1;
         else
             DATA.BigFontSize = 11;
             DATA.SmallFontSize = 11;
-        end
-        DATA.window_size = [DATA.screensize(3)*0.95 DATA.screensize(4)*0.85];
+            DATA.SmallScreen = 0;
+        end 
         
         DATA.mammals = {'', 'human', 'dog', 'rabbit', 'mouse', 'custom'};
         DATA.GUI_mammals = {'Please, choose mammal'; 'Human'; 'Dog'; 'Rabbit'; 'Mouse'; 'Custom'};
@@ -103,12 +109,17 @@ GUI = createInterface();
         % + Upper Panel - Left and Right Parts
         temp_panel_left = uix.Panel( 'Parent', Upper_Part_Box, 'Padding', 5);        
         temp_panel_right = uix.Panel( 'Parent', Upper_Part_Box, 'Padding', 5); % , 'BorderType', 'none'
-        temp_panel_buttons = uix.Panel( 'Parent', Upper_Part_Box, 'Padding', 5); % , 'BorderType', 'none'
+        temp_panel_buttons = uix.Panel( 'Parent', Upper_Part_Box, 'Padding', 5); % , 'BorderType', 'none'        
         
-        left_part = 0.28;
+        if DATA.SmallScreen
+            left_part = 0.4;             
+        else
+            left_part = 0.26;            
+        end
         right_part = 0.9;
         buttons_part = 0.07;
-        Left_Part_widths_in_pixels = left_part * DATA.window_size(1);
+        Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1);
+                
         
         set(Upper_Part_Box, 'Widths', [-1*left_part -1*right_part -1*buttons_part]);
         
@@ -151,14 +162,14 @@ GUI = createInterface();
         %-------------------------------------------------------
         % Record Tab
         
-        field_size = [170, -1, 1];
+        field_size = [130, -1, 1]; % 170
         
         [GUI, ~] = createGUITextLine(GUI, 'GUIRecord', 'RecordFileName_text', 'Record file name:', RecordBox, field_size);
         [GUI, ~] = createGUITextLine(GUI, 'GUIRecord', 'PeaksFileName_text', 'Peaks file name:', RecordBox, field_size);
         [GUI, ~] = createGUITextLine(GUI, 'GUIRecord', 'DataQualityFileName_text', 'Data quality file name:', RecordBox, field_size);
         [GUI, ~] = createGUITextLine(GUI, 'GUIRecord', 'TimeSeriesLength_text', 'Time series length:', RecordBox, field_size);
         
-        field_size = [170, 190, -1];
+        field_size = [130, 170, -1]; % 170 190
         
         [GUI, ~] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Mammal_popupmenu', 'Mammal', RecordBox, field_size, @Mammal_popupmenu_Callback, DATA.GUI_mammals);
         [GUI, ~] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Integration_popupmenu', 'Integration Level', RecordBox, field_size, @Integration_popupmenu_Callback, DATA.GUI_Integration);
@@ -170,7 +181,7 @@ GUI = createInterface();
         set(TempBox, 'Widths', field_size );
         
         uix.Empty( 'Parent', RecordBox);
-        set(RecordBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -15] );
+        set(RecordBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -25] );
         
         %-------------------------------------------------------
         % Config Params Tab

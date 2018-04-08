@@ -1,4 +1,4 @@
 not_in_use_gui:
-    hrv_freq: [methods, power_methods, extra_bands, osf, resample_factor]
+    hrv_freq: [methods, power_methods, extra_bands, osf, resample_factor, win_func]
     mse: [mse_metrics]
 

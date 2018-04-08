@@ -50,7 +50,7 @@ filtrr:
 # Time-domain HRV parameters
 hrv_time:
     pnn_thresh_ms:
-        value: 6
+        value: 5
         description: Threshold value for PNNx
         name: PNN Threshold
         units: ms

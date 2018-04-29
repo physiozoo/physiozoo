@@ -84,8 +84,7 @@ displayEndOfDemoMessage('');
         
         %DATA.MyGreen = [39 232 51]/256;
         DATA.MyGreen = [139 252 27]/256;
-        
-        
+                
         DATA.Spacing = 3;
         DATA.Padding = 0;
         
@@ -103,7 +102,7 @@ displayEndOfDemoMessage('');
         DATA.rectangle_color = rec_colors(6, :);
         
         DATA.freq_yscale = 'linear';
-        
+        DATA.doCalc = false;
     end % createData
 %-------------------------------------------------------------------------%
 %%
@@ -265,7 +264,7 @@ displayEndOfDemoMessage('');
         GUI.LoadConfigFile = uimenu( GUI.FileMenu, 'Label', 'Load Custom Config File', 'Callback', @onLoadCustomConfigFile, 'Accelerator','P', 'Enable', 'off');
         GUI.SaveAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save HRV Measures as', 'Callback', @onSaveResultsAsFile, 'Accelerator','S', 'Enable', 'off');
         GUI.SavePSDAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save PSD as', 'Callback', @onSavePSDAsFile, 'Accelerator','D', 'Enable', 'off');
-        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Export Figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');        
+        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save Figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');        
         GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Config File', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');
         GUI.SaveFilteredDataFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Filtered Data File', 'Callback', @onSaveFilteredDataFile, 'Accelerator','G', 'Enable', 'off');
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @onExit, 'Separator', 'on', 'Accelerator', 'E');
@@ -298,8 +297,8 @@ displayEndOfDemoMessage('');
             options_part = 0.28; 
             Left_Part_widths_in_pixels = 0.3*(DATA.window_size(1));
         else
-            options_part = 0.22;
-            Left_Part_widths_in_pixels = 0.25*(DATA.window_size(1));
+            options_part = 0.22; % 0.22
+            Left_Part_widths_in_pixels = 0.25*(DATA.window_size(1)); % 0.25
         end
         analysis_part = 1 - options_part;
 
@@ -495,7 +494,7 @@ displayEndOfDemoMessage('');
         a{2} = uicontrol( 'Style', 'text', 'Parent', BatchEndTimeBox, 'String', 'Segment end', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.segment_endTime = uicontrol( 'Style', 'edit', 'Parent', BatchEndTimeBox, 'FontSize', SmallFontSize, 'Callback', @batch_Edit_Callback, 'Tag', 'segment_endTime');      
         uicontrol( 'Style', 'text', 'Parent', BatchEndTimeBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        pushpbutton_control_handle = uicontrol( 'Style', 'PushButton', 'Parent', BatchEndTimeBox, 'Callback', @Full_Length_pushbutton_Callback, 'FontSize', SmallFontSize-3, 'String', 'Use full length');        
+        pushpbutton_control_handle = uicontrol( 'Style', 'PushButton', 'Parent', BatchEndTimeBox, 'Callback', @Full_Length_pushbutton_Callback, 'FontSize', SmallFontSize-2, 'String', 'Use full length');        
 
         pushpbutton_control_position = get(pushpbutton_control_handle, 'Position');
         pushpbutton_control_extent = get(pushpbutton_control_handle, 'Extent');
@@ -528,7 +527,7 @@ displayEndOfDemoMessage('');
                 
         field_size = [max_extent_control + 2, 85, units_control_extent(3) + 2]; % 75
         set( BatchStartTimeBox, 'Widths', field_size  );
-        set( BatchEndTimeBox, 'Widths', [max_extent_control + 2, 85, units_control_extent(3) + 2, pushpbutton_control_position(3)] ); % 75
+        set( BatchEndTimeBox, 'Widths', [max_extent_control + 2, 85, units_control_extent(3) + 2, pushpbutton_control_position(3)+10] ); % 75
         set( BatchWindowLengthBox, 'Widths', field_size  );
         set( BatchOverlapBox, 'Widths', field_size  );
         set( BatchActWinNumBox, 'Widths', field_size );
@@ -2677,7 +2676,7 @@ displayEndOfDemoMessage('');
         main_screensize = DATA.screensize;
         
         GUI.SaveFiguresWindow = figure( ...
-            'Name', 'Export Figures Options', ...
+            'Name', 'Save Figures Options', ...
             'NumberTitle', 'off', ...
             'MenuBar', 'none', ...
             'Toolbar', 'none', ...
@@ -2911,7 +2910,7 @@ displayEndOfDemoMessage('');
             end
             delete( GUI.SaveFiguresWindow );
         else
-            errordlg('Please enter valid path for export figures', 'Input Error');
+            errordlg('Please enter valid path to save figures', 'Input Error');
         end
     end
 %%
@@ -4000,60 +3999,62 @@ displayEndOfDemoMessage('');
 %%
     function my_clickOnAllData(src, callbackdata, handles)
         
-        current_object = hittest(GUI.Window);
-        if ismember(current_object, GUI.rect_handle) && DATA.AnalysisParams.winNum ~= 1
-            DATA.active_window = get(current_object, 'UserData');
-            set(GUI.active_winNum, 'String', DATA.active_window);
-            uistack(current_object, 'down');
-            set_active_window(current_object);
-        end        
-        
-        prev_point = get(GUI.AllDataAxes, 'CurrentPoint');
-        DATA.prev_point = prev_point(1, 1);
-        prev_point = get(GUI.RawDataAxes, 'CurrentPoint');
-        DATA.prev_point_segment = prev_point(1, 1);
-        
-        if DATA.AnalysisParams.winNum == 1
-            blue_rect_xdata = get(GUI.rect_handle, 'XData');
-            RawDataAxes_XLim = get(GUI.RawDataAxes, 'XLim');
-            DATA.minXLimRawDataAxes = min(RawDataAxes_XLim);
-            DATA.left_limit = min(blue_rect_xdata);
-            DATA.maxXLimRawDataAxes = max(RawDataAxes_XLim);
-%             DATA.right_limit = blue_rect_xdata(3);
-            DATA.right_limit = max(blue_rect_xdata);
-        end
-        
-        switch DATA.hObject
-            case 'window'
-                switch get(GUI.Window, 'selectiontype')
-                    case 'normal'
-                        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_move'});
-                    case 'open'
-                        Window_Move('open');
-                        %                         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_resize'});
-                    otherwise
-                end
-            case 'left_resize'
-                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'left_resize_move'});
-            case 'right_resize'
-                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'right_resize_move'});
-            case 'window_blue_rect'
-                switch get(GUI.Window, 'selectiontype')
-                    case 'normal'
-                        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_move_blue_rect'});
-                    case 'open'
-                    otherwise
-                end
-            case 'left_resize_blue_rect'
-                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'left_resize_move_blue_rect'});
-            case 'right_resize_blue_rect'
-                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'right_resize_move_blue_rect'});
-            case 'segment_marker'
-                switch get(GUI.Window, 'selectiontype')
-                    case 'normal'
-                        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'segment_marker_move'});
-                end
-            otherwise
+        if isfield(GUI, 'rect_handle') && isfield(DATA, 'AnalysisParams')
+            current_object = hittest(GUI.Window);
+            if ismember(current_object, GUI.rect_handle) && DATA.AnalysisParams.winNum ~= 1
+                DATA.active_window = get(current_object, 'UserData');
+                set(GUI.active_winNum, 'String', DATA.active_window);
+                uistack(current_object, 'down');
+                set_active_window(current_object);
+            end
+            
+            prev_point = get(GUI.AllDataAxes, 'CurrentPoint');
+            DATA.prev_point = prev_point(1, 1);
+            prev_point = get(GUI.RawDataAxes, 'CurrentPoint');
+            DATA.prev_point_segment = prev_point(1, 1);
+            
+            if DATA.AnalysisParams.winNum == 1
+                blue_rect_xdata = get(GUI.rect_handle, 'XData');
+                RawDataAxes_XLim = get(GUI.RawDataAxes, 'XLim');
+                DATA.minXLimRawDataAxes = min(RawDataAxes_XLim);
+                DATA.left_limit = min(blue_rect_xdata);
+                DATA.maxXLimRawDataAxes = max(RawDataAxes_XLim);
+                %             DATA.right_limit = blue_rect_xdata(3);
+                DATA.right_limit = max(blue_rect_xdata);
+            end
+            
+            switch DATA.hObject
+                case 'window'
+                    switch get(GUI.Window, 'selectiontype')
+                        case 'normal'
+                            set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_move'});
+                        case 'open'
+                            Window_Move('open');
+                            %                         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_resize'});
+                        otherwise
+                    end
+                case 'left_resize'
+                    set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'left_resize_move'});
+                case 'right_resize'
+                    set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'right_resize_move'});
+                case 'window_blue_rect'
+                    switch get(GUI.Window, 'selectiontype')
+                        case 'normal'
+                            set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_move_blue_rect'});
+                        case 'open'
+                        otherwise
+                    end
+                case 'left_resize_blue_rect'
+                    set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'left_resize_move_blue_rect'});
+                case 'right_resize_blue_rect'
+                    set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'right_resize_move_blue_rect'});
+                case 'segment_marker'
+                    switch get(GUI.Window, 'selectiontype')
+                        case 'normal'
+                            set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'segment_marker_move'});
+                    end
+                otherwise
+            end
         end
     end
 %%

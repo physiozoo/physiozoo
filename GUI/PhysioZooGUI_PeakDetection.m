@@ -42,8 +42,10 @@ GUI = createInterface();
         DATA.Padding = 3;
         
         DATA.PlotHR = 0;
+        
+        DATA.firstZoom = 60; % sec
+        DATA.zoom_rect_limits = [0 DATA.firstZoom];
     end
-
 %% Open the window
     function GUI = createInterface()
         SmallFontSize = DATA.SmallFontSize;
@@ -52,15 +54,15 @@ GUI = createInterface();
         GUI.Window = figure( ...
             'Name', 'PhysioZoo_PeakDetection', ...
             'NumberTitle', 'off', ...   
-            'HandleVisibility', 'off', ...
+            'HandleVisibility', 'callback', ...
             'Toolbar', 'none', ...
             'MenuBar', 'none', ...
             'Position', [20, 50, DATA.window_size(1), DATA.window_size(2)], ...
             'Tag', 'fPhysioZooPD');
         
-        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
-        set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
-        set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
+%         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
+%         set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
+%         set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
         
         
         % 'Toolbar', 'none', ...
@@ -80,13 +82,13 @@ GUI = createInterface();
 %         set(findall(a,'TooltipString','Edit Plot'),'Visible','Off');
         
 
-        uitoolbar_handle = uitoolbar('Parent', GUI.Window);
-        C = uitoolfactory(uitoolbar_handle, 'Exploration.ZoomIn');
-%         C.Separator = 'on';
-        C = uitoolfactory(uitoolbar_handle, 'Exploration.ZoomOut');
-        C = uitoolfactory(uitoolbar_handle, 'Exploration.Pan');
-        C = uitoolfactory(uitoolbar_handle, 'Exploration.DataCursor');
-        %         C = uitoolfactory(H,'Standard.EditPlot');       
+%         uitoolbar_handle = uitoolbar('Parent', GUI.Window);
+%         C = uitoolfactory(uitoolbar_handle, 'Exploration.ZoomIn');
+% %         C.Separator = 'on';
+%         C = uitoolfactory(uitoolbar_handle, 'Exploration.ZoomOut');
+%         C = uitoolfactory(uitoolbar_handle, 'Exploration.Pan');
+%         C = uitoolfactory(uitoolbar_handle, 'Exploration.DataCursor');
+%         %         C = uitoolfactory(H,'Standard.EditPlot');       
         
         % + File menu
         GUI.FileMenu = uimenu( GUI.Window, 'Label', 'File' );
@@ -143,8 +145,8 @@ GUI = createInterface();
         RightLeft_TabPanel.TabWidth = 100;
         RightLeft_TabPanel.FontSize = BigFontSize;
         
-        GUI.ECGDataAxes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'MainAxes');
-        GUI.RRDataAxes = axes('Parent', uicontainer('Parent', two_axes_box));
+        GUI.ECGDataAxes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'GUI.ECGDataAxes');
+        GUI.RRDataAxes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'GUI.RRDataAxes');
         
         set(two_axes_box, 'Heights', [-1, 100]);
         
@@ -223,7 +225,15 @@ GUI = createInterface();
         
         GUI.AutoPeakWin_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', SmallFontSize, 'String', 'Auto', 'Value', 1);
         [GUI, textBox{8}, text_handles{8}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', '');
-                               
+        
+%         uix.Empty('Parent', GUI.ConfigBox );
+%         
+%         tempBox = uix.HBox('Parent', GUI.ConfigBox, 'Spacing', DATA.Spacing);
+%         uix.Empty('Parent', tempBox );
+%         GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', tempBox, 'Callback', @Del_win_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Del Win');
+%         uix.Empty('Parent', tempBox );  
+%         uix.Empty('Parent', tempBox ); 
+        
         uix.Empty('Parent', GUI.ConfigBox );
         set(GUI.ConfigBox, 'Heights', [-7 -7  -7 -7 -7 -7 -7 -7 -10 -7 -7 -35] );
         %-------------------------------------------------------
@@ -245,6 +255,8 @@ GUI = createInterface();
             set(textBox{i}, 'Widths', field_size);
         end
                 
+%         set( tempBox, 'Widths',  field_size); 
+        
         field_size = [max_extent_control, 72, 2, 70, 10];
         set(YLimitBox, 'Widths', field_size);
         
@@ -378,13 +390,12 @@ GUI = createInterface();
             end
             
             DATA.mammal_index = index_selected;
+            DATA.zoom_rect_limits = [0 DATA.firstZoom];
             
             load_updateGUI_config_param();
             if get(GUI.AutoCalc_checkbox, 'Value')
-                RunAndPlotPeakDetector();
-                %             RunAndPlotPeakDetector(index_selected, DATA.customConfigFile);
-            end
-            
+                RunAndPlotPeakDetector();                
+            end            
             if strcmp(mammal, 'dog')
                 DATA.peak_search_win = 90;
             elseif strcmp(mammal, 'rabbit')
@@ -492,12 +503,18 @@ GUI = createInterface();
             TitleName = [PathName ECG_FileName_title] ;
             title(GUI.ECGDataAxes, TitleName, 'FontWeight', 'normal', 'FontSize', 11);
             
-            min_sig = min(DATA.sig);
-            max_sig = max(DATA.sig);
-            delta = (max_sig - min_sig)*0.1;
+            right_limit2plot = min(DATA.firstZoom, max(DATA.tm));            
             
-            set(GUI.ECGDataAxes, 'XLim', [0 max(DATA.tm)]);
-            set(GUI.ECGDataAxes, 'YLim', [min(min_sig, max_sig) - delta max(min_sig, max_sig) + delta]);
+            setECGYLim(0, right_limit2plot);
+            
+%             sig = DATA.sig(DATA.tm >= 0 & DATA.tm <= right_limit2plot);
+%                         
+%             min_sig = min(sig);
+%             max_sig = max(sig);
+%             delta = (max_sig - min_sig)*0.1;
+            
+            set(GUI.ECGDataAxes, 'XLim', [0 right_limit2plot]); 
+%             set(GUI.ECGDataAxes, 'YLim', [min(min_sig, max_sig) - delta max(min_sig, max_sig) + delta]);
             
             xlabel(GUI.ECGDataAxes, 'Time (sec)');
             ylabel(GUI.ECGDataAxes, 'ECG (mV)');
@@ -508,9 +525,10 @@ GUI = createInterface();
             
             GUI.LoadConfigurationFile.Enable = 'on';
             GUI.SaveConfigurationFile.Enable = 'on';
-            GUI.SavePeaks.Enable = 'on';
+            GUI.SavePeaks.Enable = 'on';            
             
-%             RunAndPlotPeakDetector(get(GUI.GUIRecord.Mammal_popupmenu, 'Value'), []);
+            
+            DATA.zoom_rect_limits = [0 DATA.firstZoom];
         end
     end
 %%
@@ -532,6 +550,16 @@ GUI = createInterface();
         end
     end
 %%
+    function setECGYLim(minLimit, maxLimit)
+        sig = DATA.sig(DATA.tm >= minLimit & DATA.tm <= maxLimit);
+        
+        min_sig = min(sig);
+        max_sig = max(sig);
+        delta = (max_sig - min_sig)*0.1;
+                
+        set(GUI.ECGDataAxes, 'YLim', [min(min_sig, max_sig) - delta max(min_sig, max_sig) + delta]);
+    end
+%%
     function load_updateGUI_config_param()
         DATA.config_map = parse_gqrs_config_file(DATA.customConfigFile);
         
@@ -546,9 +574,7 @@ GUI = createInterface();
         end
     end
 %%
-%     function RunAndPlotPeakDetector(mammal_index, customConfigFile)
     function RunAndPlotPeakDetector()
-        
         if isfield(DATA, 'rec_name') && ~strcmp(DATA.rec_name, '')
             
             cla(GUI.RRDataAxes);
@@ -556,11 +582,6 @@ GUI = createInterface();
                 delete(DATA.red_peaks_handle);
             end
             if isfield(DATA, 'customConfigFile') && ~strcmp(DATA.customConfigFile, '')
-                %         if mammal_index == length(DATA.mammals)
-                %             conf_path = customConfigFile;
-                %         else
-                %             conf_path = ['gqrs.' DATA.mammals{mammal_index} '.conf'];
-                %         end
                 
                 load_updateGUI_config_param();
                 
@@ -570,12 +591,23 @@ GUI = createInterface();
                 
                 if ~isempty(DATA.qrs)
                     plot_rr_data();
+                    plot_red_rectangle(DATA.zoom_rect_limits);
                     GUI.PeaksTable.Data(1, 2) = {length(DATA.qrs)};
                 else
                     errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
                 end
             end
+            set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
+            set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
+            set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
         end
+    end
+%%
+    function plot_red_rectangle(xlim)        
+        ylim = get(GUI.RRDataAxes, 'YLim');
+        x_box = [min(xlim) max(xlim) max(xlim) min(xlim) min(xlim)];
+        y_box = [ylim(1) ylim(1) ylim(2) ylim(2) ylim(1)];
+        GUI.red_rect = line(x_box, y_box, 'Color', 'r', 'Linewidth', 2, 'Parent', GUI.RRDataAxes, 'Tag', 'red_zoom_rect');
     end
 %%
     function plot_rr_data()
@@ -597,26 +629,19 @@ GUI = createInterface();
                 
                 min_sig = min(rr_data);
                 max_sig = max(rr_data);
-                delta = (max_sig - min_sig)*1;
-                
+                delta = (max_sig - min_sig)*0.1;
+                   
+                DATA.maxRRTime = max(rr_time);
+                DATA.eps = DATA.maxRRTime*0.01;
                 
                 set(GUI.RRDataAxes, 'YLim', [min(min_sig, max_sig) - delta max(min_sig, max_sig) + delta]);
-                
-                % xlabel('Time (sec)');
+                                
                 ylabel(GUI.RRDataAxes, yString);
                 if length(qrs) == length(DATA.qrs)
                     set(GUI.RRDataAxes, 'XLim', [0 max(DATA.tm)]);
-                    linkaxes([GUI.ECGDataAxes, GUI.RRDataAxes], 'x');                    
-                else
-                    linkaxes([GUI.ECGDataAxes, GUI.RRDataAxes], 'off');
-                    set(GUI.RRDataAxes, 'XLim', get(GUI.ECGDataAxes, 'XLim'));
-                    linkaxes([GUI.ECGDataAxes, GUI.RRDataAxes], 'x'); 
+%                 else
+%                     set(GUI.RRDataAxes, 'XLim', get(GUI.ECGDataAxes, 'XLim'));
                 end
-                
-                
-                %                     set(GUI.NumPeaksDetected_edit, 'String', num2str(length(DATA.qrs)));
-                %         else
-                %             errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
             end
         end
     end
@@ -626,11 +651,9 @@ GUI = createInterface();
         [Config_FileName, PathName] = uigetfile({'*.conf','Conf files (*.conf)'}, 'Open Configuration File', []);
         if ~isequal(Config_FileName, 0)
             mammal_index = length(DATA.mammals);
-%             params_filename = fullfile(PathName, Config_FileName);
             DATA.customConfigFile = fullfile(PathName, Config_FileName);
             load_updateGUI_config_param();
             if get(GUI.AutoCalc_checkbox, 'Value')
-%                 RunAndPlotPeakDetector(mammal_index, params_filename);
                 RunAndPlotPeakDetector();                
             end
             GUI.GUIRecord.Mammal_popupmenu.Value = mammal_index;
@@ -720,18 +743,18 @@ GUI = createInterface();
         end
     end
 %%
-    function CalcWithNewValues_pushbutton_Callback(~, ~)
-        
-        Config_FileName = 'gqrs.temp_custom.conf';
-        
-        if isfield(DATA, 'config_map')
-            temp_custom_conf_fileID = saveCustomParameters(Config_FileName);
-            if temp_custom_conf_fileID ~= -1
-                RunAndPlotPeakDetector(length(DATA.mammals), fullfile(pwd, Config_FileName));
-                delete(Config_FileName);
-            end
-        end
-    end
+%     function CalcWithNewValues_pushbutton_Callback(~, ~)
+%         
+%         Config_FileName = 'gqrs.temp_custom.conf';
+%         
+%         if isfield(DATA, 'config_map')
+%             temp_custom_conf_fileID = saveCustomParameters(Config_FileName);
+%             if temp_custom_conf_fileID ~= -1
+%                 RunAndPlotPeakDetector(length(DATA.mammals), fullfile(pwd, Config_FileName));
+%                 delete(Config_FileName);
+%             end
+%         end
+%     end
 %%
     function delete_temp_wfdb_files()        
         if exist([pwd '\' DATA.temp_rec_name4wfdb '.hea'], 'file')
@@ -808,8 +831,7 @@ GUI = createInterface();
         end
     end
 %%
-    function AutoCompute_pushbutton_Callback( ~, ~ )
-        %         RunAndPlotPeakDetector(get(GUI.GUIRecord.Mammal_popupmenu, 'Value'), []);        
+    function AutoCompute_pushbutton_Callback( ~, ~ )        
         RunAndPlotPeakDetector();
     end
 %%
@@ -841,71 +863,209 @@ GUI = createInterface();
 %%
     function my_WindowButtonUpFcn (src, callbackdata, handles)
         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
-        %         pause(0.75);
         refresh(GUI.Window);
+        switch DATA.hObject
+            case 'del_win_peaks'
+                Del_win(get(GUI.del_rect, 'XData'));
+                try
+                    delete(GUI.del_rect);
+                catch
+                end
+                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
+            otherwise
+        end        
     end
 %%
-    function my_WindowButtonMotionFcn(src, callbackdata, type)
-        
+    function my_WindowButtonMotionFcn(src, callbackdata, type)        
         switch type
             case 'init'
-                if isfield(DATA, 'red_peaks_handle')
-                    if (hittest(GUI.Window) == DATA.RawDataHandle || get(hittest(GUI.Window), 'Parent') == DATA.RawDataHandle)
-                        point1 = get(GUI.ECGDataAxes, 'CurrentPoint');
+                    if (hittest(GUI.Window) == DATA.RawDataHandle || get(hittest(GUI.Window), 'Parent') == DATA.RawDataHandle) % ECG data                        
                         setptr(GUI.Window, 'datacursor');
-                        DATA.hObject = 'window';
+                        DATA.hObject = 'add_del_peak';
+                    elseif (hittest(GUI.Window) == GUI.ECGDataAxes) %  || get(hittest(GUI.Window), 'Parent') == GUI.ECGDataAxes % white space, draw del rect
+                        setptr(GUI.Window, 'ddrag');
+                        DATA.hObject = 'del_win_peaks';
+                    elseif hittest(GUI.Window) == GUI.red_rect % || get(hittest(GUI.Window), 'Parent') == GUI.red_rect
+                        try
+                            xdata = get(GUI.red_rect, 'XData');
+                            point1 = get(GUI.RRDataAxes, 'CurrentPoint');
+                            if point1(1, 1) >= 0 && point1(1, 1) <= max(get(GUI.RRDataAxes, 'XLim'))
+                                if  point1(1,1) <= max(xdata) + DATA.eps && point1(1,1) >= max(xdata) - DATA.eps
+                                    setptr(GUI.Window, 'lrdrag');
+                                    DATA.hObject = 'right_resize';
+                                elseif  point1(1,1) <= min(xdata) + DATA.eps && point1(1,1) >= min(xdata) - DATA.eps
+                                    setptr(GUI.Window, 'lrdrag');
+                                    DATA.hObject = 'left_resize';
+                                elseif point1(1,1) < max(xdata) && point1(1,1) > min(xdata)
+                                    setptr(GUI.Window, 'hand');
+                                    DATA.hObject = 'zoom_rect_move';
+                                else
+                                    setptr(GUI.Window, 'arrow');
+                                    DATA.hObject = 'overall';
+                                end
+                            end
+                        catch
+                        end                        
                     else
                         setptr(GUI.Window, 'arrow');
                         DATA.hObject = 'overall';
-                    end
-                else
-                    setptr(GUI.Window, 'arrow');
-                    DATA.hObject = 'figure';
-                end
+                    end                    
+            case 'window_move'
+                Window_Resize('normal');
+            case 'drag_del_rect'
+                draw_rect_to_del_peaks();
+            case 'right_resize_move'
+                LR_Resize('right');
+            case 'left_resize_move'
+                LR_Resize('left');
             otherwise
         end
     end
 %%
     function my_WindowButtonDownFcn(src, callbackdata, handles)
-        current_object = hittest(GUI.Window);
-%         prev_point = get(DATA.red_peaks_handle, 'CurrentPoint');
-        prev_point = get(GUI.ECGDataAxes, 'CurrentPoint');
-        DATA.prev_point = prev_point(1, 1);
-%         get(GUI.Window, 'selectiontype');
+        prev_point = get(GUI.RRDataAxes, 'CurrentPoint');
+        DATA.prev_point = prev_point;
+        curr_point = get(GUI.ECGDataAxes, 'CurrentPoint');
+        DATA.prev_point_ecg = curr_point;
         switch DATA.hObject
-            case 'window'
+            case 'add_del_peak'
+                Remove_Peak();
+            case 'del_win_peaks'
+                GUI.del_rect = line(curr_point(1, 1), curr_point(1, 2), 'Color', 'r', 'Linewidth', 1.5, 'LineStyle', ':', 'Parent', GUI.ECGDataAxes);
+                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'drag_del_rect'});
+            case 'left_resize'
+                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'left_resize_move'});
+            case 'right_resize'
+                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'right_resize_move'});
+            case 'zoom_rect_move'
                 switch get(GUI.Window, 'selectiontype')
                     case 'normal'
-%                         disp('%%%%%%%%%%%');
-                        Remove_Peak('open');
-%                         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'remove_peak'});
-%                     case 'open'
-%                         Remove_Peak('open');
-                        %                         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_resize'});
+                        set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_move'}); % move zoom rectangle
+                    case 'open'
+                        Window_Resize('open'); % double-click: show all data
                     otherwise
                 end
             otherwise
         end
     end
 %%
-    function Remove_Peak(type)
+    function LR_Resize(type)
+        xdata = get(GUI.red_rect, 'XData');
+        xdata_saved = xdata;
+        point1 = get(GUI.RRDataAxes, 'CurrentPoint');
+        xofs = point1(1,1) - DATA.prev_point(1, 1);
+        DATA.prev_point = point1(1, 1);
         
-        point1 = get(GUI.ECGDataAxes, 'CurrentPoint');        
+        RR_XLim = get(GUI.RRDataAxes,  'XLim');
+        min_XLim = min(RR_XLim);
+        max_XLim = max(RR_XLim);
+        
+        switch type
+            case 'left'
+                xdata([1, 4, 5]) = xdata([1, 4, 5]) + xofs;
+            case 'right'
+                xdata([2, 3]) = xdata([2, 3]) + xofs;
+        end
+        if xdata(2) <= xdata(1)
+            return;
+        end
+        if min(xdata) < min_XLim
+            xofs_updated = min_XLim - min(xdata_saved);
+            xdata([1, 4, 5]) = xdata_saved([1, 4, 5]) + xofs_updated;
+        elseif max(xdata) > max_XLim
+            xofs_updated = max_XLim - max(xdata_saved);
+            xdata([2, 3]) = xdata_saved([2, 3]) + xofs_updated;
+        end
+        ChangePlot(xdata);
+        set(GUI.red_rect, 'XData', xdata);
+        DATA.zoom_rect_limits = [xdata(1) xdata(2)];
+    end
+%%
+    function Window_Resize(type)
+        
+        xdata = get(GUI.red_rect, 'XData');
+        xdata_saved = xdata;
+        point1 = get(GUI.RRDataAxes, 'CurrentPoint');        
+        xofs = point1(1,1) - DATA.prev_point(1, 1);
+        DATA.prev_point = point1(1, 1);
+        
+        RR_XLim = get(GUI.RRDataAxes,  'XLim');
+        min_XLim = min(RR_XLim);
+        max_XLim = max(RR_XLim);  
+        
+        switch type
+            case 'normal'
+                xdata = xdata + xofs;
+            case 'open'
+                xdata([1, 4, 5]) = 0;
+                xdata([2, 3]) = DATA.maxRRTime;
+        end
+        if min(xdata) < min_XLim
+            xofs_updated = min_XLim - min(xdata_saved);
+            xdata = xdata_saved + xofs_updated;
+        elseif max(xdata) > max_XLim
+            xofs_updated = max_XLim - max(xdata_saved);
+            xdata = xdata_saved + xofs_updated;
+        end
+        ChangePlot(xdata);
+        set(GUI.red_rect, 'XData', xdata);
+        DATA.zoom_rect_limits = [xdata(1) xdata(2)];
+    end
+%%
+    function draw_rect_to_del_peaks()
+        point1 = get(GUI.ECGDataAxes, 'CurrentPoint');
+        
+        x_box = [DATA.prev_point_ecg(1, 1) DATA.prev_point_ecg(1, 1) point1(1, 1) point1(1, 1) DATA.prev_point_ecg(1, 1)];
+        y_box = [DATA.prev_point_ecg(1, 2) point1(1, 2) point1(1, 2) DATA.prev_point_ecg(1, 2) DATA.prev_point_ecg(1, 2)];
+        
+        set(GUI.del_rect, 'XData', x_box, 'YData', y_box);
+    end
+%%
+    function ChangePlot(xdata)                     
+                      
+%         linkaxes([GUI.ECGDataAxes, GUI.RRDataAxes], 'off');
+        set(GUI.ECGDataAxes, 'XLim', [xdata(1) xdata(2)]); 
+        setECGYLim(xdata(1), xdata(2));
+%         linkaxes([GUI.ECGDataAxes, GUI.RRDataAxes], 'on');
+                
+%         DATA.firstSecond2Show = xdata(1);
+%         DATA.MyWindowSize = xdata(2) - xdata(1);
+%         
+%         set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
+%         set(GUI.WindowSize,'String', calcDuration(DATA.MyWindowSize, 0));
+%         
+%         if abs(DATA.maxSignalLength - DATA.MyWindowSize ) <=  1 %0.0005
+%             set(GUI.RawDataSlider, 'Enable', 'off');
+%             set(GUI.FirstSecond, 'Enable', 'off');
+%         else
+%             set(GUI.RawDataSlider, 'Enable', 'on');
+%             set(GUI.FirstSecond, 'Enable', 'on');            
+%             setSliderProperties(GUI.RawDataSlider, DATA.maxSignalLength, DATA.MyWindowSize, DATA.MyWindowSize/DATA.maxSignalLength);            
+%             
+%             if DATA.firstSecond2Show > get(GUI.RawDataSlider, 'Max') 
+%                 set(GUI.RawDataSlider, 'Value', get(GUI.RawDataSlider, 'Max')); 
+%             else            
+%                 set(GUI.RawDataSlider, 'Value', DATA.firstSecond2Show);            
+%             end
+%         end                              
+%         setXAxesLim();
+%         setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);
+%         setYAxesLim();
+%         plotDataQuality();
+%         plotMultipleWindows();           
+    end
+%%
+    function Remove_Peak()
+        
+        point1 = get(GUI.ECGDataAxes, 'CurrentPoint');
         my_point = point1(1, 1);
         peak_search_win_sec = DATA.peak_search_win / 1000;
         
-        if ~get(GUI.AutoPeakWin_checkbox, 'Value')            
-            
-%         else
-%             peak_search_win_sec = 0;
-            
+        if ~get(GUI.AutoPeakWin_checkbox, 'Value')                        
             
             [left_limit, left_limit_ind] = max(DATA.tm(DATA.tm < my_point));
-%             [ind, ~] = find(DATA.tm < my_point);
-%             left_limit_ind = max(ind);
             
             right_limit = min(DATA.tm(DATA.tm > my_point));            
-%             right_limit_ind = min(find(DATA.tm > my_point));
             right_limit_ind = find(DATA.tm > my_point, 1);
             
             left_dist = my_point-left_limit;
@@ -953,15 +1113,33 @@ GUI = createInterface();
             set(DATA.red_peaks_handle, 'XData', temp_XData, 'YData', temp_YData);
             
         else
-            DATA.red_peaks_handle.XData(peak_ind) = NaN;
-            DATA.red_peaks_handle.YData(peak_ind) = NaN;
-            DATA.qrs(peak_ind) = NaN;
+            DATA.red_peaks_handle.XData(peak_ind) = [];
+            DATA.red_peaks_handle.YData(peak_ind) = [];
+            DATA.qrs(peak_ind) = [];
         end
         cla(GUI.RRDataAxes);
         plot_rr_data();
+        plot_red_rectangle(DATA.zoom_rect_limits);
     end
 %%
-        function onHelp( ~, ~ )
+    function Del_win(range2del)        
+        xlim = get(GUI.ECGDataAxes, 'XLim');
+        
+        if min(range2del) >= xlim(1) || max(range2del) <= xlim(2)
+            red_peaks_x_data = DATA.red_peaks_handle.XData;
+            peak_ind = find(red_peaks_x_data >= min(range2del) & red_peaks_x_data <= max(range2del));
+            DATA.red_peaks_handle.XData(peak_ind) = [];
+            DATA.red_peaks_handle.YData(peak_ind) = [];
+            DATA.qrs(peak_ind) = [];
+            cla(GUI.RRDataAxes);
+            plot_rr_data();
+            plot_red_rectangle(DATA.zoom_rect_limits);
+        else
+            disp('Not in range!');
+        end        
+    end
+%%
+    function onHelp( ~, ~ )
     end
 %%
     function Exit_Callback( ~, ~ )

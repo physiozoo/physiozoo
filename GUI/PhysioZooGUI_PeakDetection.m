@@ -632,7 +632,7 @@ GUI = createInterface();
                 delta = (max_sig - min_sig)*0.1;
                    
                 DATA.maxRRTime = max(rr_time);
-                DATA.eps = DATA.maxRRTime*0.01;
+                DATA.eps = DATA.maxRRTime * 0.01; %0.01
                 
                 set(GUI.RRDataAxes, 'YLim', [min(min_sig, max_sig) - delta max(min_sig, max_sig) + delta]);
                                 
@@ -885,7 +885,7 @@ GUI = createInterface();
                     elseif (hittest(GUI.Window) == GUI.ECGDataAxes) %  || get(hittest(GUI.Window), 'Parent') == GUI.ECGDataAxes % white space, draw del rect
                         setptr(GUI.Window, 'ddrag');
                         DATA.hObject = 'del_win_peaks';
-                    elseif hittest(GUI.Window) == GUI.red_rect % || get(hittest(GUI.Window), 'Parent') == GUI.red_rect
+                    elseif hittest(GUI.Window) == GUI.red_rect  % || get(hittest(GUI.Window), 'Parent') == GUI.RRDataAxes  % GUI.red_rect
                         try
                             xdata = get(GUI.red_rect, 'XData');
                             point1 = get(GUI.RRDataAxes, 'CurrentPoint');
@@ -896,20 +896,27 @@ GUI = createInterface();
                                 elseif  point1(1,1) <= min(xdata) + DATA.eps && point1(1,1) >= min(xdata) - DATA.eps
                                     setptr(GUI.Window, 'lrdrag');
                                     DATA.hObject = 'left_resize';
-                                elseif point1(1,1) < max(xdata) && point1(1,1) > min(xdata)
-                                    setptr(GUI.Window, 'hand');
-                                    DATA.hObject = 'zoom_rect_move';
                                 else
                                     setptr(GUI.Window, 'arrow');
                                     DATA.hObject = 'overall';
                                 end
                             end
                         catch
-                        end                        
+                        end
+                    elseif hittest(GUI.Window) == GUI.RRDataAxes || get(hittest(GUI.Window), 'Parent') == GUI.RRDataAxes
+                        xdata = get(GUI.red_rect, 'XData');
+                        point1 = get(GUI.RRDataAxes, 'CurrentPoint');
+                        if point1(1,1) < max(xdata) && point1(1,1) > min(xdata)
+                            setptr(GUI.Window, 'hand');
+                            DATA.hObject = 'zoom_rect_move';
+                        else
+                            setptr(GUI.Window, 'arrow');
+                            DATA.hObject = 'overall';
+                        end
                     else
                         setptr(GUI.Window, 'arrow');
                         DATA.hObject = 'overall';
-                    end                    
+                    end
             case 'window_move'
                 Window_Resize('normal');
             case 'drag_del_rect'

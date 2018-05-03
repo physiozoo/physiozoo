@@ -603,10 +603,40 @@ displayEndOfDemoMessage('');
         uix.Empty( 'Parent', GUI.DisplayBox );
         set( GUI.DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -7 -10 -7 -7 -7 -7 -40] );
         
+        
+        %-----------------------------------------------------------------------------------------------
+        
         uix.Empty( 'Parent', GUI.GroupBox );
         
+        DataTypeBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+        aa{1} = uicontrol( 'Style', 'text', 'Parent', DataTypeBox, 'String', 'Data Type', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.DataType_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DataTypeBox, 'Callback', @DataType_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', {'ECG'; 'QRS'});
+        uix.Empty( 'Parent', DataTypeBox );
+        uix.Empty( 'Parent', DataTypeBox );
+        
+        
+        FileTypeBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+        aa{2} = uicontrol( 'Style', 'text', 'Parent', FileTypeBox, 'String', 'File Type', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.FileType_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', FileTypeBox, 'Callback', @FileType_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', {'mat'; 'txt'; 'wfdb'});
+        uix.Empty( 'Parent', FileTypeBox );
+        uix.Empty( 'Parent', FileTypeBox );
+        
+        
+        
+        
+        
+        
+%         DataType_bg = uibuttongroup( 'Parent', DataTypeBox, 'Title', 'Data Type');
+%         uix.Empty( 'Parent', DataTypeBox );
+%         uix.Empty( 'Parent', DataTypeBox );        
+%         ECG_radiobutton = uicontrol('Parent', DataType_bg, 'Style', 'radiobutton', 'String', 'ECG');
+%         QRS_radiobutton = uicontrol('Parent', DataType_bg, 'Style', 'radiobutton', 'String', 'QRS');
+%         get(ECG_radiobutton, 'Units')
+%         get(ECG_radiobutton, 'Position')        
+%         DataType_bg.Visible = 'on';
+        
         GUI.LoadBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        aa{1} = uicontrol( 'Style', 'text', 'Parent', GUI.LoadBox, 'String', 'Load', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        aa{3} = uicontrol( 'Style', 'text', 'Parent', GUI.LoadBox, 'String', 'Load', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Load_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.LoadBox, 'Callback', @Load_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', '  ');
         GUI.LoadButtons_Box = uix.HButtonBox('Parent', GUI.LoadBox, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'ButtonSize', [70, 30]);
         GUI.LoadDir_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', GUI.LoadButtons_Box, 'Callback', @LoadDir_pushbutton_Callback, 'FontSize', BigFontSize, 'String', '  ...  ');
@@ -615,26 +645,25 @@ displayEndOfDemoMessage('');
         uix.Empty( 'Parent', GUI.GroupBox );
         
         GUI.MembersBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        aa{2} = uicontrol( 'Style', 'text', 'Parent', GUI.MembersBox, 'String', 'Members', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        aa{4} = uicontrol( 'Style', 'text', 'Parent', GUI.MembersBox, 'String', 'Members', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Members_listbox = uicontrol( 'Style', 'ListBox', 'Parent', GUI.MembersBox, 'Callback', @Members_listbox_Callback, 'FontSize', SmallFontSize, 'String', {' '; ' '; ' '; ' '});
         uix.Empty( 'Parent', GUI.MembersBox );
         uix.Empty( 'Parent', GUI.MembersBox );
         
         uix.Empty( 'Parent', GUI.GroupBox );
-        
-        
+                
         GUI.NamesBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        aa{3} = uicontrol( 'Style', 'text', 'Parent', GUI.NamesBox, 'String', 'Name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.Name_edit = uicontrol( 'Style', 'edit', 'Parent', GUI.NamesBox, 'Callback', @Name_rdit_Callback, 'FontSize', SmallFontSize);
+        aa{5} = uicontrol( 'Style', 'text', 'Parent', GUI.NamesBox, 'String', 'Name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.Name_edit = uicontrol( 'Style', 'edit', 'Parent', GUI.NamesBox, 'Callback', @Name_edit_Callback, 'FontSize', SmallFontSize);
         GUI.AddDelButtons_Box = uix.HButtonBox('Parent', GUI.NamesBox, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'ButtonSize', [70, 30]);
-        GUI.Add_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', GUI.AddDelButtons_Box, 'Callback', @PushButton, 'FontSize', BigFontSize, 'String', 'Add');
+        GUI.Add_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', GUI.AddDelButtons_Box, 'Callback', @Add_PushButton, 'FontSize', BigFontSize, 'String', 'Add');
         GUI.Del_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', GUI.AddDelButtons_Box, 'Callback', @Del_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Del');        
         uix.Empty( 'Parent', GUI.NamesBox );
         
         uix.Empty( 'Parent', GUI.GroupBox );
         
         GUI.GroupsBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        aa{4} = uicontrol( 'Style', 'text', 'Parent', GUI.GroupsBox, 'String', 'Groups', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        aa{6} = uicontrol( 'Style', 'text', 'Parent', GUI.GroupsBox, 'String', 'Groups', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Groups_listbox = uicontrol( 'Style', 'ListBox', 'Parent', GUI.GroupsBox, 'Callback', @Groups_listbox_Callback, 'FontSize', SmallFontSize, 'String', {' '; ' '; ' '; ' '});
         uix.Empty( 'Parent', GUI.GroupsBox );
         uix.Empty( 'Parent', GUI.GroupsBox );
@@ -649,6 +678,8 @@ displayEndOfDemoMessage('');
         
         max_extent_control = calc_max_control_x_extend(aa);
         field_size = [max_extent_control + 5, 225, 80 -1]; 
+        set( DataTypeBox, 'Widths', field_size );
+        set( FileTypeBox, 'Widths', field_size );
         set( GUI.LoadBox, 'Widths', field_size );
         set( GUI.MembersBox, 'Widths', field_size );
         set( GUI.NamesBox, 'Widths', field_size );
@@ -657,7 +688,7 @@ displayEndOfDemoMessage('');
         
         uix.Empty( 'Parent', GUI.GroupBox );
         
-        set( GUI.GroupBox, 'Heights', [-7 -7.5 -1 -20 -1 -7 -1 -20 -5 -7 -10] );
+        set( GUI.GroupBox, 'Heights', [-1 -7.5 -7.5 -7.5 -1 -20 -1 -7 -1 -20 -5 -7 -1] );
         
         %---------------------------
         tables_field_size = [-85 -15];

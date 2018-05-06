@@ -17,6 +17,7 @@ myPanelColor = [0.58 0.69 0.73];
 
 persistent DIRS;
 persistent DATA_Fig;
+persistent DATA_Measure;
 persistent defaultRate;
 
 %rhrv_init();
@@ -163,13 +164,16 @@ displayEndOfDemoMessage('');
     end
 %%
     function clean_gui()
+        
+        set(GUI.SaveMeasures, 'Enable', 'off');
+        
         set(GUI.DataQualityMenu,'Enable', 'off');
-        set(GUI.SaveAsMenu,'Enable', 'off');
-        set(GUI.SavePSDAsMenu, 'Enable', 'off');
+%         set(GUI.SaveAsMenu,'Enable', 'off');
+%         set(GUI.SavePSDAsMenu, 'Enable', 'off');
         set(GUI.SaveFiguresAsMenu,'Enable', 'off');
         set(GUI.SaveParamFileMenu,'Enable', 'off');
         set(GUI.LoadConfigFile, 'Enable', 'off');
-        set(GUI.SaveFilteredDataFileMenu, 'Enable', 'off');
+%         set(GUI.SaveFilteredDataFileMenu, 'Enable', 'off');
         
         GUI.Filt_RawDataSlider.Enable = 'off';
         
@@ -256,11 +260,14 @@ displayEndOfDemoMessage('');
         uimenu( GUI.FileMenu, 'Label', 'Open File', 'Callback', @onOpenFile, 'Accelerator','O');
         GUI.DataQualityMenu = uimenu( GUI.FileMenu, 'Label', 'Open Data Quality File', 'Callback', @onOpenDataQualityFile, 'Accelerator','Q', 'Enable', 'off');
         GUI.LoadConfigFile = uimenu( GUI.FileMenu, 'Label', 'Load Custom Config File', 'Callback', @onLoadCustomConfigFile, 'Accelerator','P', 'Enable', 'off');
-        GUI.SaveAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save HRV Measures as', 'Callback', @onSaveResultsAsFile, 'Accelerator','S', 'Enable', 'off');
-        GUI.SavePSDAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save PSD as', 'Callback', @onSavePSDAsFile, 'Accelerator','D', 'Enable', 'off');
-        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save Figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');
         GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Config File', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');
-        GUI.SaveFilteredDataFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Filtered Data File', 'Callback', @onSaveFilteredDataFile, 'Accelerator','G', 'Enable', 'off');
+        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save Figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');        
+        GUI.SaveMeasures = uimenu( GUI.FileMenu, 'Label', 'Save Measures', 'Callback', @onSaveMeasures, 'Accelerator', 'S', 'Enable', 'off');        
+        
+%         GUI.SaveAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save HRV Measures as', 'Callback', @onSaveResultsAsFile, 'Accelerator','S', 'Enable', 'off');
+%         GUI.SavePSDAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save PSD as', 'Callback', @onSavePSDAsFile, 'Accelerator','D', 'Enable', 'off');        
+        
+%         GUI.SaveFilteredDataFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Filtered Data File', 'Callback', @onSaveFilteredDataFile, 'Accelerator','G', 'Enable', 'off');
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @onExit, 'Separator', 'on', 'Accelerator', 'E');
         
         % + Help menu
@@ -270,7 +277,8 @@ displayEndOfDemoMessage('');
         %uimenu( helpMenu, 'Label', 'About', 'Callback', @onAbout );
         
         % + Peak Detection menu
-        GUI.PeakDetectionMenu = uimenu( GUI.Window, 'Label', 'Peak Detection', 'Callback', @onPeakDetection);
+        tempMenu = uimenu( GUI.Window, 'Label', 'Peak Detection');
+        GUI.PeakDetectionMenu = uimenu( tempMenu, 'Label', 'Peak Detection', 'Callback', @onPeakDetection);
         
         % Create the layout (Arrange the main interface)
         GUI.mainLayout = uix.VBoxFlex('Parent', GUI.Window, 'Spacing', DATA.Spacing);
@@ -1775,12 +1783,16 @@ displayEndOfDemoMessage('');
                 
                 set(GUI.RecordName_text, 'String', QRS_FileName);
             end
-            set(GUI.SaveAsMenu, 'Enable', 'on');
-            set(GUI.SavePSDAsMenu, 'Enable', 'on');
+            
+            
+            set(GUI.SaveMeasures, 'Enable', 'on');
+            
+%             set(GUI.SaveAsMenu, 'Enable', 'on');
+%             set(GUI.SavePSDAsMenu, 'Enable', 'on');
             set(GUI.SaveFiguresAsMenu, 'Enable', 'on');
             set(GUI.SaveParamFileMenu, 'Enable', 'on');
             set(GUI.LoadConfigFile, 'Enable', 'on');
-            set(GUI.SaveFilteredDataFileMenu, 'Enable', 'on');
+%             set(GUI.SaveFilteredDataFileMenu, 'Enable', 'on');
         end
     end
 %%
@@ -2253,6 +2265,9 @@ displayEndOfDemoMessage('');
         if isempty(who('DATA_Fig')) || isempty(DATA_Fig)
             reset_defaults_path();
         end
+        if isempty(who('DATA_Measure')) || isempty(DATA_Measure)
+            reset_defaults_path();
+        end        
     end
 %%
     function reset_defaults_path()
@@ -2263,9 +2278,11 @@ displayEndOfDemoMessage('');
         DIRS.Ext_save = 'mat';
         DIRS.Ext_open = 'mat';
         
-        DATA_Fig.export_figures = [1 1 1 1 1 1 1];
-        %         DATA_Fig.export_figures_formats_index = 1;
+        DATA_Fig.export_figures = [1 1 1 1 1 1 1];        
         DATA_Fig.Ext = 'fig';
+        
+        DATA_Measure.measures = [1 1 1 1];                
+        DATA_Measure.Ext = 'mat';
     end
 %%
     function Reset_pushbutton_Callback( ~, ~ )
@@ -2685,8 +2702,7 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function cancel_button_Callback( ~, ~, Window2Close )
-        %delete( GUI.SaveFiguresWindow );
+    function cancel_button_Callback( ~, ~, Window2Close )        
         delete( Window2Close );
     end
 %%
@@ -2709,10 +2725,9 @@ displayEndOfDemoMessage('');
             '*.tif','TIFF image (*.tif)';...
             '*.tif','TIFF no compression image (*.tif)'},...
             'Choose Figures file Name',...
-            [DIRS.ExportResultsDirectory, filesep, [DATA.DataFileName, '.', DATA_Fig.Ext]]); % DATA.DataFileName  DATA.FiguresFormats{DATA_Fig.export_figures_formats_index}
+            [DIRS.ExportResultsDirectory, filesep, [DATA.DataFileName, '.', DATA_Fig.Ext]]); 
         if ~isequal(fig_path, 0)
-            DIRS.ExportResultsDirectory = fig_path;
-            %             GUI.path_edit.String = [fig_path, fig_name];
+            DIRS.ExportResultsDirectory = fig_path;            
             
             [~, fig_name, fig_ext] = fileparts(fig_full_name);
             
@@ -2721,16 +2736,8 @@ displayEndOfDemoMessage('');
                 DATA_Fig.Ext = fig_ext(2:end);
             else
                 DATA_Fig.Ext = 'fig';
-            end
-            %             DATA_Fig.export_figures_formats_index = FilterIndex;
-            
-            saveAs_figures_button();
-            
-            %             [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
-            
-            %             if ~isempty(fig_path) && ~isempty(fig_name)
-            %                 set(GUI.Formats_popupmenu, 'Value', FilterIndex);
-            %             end
+            end                        
+            saveAs_figures_button();                        
         end
     end
 %%
@@ -2738,8 +2745,7 @@ displayEndOfDemoMessage('');
         
         set_defaults_path();
         
-        GUIFiguresNames = {'NN Interval Distribution'; 'Power Spectral Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare Ellipse'; 'RR Time Series'};
-        %         DATA.FiguresNames = {'_NN_Interval_Distribution'; '_Power_Spectral_Density'; '_Beta'; '_DFA'; '_MSE'; '_Poincare_Ellipse'; '_RR_Time_Series'};
+        GUIFiguresNames = {'NN Interval Distribution'; 'Power Spectral Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare Ellipse'; 'RR Time Series'};        
         DATA.FiguresNames = {'_NND'; '_PSD'; '_Beta'; '_DFA'; '_MSE'; '_Poincare'; '_RR'};
         
         main_screensize = DATA.screensize;
@@ -2760,34 +2766,9 @@ displayEndOfDemoMessage('');
             uicontrol( 'Style', 'checkbox', 'Parent', figures_box, 'Callback', {@figures_checkbox_Callback, i}, 'FontSize', DATA.BigFontSize, ...
                 'Tag', ['Fig' num2str(i)], 'String', GUIFiguresNames{i}, 'FontName', 'Calibri', 'Value', DATA_Fig.export_figures(i));
         end
-        
-        %         main_path_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures path:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
-        %         main_path_box = uix.VBox('Parent', main_path_panel, 'Spacing', 3);
-        %         path_box = uix.HBox('Parent', main_path_box, 'Spacing', 3);
-        %         GUI.path_edit = uicontrol( 'Style', 'edit', 'Parent', path_box, ...
-        %             'String', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '.' DATA.FiguresFormats{DATA_Fig.export_figures_formats_index}], ...
-        %             'FontSize', DATA.BigFontSize, 'FontName', 'Calibri', 'HorizontalAlignment', 'left');
-        %         uix.Empty( 'Parent', path_box );
-        %         set( path_box, 'Widths', [-80 -10 ] );
-        %         dir_button_Box = uix.HButtonBox('Parent', main_path_box, 'Spacing', 3, 'HorizontalAlignment', 'left', 'ButtonSize', [100 25]);
-        %         uicontrol( 'Style', 'ToggleButton', 'Parent', dir_button_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Select Path and format', 'FontName', 'Calibri');
-        %         set( main_path_box, 'Heights', [-30 -70] );
-        %
-        %         main_formats_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', 7, 'Title', 'Choose figures format:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
-        %         format_box = uix.HBox('Parent', main_formats_panel, 'Spacing', 3);
-        %         GUI.Formats_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', format_box, 'Callback', @Formats_popupmenu_Callback, 'FontSize', DATA.BigFontSize, 'FontName', 'Calibri');
-        %         GUI.Formats_popupmenu.String = DATA.FiguresFormats;
-        %         set(GUI.Formats_popupmenu, 'Value', DATA_Fig.export_figures_formats_index);
-        %         uix.Empty( 'Parent', format_box );
-        %         set( format_box, 'Widths', [-20 -80 ] );
-        %
-        
-        % , 'HorizontalAlignment', 'right'
-        % Select Path and Format
-        % Export Figures
+                      
         CommandsButtons_Box = uix.HButtonBox('Parent', mainSaveFigurestLayout, 'Spacing', DATA.Spacing, 'VerticalAlignment', 'middle', 'ButtonSize', [100 30]);
-        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Save As', 'FontName', 'Calibri');
-        %         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @save_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Export Figures', 'FontName', 'Calibri');
+        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Save As', 'FontName', 'Calibri');        
         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', {@cancel_button_Callback, GUI.SaveFiguresWindow}, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
         
         set( mainSaveFigurestLayout, 'Heights',  [-70 -30]); % [-70 -45 -25]
@@ -2797,34 +2778,24 @@ displayEndOfDemoMessage('');
         DATA_Fig.export_figures(param_name) = get(src, 'Value');
     end
 %%
-    function Formats_popupmenu_Callback( ~, ~ )
-        index_selected = get(GUI.Formats_popupmenu, 'Value');
-        DATA.formats_index = index_selected;
-        
-        [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
-        
-        if ~isempty(fig_path) && ~isempty(fig_name)
-            GUI.path_edit.String = [fig_path, filesep, fig_name '.' DATA.FiguresFormats{index_selected}];
-        end
-    end
+%     function Formats_popupmenu_Callback( ~, ~ )
+%         index_selected = get(GUI.Formats_popupmenu, 'Value');
+%         DATA.formats_index = index_selected;
+%         
+%         [fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
+%         
+%         if ~isempty(fig_path) && ~isempty(fig_name)
+%             GUI.path_edit.String = [fig_path, filesep, fig_name '.' DATA.FiguresFormats{index_selected}];
+%         end
+%     end
 %%
     function saveAs_figures_button()
-        
-        %         [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '.' DATA.FiguresFormats{DATA_Fig.export_figures_formats_index}]
-        
-        %[fig_path, fig_name, fig_ext] = fileparts(get(GUI.path_edit, 'String'));
-        
+                
         fig_path = DIRS.ExportResultsDirectory;
-        fig_name = DATA_Fig.FigFileName;
-        %         fig_ext = DATA.FiguresFormats{DATA_Fig.export_figures_formats_index};
+        fig_name = DATA_Fig.FigFileName;        
         fig_ext = DATA_Fig.Ext;
         
-        if ~isempty(fig_path) && ~isempty(fig_name) && ~isempty(fig_ext)
-            
-            %             DATA_Fig.export_figures_formats_index = DATA.formats_index;
-            
-            %             DIRS.ExportResultsDirectory = fig_path;
-            %             ext = fig_ext(2:end);
+        if ~isempty(fig_path) && ~isempty(fig_name) && ~isempty(fig_ext)            
             ext = fig_ext;
             if strcmpi(ext, 'pcx')
                 ext = 'pcx24b';
@@ -2837,8 +2808,7 @@ displayEndOfDemoMessage('');
             elseif strcmpi(ext, 'tiff')
                 ext = 'tiffn';
             end
-            
-            %             export_path_name = [fig_path filesep fig_name];
+                        
             export_path_name = fullfile(fig_path, fig_name);
             
             yes_no = zeros(length(DATA.FiguresNames));
@@ -3011,26 +2981,27 @@ displayEndOfDemoMessage('');
         set(ax, 'XLim', [XData_active_window(1), XData_active_window(3)]);
     end
 %%
-    function onSavePSDAsFile( ~, ~ )
+    function onSavePSDAsFile( filename )
         if ~isempty(DATA.FrStat)
-            set_defaults_path();
-            [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose PSD File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName ]);
-            if ~isequal(results_folder_name, 0)
-                DIRS.ExportResultsDirectory = results_folder_name;
+%             set_defaults_path();
+%             [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose PSD File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName ]);
+            if ~isequal(DIRS.ExportResultsDirectory, 0)
+%                 DIRS.ExportResultsDirectory = results_folder_name;
                 [~, filename, ~] = fileparts(filename);
-                if FilterIndex == 1
-                    ext = '.txt';
-                else
-                    ext = '.mat';
-                end
-                full_file_name_psd = fullfile(results_folder_name, filename);
+%                 if FilterIndex == 1
+%                     ext = '.txt';
+%                 else
+%                     ext = '.mat';
+%                 end
+                ext = ['.' DATA_Measure.Ext];
+                full_file_name_psd = fullfile(DIRS.ExportResultsDirectory, filename);
                 button = 'Yes';
                 if exist([full_file_name_psd '_psd_W1' ext], 'file')
                     button = questdlg([full_file_name_psd ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
                 end
                 if strcmp(button, 'Yes')
                     full_file_name_psd = [full_file_name_psd '_psd_W'];
-                    if FilterIndex == 1
+                    if strcmp(ext, '.txt')
                         for i = 1 : DATA.AnalysisParams.winNum
                             plot_data = DATA.FrStat.PlotData{i};
                             psd_fileID = fopen([full_file_name_psd num2str(i) ext], 'w');
@@ -3042,7 +3013,7 @@ displayEndOfDemoMessage('');
                                 'precision', '%.5f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
                             fclose(psd_fileID);
                         end
-                    else
+                    elseif strcmp(ext, '.mat')
                         for i = 1 : DATA.AnalysisParams.winNum
                             plot_data = DATA.FrStat.PlotData{i};
                             Frequency = plot_data.f_axis;
@@ -3060,21 +3031,127 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function onSaveResultsAsFile( ~, ~ )
+    function onSaveMSEFile(filename)
+        if ~isempty(DATA.NonLinStat)
+            if ~isequal(DIRS.ExportResultsDirectory, 0)
+                [~, filename, ~] = fileparts(filename);
+                ext = ['.' DATA_Measure.Ext];
+                full_file_name_mse = fullfile(DIRS.ExportResultsDirectory, filename);
+                
+                button = 'Yes';
+                if exist([full_file_name_mse '_mse_W1' ext], 'file')
+                    button = questdlg([full_file_name_mse ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
+                end
+                if strcmp(button, 'Yes')
+                    full_file_name_mse = [full_file_name_mse '_mse_W'];
+                    if strcmp(ext, '.txt')
+                        for i = 1 : DATA.AnalysisParams.winNum
+                            mse_win_file_name = [full_file_name_mse num2str(i) ext];
+                            mse_fileID = fopen(mse_win_file_name, 'w');
+                            plot_data = DATA.NonLinStat.PlotData{i};
+                            fprintf(mse_fileID, 'scale_axis\tmse_result\r\n');
+                            dlmwrite(mse_win_file_name, [plot_data.mse.scale_axis; plot_data.mse.mse_result]', ...
+                                'precision', '%.5f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
+                            fclose(mse_fileID);
+                        end
+                    elseif strcmp(ext, '.mat')
+                        for i = 1 : DATA.AnalysisParams.winNum
+                            plot_data = DATA.NonLinStat.PlotData{i};
+                            scale_axis = plot_data.mse.scale_axis;
+                            mse_result = plot_data.mse.mse_result;
+                            save([full_file_name_mse num2str(i) ext], 'scale_axis', 'mse_result');
+                        end
+                    end
+                end
+            end
+        end
+    end
+%%
+    function onSaveMeasures( ~, ~ )
         set_defaults_path();
-        [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Result File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName ]);
+        GUIMeasuresNames = {'HRV Measures'; 'Power Spectral Density Measures'; 'MSE Measures'; 'Filtered Data'};       
+                        
+        main_screensize = DATA.screensize;
         
+        GUI.SaveMeasuresWindow = figure( ...
+            'Name', 'Save Measures Options', ...
+            'NumberTitle', 'off', ...
+            'MenuBar', 'none', ...
+            'Toolbar', 'none', ...
+            'HandleVisibility', 'off', ...
+            'Position', [(main_screensize(3)-400)/2, (main_screensize(4)-300)/2, 400, 300]); %[700, 300, 800, 400]
+        
+        mainSaveMeasuresLayout = uix.VBox('Parent',GUI.SaveMeasuresWindow, 'Spacing', DATA.Spacing);
+        measures_panel = uix.Panel( 'Parent', mainSaveMeasuresLayout, 'Padding', DATA.Padding+2, 'Title', 'Select measures to save:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
+        measures_box = uix.VButtonBox('Parent', measures_panel, 'Spacing', DATA.Spacing-1, 'HorizontalAlignment', 'left', 'ButtonSize', [200 25]);
+        
+        for i = 1 : length(GUIMeasuresNames)
+            uicontrol( 'Style', 'checkbox', 'Parent', measures_box, 'Callback', {@measures_checkbox_Callback, i}, 'FontSize', DATA.BigFontSize, ...
+                'Tag', ['Measure' num2str(i)], 'String', GUIMeasuresNames{i}, 'FontName', 'Calibri', 'Value', DATA_Measure.measures(i));
+        end
+        
+        CommandsButtons_Box = uix.HButtonBox('Parent', mainSaveMeasuresLayout, 'Spacing', DATA.Spacing, 'VerticalAlignment', 'middle', 'ButtonSize', [100 30]);
+        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @save_measures_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Save As', 'FontName', 'Calibri');        
+        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', {@cancel_button_Callback, GUI.SaveMeasuresWindow}, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
+        
+        set( mainSaveMeasuresLayout, 'Heights',  [-70 -30]); % [-70 -45 -25]
+    end
+%%
+    function measures_checkbox_Callback( src, ~, param_name )
+        DATA_Measure.measures(param_name) = get(src, 'Value');
+    end
+%%
+    function save_measures_button_Callback(~, ~)
+        set_defaults_path();
+                
+        [res_full_name, results_folder_name, FilterIndex] = uiputfile({'*.*', 'All files';...
+            '*.mat','MAT-files (*.mat)';...
+            '*.txt','Text Files (*.txt)'},...
+            'Choose Results File Name',...
+            [DIRS.ExportResultsDirectory, filesep, [DATA.DataFileName, '.', DATA_Measure.Ext]]);
         if ~isequal(results_folder_name, 0)
             DIRS.ExportResultsDirectory = results_folder_name;
-            [~, filename, ~] = fileparts(filename);
-            if FilterIndex == 1
-                ext = '.txt';
-            else
-                ext = '.mat';
-            end
             
-            full_file_name_hea = fullfile(results_folder_name, [filename '_hea.txt']);
-            full_file_name_hrv = fullfile(results_folder_name, [filename '_hrv' ext]);
+            [~, res_name, res_ext] = fileparts(res_full_name);
+            
+            DATA_Measure.ResFileName = res_name;
+            if ~isempty(res_ext)
+                DATA_Measure.Ext = res_ext(2:end);
+            else
+                DATA_Measure.Ext = 'mat';
+            end
+            if DATA_Measure.measures(1)
+                onSaveResultsAsFile(res_name);
+            end
+            if DATA_Measure.measures(2)
+                onSavePSDAsFile(res_name);
+            end
+            if DATA_Measure.measures(3)
+                onSaveMSEFile(res_name);
+            end
+            if DATA_Measure.measures(4)
+                onSaveFilteredDataFile(res_name);
+            end
+        end  
+        delete( GUI.SaveMeasuresWindow );
+    end        
+%%
+    function onSaveResultsAsFile(filename)
+%         set_defaults_path();
+%         [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Result File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName ]);
+        
+        if ~isequal(DIRS.ExportResultsDirectory, 0)
+%             DIRS.ExportResultsDirectory = results_folder_name;
+%             [~, filename, ~] = fileparts(filename);
+%             if FilterIndex == 1
+%                 ext = '.txt';
+%             else
+%                 ext = '.mat';
+%             end
+            
+            ext = ['.' DATA_Measure.Ext];
+            full_file_name_hea = fullfile(DIRS.ExportResultsDirectory, [filename '_hea.txt']);
+            full_file_name_hrv = fullfile(DIRS.ExportResultsDirectory, [filename '_hrv' ext]);
             
             button = 'Yes';
             if exist(full_file_name_hrv, 'file')
@@ -3092,7 +3169,7 @@ displayEndOfDemoMessage('');
                         column_names = cat(1, column_names, ['W' num2str(i)]);
                     end
                     
-                    if FilterIndex == 1
+                    if strcmp(ext, '.txt')
                         header_fileID = fopen(full_file_name_hea, 'w');
                         fprintf(header_fileID, '#header\r\n');
                         fprintf(header_fileID, 'Record name: %s\r\n\r\n', DATA.DataFileName);
@@ -3119,7 +3196,7 @@ displayEndOfDemoMessage('');
                         statisticsTable = cell2table(statistics_params, 'RowNames', padded_rows_names); %, 'VariableNames', column_names);
                         statisticsTable.Properties.DimensionNames(1) = {'Measures'};
                         writetable(statisticsTable, full_file_name_hrv, 'Delimiter', '\t', 'WriteRowNames', true, 'WriteVariableNames', false);
-                    else
+                    elseif strcmp(ext, '.mat')
                         RecordName = DATA.DataFileName;
                         Mammal = DATA.mammals{ DATA.mammal_index};
                         IntegrationLevel = DATA.Integration;
@@ -3366,22 +3443,22 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function onSaveFilteredDataFile(~, ~)
+    function onSaveFilteredDataFile(filename)
         set_defaults_path();
-        [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Filtered Data File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '_filt']);
-        if ~isequal(results_folder_name, 0)
-            DIRS.ExportResultsDirectory = results_folder_name;
+%         [filename, results_folder_name, FilterIndex] = uiputfile({'*.txt','Text Files (*.txt)'; '*.mat','MAT-files (*.mat)';},'Choose Filtered Data File Name', [DIRS.ExportResultsDirectory, filesep, DATA.DataFileName '_filt']);
+        if ~isequal(DIRS.ExportResultsDirectory, 0)
+%             DIRS.ExportResultsDirectory = results_folder_name;
             [~, filename, ~] = fileparts(filename);
-            if FilterIndex == 1
-                ext = '.txt';
-            else
-                ext = '.mat';
-            end
-            
-            full_file_name_filtered = fullfile(results_folder_name, filename);
+%             if FilterIndex == 1
+%                 ext = '.txt';
+%             else
+%                 ext = '.mat';
+%             end
+            ext = ['.' DATA_Measure.Ext];
+            full_file_name_filtered = fullfile(DIRS.ExportResultsDirectory, [filename '_flt' ext]);            
             
             button = 'Yes';
-            if exist([full_file_name_filtered ext], 'file')
+            if exist(full_file_name_filtered, 'file')
                 button = questdlg([full_file_name_filtered ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
             end
             
@@ -3392,15 +3469,15 @@ displayEndOfDemoMessage('');
                 FilteredData_tnn = FilteredData_tnn(~isnan(FilteredData_tnn));
                 FilteredData_nni = FilteredData_nni(~isnan(FilteredData_nni));
                 
-                if FilterIndex == 1
-                    psd_fileID = fopen([full_file_name_filtered ext], 'w');
+                if strcmp(ext, '.txt')
+                    psd_fileID = fopen(full_file_name_filtered, 'w');
                     
-                    dlmwrite([full_file_name_filtered ext], [FilteredData_tnn FilteredData_nni], ...
+                    dlmwrite(full_file_name_filtered, [FilteredData_tnn FilteredData_nni], ...
                         'precision', '%10.5f\t\n', 'delimiter', '\t', 'newline', 'pc', '-append');
                     
                     fclose(psd_fileID);
                 else
-                    save([full_file_name_filtered ext], 'FilteredData_tnn', 'FilteredData_nni');
+                    save(full_file_name_filtered, 'FilteredData_tnn', 'FilteredData_nni');
                 end
             end
         end
@@ -4640,6 +4717,10 @@ displayEndOfDemoMessage('');
         if isfield(GUI, 'SaveFiguresWindow') && isvalid(GUI.SaveFiguresWindow)
             delete( GUI.SaveFiguresWindow );
         end
+        
+        if isfield(GUI, 'SaveMeasuresWindow') && isvalid(GUI.SaveMeasuresWindow)
+            delete( GUI.SaveMeasuresWindow );
+        end        
         delete( GUI.Window );
     end % onExit
 

@@ -11,6 +11,38 @@ bin/wfdb/
 # Local data files
 database/
 
+# Old examples files
+Examples OLD/
+Examples OLD OLD/
+
+# Mis dir
+Logo/
+Module1/
+My Results/
+PhysioZoo/
+PhysioZoo_resources/
+Screenshots/
+Yonatan/
+Documentation/
+Config - Copy/
+Examples - Copy/
+Temp/
+mainGUI/
+GUI/
+Config ECG/
+ABF Reader/
+wfdb/
+Ido/
+Jessie Data/
+Eugene/
+
+*.prj
+*.png
+*.docx
+*.rar
+*.pdf
+
+
 ### Generated files ###
 *.eps
 *.xlsx

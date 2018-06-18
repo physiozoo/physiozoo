@@ -94,6 +94,7 @@ GUI = createInterface();
         GUI.FileMenu = uimenu( GUI.Window, 'Label', 'File' );
         uimenu( GUI.FileMenu, 'Label', 'Open record file', 'Callback', @OpenFile_Callback, 'Accelerator', 'O');
         GUI.OpenDataQuality = uimenu( GUI.FileMenu, 'Label', 'Open data quality', 'Callback', @OpenDataQuality_Callback, 'Accelerator', 'Q');
+        GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load Peaks', 'Callback', @LoadPeaks_Callback, 'Accelerator', 'W');
         GUI.SavePeaks = uimenu( GUI.FileMenu, 'Label', 'Save Peaks', 'Callback', @SavePeaks_Callback, 'Accelerator', 'P');
         GUI.SaveDataQuality = uimenu( GUI.FileMenu, 'Label', 'Save data quality', 'Callback', @SaveDataQuality_Callback, 'Accelerator', 'D');
         GUI.LoadConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Load configuration file', 'Callback', @LoadConfigurationFile_Callback, 'Accelerator', 'L');
@@ -305,6 +306,7 @@ GUI = createInterface();
         GUI.LoadConfigurationFile.Enable = 'off';
         GUI.SaveConfigurationFile.Enable = 'off';
         GUI.SavePeaks.Enable = 'off';
+        GUI.LoadPeaks.Enable = 'off';
     end
 %%
     function [GUI, TempBox, uicontrol_handle] = createGUITextLine(GUI, gui_struct, field_name, string_field_name, box_container)
@@ -525,7 +527,8 @@ GUI = createInterface();
             
             GUI.LoadConfigurationFile.Enable = 'on';
             GUI.SaveConfigurationFile.Enable = 'on';
-            GUI.SavePeaks.Enable = 'on';            
+            GUI.SavePeaks.Enable = 'on';  
+            GUI.LoadPeaks.Enable = 'on';
             
             
             DATA.zoom_rect_limits = [0 DATA.firstZoom];
@@ -763,6 +766,69 @@ GUI = createInterface();
         if exist([pwd '\' DATA.temp_rec_name4wfdb '.dat'], 'file')
             delete([pwd '\' DATA.temp_rec_name4wfdb '.dat']);
         end        
+    end
+%%
+    function LoadPeaks_Callback(~, ~) 
+        persistent DIRS;
+        persistent EXT;
+        
+        % Add third-party dependencies to path
+        gui_basepath = fileparts(mfilename('fullpath'));
+        basepath = fileparts(gui_basepath);
+        
+        if ~isfield(DIRS, 'analyzedDataDirectory') 
+            DIRS.analyzedDataDirectory = [basepath filesep 'Examples'];
+        end
+        if isempty(EXT)
+            EXT = 'mat';
+        end
+        [Peaks_FileName, PathName] = uigetfile( ...
+            {'*.dat',  'WFDB Files (*.dat)'; ...
+            '*.mat','MAT-files (*.mat)'; ...
+            '*.txt','Text Files (*.txt)'}, ...
+            'Open ECG File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
+        
+        if ~isequal(Peaks_FileName, 0)
+            %             DATA.qrs
+            [~, DATA.PeaksFileName, ExtensionFileName] = fileparts(Peaks_FileName);
+            ExtensionFileName = ExtensionFileName(2:end);
+            
+            DATA.peaks_file_name = [PathName, DATA.PeaksFileName];
+            
+            if strcmpi(ExtensionFileName, 'mat')
+                QRS = load(DATA.peaks_file_name);
+                DATA.qrs = QRS.Data;
+                DATA.Fs = QRS.Fs;
+                DATA.Mammal = QRS.Mammal;
+                DATA.Integration = QRS.Integration;
+                
+                %                 QRS_field_names = fieldnames(QRS);
+                %                 if ~isempty(regexpi(QRS_field_names{1}, 'data')) % |data
+                %                     DATA.qrs = QRS.(QRS_field_names{1});
+                %                 end
+                if ~isempty(DATA.qrs)
+                    if isfield(DATA, 'red_peaks_handle') && ishandle(DATA.red_peaks_handle) && isvalid(DATA.red_peaks_handle)
+                        delete(DATA.red_peaks_handle);
+                    end
+                    DATA.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECGDataAxes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
+                    uistack(DATA.red_peaks_handle, 'bottom');
+                    
+                    if isfield(DATA, 'RRInt_handle') && ishandle(DATA.RRInt_handle) && isvalid(DATA.RRInt_handle)
+                        delete(DATA.RRInt_handle);
+                    end                                                            
+                    plot_rr_data();
+                    
+                    if isfield(GUI, 'red_rect') && ishandle(GUI.red_rect) && isvalid(GUI.red_rect)
+                        delete(GUI.red_rect);
+                    end                                                             
+                    
+                    plot_red_rectangle(DATA.zoom_rect_limits);
+                    %                     GUI.PeaksTable.Data(1, 2) = {length(DATA.qrs)};
+                else
+                    errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
+                end
+            end
+        end
     end
 %%
     function SavePeaks_Callback(~, ~)       

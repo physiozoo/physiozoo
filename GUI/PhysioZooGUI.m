@@ -946,7 +946,7 @@ displayEndOfDemoMessage('');
         
         filtrr_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'filtrr')), param_keys)));
         filt_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.range')), filtrr_keys)));
-        lowpass_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.lowpass')), filtrr_keys)));
+        lowpass_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.moving_average')), filtrr_keys)));
         quotient_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.quotient')), filtrr_keys)));
         
         filt_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), filt_range_keys))) = [];
@@ -954,10 +954,10 @@ displayEndOfDemoMessage('');
         quotient_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), quotient_range_keys))) = [];
         
         DATA.filter_quotient = rhrv_get_default('filtrr.quotient.enable', 'value');
-        DATA.filter_lowpass = rhrv_get_default('filtrr.lowpass.enable', 'value');
+        DATA.filter_lowpass = rhrv_get_default('filtrr.moving_average.enable', 'value');
         DATA.filter_range = rhrv_get_default('filtrr.range.enable', 'value');
         
-        DATA.default_filters_thresholds.lowpass = rhrv_get_default('filtrr.lowpass.win_threshold', 'value');
+        DATA.default_filters_thresholds.lowpass = rhrv_get_default('filtrr.moving_average.win_threshold', 'value');
         DATA.default_filters_thresholds.quotient = rhrv_get_default('filtrr.quotient.rr_max_change', 'value');
         
         if DATA.filter_quotient && DATA.filter_lowpass && DATA.filter_range
@@ -2341,7 +2341,7 @@ displayEndOfDemoMessage('');
         
         if ~isempty(DATA.rri)
             
-            [nni, tnn, ~] = filtrr(DATA.rri, DATA.trr, 'filter_quotient', filter_quotient, 'filter_lowpass', filter_lowpass, 'filter_range', filter_range);
+            [nni, tnn, ~] = filtrr(DATA.rri, DATA.trr, 'filter_quotient', filter_quotient, 'filter_ma', filter_lowpass, 'filter_range', filter_range);
             
             if (isempty(nni))
                 ME = MException('FiltCalcPlotSignalStat:FiltrrNoNNIntervalOutputted', 'No NN interval outputted');
@@ -2467,17 +2467,17 @@ displayEndOfDemoMessage('');
         Filter = items{index_selected};
         
         if index_selected_level == DATA.default_filter_level_index
-            set_default_filters_threshoulds('filtrr.lowpass.win_threshold', DATA.default_filters_thresholds.lowpass);
+            set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.lowpass);
             set_default_filters_threshoulds('filtrr.quotient.rr_max_change', DATA.default_filters_thresholds.quotient);
         else
             fil_level = DATA.filters_level_value(find(cellfun(@(x) strcmp(x, FilterLevel), DATA.FilterLevel))-1);
             
             if strcmp(Filter, 'LowPass')
-                set_default_filters_threshoulds('filtrr.lowpass.win_threshold', fil_level);
+                set_default_filters_threshoulds('filtrr.moving_average.win_threshold', fil_level);
             elseif strcmp(Filter, 'Quotient')
                 set_default_filters_threshoulds('filtrr.quotient.rr_max_change', fil_level);
             elseif strcmp(Filter, 'Combined filters')
-                set_default_filters_threshoulds('filtrr.lowpass.win_threshold', fil_level);
+                set_default_filters_threshoulds('filtrr.moving_average.win_threshold', fil_level);
                 set_default_filters_threshoulds('filtrr.quotient.rr_max_change', fil_level);
             end
         end
@@ -2506,7 +2506,7 @@ displayEndOfDemoMessage('');
         Filter = items{index_selected};
         
         set(GUI.FilteringLevel_popupmenu, 'Value', DATA.default_filter_level_index);
-        set_default_filters_threshoulds('filtrr.lowpass.win_threshold', DATA.default_filters_thresholds.lowpass);
+        set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.lowpass);
         set_default_filters_threshoulds('filtrr.quotient.rr_max_change', DATA.default_filters_thresholds.quotient);
         
         if strcmp(Filter, 'Range') || strcmp(Filter, 'No filtering')
@@ -3314,7 +3314,7 @@ displayEndOfDemoMessage('');
             else
                 set(GUI.FilteringLevel_popupmenu, 'Value', DATA.default_filter_level_index);
             end
-        elseif strcmp(param_name, 'filtrr.lowpass.win_threshold')
+        elseif strcmp(param_name, 'filtrr.moving_average.win_threshold')
             if isnan(screen_value) || screen_value < 0 || screen_value > 100
                 errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
                 set(src, 'String', prev_screen_value);

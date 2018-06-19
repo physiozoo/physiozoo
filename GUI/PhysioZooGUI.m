@@ -1703,6 +1703,8 @@ displayEndOfDemoMessage('');
                                 cla(GUI.AllDataAxes);
                                 return;
                             else
+                                % Convert indices to double so we can do calculations on them
+                                qrs_data = double(qrs_data);
                                 DATA.rri = diff(qrs_data)/DATA.SamplingFrequency;
                                 DATA.trr = qrs_data(1:end-1)/DATA.SamplingFrequency;
                             end

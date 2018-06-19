@@ -36,21 +36,21 @@ filtrr:
             description: Maximal allowed RR interval duration
             name: RR max
             units: Seconds
-    lowpass:
+    moving_average:
         enable:
             value: true
-            description: Whether to enable lowpass-based filtering
-            name: Enable lowpass-based filter
+            description: Whether to enable moving average-based filtering
+            name: Enable moving average filter
             units: boolean
         win_length:
             value: 10
-            description: Length in samples of the lowpass filter
-            name: Lowpass filter length
+            description: Length in samples of the moving average filter
+            name: Moving average filter length
             units: Samples
         win_threshold:
             value: 20
-            description: Threshold percantage above/below the lowpass filter value.
-            name: Lowpass filter threshold
+            description: Threshold percantage above/below the moving average filter value.
+            name: Moving average filter threshold
             units: '%'
     quotient:
         enable:
@@ -180,6 +180,11 @@ mse:
         description: Sample entropy template length
         name: SampEn m
         units: n.u.
+    normalize_std:
+        value: true
+        description: Whether to normalize the signal to std=1 before calculating MSE.
+        name: Normalize Standard Deviation
+        units: boolean
     mse_metrics:
         value: false
         description: Whether to output each MSE value as a metric

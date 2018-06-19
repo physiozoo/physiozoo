@@ -1,4 +1,4 @@
-function [ ann ] = rdann( rec_name, ann_ext, varargin )
+function [ ann, ann_types ] = rdann( rec_name, ann_ext, varargin )
 %RDANN Wrapper for WFDB's 'rdann' tool.
 %   Reads annotation files in PhysioNet format and returns them as a MATLAB vector.
 %   Inputs:
@@ -12,8 +12,12 @@ function [ ann ] = rdann( rec_name, ann_ext, varargin )
 %                          empty, i.e. return annotations of any type.
 %           - from: Number of first sample to start detecting from (default 1)
 %           - to: Number of last sample to detect until (default [], i.e. end of signal)
+%           - plot: Whether to plot the all the channels and annotations in
+%                   the file. Useful for debugging.
 %   Output:
-%       - ann: A vector with the sample numbers that have annotations.
+%       - ann: A Nx1 vector with the sample numbers that have annotations.
+%       - ann_types: A Nx1 cell array with annotation types (strings, see
+%                    PhysioNet documentation).
 
 %% === Input
 
@@ -29,12 +33,14 @@ p.addRequired('ann_ext', @isstr);
 p.addParameter('ann_types', DEFAULT_ANN_TYPES, @ischar);
 p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
+p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
 p.parse(rec_name, ann_ext, varargin{:});
 ann_types = p.Results.ann_types;
 from_sample = p.Results.from;
 to_sample = p.Results.to;
+should_plot = p.Results.plot;
 
 %% === Run rdann
 [rec_path, rec_filename, ~] = file_parts(rec_name);
@@ -53,21 +59,59 @@ end
 
 [res, out, err] = jsystem(command, [], rec_path);
 if(res ~= 0)
-    error('rdann error: %s\n%s', err, out);
+    if res == 2 && isempty(err) && isempty(out)
+        error('rdann: No annotations found (from=%d, to=%d)', from_sample, to_sample);
+    else
+        error('rdann error: %s\n%s', err, out);
+    end
 end
 
 % Extract just the sample numbers from the rdann output
 if (~isempty(out))
-    [ann, ~, errmsg] = sscanf(out, '%*s %d %*[^\n]');
-    if ~isempty(errmsg)
-        error(['Failed to convert rdann output to samples: ' errmsg]);
-    end
+    out_parsed = textscan(out, '%*s %d %s %*[^\n]');
+    ann = out_parsed{1};
+    ann_types = out_parsed{2};
 else
     ann = [];
+    ann_types = {};
 end
 
 % add 1 to all values because WFDB's indices are zero-based
 ann = ann + 1;
+
+%% Plots
+
+if (should_plot)
+    % Get all annotation types
+    ann_types_uniq = unique(ann_types);
+    num_types = length(ann_types_uniq);
+
+    % Read and plot the signal
+    [ t, sig, ~ ] = rdsamp(rec_name, [],...
+        'from', from_sample, 'to', to_sample, 'plot', true);
+    set(gcf,'Name',[rec_name ' annotations']);
+
+    colors = lines(num_types + size(sig,2));
+    markers = {'x','o','+','*','s','d','^','v','>','<','p','h','.'};
+    color_idx = 1+size(sig,2);
+    marker_idx = 1;
+
+    for ii = 1:num_types
+        curr_ann_type = ann_types_uniq{ii};
+        curr_ann_type_idx = ann(ismember(ann_types, curr_ann_type)) - from_sample;
+
+        % plot
+        plot(t(curr_ann_type_idx), sig(curr_ann_type_idx),...
+        'LineStyle', 'none', 'Marker', markers{marker_idx},...
+        'MarkerEdgeColor', colors(color_idx,:),...
+        'DisplayName', curr_ann_type);
+
+        color_idx = mod(color_idx, length(colors))+1;
+        marker_idx = mod(marker_idx, length(markers))+1;
+    end
+    legend();
+
+end
 
 end
 

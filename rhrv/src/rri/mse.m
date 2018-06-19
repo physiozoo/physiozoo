@@ -13,6 +13,9 @@ function [ mse_result, scale_axis, plot_data ] = mse( sig, varargin )
 %                       between two points that's considered a match). Default: 0.2.
 %           - sampen_m: Value of 'm' parameter to use when calculating sample entropy (length of
 %             templates to match). Default: 2.
+%           - normalize_std: Whether or not to normalize the signal to
+%             std=1 before calculating the MSE. This affects the meaning of
+%             r.
 %           - plot: true/false whether to generate a plot. Defaults to true if no output
 %                   arguments were specified.
 %   Output:
@@ -29,6 +32,7 @@ function [ mse_result, scale_axis, plot_data ] = mse( sig, varargin )
 DEFAULT_MSE_MAX_SCALE = rhrv_get_default('mse.mse_max_scale', 'value');
 DEFAULT_SAMPEN_R = rhrv_get_default('mse.sampen_r', 'value');
 DEFAULT_SAMPEN_M = rhrv_get_default('mse.sampen_m', 'value');
+DEFAULT_NORMALIZE_STD = rhrv_get_default('mse.normalize_std', 'value');
 
 % Define input
 p = inputParser;
@@ -37,6 +41,7 @@ p.addRequired('sig', @(x) isnumeric(x) && ~isscalar(x));
 p.addParameter('mse_max_scale', DEFAULT_MSE_MAX_SCALE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('sampen_r', DEFAULT_SAMPEN_R, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('sampen_m', DEFAULT_SAMPEN_M, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('normalize_std', DEFAULT_NORMALIZE_STD, @(x) islogical(x));
 p.addParameter('plot', nargout == 0, @islogical);
 
 % Get input
@@ -44,13 +49,16 @@ p.parse(sig, varargin{:});
 mse_max_scale = p.Results.mse_max_scale;
 sampen_r = p.Results.sampen_r;
 sampen_m = p.Results.sampen_m;
+normalize_std = p.Results.normalize_std;
 should_plot = p.Results.plot;
 
 %% MSE Calculation
 % Normalize input
 N = length(sig);
 sig_normalized = sig - mean(sig);
-sig_normalized = sig_normalized / sqrt(var(sig_normalized));
+if normalize_std
+    sig_normalized = sig_normalized / sqrt(var(sig_normalized));
+end
 
 % Preallocate result vector
 mse_result = zeros(1, mse_max_scale);
@@ -65,7 +73,23 @@ for scale = scale_axis
     sig_coarse = mean(sig_windows, 1);
     
     % Calculate sample entropy of the coarse-grained signal
-    mse_result(scale) = sample_entropy(sig_coarse, sampen_m, sampen_r);
+    sampen = sample_entropy(sig_coarse, sampen_m, sampen_r);
+
+    % An infinite sample entropy is possible, since
+    % SampEn = -ln(A/B) where A is the number of template matches of length
+    % m+1 and B is the number of template matches of length m. It's
+    % possible that A will be zero or both will be zero (it's not possible
+    % that only B will be zero). In the case of A=0, we'll get infinity.
+    % Set it to NaN because:
+    % 1. Consistent with the case of A=B=0.
+    % 2. Easier to work with nans (e.g. to exclude them from calculations).
+    % We don't do this in the SampEn function because there is a different
+    % meaning to both this cases which will be hidden if we do it there.
+    if isinf(sampen)
+        sampen = NaN;
+    end
+
+    mse_result(scale) = sampen;
 end
 
 %% Plot

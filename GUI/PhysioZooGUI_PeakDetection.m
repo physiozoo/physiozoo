@@ -585,7 +585,7 @@ GUI = createInterface();
                 
                 load_updateGUI_config_param();
                 
-                [DATA.qrs, DATA.outliers, tm, sig, Fs] = rqrs(DATA.rec_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
+                [DATA.qrs, tm, sig, Fs] = rqrs(DATA.rec_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
                 DATA.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECGDataAxes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
                 uistack(DATA.red_peaks_handle, 'bottom');
                 

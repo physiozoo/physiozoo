@@ -816,10 +816,10 @@ displayEndOfDemoMessage('');
         GUI.NonLinearAxes3 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
         set( GUI.NonLinearBox, 'Widths', [-14 -24 -24 -24] );
         %---------------------------
-        GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticsTab, 'FontSize', SmallFontSize, 'ColumnWidth',{550 'auto'}, 'FontName', 'Calibri');    % 700
+        GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticsTab, 'FontSize', SmallFontSize, 'ColumnWidth',{800 'auto'}, 'FontName', 'Calibri');    % 550
         GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};
         %---------------------------
-        GUI.GroupSummaryTable = uitable( 'Parent', GUI.GroupSummaryTab, 'FontSize', SmallFontSize, 'ColumnWidth',{550 'auto'}, 'FontName', 'Calibri');    % 700
+        GUI.GroupSummaryTable = uitable( 'Parent', GUI.GroupSummaryTab, 'FontSize', SmallFontSize, 'ColumnWidth',{800 'auto'}, 'FontName', 'Calibri');    % 550
         GUI.GroupSummaryTable.ColumnName = {'Description'; 'Values'};
         %---------------------------
         
@@ -2546,26 +2546,37 @@ displayEndOfDemoMessage('');
     end
 %%
     function set_defaults_path()
+        if ~isdir([basepath filesep 'Results'])
+            create_defaults_results_path();
+        end
         if isempty(who('DIRS')) || isempty(DIRS)
             reset_defaults_path();
         end
         if isempty(who('DATA_Fig')) || isempty(DATA_Fig)
-            reset_defaults_path();
+            reset_defaults_extensions();
         end
         if isempty(who('DATA_Measure')) || isempty(DATA_Measure)
-            reset_defaults_path();
+            reset_defaults_extensions();
         end
     end
 %%
     function reset_defaults_path()
         DIRS.dataDirectory = [basepath filesep 'Examples'];
-        DIRS.configDirectory = [basepath filesep 'Config'];
-        DIRS.ExportResultsDirectory = [basepath filesep 'Results'];
+        DIRS.configDirectory = [basepath filesep 'Config'];        
         DIRS.dataQualityDirectory = [basepath filesep 'Examples'];    
-        DIRS.DataBaseDirectory = [basepath];
+        DIRS.DataBaseDirectory = basepath;
+        DIRS.ExportResultsDirectory = [basepath filesep 'Results']; 
         DIRS.Ext_open = 'mat';
-        DIRS.Ext_group = 'mat';
-        
+        DIRS.Ext_group = 'mat';       
+    end
+%%
+    function create_defaults_results_path()              
+        warning('off');
+        mkdir(basepath, 'Results');
+        warning('on');                               
+    end
+%%
+    function reset_defaults_extensions()
         DATA_Fig.export_figures = [1 1 1 1 1 1 1];
         DATA_Fig.Ext = 'fig';
         
@@ -2575,6 +2586,8 @@ displayEndOfDemoMessage('');
 %%
     function Reset_pushbutton_Callback( ~, ~ )
         reset_defaults_path();
+        create_defaults_results_path();
+        reset_defaults_extensions();
         
         DATA.filter_index = 1;
         set_filters(DATA.Filters{DATA.filter_index});
@@ -2743,21 +2756,29 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function FilteringLevel_popupmenu_Callback(src, ~)
-        items = get(src, 'String');
-        index_selected_level = get(src, 'Value');
-        FilterLevel = items{index_selected_level};
+    function set_filtering_level_param(FilterLevel, Filter)
+        if strcmp(FilterLevel, 'Default')
+            filters_thresholds = DATA.default_filters_thresholds;
+        elseif strcmp(FilterLevel, 'Custom')
+            filters_thresholds = DATA.custom_filters_thresholds;
+        end
         
-        items = get(GUI.Filtering_popupmenu, 'String');
-        index_selected = get(GUI.Filtering_popupmenu,'Value');
-        Filter = items{index_selected};        
-        
-        if index_selected_level == DATA.default_filter_level_index
-            if isfield(DATA, 'default_filters_thresholds')
-                set_default_filters_threshoulds('filtrr.lowpass.win_threshold', DATA.default_filters_thresholds.lowpass.win_threshold);
-                set_default_filters_threshoulds('filtrr.quotient.rr_max_change', DATA.default_filters_thresholds.quotient.rr_max_change);
+        if strcmp(FilterLevel, 'Default') || strcmp(FilterLevel, 'Custom')
+            if strcmp(Filter, 'Moving average')
+                set_default_filters_threshoulds('filtrr.lowpass.win_threshold',  filters_thresholds.lowpass.win_threshold);
+                set_default_filters_threshoulds('filtrr.lowpass.win_length',  filters_thresholds.lowpass.win_length);
+            elseif strcmp(Filter, 'Range')
+                set_default_filters_threshoulds('filtrr.range.rr_max',  filters_thresholds.range.rr_max);
+                set_default_filters_threshoulds('filtrr.range.rr_min',  filters_thresholds.range.rr_min);
+            elseif strcmp(Filter, 'Quotient')
+                set_default_filters_threshoulds('filtrr.quotient.rr_max_change',  filters_thresholds.quotient.rr_max_change);
+            elseif strcmp(Filter, 'Combined filters')
+                set_default_filters_threshoulds('filtrr.lowpass.win_threshold',  filters_thresholds.lowpass.win_threshold);
+                set_default_filters_threshoulds('filtrr.lowpass.win_length',  filters_thresholds.lowpass.win_length);
+                set_default_filters_threshoulds('filtrr.range.rr_max',  filters_thresholds.range.rr_max);
+                set_default_filters_threshoulds('filtrr.range.rr_min',  filters_thresholds.range.rr_min);
             end
-        elseif  ~strcmp(FilterLevel, 'Custom') 
+        else
             fil_level = DATA.filters_level_value(find(cellfun(@(x) strcmp(x, FilterLevel), DATA.FilterLevel))-1);
             
             if strcmp(Filter, 'Moving average')
@@ -2768,27 +2789,25 @@ displayEndOfDemoMessage('');
                 set_default_filters_threshoulds('filtrr.lowpass.win_threshold', fil_level);
                 set_default_filters_threshoulds('filtrr.quotient.rr_max_change', fil_level);
             end
-        elseif strcmp(FilterLevel, 'Custom') 
-            if strcmp(Filter, 'Moving average')
-                set_default_filters_threshoulds('filtrr.lowpass.win_threshold',  DATA.custom_filters_thresholds.lowpass.win_threshold);
-                set_default_filters_threshoulds('filtrr.lowpass.win_length',  DATA.custom_filters_thresholds.lowpass.win_length);
-            elseif strcmp(Filter, 'Range')
-                set_default_filters_threshoulds('filtrr.lowpass.range.rr_max',  DATA.custom_filters_thresholds.range.rr_max);
-                set_default_filters_threshoulds('filtrr.lowpass.range.rr_min',  DATA.custom_filters_thresholds.range.rr_min);
-            elseif strcmp(Filter, 'Quotient')
-                set_default_filters_threshoulds('filtrr.lowpass.quotient.rr_max_change',  DATA.custom_filters_thresholds.quotient.rr_max_change);
-            elseif strcmp(Filter, 'Combined filters')
-                set_default_filters_threshoulds('filtrr.lowpass.win_threshold',  DATA.custom_filters_thresholds.lowpass.win_threshold);
-                set_default_filters_threshoulds('filtrr.lowpass.win_length',  DATA.custom_filters_thresholds.lowpass.win_length);
-                set_default_filters_threshoulds('filtrr.lowpass.range.rr_max',  DATA.custom_filters_thresholds.range.rr_max);
-                set_default_filters_threshoulds('filtrr.lowpass.range.rr_min',  DATA.custom_filters_thresholds.range.rr_min);
-            end
         end
+    end
+%%
+    function FilteringLevel_popupmenu_Callback(src, ~)
+        filteringLevel_items = get(src, 'String');
+        index_selected_level = get(src, 'Value');
+        FilterLevel = filteringLevel_items{index_selected_level};
+        
+        items = get(GUI.Filtering_popupmenu, 'String');
+        Filter = items{get(GUI.Filtering_popupmenu,'Value')};        
+        
+        set_filtering_level_param(FilterLevel, Filter);
+        
         try
             calc_filt_signal();
             DATA.filter_level_index = index_selected_level;            
         catch e
             set(src, 'Value', DATA.filter_level_index);
+            set_filtering_level_param(filteringLevel_items{DATA.filter_level_index}, Filter)
             errordlg(['FilteringLevel_popupmenu_Callback Error: ' e.message], 'Input Error');
             return;
         end
@@ -2796,21 +2815,16 @@ displayEndOfDemoMessage('');
 %%
     function calc_filt_signal()
         if(isfield(DATA, 'rri') && ~isempty(DATA.rri) )
-%             try 
-                FiltSignal();
-                clear_statistics_plots();
-                clearStatTables();
-                if isfield(GUI, 'filtered_handle')
-                    set(GUI.filtered_handle, 'XData', ones(1, length(DATA.tnn))*NaN, 'YData', ones(1, length(DATA.nni))*NaN);
-                end
-                plotFilteredData();
-                if get(GUI.AutoCalc_checkbox, 'Value')
-                    calcStatistics();
-                end
-%             catch e
-%                 errordlg(['calc_filt_signal Error: ' e.message], 'Input Error');
-%                 return;
-%             end
+            FiltSignal();
+            clear_statistics_plots();
+            clearStatTables();
+            if isfield(GUI, 'filtered_handle')
+                set(GUI.filtered_handle, 'XData', ones(1, length(DATA.tnn))*NaN, 'YData', ones(1, length(DATA.nni))*NaN);
+            end
+            plotFilteredData();
+            if get(GUI.AutoCalc_checkbox, 'Value')
+                calcStatistics();
+            end
         end
     end
 %%
@@ -2821,13 +2835,7 @@ displayEndOfDemoMessage('');
         
         set(GUI.FilteringLevel_popupmenu, 'Value', DATA.default_filter_level_index);
         DATA.filter_level_index = DATA.default_filter_level_index;
-        
-%         if isfield(DATA, 'default_filters_thresholds')
-%             set_default_filters_threshoulds('filtrr.lowpass.win_threshold', DATA.default_filters_thresholds.lowpass);
-%             set_default_filters_threshoulds('filtrr.quotient.rr_max_change', DATA.default_filters_thresholds.quotient);
-%         end
-%         
-        
+                
         if strcmp(Filter, 'Range')             
             GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
             GUI.FilteringLevel_popupmenu.Enable = 'on';
@@ -3601,13 +3609,18 @@ displayEndOfDemoMessage('');
     function waitbar_handle = update_statistics(param_category)
         if strcmp(param_category, 'filtrr')
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-            FiltSignal();
-            %CalcPlotSignalStat();
-            clear_statistics_plots();
-            clearStatTables();
-            plotFilteredData();
-            calcStatistics();
-            close(waitbar_handle);
+            try
+                FiltSignal();
+                %CalcPlotSignalStat();
+                clear_statistics_plots();
+                clearStatTables();
+                plotFilteredData();
+                calcStatistics();
+                close(waitbar_handle);
+            catch e
+                close(waitbar_handle);                                
+                rethrow(e);
+            end
         elseif strcmp(param_category, 'hrv_time')
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
             calcTimeStatistics(waitbar_handle);
@@ -3660,15 +3673,21 @@ displayEndOfDemoMessage('');
             elseif strcmp(Filter, 'Quotient') || strcmp(Filter, 'Combined filters')
                 set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
             end
-        elseif strcmp(param_name, 'filtrr.lowpass.win_threshold')
-            if isnan(screen_value) || screen_value < 0 || screen_value > 100
+        elseif regexp(param_name, 'filtrr.lowpass')
+            if strcmp(param_name, 'filtrr.lowpass.win_threshold') && (isnan(screen_value) || screen_value < 0 || screen_value > 100)
                 errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
                 set(src, 'String', prev_screen_value);
                 return;
-            elseif strcmp(Filter, 'Moving average') || strcmp(Filter, 'Combined filters')
+            end
+            if strcmp(param_name, 'filtrr.lowpass.win_length') && (isnan(screen_value) || screen_value < 1 || screen_value > length(DATA.rri))
+                errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than ' num2str(length(DATA.nni)) '!'], 'Input Error');
+                set(src, 'String', prev_screen_value);
+                return;
+            end
+            if strcmp(Filter, 'Moving average') || strcmp(Filter, 'Combined filters')
                 set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
             end
-        elseif regexp(param_name, 'filtrr.range')    
+        elseif regexp(param_name, 'filtrr.range')
             if isnan(screen_value) || ~(screen_value > 0)
                 errordlg(['set_config_Callback error: ' 'This parameter must be numeric positive single value!'], 'Input Error');
                 set(src, 'String', prev_screen_value);
@@ -3765,20 +3784,31 @@ displayEndOfDemoMessage('');
         
         rhrv_set_default( param_name, param_value );
         
+        doFilt = 0;
         if regexpi(param_name, 'filtrr')
-            fields = strsplit(param_name, '.');            
-            DATA.custom_filters_thresholds.(fields{2}).(fields{3}) = param_value;
+            DATA.custom_filters_thresholds.(param_category{2}).(param_category{3}) = param_value;
+            if strcmp(Filter, 'Combined filters') && (strcmp(param_category{2}, 'lowpass') || strcmp(param_category{3}, 'range'))
+                doFilt = 1;
+            elseif strcmp(Filter, 'Moving average') && strcmp(param_category{2}, 'lowpass')
+                doFilt = 1;
+            elseif strcmp(Filter, 'Range') && strcmp(param_category{2}, 'range')
+                doFilt = 1;
+            elseif strcmp(Filter, 'Quotient') && strcmp(param_category{2}, 'quotient')
+                doFilt = 1;           
+            end
+        else
+            doFilt = 1;
         end
-                
+        
         if get(GUI.AutoCalc_checkbox, 'Value')
             try
-                if doCalc
+                if doCalc && doFilt
                     update_statistics(param_category(1));
                 end
                 set(src, 'UserData', screen_value);
             catch e
                 errordlg(['set_config_Callback error: ' e.message], 'Input Error');
-                
+                                
                 rhrv_set_default( param_name, prev_param_array );
                 set(src, 'String', num2str(prev_param_value));
                 
@@ -4141,6 +4171,14 @@ displayEndOfDemoMessage('');
         end
     end
 %%
+    function fr_prop_variables_names = fix_fr_prop_var_names(fr_prop_variables_names)
+        fr_prop_variables_names = cellfun(@(x) strrep(x, 'BETA', sprintf('\x3b2')), fr_prop_variables_names, 'UniformOutput', false);
+        fr_prop_variables_names = cellfun(@(x) strrep(x, '_', sprintf(' ')), fr_prop_variables_names, 'UniformOutput', false);
+        fr_prop_variables_names = cellfun(@(x) strrep(x, ' TO ', sprintf('/')), fr_prop_variables_names, 'UniformOutput', false);
+        fr_prop_variables_names = cellfun(@(x) strrep(x, ' POWER', sprintf('')), fr_prop_variables_names, 'UniformOutput', false);
+        fr_prop_variables_names = cellfun(@(x) strrep(x, 'TOTAL', sprintf('TOTAL POWER')), fr_prop_variables_names, 'UniformOutput', false);
+    end
+%%
     function calcFrequencyStatistics(waitbar_handle)
         
         if isfield(DATA, 'AnalysisParams')
@@ -4170,7 +4208,7 @@ displayEndOfDemoMessage('');
                         [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'});
                     end
                     
-                    DATA.FrStat.PlotData{i} = pd_freq;
+                    DATA.FrStat.PlotData{i} = pd_freq;                                        
                     
                     %hrv_fd_lomb = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, '_lomb')), hrv_fd.Properties.VariableNames)));
                     hrv_fd_ar = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, '_ar')), hrv_fd.Properties.VariableNames)));
@@ -4181,22 +4219,13 @@ displayEndOfDemoMessage('');
                     [fd_welchData, fd_WelchRowsNames, fd_WelchDescriptions] = table2cell_StatisticsParam(hrv_fd_welch);
                     fd_ArRowsNames_NO_GreekLetters = fd_ArRowsNames;
                     fd_WelchRowsNames_NO_GreekLetters = fd_WelchRowsNames;
-                    
-                    for j = 1 : length(fd_ArRowsNames)
-                        if ~isempty(strfind(fd_ArRowsNames{j}, 'BETA'))
-                            fd_ArRowsNames{j} = [sprintf('\x3b2') strrep(fd_ArRowsNames{j}, 'BETA', '')];
-                        end
-                    end
-                    
-                    for j = 1 : length(fd_WelchRowsNames)
-                        if ~isempty(strfind(fd_WelchRowsNames{j}, 'BETA'))
-                            fd_WelchRowsNames{j} = [sprintf('\x3b2') strrep(fd_WelchRowsNames{j}, 'BETA', '')];
-                        end
-                    end
+                                        
+                    fd_ArRowsNames = fix_fr_prop_var_names(fd_ArRowsNames);
+                    fd_WelchRowsNames = fix_fr_prop_var_names(fd_WelchRowsNames);                                       
                     
                     if ~DATA.GroupsCalc
                         if i == DATA.active_window
-                            GUI.FrequencyParametersTableRowName = strrep(fd_WelchRowsNames,'_WELCH','');
+                            GUI.FrequencyParametersTableRowName = strrep(fd_WelchRowsNames, 'WELCH', '');
                             GUI.FrequencyParametersTable.Data = [GUI.FrequencyParametersTableRowName fd_welchData fd_arData];
                             plot_frequency_statistics_results(i);
                         end
@@ -4267,20 +4296,30 @@ displayEndOfDemoMessage('');
                 [nonlinData, nonlinRowsNames, nonlinDescriptions] = table2cell_StatisticsParam(hrv_nl);
                 nonlinRowsNames_NO_GreekLetters = nonlinRowsNames;
                 
-                for j = 1 : length(nonlinRowsNames)
-                    if ~isempty(strfind(nonlinRowsNames{j}, 'alpha1'))
-                        nonlinRowsNames{j} = [sprintf('\x3b1\x2081') strrep(nonlinRowsNames{j}, 'alpha1', '')];
-                    end
-                    if ~isempty(strfind(nonlinRowsNames{j}, 'alpha2'))
-                        nonlinRowsNames{j} = [sprintf('\x3b1\x2082') strrep(nonlinRowsNames{j}, 'alpha2', '')];
-                    end
-                    if ~isempty(strfind(nonlinRowsNames{j}, 'SD1'))
-                        nonlinRowsNames{j} = [sprintf('SD\x2081') strrep(nonlinRowsNames{j}, 'SD1', '')];
-                    end
-                    if ~isempty(strfind(nonlinRowsNames{j}, 'SD2'))
-                        nonlinRowsNames{j} = [sprintf('SD\x2082') strrep(nonlinRowsNames{j}, 'SD2', '')];
-                    end
-                end
+%                 for j = 1 : length(nonlinRowsNames)
+%                     if ~isempty(strfind(nonlinRowsNames{j}, 'alpha1'))
+%                         nonlinRowsNames{j} = [sprintf('\x3b1\x2081') strrep(nonlinRowsNames{j}, 'alpha1', '')];
+%                     end
+%                     if ~isempty(strfind(nonlinRowsNames{j}, 'alpha2'))
+%                         nonlinRowsNames{j} = [sprintf('\x3b1\x2082') strrep(nonlinRowsNames{j}, 'alpha2', '')];
+%                     end
+%                     if ~isempty(strfind(nonlinRowsNames{j}, 'SD1'))
+%                         nonlinRowsNames{j} = [sprintf('SD\x2081') strrep(nonlinRowsNames{j}, 'SD1', '')];
+%                     end
+%                     if ~isempty(strfind(nonlinRowsNames{j}, 'SD2'))
+%                         nonlinRowsNames{j} = [sprintf('SD\x2082') strrep(nonlinRowsNames{j}, 'SD2', '')];
+%                     end
+%                     nonlinRowsNames{j} = strrep(nonlinRowsNames{j}, 'alpha1', sprintf('\x3b1\x2081'));
+%                     nonlinRowsNames{j} = strrep(nonlinRowsNames{j}, 'alpha2', sprintf('\x3b1\x2082'));
+%                     nonlinRowsNames{j} = strrep(nonlinRowsNames{j}, 'SD1', sprintf('SD\x2081'));
+%                     nonlinRowsNames{j} = strrep(nonlinRowsNames{j}, 'SD2', sprintf('SD\x2082'));
+%                 end
+                
+                
+                nonlinRowsNames = cellfun(@(x) strrep(x, 'alpha1', sprintf('\x3b1\x2081')), nonlinRowsNames, 'UniformOutput', false);
+                nonlinRowsNames = cellfun(@(x) strrep(x, 'alpha2', sprintf('\x3b1\x2082')), nonlinRowsNames, 'UniformOutput', false);
+                nonlinRowsNames = cellfun(@(x) strrep(x, 'SD1', sprintf('SD\x2081')), nonlinRowsNames, 'UniformOutput', false);
+                nonlinRowsNames = cellfun(@(x) strrep(x, 'SD2', sprintf('SD\x2082')), nonlinRowsNames, 'UniformOutput', false);
                 
                 if ~DATA.GroupsCalc
                     if i == DATA.active_window

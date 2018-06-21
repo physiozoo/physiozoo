@@ -106,7 +106,7 @@ dfa:
         name: n_max
         units: n.u.
     n_incr:
-        value: 4
+        value: 1
         description: DFA box size increment
         name: n_incr
         units: n.u.
@@ -138,6 +138,11 @@ mse:
         description: Sample entropy template length
         name: SampEn m
         units: n.u.
+    normalize_std:
+        value: true
+        description: Whether to normalize the signal to std=1 before calculating MSE.
+        name: Normalize Standard Deviation
+        units: boolean
 
 
 #    mse_metrics:

@@ -55,7 +55,7 @@ displayEndOfDemoMessage('');
         DATA.Integration = 'ECG';
         DATA.integration_index = 1;
         
-        DATA.Filters = {'Moving average', 'Range', 'Quotient', 'Combined filters', 'No filtering'}; % LowPass
+        DATA.Filters = {'Moving average', 'Range', 'Quotient', 'Combined filters', 'No filtering'}; 
         DATA.filter_index = 1;
         
         DATA.default_filter_level_index = 1;
@@ -66,7 +66,7 @@ displayEndOfDemoMessage('');
         DATA.filters_level_value = [60 20 10];
         
         DATA.filter_quotient = false;
-        DATA.filter_lowpass = true;
+        DATA.filter_ma = true;
         DATA.filter_range = false;
         
         % DEBUGGING MODE - Small Screen
@@ -92,10 +92,7 @@ displayEndOfDemoMessage('');
         
         %DATA.frequency_methods = {'Lomb'; 'Welch'; 'AR'};
         DATA.frequency_methods = {'Welch'; 'AR'};
-        DATA.default_frequency_method_index = 1;
-        
-        DATA.LowPassFilteringFields = [];
-        DATA.PoincareFilteringFields = [];
+        DATA.default_frequency_method_index = 1;                
         
         DATA.FiguresFormats = {'all', 'fig', 'bmp', 'eps', 'emf', 'jpg', 'pcx', 'pbm', 'pdf', 'pgm', 'png', 'ppm', 'svg', 'tif', 'tiff'};
         
@@ -963,30 +960,30 @@ displayEndOfDemoMessage('');
         
         filtrr_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'filtrr')), param_keys)));
         filt_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.range')), filtrr_keys)));
-        lowpass_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.moving_average')), filtrr_keys)));
+        ma_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.moving_average')), filtrr_keys)));
         quotient_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.quotient')), filtrr_keys)));
         
         filt_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), filt_range_keys))) = [];
-        lowpass_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), lowpass_range_keys))) = [];
+        ma_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), ma_range_keys))) = [];
         quotient_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), quotient_range_keys))) = [];
         
         DATA.filter_quotient = rhrv_get_default('filtrr.quotient.enable', 'value');
-        DATA.filter_lowpass = rhrv_get_default('filtrr.moving_average.enable', 'value');
+        DATA.filter_ma = rhrv_get_default('filtrr.moving_average.enable', 'value');
         DATA.filter_range = rhrv_get_default('filtrr.range.enable', 'value');
         
-        DATA.default_filters_thresholds.lowpass.win_threshold = rhrv_get_default('filtrr.moving_average.win_threshold', 'value');
+        DATA.default_filters_thresholds.moving_average.win_threshold = rhrv_get_default('filtrr.moving_average.win_threshold', 'value');
+        DATA.default_filters_thresholds.moving_average.win_length = rhrv_get_default('filtrr.moving_average.win_length', 'value');
         DATA.default_filters_thresholds.quotient.rr_max_change = rhrv_get_default('filtrr.quotient.rr_max_change', 'value');
         DATA.default_filters_thresholds.range.rr_max = rhrv_get_default('filtrr.range.rr_max', 'value');
-        DATA.default_filters_thresholds.range.rr_min = rhrv_get_default('filtrr.range.rr_min', 'value');
-        DATA.default_filters_thresholds.lowpass.win_length = rhrv_get_default('filtrr.moving_average.win_length', 'value');
+        DATA.default_filters_thresholds.range.rr_min = rhrv_get_default('filtrr.range.rr_min', 'value');        
         
         DATA.custom_filters_thresholds = DATA.default_filters_thresholds;
         
-        if DATA.filter_lowpass && DATA.filter_range
+        if DATA.filter_ma && DATA.filter_range
             DATA.filter_index = 4;
-        elseif ~DATA.filter_quotient && ~DATA.filter_lowpass && ~DATA.filter_range
+        elseif ~DATA.filter_quotient && ~DATA.filter_ma && ~DATA.filter_range
             DATA.filter_index = 5;
-        elseif DATA.filter_lowpass
+        elseif DATA.filter_ma
             DATA.filter_index = 1;
         elseif DATA.filter_range
             DATA.filter_index = 2;
@@ -1015,7 +1012,7 @@ displayEndOfDemoMessage('');
         uix.Empty( 'Parent', GUI.FilteringParamBox );
         
         uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Moving average', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
-        [filt_lowpass_keys_length, max_extent_control(2), handles_boxes_2] = FillParamFields(GUI.FilteringParamBox, containers.Map(lowpass_range_keys, values(defaults_map, lowpass_range_keys)));
+        [filt_ma_keys_length, max_extent_control(2), handles_boxes_2] = FillParamFields(GUI.FilteringParamBox, containers.Map(ma_range_keys, values(defaults_map, ma_range_keys)));
         uix.Empty( 'Parent', GUI.FilteringParamBox );
         
         uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Quotient', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
@@ -1031,7 +1028,7 @@ displayEndOfDemoMessage('');
         rs = 19; %-22;
         ts = 19; % -18
         es = 2;
-        set( GUI.FilteringParamBox, 'Height', [ts, rs * ones(1, filt_range_keys_length), es, ts,  rs * ones(1, filt_lowpass_keys_length), es, ts,  rs * ones(1, filt_quotient_keys_length), -20]  );
+        set( GUI.FilteringParamBox, 'Height', [ts, rs * ones(1, filt_range_keys_length), es, ts,  rs * ones(1, filt_ma_keys_length), es, ts,  rs * ones(1, filt_quotient_keys_length), -20]  );
         
         % Time Parameters
         clearParametersBox(GUI.TimeParamBox);
@@ -1169,7 +1166,7 @@ displayEndOfDemoMessage('');
     end
 %%
     function setAutoYAxisLimLowAxes(axes_xlim)
-        filt_signal_data = DATA.filter_lowpass_nni(DATA.filter_lowpass_tnn >= min(axes_xlim) & DATA.filter_lowpass_tnn <= max(axes_xlim));
+        filt_signal_data = DATA.filter_ma_nni(DATA.filter_ma_tnn >= min(axes_xlim) & DATA.filter_ma_tnn <= max(axes_xlim));
         if ~isempty(filt_signal_data)
             max_nni = max(filt_signal_data);
             min_nni = min(filt_signal_data);
@@ -1968,10 +1965,10 @@ displayEndOfDemoMessage('');
             
             try
                 % Only for calc min and max bounderies for plotting
-                FiltSignal('filter_quotient', false, 'filter_lowpass', true, 'filter_range', false);
+                FiltSignal('filter_quotient', false, 'filter_ma', true, 'filter_range', false);
                 
-                DATA.filter_lowpass_nni = DATA.nni;
-                DATA.filter_lowpass_tnn = DATA.tnn;
+                DATA.filter_ma_nni = DATA.nni;
+                DATA.filter_ma_tnn = DATA.tnn;
                 
                 setAutoYAxisLimUpperAxes(DATA.firstSecond2Show, DATA.MyWindowSize);
                 
@@ -2516,22 +2513,22 @@ displayEndOfDemoMessage('');
     function FiltSignal(varargin)
         
         DEFAULT_FILTER_QUOTIENT = DATA.filter_quotient;
-        DEFAULT_FILTER_LOWPASS = DATA.filter_lowpass;
+        DEFAULT_FILTER_MA = DATA.filter_ma;
         DEFAULT_FILTER_RANGE = DATA.filter_range;
         p = inputParser;
         p.KeepUnmatched = true;
         p.addParameter('filter_quotient', DEFAULT_FILTER_QUOTIENT, @(x) islogical(x) && isscalar(x));
-        p.addParameter('filter_lowpass', DEFAULT_FILTER_LOWPASS, @(x) islogical(x) && isscalar(x));
+        p.addParameter('filter_ma', DEFAULT_FILTER_MA, @(x) islogical(x) && isscalar(x));
         p.addParameter('filter_range', DEFAULT_FILTER_RANGE, @(x) islogical(x) && isscalar(x));
         % Get input
         p.parse(varargin{:});
         filter_quotient = p.Results.filter_quotient;
-        filter_lowpass = p.Results.filter_lowpass;
+        filter_ma = p.Results.filter_ma;
         filter_range = p.Results.filter_range;
         
         if ~isempty(DATA.rri)
             
-            [nni, tnn, ~] = filtrr(DATA.rri, DATA.trr, 'filter_quotient', filter_quotient, 'filter_ma', filter_lowpass, 'filter_range', filter_range);
+            [nni, tnn, ~] = filtrr(DATA.rri, DATA.trr, 'filter_quotient', filter_quotient, 'filter_ma', filter_ma, 'filter_range', filter_range);
             
             if (isempty(nni))
                 ME = MException('FiltCalcPlotSignalStat:FiltrrNoNNIntervalOutputted', 'No NN interval outputted');
@@ -2629,23 +2626,6 @@ displayEndOfDemoMessage('');
         DATA.integration_index = index_selected;
     end
 %%
-%     function enable_disable_filtering_params()
-%
-%         if DATA.filter_index == 1 % Lowpass
-%             cellfun(@(x) set(x, 'Enable', 'on'), DATA.LowPassFilteringFields);
-%             cellfun(@(x) set(x, 'Enable', 'off'), DATA.PoincareFilteringFields);
-%         elseif DATA.filter_index == 2 % Poincare
-%             cellfun(@(x) set(x, 'Enable', 'off'), DATA.LowPassFilteringFields);
-%             cellfun(@(x) set(x, 'Enable', 'on'), DATA.PoincareFilteringFields);
-%         elseif DATA.filter_index == 3 % Combined Filters
-%             cellfun(@(x) set(x, 'Enable', 'on'), DATA.LowPassFilteringFields);
-%             cellfun(@(x) set(x, 'Enable', 'on'), DATA.PoincareFilteringFields);
-%         elseif DATA.filter_index == 4 % No Filtering
-%             cellfun(@(x) set(x, 'Enable', 'off'), DATA.LowPassFilteringFields);
-%             cellfun(@(x) set(x, 'Enable', 'off'), DATA.PoincareFilteringFields);
-%         end
-%     end
-%%
     function set_default_filters_threshoulds(param_field, param_value)
         if isfield(GUI, 'ConfigParamHandlesMap')
             set(GUI.ConfigParamHandlesMap(param_field), 'String', num2str(param_value));
@@ -2662,16 +2642,16 @@ displayEndOfDemoMessage('');
         
         if strcmp(FilterLevel, 'Default') || strcmp(FilterLevel, 'Custom')
             if strcmp(Filter, 'Moving average')
-                set_default_filters_threshoulds('filtrr.moving_average.win_threshold',  filters_thresholds.lowpass.win_threshold);
-                set_default_filters_threshoulds('filtrr.moving_average.win_length',  filters_thresholds.lowpass.win_length);
+                set_default_filters_threshoulds('filtrr.moving_average.win_threshold',  filters_thresholds.moving_average.win_threshold);
+                set_default_filters_threshoulds('filtrr.moving_average.win_length',  filters_thresholds.moving_average.win_length);
             elseif strcmp(Filter, 'Range')
                 set_default_filters_threshoulds('filtrr.range.rr_max',  filters_thresholds.range.rr_max);
                 set_default_filters_threshoulds('filtrr.range.rr_min',  filters_thresholds.range.rr_min);
             elseif strcmp(Filter, 'Quotient')
                 set_default_filters_threshoulds('filtrr.quotient.rr_max_change',  filters_thresholds.quotient.rr_max_change);
             elseif strcmp(Filter, 'Combined filters')
-                set_default_filters_threshoulds('filtrr.moving_average.win_threshold',  filters_thresholds.lowpass.win_threshold);
-                set_default_filters_threshoulds('filtrr.moving_average.win_length',  filters_thresholds.lowpass.win_length);
+                set_default_filters_threshoulds('filtrr.moving_average.win_threshold',  filters_thresholds.moving_average.win_threshold);
+                set_default_filters_threshoulds('filtrr.moving_average.win_length',  filters_thresholds.moving_average.win_length);
                 set_default_filters_threshoulds('filtrr.range.rr_max',  filters_thresholds.range.rr_max);
                 set_default_filters_threshoulds('filtrr.range.rr_min',  filters_thresholds.range.rr_min);
             end
@@ -2744,8 +2724,8 @@ displayEndOfDemoMessage('');
         elseif strcmp(Filter, 'Moving average')
             GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
             GUI.FilteringLevel_popupmenu.Enable = 'on';
-            set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.lowpass.win_threshold);
-            set_default_filters_threshoulds('filtrr.moving_average.win_length', DATA.default_filters_thresholds.lowpass.win_length);
+            set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.moving_average.win_threshold);
+            set_default_filters_threshoulds('filtrr.moving_average.win_length', DATA.default_filters_thresholds.moving_average.win_length);
         elseif strcmp(Filter, 'Quotient')
             GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
             GUI.FilteringLevel_popupmenu.Enable = 'on';
@@ -2755,8 +2735,8 @@ displayEndOfDemoMessage('');
             GUI.FilteringLevel_popupmenu.Enable = 'on';
             set_default_filters_threshoulds('filtrr.range.rr_max', DATA.default_filters_thresholds.range.rr_max);
             set_default_filters_threshoulds('filtrr.range.rr_min', DATA.default_filters_thresholds.range.rr_min);
-            set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.lowpass.win_threshold);
-            set_default_filters_threshoulds('filtrr.moving_average.win_length', DATA.default_filters_thresholds.lowpass.win_length);
+            set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.moving_average.win_threshold);
+            set_default_filters_threshoulds('filtrr.moving_average.win_length', DATA.default_filters_thresholds.moving_average.win_length);
         end
         
         try
@@ -2821,30 +2801,30 @@ displayEndOfDemoMessage('');
     function set_filters(Filter)
         if strcmp(Filter, DATA.Filters{5}) % No filtering
             DATA.filter_quotient = false;
-            DATA.filter_lowpass = false;
+            DATA.filter_ma = false;
             DATA.filter_range = false;
         elseif strcmp(Filter, DATA.Filters{1}) % Moving average
             DATA.filter_quotient = false;
-            DATA.filter_lowpass = true;
+            DATA.filter_ma = true;
             DATA.filter_range = false;
         elseif strcmp(Filter, DATA.Filters{2}) % Range
             DATA.filter_quotient = false;
-            DATA.filter_lowpass = false;
+            DATA.filter_ma = false;
             DATA.filter_range = true;
         elseif strcmp(Filter, DATA.Filters{3}) % Quotient
             DATA.filter_quotient = true;
-            DATA.filter_lowpass = false;
+            DATA.filter_ma = false;
             DATA.filter_range = false;
         elseif strcmp(Filter, DATA.Filters{4}) % Combined Filters
             DATA.filter_quotient = false;
-            DATA.filter_lowpass = true;
+            DATA.filter_ma = true;
             DATA.filter_range = true;
         else
             error('Unknown filter!');
         end
         rhrv_set_default('filtrr.range.enable', DATA.filter_range);
         rhrv_set_default('filtrr.quotient.enable', DATA.filter_quotient);
-        rhrv_set_default('filtrr.lowpass.enable', DATA.filter_lowpass);
+        rhrv_set_default('filtrr.ma.enable', DATA.filter_ma);
     end
 %%
     function FirstSecond_Callback ( ~, ~ )
@@ -3634,9 +3614,9 @@ displayEndOfDemoMessage('');
         doFilt = 0;
         if regexpi(param_name, 'filtrr')
             DATA.custom_filters_thresholds.(param_category{2}).(param_category{3}) = param_value;
-            if strcmp(Filter, 'Combined filters') && (strcmp(param_category{2}, 'lowpass') || strcmp(param_category{3}, 'range'))
+            if strcmp(Filter, 'Combined filters') && (strcmp(param_category{2}, 'moving_average') || strcmp(param_category{3}, 'range'))
                 doFilt = 1;
-            elseif strcmp(Filter, 'Moving average') && strcmp(param_category{2}, 'lowpass')
+            elseif strcmp(Filter, 'Moving average') && strcmp(param_category{2}, 'moving_average')
                 doFilt = 1;
             elseif strcmp(Filter, 'Range') && strcmp(param_category{2}, 'range')
                 doFilt = 1;

@@ -853,20 +853,27 @@ displayEndOfDemoMessage('');
             handles_boxes{2, i} = current_field_value;
             
             symbol_field_name = current_field.name;
-            if ~isempty(strfind(symbol_field_name, 'Alpha1'))
-                symbol_field_name = strrep(symbol_field_name, 'Alpha1', '');
-                symbol_field_name = [sprintf('\x3b1\x2081') symbol_field_name]; % https://unicode-table.com/en/
-            end
             
-            if ~isempty(strfind(symbol_field_name, 'Alpha2'))
-                symbol_field_name = strrep(symbol_field_name, 'Alpha2', '');
-                symbol_field_name = [sprintf('\x3b1\x2082') symbol_field_name];
-            end
+            symbol_field_name = strrep(symbol_field_name, 'Alpha1', sprintf('\x3b1\x2081')); % https://unicode-table.com/en/
+            symbol_field_name = strrep(symbol_field_name, 'Alpha2', sprintf('\x3b1\x2082'));
+            symbol_field_name = strrep(symbol_field_name, 'Beta', sprintf('\x3b2'));
             
-            if ~isempty(strfind(symbol_field_name, 'Beta'))
-                symbol_field_name = strrep(symbol_field_name, 'Beta', '');
-                symbol_field_name = [sprintf('\x3b2') symbol_field_name];
-            end
+            
+%             
+%             if ~isempty(strfind(symbol_field_name, 'Alpha1'))
+%                 symbol_field_name = strrep(symbol_field_name, 'Alpha1', '');
+%                 symbol_field_name = [sprintf('\x3b1\x2081') symbol_field_name]; % https://unicode-table.com/en/
+%             end
+            
+%             if ~isempty(strfind(symbol_field_name, 'Alpha2'))
+%                 symbol_field_name = strrep(symbol_field_name, 'Alpha2', '');
+%                 symbol_field_name = [sprintf('\x3b1\x2082') symbol_field_name];
+%             end
+%             
+%             if ~isempty(strfind(symbol_field_name, 'Beta'))
+%                 symbol_field_name = strrep(symbol_field_name, 'Beta', '');
+%                 symbol_field_name = [sprintf('\x3b2') symbol_field_name];
+%             end
             
             text_fields_handles_cell{i} = uicontrol( 'Style', 'text', 'Parent', HBox, 'String', symbol_field_name, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
             
@@ -992,17 +999,19 @@ displayEndOfDemoMessage('');
         end
         GUI.Filtering_popupmenu.Value = DATA.filter_index;
         
-        hrv_time_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'hrv_time')), param_keys)));
-        hrv_freq_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'hrv_freq')), param_keys)));
-        dfa_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'dfa')), param_keys)));
-        mse_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'mse')), param_keys)));
+        hrv_time_keys = param_keys((cellfun(@(x) ~isempty(regexpi(x, 'hrv_time')), param_keys))); % find
+        hrv_freq_keys = param_keys((cellfun(@(x) ~isempty(regexpi(x, 'hrv_freq')), param_keys)));% find
+        dfa_keys = param_keys((cellfun(@(x) ~isempty(regexpi(x, 'dfa')), param_keys))); % find
+        mse_keys = param_keys((cellfun(@(x) ~isempty(regexpi(x, 'mse')), param_keys))); % find
         
         for i = 1 : length(not_in_use_params_fr)
-            hrv_freq_keys(find(cellfun(@(x) ~isempty(regexpi(x, not_in_use_params_fr{i})), hrv_freq_keys))) = [];
+            hrv_freq_keys((cellfun(@(x) ~isempty(regexpi(x, not_in_use_params_fr{i})), hrv_freq_keys))) = []; % find
         end
         for i = 1 : length(not_in_use_params_mse)
-            mse_keys(find(cellfun(@(x) ~isempty(regexpi(x, not_in_use_params_mse{i})), mse_keys))) = [];
+            mse_keys((cellfun(@(x) ~isempty(regexpi(x, not_in_use_params_mse{i})), mse_keys))) = [];
         end
+        
+        mse_keys((cellfun(@(x) ~isempty(regexpi(x, 'normalize_std')), mse_keys))) = [];
         
         max_extent_control = [];
         % Filtering Parameters
@@ -1070,7 +1079,11 @@ displayEndOfDemoMessage('');
         uicontrol( 'Style', 'text', 'Parent', GUI.NonLinearParamBox, 'String', 'Multi Scale Entropy (MSE)', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
         [mse_param_length, max_extent_control(2), handles_boxes_2] = FillParamFields(GUI.NonLinearParamBox, containers.Map(mse_keys, values(defaults_map, mse_keys)));
         
-        % NonLinear Parameters - Beta
+        uix.Empty( 'Parent', GUI.NonLinearParamBox );
+        
+        GUI.Normalize_STD_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.NonLinearParamBox, 'Callback', @Normalize_STD_checkbox_Callback, 'FontSize', DATA.BigFontSize, ...
+            'String', defaults_map('mse.normalize_std').name, 'Value', defaults_map('mse.normalize_std').value, 'TooltipString', defaults_map('mse.normalize_std').description, 'Callback', @Normalize_STD_checkbox_Callback);
+        
         uix.Empty( 'Parent', GUI.NonLinearParamBox );
         
         max_extent = max(max_extent_control);
@@ -1082,7 +1095,7 @@ displayEndOfDemoMessage('');
         ts = 19; % -18
         es = 2; % -15
         
-        set( GUI.NonLinearParamBox, 'Heights', [ts, rs * ones(1, dfa_param_length), es, ts,  rs * ones(1, mse_param_length), -25] );
+        set( GUI.NonLinearParamBox, 'Heights', [ts, rs * ones(1, dfa_param_length), es, ts,  rs * ones(1, mse_param_length), es, rs, -25] );
         
         set(findobj(GUI.FilteringParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
         set(findobj(GUI.FilteringParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
@@ -1098,6 +1111,7 @@ displayEndOfDemoMessage('');
         
         set(findobj(GUI.NonLinearParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
         set(findobj(GUI.NonLinearParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
+        set(findobj(GUI.NonLinearParamBox,'Style', 'Checkbox'), 'BackgroundColor', myUpBackgroundColor);
     end
 %%
     function slider_Callback(~, ~)
@@ -4798,14 +4812,28 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function WinAverage_checkbox_Callback(~, ~)
+    function Normalize_STD_checkbox_Callback(src, ~)
+        
+        rhrv_set_default('mse.normalize_std', get(src, 'Value'));
+        
         if get(GUI.AutoCalc_checkbox, 'Value')
-            DATA.WinAverage = 1;
+            waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+            calcNonlinearStatistics(waitbar_handle);
+            close(waitbar_handle);
+        end               
+    end
+%%
+    function WinAverage_checkbox_Callback(src, ~)
+        
+        DATA.WinAverage = get(src, 'Value');
+        
+        if get(GUI.AutoCalc_checkbox, 'Value')
+%             DATA.WinAverage = 1;
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
             calcFrequencyStatistics(waitbar_handle);
             close(waitbar_handle);
-        else
-            DATA.WinAverage = 0;
+%         else
+%             DATA.WinAverage = 0;
         end
     end
 %%

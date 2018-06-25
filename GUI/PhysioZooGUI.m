@@ -856,24 +856,7 @@ displayEndOfDemoMessage('');
             
             symbol_field_name = strrep(symbol_field_name, 'Alpha1', sprintf('\x3b1\x2081')); % https://unicode-table.com/en/
             symbol_field_name = strrep(symbol_field_name, 'Alpha2', sprintf('\x3b1\x2082'));
-            symbol_field_name = strrep(symbol_field_name, 'Beta', sprintf('\x3b2'));
-            
-            
-%             
-%             if ~isempty(strfind(symbol_field_name, 'Alpha1'))
-%                 symbol_field_name = strrep(symbol_field_name, 'Alpha1', '');
-%                 symbol_field_name = [sprintf('\x3b1\x2081') symbol_field_name]; % https://unicode-table.com/en/
-%             end
-            
-%             if ~isempty(strfind(symbol_field_name, 'Alpha2'))
-%                 symbol_field_name = strrep(symbol_field_name, 'Alpha2', '');
-%                 symbol_field_name = [sprintf('\x3b1\x2082') symbol_field_name];
-%             end
-%             
-%             if ~isempty(strfind(symbol_field_name, 'Beta'))
-%                 symbol_field_name = strrep(symbol_field_name, 'Beta', '');
-%                 symbol_field_name = [sprintf('\x3b2') symbol_field_name];
-%             end
+            symbol_field_name = strrep(symbol_field_name, 'Beta', sprintf('\x3b2'));                        
             
             text_fields_handles_cell{i} = uicontrol( 'Style', 'text', 'Parent', HBox, 'String', symbol_field_name, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
             
@@ -1636,7 +1619,7 @@ displayEndOfDemoMessage('');
                             integration = curr_field;
                         end
                     end
-                    
+                    time_data = 0;
                 elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                     try
                         [ ~, Fs, ~ ] = get_signal_channel( [PathName DATA.DataFileName] );
@@ -1651,28 +1634,40 @@ displayEndOfDemoMessage('');
                         close(waitbar_handle);
                         throw(MException('LoadFile:text', 'Cann''t get sampling frequency or mammal.'));
                     end
+                    time_data = 0;
                 elseif strcmpi(ExtensionFileName, 'txt')
-                    file_name = [PathName DATA.DataFileName '.txt'];
-                    fileID = fopen(file_name, 'r');
-                    if fileID ~= -1
-                        %                         mammal = fscanf(fileID, '%*s %s', 1);
-                        Mammal = fscanf(fileID, '%s', 1);
-                        if ~isempty(regexpi(Mammal, 'mammal'))
-                            mammal = fscanf(fileID, '%s', 1);
-                            [mammal, mammal_index] = set_mammal(mammal);
-                            DATA.SamplingFrequency = fscanf(fileID, '%*s %d', 1);
-                            %                         DATA.Integration = fscanf(fileID, '%*s %s', 1);
-                            integration = fscanf(fileID, '%*s %s', 1);
-                            if strcmpi(integration, 'AP') || strcmpi(integration, 'Action') % strcmpi(DATA.Integration, 'AP') || strcmpi(DATA.Integration, 'Action')
-                                %                             DATA.Integration = 'Action Potential';
-                                integration = 'Action Potential';
-                            end
-                            QRS_data = dlmread(file_name,' ', 4, 0);
-                        else
-                            QRS_data = dlmread(file_name,' ', 0, 0);
-                        end
-                        fclose(fileID);
-                    end
+                    
+                    
+                    DataFileMap = loadDataFile([PathName QRS_FileName]);
+                    data = DataFileMap('DATA');
+                    mammal = data.General.Mammal;
+                    [mammal, mammal_index] = set_mammal(mammal);
+                    integration = data.General.Integration_Level;
+                    DATA.SamplingFrequency = data.Time.Fs;
+                    QRS_data = data.Data.Data;
+                    time_data = data.Time.Data;
+                    
+%                     file_name = [PathName DATA.DataFileName '.txt'];
+%                     fileID = fopen(file_name, 'r');
+%                     if fileID ~= -1
+%                         %                         mammal = fscanf(fileID, '%*s %s', 1);
+%                         Mammal = fscanf(fileID, '%s', 1);
+%                         if ~isempty(regexpi(Mammal, 'mammal'))
+%                             mammal = fscanf(fileID, '%s', 1);
+%                             [mammal, mammal_index] = set_mammal(mammal);
+%                             DATA.SamplingFrequency = fscanf(fileID, '%*s %d', 1);
+%                             %                         DATA.Integration = fscanf(fileID, '%*s %s', 1);
+%                             integration = fscanf(fileID, '%*s %s', 1);
+%                             if strcmpi(integration, 'AP') || strcmpi(integration, 'Action') % strcmpi(DATA.Integration, 'AP') || strcmpi(DATA.Integration, 'Action')
+%                                 %                             DATA.Integration = 'Action Potential';
+%                                 integration = 'Action Potential';
+%                             end
+%                             QRS_data = dlmread(file_name,' ', 4, 0);
+%                         else
+%                             QRS_data = dlmread(file_name,' ', 0, 0);
+%                         end
+%                         fclose(fileID);
+%                     end
                 else
                     close(waitbar_handle);
                     throw(MException('LoadFile:text', 'Please, choose another file format.'));
@@ -1688,7 +1683,7 @@ displayEndOfDemoMessage('');
                     if ~isempty(answer)
                         DATA.SamplingFrequency = str2double(answer{1});
                         if ~isnan(DATA.SamplingFrequency)
-                            set_qrs_data(QRS_data);
+                            set_qrs_data(QRS_data, time_data);
                         else
                             close(waitbar_handle);
                             throw(MException('LoadFile:SamplingFrequency', 'Please, enter valid SamplingFrequency!'));
@@ -1698,21 +1693,26 @@ displayEndOfDemoMessage('');
                         throw(MException('LoadFile:SamplingFrequency', 'Please, enter SamplingFrequency!'));
                     end
                 else
-                    set_qrs_data(QRS_data);
+                    set_qrs_data(QRS_data, time_data);
                 end
             end
         end
     end
 %%
-    function set_qrs_data(QRS_data)
-        if ~isempty(QRS_data) && sum(QRS_data > 0)
-            % Convert indices to double so we can do calculations on them
-            QRS_data = double(QRS_data);
-            DATA.rri = diff(QRS_data)/DATA.SamplingFrequency;
-            DATA.trr = QRS_data(1:end-1)/DATA.SamplingFrequency; % moving first peak at zero ms
+    function set_qrs_data(QRS_data, time_data)
+        if time_data == 0
+            if ~isempty(QRS_data) && sum(QRS_data > 0)
+                % Convert indices to double so we can do calculations on them
+                QRS_data = double(QRS_data);
+                DATA.rri = diff(QRS_data)/DATA.SamplingFrequency;
+                DATA.trr = QRS_data(1:end-1)/DATA.SamplingFrequency; % moving first peak at zero ms
+            else
+                close(waitbar_handle);
+                throw(MException('LoadFile:Data', 'Could not Load the file. Please, choose the file with the QRS data and positive values'));
+            end
         else
-            close(waitbar_handle);
-            throw(MException('LoadFile:Data', 'Could not Load the file. Please, choose the file with the QRS data and positive values'));
+            DATA.rri = double(QRS_data);
+            DATA.trr = time_data;
         end
     end
 %%

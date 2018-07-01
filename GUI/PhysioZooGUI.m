@@ -175,6 +175,9 @@ displayEndOfDemoMessage('');
         DATA.Group.Path.AllExts = [];
         
         DATA.GroupsCalc = 0;
+        
+        DATA.custom_filters_thresholds = [];
+%         DATA.custom_config_params = containers.Map;
     end
 %%
     function clean_gui()
@@ -209,6 +212,40 @@ displayEndOfDemoMessage('');
         
         GUI.PageDownButton.Enable = 'off';
         GUI.PageUpButton.Enable = 'on';
+    end
+%%
+    function clearStatTables()
+        GUI.TimeParametersTable.Data = []; %cell(1);
+        GUI.TimeParametersTableData = [];
+        GUI.TimeParametersTable.RowName = [];
+        
+        GUI.FragParametersTableData = [];
+        GUI.FragParametersTable.RowName=[];
+        GUI.FragParametersTable.Data = [];
+        
+        GUI.FrequencyParametersTable.Data = [];
+        GUI.FrequencyParametersTableData = [];
+        GUI.FrequencyParametersTable.RowName = [];
+        GUI.FrequencyParametersTableMethodRowName = [];
+        
+        GUI.NonLinearTable.Data = [];
+        GUI.NonLinearTableData = [];
+        GUI.NonLinearTable.RowName = [];
+        
+        GUI.StatisticsTable.RowName = {''};
+        GUI.StatisticsTable.Data = {''};
+        GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};
+        
+        DATA.TimeStat = [];
+        DATA.FrStat = [];
+        DATA.NonLinStat = [];
+        
+%         DATA.TimeStat.hrv_time_metrics = [];
+%         DATA.FrStat.hrv_fr_metrics = [];
+%         DATA.NonLinStat.hrv_nonlin_metrics = [];
+        
+        DATA.timeStatPartRowNumber = 0;
+        DATA.frequencyStatPartRowNumber = 0;
     end
 %% Open the window
     function GUI = createInterface()
@@ -559,14 +596,14 @@ displayEndOfDemoMessage('');
         
         uix.Empty( 'Parent', GUI.BatchBox );
         
-        batch_Box = uix.HBox('Parent', GUI.BatchBox, 'Spacing', DATA.Spacing);
-        uix.Empty( 'Parent', batch_Box );
-        uicontrol( 'Style', 'PushButton', 'Parent', batch_Box, 'Callback', @RunMultSegments_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute');
-        uix.Empty( 'Parent', batch_Box );
-        set( batch_Box, 'Widths',  field_size);
+%         batch_Box = uix.HBox('Parent', GUI.BatchBox, 'Spacing', DATA.Spacing);
+%         uix.Empty( 'Parent', batch_Box );
+%         uicontrol( 'Style', 'PushButton', 'Parent', batch_Box, 'Callback', @RunMultSegments_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute');
+%         uix.Empty( 'Parent', batch_Box );
+%         set( batch_Box, 'Widths',  field_size);
         
         uix.Empty( 'Parent', GUI.BatchBox );
-        set( GUI.BatchBox, 'Heights', [-10 -5 -10 -10 -10 -10 -10 -10 -10 -15 -70] ); % -60
+        set( GUI.BatchBox, 'Heights', [-10 -5 -10 -10 -10 -10 -10 -10 -10 -70] ); % -15 -70
         
         % -----------------------------------------
         
@@ -869,11 +906,21 @@ displayEndOfDemoMessage('');
                 else
                     set(param_control, 'String', current_value, 'UserData', current_value);
                 end
-                if ~isempty(strfind(field_name, 'hrv_time'))
-                    GUI.ConfigParamHandlesMap(field_name) = param_control;
-                elseif ~isempty(strfind(field_name, 'filtrr'))
-                    GUI.ConfigParamHandlesMap(field_name) = param_control;
-                end
+                
+                
+                GUI.ConfigParamHandlesMap(field_name) = param_control;
+                
+                
+%                 if ~isempty(strfind(field_name, 'hrv_time'))
+%                     GUI.ConfigParamHandlesMap(field_name) = param_control;
+%                 elseif ~isempty(strfind(field_name, 'filtrr'))
+%                     GUI.ConfigParamHandlesMap(field_name) = param_control;
+%                 end
+                
+                
+                
+                
+                
             else
                 field_name_min = [field_name '.min'];
                 current_value = num2str(current_field_value(1));
@@ -886,10 +933,18 @@ displayEndOfDemoMessage('');
                 param_control2 = uicontrol( 'Style', 'edit', 'Parent', HBox, 'Callback', {@set_config_Callback, field_name_max}, 'FontSize', SmallFontSize, 'TooltipString', current_field.description, 'Tag', field_name_max);
                 
                 set(param_control2, 'String', current_value, 'UserData', current_value);
-                if ~isempty(strfind(field_name, 'hrv_freq'))
-                    GUI.ConfigParamHandlesMap(field_name_min) = param_control1;
-                    GUI.ConfigParamHandlesMap(field_name_max) = param_control2;
-                end
+                
+                
+                GUI.ConfigParamHandlesMap(field_name_min) = param_control1;
+                GUI.ConfigParamHandlesMap(field_name_max) = param_control2;
+                
+                
+                
+%                 if ~isempty(strfind(field_name, 'hrv_freq'))
+%                     GUI.ConfigParamHandlesMap(field_name_min) = param_control1;
+%                     GUI.ConfigParamHandlesMap(field_name_max) = param_control2;
+%                 end
+                
             end
             if strcmp(symbol_field_name, 'Spectral window length')
                 uicontrol( 'Style', 'text', 'Parent', HBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'TooltipString', current_field.description);
@@ -968,6 +1023,7 @@ displayEndOfDemoMessage('');
         DATA.default_filters_thresholds.range.rr_min = rhrv_get_default('filtrr.range.rr_min', 'value');        
         
         DATA.custom_filters_thresholds = DATA.default_filters_thresholds;
+%         DATA.custom_config_params = defaults_map;
         
         if DATA.filter_ma && DATA.filter_range
             DATA.filter_index = 4;
@@ -1530,37 +1586,6 @@ displayEndOfDemoMessage('');
             end
             plotDataQuality();
         end
-    end
-%%
-    function clearStatTables()
-        GUI.TimeParametersTable.Data = []; %cell(1);
-        GUI.TimeParametersTableData = [];
-        GUI.TimeParametersTable.RowName = [];
-        
-        GUI.FragParametersTableData = [];
-        GUI.FragParametersTable.RowName=[];
-        GUI.FragParametersTable.Data = [];
-        
-        GUI.FrequencyParametersTable.Data = [];
-        GUI.FrequencyParametersTableData = [];
-        GUI.FrequencyParametersTable.RowName = [];
-        GUI.FrequencyParametersTableMethodRowName = [];
-        
-        GUI.NonLinearTable.Data = [];
-        GUI.NonLinearTableData = [];
-        GUI.NonLinearTable.RowName = [];
-        
-        GUI.StatisticsTable.RowName = {''};
-        GUI.StatisticsTable.Data = {''};
-        GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};
-        
-        DATA.TimeStat = [];
-        DATA.FrStat = [];
-        DATA.NonLinStat = [];
-        
-        DATA.TimeStat.hrv_time_metrics = [];
-        DATA.FrStat.hrv_fr_metrics = [];
-        DATA.NonLinStat.hrv_nonlin_metrics = [];
     end
 %%
     function [mammal, mammal_index] = set_mammal(mammal)
@@ -3175,7 +3200,7 @@ displayEndOfDemoMessage('');
                     end
                 end
             else
-                errordlg('Please, press Process before saving!', 'Input Error');
+                errordlg('Please, press Compute before saving!', 'Input Error');
             end
             delete( GUI.SaveFiguresWindow );
         else
@@ -3250,7 +3275,7 @@ displayEndOfDemoMessage('');
                 end
             end
         else
-            errordlg('Please, press Process before saving!', 'Input Error');
+            errordlg('Please, press Compute before saving!', 'Input Error');
         end
     end
 %%
@@ -3424,7 +3449,7 @@ displayEndOfDemoMessage('');
                             'hrv_metrics_table');
                     end
                 else
-                    errordlg('Please, press Process before saving!', 'Input Error');
+                    errordlg('Please, press Compute before saving!', 'Input Error');
                 end
             end
         end
@@ -3455,31 +3480,45 @@ displayEndOfDemoMessage('');
     end
 %%
     function waitbar_handle = update_statistics(param_category)
-        if strcmp(param_category, 'filtrr')
-            waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-            try
-                FiltSignal();
-                clear_statistics_plots();
-                clearStatTables();
-                plotFilteredData();
-                calcStatistics();
-                close(waitbar_handle);
-            catch e
-                close(waitbar_handle);
-                rethrow(e);
+        
+        if isfield(DATA, 'AnalysisParams')
+            
+            GUI.StatisticsTable.ColumnName = {'Description'};
+            
+            if DATA.AnalysisParams.winNum == 1
+                GUI.StatisticsTable.ColumnName = cat(1, GUI.StatisticsTable.ColumnName, 'Values');
+            else
+                for i = 1 : DATA.AnalysisParams.winNum
+                    GUI.StatisticsTable.ColumnName = cat(1, GUI.StatisticsTable.ColumnName, ['W' num2str(i)]);
+                end
             end
-        elseif strcmp(param_category, 'hrv_time')
-            waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-            calcTimeStatistics(waitbar_handle);
-            close(waitbar_handle);
-        elseif strcmp(param_category, 'hrv_freq')
-            waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-            calcFrequencyStatistics(waitbar_handle);
-            close(waitbar_handle);
-        elseif strcmp(param_category, 'dfa') || strcmp(param_category, 'mse')
-            waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-            calcNonlinearStatistics(waitbar_handle);
-            close(waitbar_handle);
+            
+            if strcmp(param_category, 'filtrr') || isempty(DATA.TimeStat) || isempty(DATA.FrStat) || isempty(DATA.NonLinStat)
+                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                try
+                    FiltSignal();
+                    clear_statistics_plots();
+                    clearStatTables();
+                    plotFilteredData();
+                    calcStatistics();
+                    close(waitbar_handle);
+                catch e
+                    close(waitbar_handle);
+                    rethrow(e);
+                end                            
+            elseif strcmp(param_category, 'hrv_time')
+                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                calcTimeStatistics(waitbar_handle);
+                close(waitbar_handle);
+            elseif strcmp(param_category, 'hrv_freq')
+                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                calcFrequencyStatistics(waitbar_handle);
+                close(waitbar_handle);
+            elseif strcmp(param_category, 'dfa') || strcmp(param_category, 'mse')
+                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                calcNonlinearStatistics(waitbar_handle);
+                close(waitbar_handle);
+            end
         end
     end
 %%
@@ -3564,7 +3603,7 @@ displayEndOfDemoMessage('');
             max_param_value = prev_param_array.value(2);
             
             if min_param_value > max_param_value
-                errordlg(['set_config_Callback error: ' 'This min value must be less than max value!'], 'Input Error');
+                errordlg(['set_config_Callback error: ' 'The min value must be less than max value!'], 'Input Error');
                 set(src, 'String', prev_screen_value);
                 return;
             end
@@ -3595,7 +3634,7 @@ displayEndOfDemoMessage('');
             min_param_value = prev_param_array.value(1);
             
             if max_param_value < min_param_value
-                errordlg(['set_config_Callback error: ' 'This max value must be greater than min value!'], 'Input Error');
+                errordlg(['set_config_Callback error: ' 'The max value must be greater than min value!'], 'Input Error');
                 set(src, 'String', prev_screen_value);
                 return;
             end
@@ -3625,6 +3664,10 @@ displayEndOfDemoMessage('');
         
         rhrv_set_default( param_name, param_value );
         
+%         if ~get(GUI.AutoCalc_checkbox, 'Value')
+%             DATA.custom_config_params(param_name) = param_value;
+%         end
+        
         doFilt = 0;
         if regexpi(param_name, 'filtrr')
             DATA.custom_filters_thresholds.(param_category{2}).(param_category{3}) = param_value;
@@ -3650,7 +3693,7 @@ displayEndOfDemoMessage('');
             catch e
                 errordlg(['set_config_Callback error: ' e.message], 'Input Error');
                 
-                rhrv_set_default( param_name, prev_param_array );
+                rhrv_set_default( param_name, prev_param_array );                
                 set(src, 'String', num2str(prev_param_value));
                 
                 if ~isempty(cp_param_array)
@@ -3876,6 +3919,9 @@ displayEndOfDemoMessage('');
                 GUI.Active_Window_Length.Enable = 'inactive';
                 GUI.SpectralWindowLengthHandle.Enable = 'inactive';
                 GUI.active_winNum.Enable = 'on';
+                
+                set(GUI.AutoCalc_checkbox, 'Value', 0);
+                GUI.AutoCompute_pushbutton.Enable = 'on';
             end
         end
     end
@@ -4199,19 +4245,20 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function RunMultSegments_pushbutton_Callback( ~, ~ )
-        clear_statistics_plots();
-        clearStatTables();
-        
-        set(GUI.Active_Window_Length, 'Enable', 'inactive');
-        set(GUI.Active_Window_Start, 'Enable', 'inactive');
-        set(GUI.SpectralWindowLengthHandle, 'Enable', 'inactive');
-        calcStatistics();
-    end
+%     function RunMultSegments_pushbutton_Callback( ~, ~ )
+%         clear_statistics_plots();
+%         clearStatTables();
+%         
+% %         set(GUI.Active_Window_Length, 'Enable', 'inactive');
+% %         set(GUI.Active_Window_Start, 'Enable', 'inactive');
+% %         set(GUI.SpectralWindowLengthHandle, 'Enable', 'inactive');
+%         calcStatistics();
+%     end
 %%
     function AutoCompute_pushbutton_Callback( ~, ~ )
         clear_statistics_plots();
         clearStatTables();
+        
         calcStatistics();
     end
 %%
@@ -4271,7 +4318,7 @@ displayEndOfDemoMessage('');
                 set(GUI.Active_Window_Start, 'String', calcDuration(XData_active_window(1), 0));
                 set(GUI.active_winNum, 'String', DATA.active_window);
                 set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
-            end
+            end            
         end
     end
 %%

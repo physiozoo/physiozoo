@@ -69,8 +69,8 @@ displayEndOfDemoMessage('');
         DATA.filter_ma = true;
         DATA.filter_range = false;
         
-        % DEBUGGING MODE - Small Screen
-        %         DATA.screensize = [0 0 1250 800];
+%         DEBUGGING MODE - Small Screen
+%         DATA.screensize = [0 0 1250 800];
         
         DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
         
@@ -350,14 +350,16 @@ displayEndOfDemoMessage('');
         temp_vbox_buttons = uix.VBox( 'Parent', temp_panel_buttons, 'Spacing', DATA.Spacing);
         
         if DATA.SmallScreen
-            left_part = 0.4;
-            Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1);
+            left_part = 0.4; % 0.4
+            Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
+             buttons_part = 0.1;
         else
-            left_part = 0.27;
-            Left_Part_widths_in_pixels = 0.25 * DATA.window_size(1);
+            left_part = 0.25; % 0.27
+            Left_Part_widths_in_pixels = 0.25 * DATA.window_size(1); % 0.25
+            buttons_part = 0.07; % 0.07
         end
-        right_part = 0.9;
-        buttons_part = 0.07;
+        right_part = 0.7; % 0.7
+        
         Right_Part_widths_in_pixels = DATA.window_size(1) - Left_Part_widths_in_pixels;
         
         set(Upper_Part_Box, 'Widths', [-1*left_part -1*right_part -1*buttons_part]);
@@ -368,7 +370,7 @@ displayEndOfDemoMessage('');
         BlueRectButtons_Box = uix.HButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
         PageUpDownButtons_Box = uix.HButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding+10, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
         
-        set(temp_vbox_buttons, 'Heights', [-100, -35, -15]);
+        set(temp_vbox_buttons, 'Heights', [-100, -35, -20]); % -15
         %------------------------------------
         
         GUI.OptionsTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
@@ -394,12 +396,18 @@ displayEndOfDemoMessage('');
         GUI.UpCentral_TabPanel.Selection = 1;
         %------------------------------------
         
-        GUI.RR_or_HR_plot_button = uicontrol( 'Style', 'ToggleButton', 'Parent', MainCommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
+        GUI.RR_or_HR_plot_button = uicontrol( 'Style', 'ToggleButton', 'Parent', MainCommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');        
+        GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', MainCommandsButtons_Box, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', BigFontSize-1.5, 'String', 'Auto Compute', 'Value', 1);
+        GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', MainCommandsButtons_Box, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'inactive');
         GUI.Reset_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', MainCommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
-        set( MainCommandsButtons_Box, 'ButtonSize', [70, 25], 'Spacing', DATA.Spacing  );
+        set( MainCommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing  );
         
         GUI.BlueRectFocusButton = uicontrol( 'Style', 'PushButton', 'Parent', BlueRectButtons_Box, 'Callback', @blue_rect_focus_pushbutton_Callback, 'FontSize', BigFontSize, 'Visible', 'on');
-        set( BlueRectButtons_Box, 'ButtonSize', [80, 25], 'Spacing', DATA.Spacing  );
+        if DATA.SmallScreen
+            set( BlueRectButtons_Box, 'ButtonSize', [80, 25], 'Spacing', DATA.Spacing  );
+        else
+            set( BlueRectButtons_Box, 'ButtonSize', [105, 25], 'Spacing', DATA.Spacing  );
+        end
         
         GUI.PageDownButton = uicontrol( 'Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', @page_down_pushbutton_Callback, 'FontSize', BigFontSize, 'String', sprintf('\x25C0'), 'Visible', 'on');  % 2190'
         GUI.PageUpButton = uicontrol( 'Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', @page_up_pushbutton_Callback, 'FontSize', BigFontSize, 'String', sprintf('\x25B6'), 'Visible', 'on');  % 2192
@@ -512,10 +520,10 @@ displayEndOfDemoMessage('');
         GUI.DefaultMethod_popupmenu.Value = 1;
         uix.Empty( 'Parent', DefaultMethodBox );
         
-        AutoCalcBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
-        GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', AutoCalcBox, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Auto Compute', 'Value', 1);
-        GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', AutoCalcBox, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'inactive');
-        uix.Empty( 'Parent', AutoCalcBox );
+%         AutoCalcBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
+%         GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', AutoCalcBox, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Auto Compute', 'Value', 1);
+%         GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', AutoCalcBox, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'inactive');
+%         uix.Empty( 'Parent', AutoCalcBox );
         
         max_extent_control = calc_max_control_x_extend(a);
         field_size = [max_extent_control + 5, -1, 1];
@@ -525,9 +533,9 @@ displayEndOfDemoMessage('');
         set( GUI.DataLengthBox, 'Widths', field_size );
         
         if DATA.SmallScreen
-            field_size = [max_extent_control + 5, -0.65, -0.35];
+            field_size = [max_extent_control + 5, -0.65, -0.35]; % -0.65, -0.35
         else
-            field_size = [max_extent_control + 5, -0.6, -0.5];
+            field_size = [max_extent_control + 5, -0.65, -0.35]; % -0.6, -0.5
         end
         
         set( GUI.MammalBox, 'Widths', field_size );
@@ -535,10 +543,10 @@ displayEndOfDemoMessage('');
         set( GUI.FilteringBox, 'Widths', field_size );
         set( GUI.FilteringLevelBox, 'Widths', field_size );
         set( DefaultMethodBox, 'Widths', field_size );
-        set( AutoCalcBox, 'Widths', field_size );
+%         set( AutoCalcBox, 'Widths', field_size );
         
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -15] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -15] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
         %---------------------------
         
         uicontrol( 'Style', 'text', 'Parent', GUI.BatchBox, 'String', 'Batch analysis', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold', ...
@@ -1644,7 +1652,7 @@ displayEndOfDemoMessage('');
                             integration = curr_field;
                         end
                     end
-                    time_data = 0;
+                    time_data = 0;                    
                 elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                     try
                         [ ~, Fs, ~ ] = get_signal_channel( [PathName DATA.DataFileName] );
@@ -1659,19 +1667,23 @@ displayEndOfDemoMessage('');
                         close(waitbar_handle);
                         throw(MException('LoadFile:text', 'Cann''t get sampling frequency or mammal.'));
                     end
-                    time_data = 0;
+                    time_data = 0;                    
                 elseif strcmpi(ExtensionFileName, 'txt')
                     
                     
                     DataFileMap = loadDataFile([PathName QRS_FileName]);
-                    data = DataFileMap('DATA');
-                    mammal = data.General.Mammal;
-                    [mammal, mammal_index] = set_mammal(mammal);
-                    integration = data.General.Integration_Level;
-                    DATA.SamplingFrequency = data.Time.Fs;
-                    QRS_data = data.Data.Data;
-                    time_data = data.Time.Data;
-                    
+                    MSG = DataFileMap('MSG');
+                    if strcmp(MSG, 'OK')
+                        data = DataFileMap('DATA');
+                        mammal = data.General.Mammal;
+                        [mammal, mammal_index] = set_mammal(mammal);
+                        integration = data.General.Integration_Level;
+                        DATA.SamplingFrequency = data.Time.Fs;
+                        QRS_data = data.Data.Data;
+                        time_data = data.Time.Data;                        
+                    else
+                        throw(MException('LoadFile:text', MSG));
+                    end
 %                     file_name = [PathName DATA.DataFileName '.txt'];
 %                     fileID = fopen(file_name, 'r');
 %                     if fileID ~= -1
@@ -1770,6 +1782,7 @@ displayEndOfDemoMessage('');
                     waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Working on it...');
                     [mammal, mammal_index, integration] = Load_Data_from_SingleFile(QRS_FileName, PathName, waitbar_handle);
                 catch e
+                    close(waitbar_handle);
                     errordlg(['onOpenFile error: ' e.message], 'Input Error');
                     clean_gui();
                     cla(GUI.RRDataAxes);

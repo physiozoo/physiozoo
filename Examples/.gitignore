@@ -9,3 +9,8 @@
 
 # Matlab files
 !*.mat
+
+# Mis dir
+TRY/
+TestSet Txt/
+TestSet Mat/

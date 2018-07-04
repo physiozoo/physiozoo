@@ -1,0 +1,11 @@
+File_Type: peak
+Integration_Level: ECG
+
+Channels:
+   
+    - type:   annotation
+      name:   ECG
+      unit:   datapoint
+      enable: yes
+      
+Mammal: Dog

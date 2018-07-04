@@ -36,6 +36,8 @@ Jessie Data/
 Eugene/
 Results/
 
+tempYAML.yml
+
 *.prj
 *.png
 *.docx

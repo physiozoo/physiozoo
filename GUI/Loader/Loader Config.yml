@@ -1,0 +1,29 @@
+---
+data_type:
+    select: [second,index]
+    electrography: [volt,millivolt,microvolt]
+    interval: [second,millisecond,index]
+    beating_rate: [bpm]
+    peak: [second,millisecond,index]
+    signal_quality: [signal quality]
+    time: [second,millisecond,minute,index]
+integration_level:
+    - select
+    - electrocardiogram
+    - electrogram
+    - action potential
+mammal:
+    - select
+    - dog
+    - mouse
+    - rabbit
+    - human
+    - custom
+units:
+    second: [s,sec,second]
+    millisecond: [ms,msec,millisecond]
+    volt: [v,volt]
+    millivolt: [mv,mvolt,millivolt]
+    microvolt: [uv,mkvolt,microvolt,mikrovolt]
+    index: [index,ind,i]
+    bpm: [bpm]

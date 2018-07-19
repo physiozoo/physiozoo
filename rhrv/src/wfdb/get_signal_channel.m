@@ -15,7 +15,7 @@ function [ chan, Fs, N ] = get_signal_channel( rec_name, varargin )
 %       - N: Number of samples
 
 % DEFAULTS
-DEFAULT_SIG_REGEX = 'ECG|lead\si+|MLI+|v\d|\<I+\>'; % Default is a regex for finding SCG signals in the Physionet files
+DEFAULT_SIG_REGEX = 'electrocardiogram|ECG|lead\si+|MLI+|v\d|\<I+\>'; % Default is a regex for finding SCG signals in the Physionet files
 
 
 % Define input

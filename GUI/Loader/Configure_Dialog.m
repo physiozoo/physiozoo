@@ -22,7 +22,7 @@ function varargout = Configure_Dialog(varargin)
 
 % Edit the above text to modify the response to help Configure_Dialog
 
-% Last Modified by GUIDE v2.5 16-Jul-2018 20:17:36
+% Last Modified by GUIDE v2.5 18-Jul-2018 21:18:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -61,9 +61,10 @@ UniqueMap = FGV_DATA(cmd.GET);
 ENABLE = [{'on'};{'off'}];
 FIRST_ITEM = [{'Select'};{'Auto'}];
 Config = ReadYaml('Loader Config.yml');
+setappdata(handles.figure1,'Config',Config)
 Names = fieldnames(Config);
 
-for i = 1 : length(Names)-1
+for i = 1 : length(Names)-2
     localName = cell2mat(Names(i));
     if i > 1
         strItems = Config.(localName)';
@@ -72,7 +73,8 @@ for i = 1 : length(Names)-1
     end
     set(handles.(['pm_',localName]),'string',strItems,'value',1)
 end
-
+set(handles.txtFileName,'string',['File Name:  ',UniqueMap('Name')])
+set(handles.txtAlarm,'string','')
 hCh = findobj(handles.figure1,'style','popupmenu');
 set(hCh,'backgroundcolor',[ 1.0000    0.8667    0.8667],'value',1,'enable','on')
 
@@ -140,12 +142,14 @@ Channels.Time.Scale_factor= 1;
 Channels.Time.Fs = eboxString;
 Channels.Time.Unit = 'second';
 Channels.Time.Type = 'time';
+Channels.Time.Name = 'time';
 Channels.Data.Enable = 0;
 Channels.Data.No =  Data_Size;
 Channels.Data.Scale_factor = 1;
 Channels.Data.Data = data(:,Channels.Data.No);
 Channels.Data.Unit = 'select';
 Channels.Data.Type = 'select';
+Channels.Data.Name = 'data';
 for i = 1 : Data_Size
     Channels.Data.Names{i} = sprintf('Ch%02d',i);
 end
@@ -177,14 +181,14 @@ if ~Channels.Time.No
      else
         status_enable = 1;
         Channels.Time.Data = data(:,1);
-        Channels = Update_Fs(Channels,handles,enable);
+        Channels = Update_Fs(Channels,handles,cell2mat(ENABLE(status_enable)));
     end
     if size(data,2) <= 1
         status_enable = 2;
     end
 else
     status_enable = 2;
-    Channels = Update_Fs(Channels,handles,enable);
+    Channels = Update_Fs(Channels,handles,cell2mat(ENABLE(status_enable)));
 end
 set(handles.pm_time_channel,'string',[FIRST_ITEM(status_enable);Channels.Data.Names])
 set(handles.pm_time_channel,'value',Channels.Time.No+1,'backgroundcolor','w','enable',cell2mat(ENABLE(status_enable)))
@@ -197,26 +201,32 @@ set(handles.pm_time_channel,'value',Channels.Time.No+1,'backgroundcolor','w','en
     Set_Popupmenu(handles.pm_time_unit, Channels.Time.Unit, cell2mat(ENABLE(status_enable)))
     Set_Popupmenu(handles.pm_data_unit, Channels.Data.Unit, cell2mat(ENABLE(Channels.Data.Enable+1)))
     Set_Popupmenu(handles.pm_data_type, Channels.Data.Type, cell2mat(ENABLE(Channels.Data.Enable+1)))
-    Channels = UpdateDataChannel(Channels,handles);
+    [Channels,err] = UpdateDataChannel(Channels,handles);
+    AlarmStatus(err,handles,'msg_2');
     Channels = UpdateTimeChannel(Channels,handles);
-    PlotData(Channels,handles.axData)
+    
+    
+    set(handles.pm_channels_name,'string',[{'select'};Channels.Data.Names(~ismember(Channels.Data.Names,Channels.Time.Name))],...
+        'value',Channels.Data.No-Channels.Time.No+1,...
+        'backgroundcolor','w','enable',cell2mat(ENABLE(Channels.Data.Enable+1)))
    
-
-set(handles.pm_channels_name,'string',Channels.Data.Names','value',Channels.Data.No,'backgroundcolor','w','enable','on')
-
-
-
-% UIWAIT makes Configure_Dialog wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
-
-setappdata(handles.figure1,'Channels',Channels)
-setappdata(handles.figure1,'Config',Config)
-switch CheckStatus(handles.ebFs, eventdata, handles);
-    case 'onn'
+    if IsPlotData(hObject, [], handles)
+        PlotData(Channels,handles.axData)
+    else
+        cla(handles.axData)
+    end
+    
+    
+    % UIWAIT makes Configure_Dialog wait for user response (see UIRESUME)
+    % uiwait(handles.figure1);
+    
+    setappdata(handles.figure1,'Channels',Channels)
+    switch CheckStatus(handles.ebFs, eventdata, handles);
+        case 'onn'
             btnOK_Callback(handles.btnOK, 0, handles);
             return
-    otherwise
-end
+        otherwise
+    end
 % --- Outputs from this function are returned to the command line.
 function varargout = Configure_Dialog_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -268,9 +278,14 @@ function pm_data_unit_Callback(hObject, eventdata, handles)
 Channels = getappdata(handles.figure1,'Channels');
 Channels.Data.Unit = Get_Popupmenu_Item_Text(hObject);
 Channels.Data.Scale_factor =  ScaleFactor('data',Channels.Data.Unit);
-Channels = UpdateDataChannel(Channels,handles);
-Channels = UpdateTimeChannel(Channels,handles);
-PlotData(Channels,handles.axData)
+if IsPlotData(hObject, [], handles)
+    [Channels,err] = UpdateDataChannel(Channels,handles);
+    AlarmStatus(err,handles,'msg_2');
+    Channels = UpdateTimeChannel(Channels,handles);
+    PlotData(Channels,handles.axData)
+else
+    cla(handles.axData)
+end
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
@@ -332,9 +347,25 @@ end
 Channels = getappdata(handles.figure1,'Channels');
 Channels.Time.Fs = Fs;
 Channels = SetTimeChannel(handles.pm_time_channel,Channels,data);
-Channels = UpdateDataChannel(Channels,handles);
-Channels = UpdateTimeChannel(Channels,handles);
-PlotData(Channels,handles.axData)
+if IsPlotData(hObject, [], handles)
+    [Channels,err] = UpdateDataChannel(Channels,handles);
+    AlarmStatus(err,handles,'msg_2');
+    Channels = UpdateTimeChannel(Channels,handles);
+    
+    PlotData(Channels,handles.axData)
+else
+    cla(handles.axData)
+end
+switch Channels.Data.Type
+    case 'electrography'
+        if str2double(get(handles.ebFs,'string')) ~= 1/(mean(diff(Channels.Time.Data))*Channels.Time.Scale_factor)
+            err = true;
+        else
+            err = false;
+        end
+        AlarmStatus(err,handles,'msg_1');
+    otherwise
+end
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
@@ -425,7 +456,7 @@ function Status = CheckStatus(hObject, eventdata, handles)
 % hObject    handle to btnCancel (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-hCh = [findobj(handles.uipGeneral,'style','popupmenu');handles.pm_data_unit;handles.pm_time_unit];
+hCh = [findobj(handles.uipGeneral,'style','popupmenu');handles.pm_data_unit;handles.pm_time_unit;handles.pm_channels_name];
 Status = 'off';
 if prod([cell2mat(get(hCh,'value'))-1;~isnan(str2double(get(handles.ebFs,'str')))])
     Status = 'on';
@@ -434,7 +465,7 @@ set(handles.btnOK,'enable',Status)
 switch hObject
     case handles.ebFs
         status = isnan(str2double(get(handles.ebFs,'str')));
-     case {handles.pm_time_channel,handles.pm_channels_name}
+     case {handles.pm_time_channel}
          status = 0;
     otherwise
         status = ~(get(hObject,'value')-1);
@@ -447,6 +478,24 @@ else
 end
 
 
+
+% Check if disable
+function Status = IsPlotData(hObject, eventdata, handles)
+% hObject    handle to btnCancel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+hCh = findobj(handles.figure1,'style','popupmenu');
+hGeneral = findobj(handles.uipGeneral,'style','popupmenu');
+hCh = hCh(~ismember(hCh,hGeneral));
+hCh = hCh(~ismember(hCh,handles.pm_time_channel));
+Status = false;
+if prod([cell2mat(get(hCh,'value'))-1;~isnan(str2double(get(handles.ebFs,'str')))])
+    Status = true;
+end
+
+
+
+
 % --- Executes on selection change in pm_channels_name.
 function pm_channels_name_Callback(hObject, eventdata, handles)
 % hObject    handle to pm_channels_name (see GCBO)
@@ -456,11 +505,18 @@ function pm_channels_name_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns pm_channels_name contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from pm_channels_name
 Channels = getappdata(handles.figure1,'Channels');
-Channels.Data.No = get(hObject,'value');
-Channels = UpdateDataChannel(Channels,handles);
-Channels = UpdateTimeChannel(Channels,handles);
-PlotData(Channels,handles.axData)
-
+Channels.Data.No = get(hObject,'value')-1+Channels.Time.No;
+if IsPlotData(hObject, [], handles)
+    [Channels,err] = UpdateDataChannel(Channels,handles);
+    AlarmStatus(err,handles,'msg_2');
+    Channels = UpdateTimeChannel(Channels,handles);
+    PlotData(Channels,handles.axData)
+    if err
+         cla(handles.axData)
+    end
+else
+    cla(handles.axData)
+end
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
@@ -498,9 +554,24 @@ function pm_time_channel_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from pm_time_channel
 Channels = getappdata(handles.figure1,'Channels');
 data = get(handles.figure1,'userdata');
-Channels.Time.No = Get_Popupmenu_Item_Text(hObject);
+% toRemove = Get_Popupmenu_Item_Text(hObject);
+strNames = get(hObject,'string');
+Channels.Time.No = get(hObject,'value')-1;
+if Channels.Time.No
+    strNames(Channels.Time.No+1)=[];
+end
+    dataName = Get_Popupmenu_Item_Text(handles.pm_channels_name);
+    set(handles.pm_channels_name,'value',1,'string',strNames)
+    Set_Popupmenu(handles.pm_channels_name, lower(dataName), get(handles.pm_channels_name,'enable'))
+
+
 Channels = SetTimeChannel(handles.pm_time_channel,Channels,data);
-PlotData(Channels,handles.axData)
+
+if IsPlotData(hObject, [], handles)
+    PlotData(Channels,handles.axData)
+else
+    cla(handles.axData)
+end
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
@@ -566,10 +637,16 @@ function pm_time_unit_Callback(hObject, eventdata, handles)
 Channels = getappdata(handles.figure1,'Channels');
 Channels.Time.Unit = Get_Popupmenu_Item_Text(hObject);
 Channels.Time.Scale_factor =  ScaleFactor('time',Channels.Time.Unit);
-Channels = UpdateDataChannel(Channels,handles);
-Channels = UpdateTimeChannel(Channels,handles);
-Channels = Update_Fs(Channels,handles,get(handles.ebFs,'enable'));
-PlotData(Channels,handles.axData)
+[Channels,err] = UpdateDataChannel(Channels,handles);
+AlarmStatus(err,handles,'msg_2');
+if IsPlotData(hObject, [], handles)
+    Channels = UpdateTimeChannel(Channels,handles);
+    Channels = Update_Fs(Channels,handles,get(handles.ebFs,'enable'));
+    
+    PlotData(Channels,handles.axData)
+else
+    cla(handles.axData)
+end
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
@@ -591,7 +668,7 @@ end
 function Set_Popupmenu(hObject, pName, status)
 strNames = lower(get(hObject,'string'));  
 [Lia,LocB] = ismember(pName,strNames);
-    if Lia
+    if Lia && LocB-1
         set(hObject,'value',LocB,'backgroundcolor','w','enable',status)
     else
         set(hObject,'value',1)
@@ -639,6 +716,7 @@ Channels.(type).Scale_factor =  ScaleFactor(lower(type),Channels.(type).Unit);
 Channels.(type).Data = data(:,iCh);
 Channels.(type).Enable = 1;
 Channels.(type).Type = replace(strtrim(lower(localChannel.type)),' ','_');
+Channels.(type).Name = lower(localChannel.name);
 
  
 
@@ -657,10 +735,10 @@ end
 
 %% ------------------------- Set Time Channel
 function Channels = SetTimeChannel(hObject,Channels,data)
-TimeChannel = int32(str2double(Get_Popupmenu_Item_Text(hObject)));
-%     TimeChannel = get(hObject,'value');
+% TimeChannel = int32(str2double(Get_Popupmenu_Item_Text(hObject)));
+    TimeChannel = get(hObject,'value')-1;
 if TimeChannel
-    Channels.Time.Data = data(:,TimeChannel*Channels.Time.Scale_factor);
+    Channels.Time.Data = data(:,TimeChannel)*Channels.Time.Scale_factor;
 else
     Channels.Time.Data = (((1:length(data))*(1/(Channels.Time.Fs)))'*Channels.Time.Scale_factor)';
 end
@@ -676,7 +754,7 @@ end
             iWc = int32(length(Channels.Data.Data)/2);
             switch Channels.Data.Type
                 case 'electrography'
-                    title = 'Amplitude [volt]';
+                    title = 'Amplitude (millivolt)';
                     Span = GetSpan(Channels);
                 otherwise
                     title = 'Amplitude [sec]';
@@ -687,7 +765,10 @@ end
                     
             end
             dataWindow = iWc-Span+1:iWc+Span-1;
-            plot(hAx,Channels.Time.Data(dataWindow),Channels.Data.Data(dataWindow))
+            hp = plot(hAx,Channels.Time.Data(dataWindow),Channels.Data.Data(dataWindow));
+            set(hp,'linewidth',1.5,'color',[0.1412    0.2745    0.2902]);
+            axis(hAx,'tight')
+            zoom(hAx,'on')
             ylabel(hAx,title)
         catch
         end
@@ -699,15 +780,25 @@ end
             Fs = Channels.Time.Fs;
             L = length(Channels.Data.Data);
             P2 = abs(Y/L);
-            P1 = P2(1:L/2+1);
+            iC = floor(L/2);
+            P1 = P2(1:iC+1);
             P1(2:end-1) = 2*P1(2:end-1);
-            f = Fs*(0:(L/2))/L;
+            f = Fs*(0:(iC))/L;
             [~,k] = max(P1);
-            Span = 1/f(k)*10*Fs;
+            if f(k) > 5
+                [~,k] = max(P1(1:k-1));
+            end
+            Span = 1/f(k)*5*Fs;
             
     %% ------------------ Update Data Channels Function --------------
-        function Channels = UpdateDataChannel(Channels,handles)
+        function [Channels,err] = UpdateDataChannel(Channels,handles)
             data = get(handles.figure1,'userdata');
+            err = false;
+            if (~Channels.Data.No | Channels.Data.No > size(data,2))
+                err = true;
+                Channels.Data.Data = Channels.Data.Data*NaN;
+                return
+            end
             switch lower(Channels.Data.Type)
                 case 'electrography'
                       if Channels.Data.Scale_factor
@@ -736,7 +827,6 @@ end
                        Scale_factor = 1;
                     end
                     dData = diff((data(:,Channels.Data.No)));
-%                     dData(end+1) = dData(end);
                     Channels.Data.Data = (dData/Fs)*Scale_factor;
                 case 'beating_rate'
                     Channels.Data.Data =60./data(:,Channels.Data.No)*Channels.Data.Scale_factor;
@@ -763,7 +853,7 @@ end
                         Fs = Channels.Time.Fs;
                         Scale_factor = 1;
                     end
-                    Channels.Time.Data = (data(:,Channels.Data.No)/Fs)*Scale_factor';
+                    Channels.Time.Data = (data((1:end-1),Channels.Data.No)/Fs)*Scale_factor';
                 case 'interval'
                      if Channels.Data.Scale_factor
                         Fs = 1;
@@ -816,7 +906,17 @@ Config = getappdata(handles.figure1,'Config');
 Channels.Data.Type = Get_Popupmenu_Item_Text(hObject);
 set(handles.pm_data_unit,'string',['select';Config.data_type.(Channels.Data.Type)'])
 Set_Popupmenu(handles.pm_data_unit, Channels.Data.Unit, cell2mat(ENABLE(Channels.Data.Enable+1)))
-
+%% --- added from pm_data_unit_Callback ----
+Channels.Data.Scale_factor =  ScaleFactor('data',Channels.Data.Unit);
+if IsPlotData(hObject, [], handles)
+    [Channels,err] = UpdateDataChannel(Channels,handles);
+    AlarmStatus(err,handles,'msg_2');
+    Channels = UpdateTimeChannel(Channels,handles);
+    PlotData(Channels,handles.axData)
+else
+    cla(handles.axData)
+end
+%% -----
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
@@ -841,9 +941,27 @@ end
     function Channels = Update_Fs(Channels,handles,enable)
         switch Channels.Data.Type
             case 'electrography'
-                if str2double(get(handles.ebFs,'string')) ~= 1/(mean(diff(Channels.Time.Data))*Channels.Time.Scale_factor)
+                 if Channels.Time.Fs ~= 1/(mean(diff(Channels.Time.Data))*Channels.Time.Scale_factor)
                     Channels.Time.Fs = 1/(mean(diff(Channels.Time.Data))*Channels.Time.Scale_factor);
                     set(handles.ebFs,'string', num2str(Channels.Time.Fs),'enable',enable)
-                end
+                    err = true;
+                else
+                    err = false;
+                 end
+                AlarmStatus(err,handles,'msg_1')
             otherwise
         end
+
+        
+        
+        
+ %% -------- Alarm Function -------------
+        function AlarmStatus(err,handles,alarm)
+            Config = getappdata(handles.figure1,'Config');
+            if err
+                set(handles.txtAlarm,'string',Config.alarm.(alarm))
+            else
+                set(handles.txtAlarm,'string','')
+            end
+            
+ 

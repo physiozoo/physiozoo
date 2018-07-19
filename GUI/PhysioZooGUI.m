@@ -1653,19 +1653,20 @@ displayEndOfDemoMessage('');
 %                         end
 %                     end
 %                     time_data = 0;                    
-                if strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
-                    try
+                if strcmpi(ExtensionFileName, 'qrs') % || strcmpi(ExtensionFileName, 'atr') atr - for quality; qrs - for annotations (peaks)
+                    
                         [ ~, Fs, ~ ] = get_signal_channel( [PathName DATA.DataFileName] );
                         DATA.SamplingFrequency = Fs;
-                        [mammal, integration] = get_description_integration([PathName DATA.DataFileName]);
+                        [mammal, integration] = get_description_from_wfdb_header([PathName DATA.DataFileName]);
                         [mammal, mammal_index] = set_mammal(mammal);
                         %                         if ~isempty(integration)
                         %                             DATA.Integration = integration;
                         %                         end
+                    try
                         QRS_data = rdann([PathName DATA.DataFileName], ExtensionFileName); % atr qrs
                     catch
                         close(waitbar_handle);
-                        throw(MException('LoadFile:text', 'Cann''t get sampling frequency or mammal.'));
+                        throw(MException('LoadFile:text', 'Cann''t read file.'));
                     end
                     time_data = 0;                    
                 elseif strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'mat')
@@ -1767,7 +1768,7 @@ displayEndOfDemoMessage('');
         
         [QRS_FileName, PathName] = uigetfile({'*.*', 'All files';...
             '*.mat','MAT-files (*.mat)'; ...
-            '*.qrs; *.atr',  'WFDB Files (*.qrs, *.atr)'; ... %     ; *.atr
+            '*.qrs',  'WFDB Files (*.qrs)'; ... %     ; *.atr
             '*.txt','Text Files (*.txt)'}, ...
             'Open QRS File', [DIRS.dataDirectory filesep '*.' DIRS.Ext_open]);
         Load_Single_File(QRS_FileName, PathName);
@@ -1839,22 +1840,22 @@ displayEndOfDemoMessage('');
             end
         end
     end
-%%
-    function [mammal, intg] = get_description_integration(rec_name)
-        fheader = fopen([rec_name, '.hea']);
-        fgetl(fheader);
-        line = fgetl(fheader);
-        record_line = strsplit(line, ' ');
-        str = strsplit(record_line{end}, '-');
-        if length(str) >= 2
-            intg = str{1};
-            mammal = str{2};
-        else % not our description
-            intg = '';
-            mammal = '';
-        end
-        fclose(fheader);
-    end
+% %%
+%     function [mammal, intg] = get_description_integration(rec_name)
+%         fheader = fopen([rec_name, '.hea']);
+%         fgetl(fheader);
+%         line = fgetl(fheader);
+%         record_line = strsplit(line, ' ');
+%         str = strsplit(record_line{end}, '-');
+%         if length(str) >= 2
+%             intg = str{1};
+%             mammal = str{2};
+%         else % not our description
+%             intg = '';
+%             mammal = '';
+%         end
+%         fclose(fheader);
+%     end
 %%
 %     function stat_data_cell = str2cellStatisticsParam(stat_struct)
 %

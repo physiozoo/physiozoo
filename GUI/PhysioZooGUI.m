@@ -395,10 +395,10 @@ displayEndOfDemoMessage('');
         
         GUI.UpCentral_TabPanel.Selection = 1;
         %------------------------------------
-        
-        GUI.RR_or_HR_plot_button = uicontrol( 'Style', 'ToggleButton', 'Parent', MainCommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');        
-        GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', MainCommandsButtons_Box, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', BigFontSize-1.5, 'String', 'Auto Compute', 'Value', 1);
+                        
         GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', MainCommandsButtons_Box, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'inactive');
+        GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', MainCommandsButtons_Box, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', BigFontSize-1.5, 'String', 'Auto Compute', 'Value', 1);
+        GUI.RR_or_HR_plot_button = uicontrol( 'Style', 'ToggleButton', 'Parent', MainCommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');        
         GUI.Reset_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', MainCommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
         set( MainCommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing  );
         
@@ -1634,26 +1634,26 @@ displayEndOfDemoMessage('');
                 mammal = '';
                 mammal_index = '';
                 
-                if strcmpi(ExtensionFileName, 'mat')
-                    QRS = load([PathName QRS_FileName]);
-                    QRS_field_names = fieldnames(QRS);
-                    QRS_data = [];
-                    for i = 1 :  length(QRS_field_names)
-                        curr_field = QRS.(QRS_field_names{i});
-                        if ~isempty(regexpi(QRS_field_names{i}, 'qrs|data'))
-                            QRS_data = curr_field;
-                        elseif strcmpi(QRS_field_names{i}, 'mammal')  % ~isempty(regexpi(QRS_field_names{i}, 'mammal'))
-                            mammal = curr_field;
-                            [mammal, mammal_index] = set_mammal(mammal);
-                        elseif strcmpi(QRS_field_names{i}, 'Fs')   %~isempty(regexpi(QRS_field_names{i}, 'Fs'))
-                            DATA.SamplingFrequency = curr_field;
-                        elseif strcmpi(QRS_field_names{i}, 'Integration')  %~isempty(regexpi(QRS_field_names{i}, 'Integration'))
-                            %                             DATA.Integration = curr_field;
-                            integration = curr_field;
-                        end
-                    end
-                    time_data = 0;                    
-                elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
+%                 if strcmpi(ExtensionFileName, 'mat')
+%                     QRS = load([PathName QRS_FileName]);
+%                     QRS_field_names = fieldnames(QRS);
+%                     QRS_data = [];
+%                     for i = 1 :  length(QRS_field_names)
+%                         curr_field = QRS.(QRS_field_names{i});
+%                         if ~isempty(regexpi(QRS_field_names{i}, 'qrs|data'))
+%                             QRS_data = curr_field;
+%                         elseif strcmpi(QRS_field_names{i}, 'mammal')  % ~isempty(regexpi(QRS_field_names{i}, 'mammal'))
+%                             mammal = curr_field;
+%                             [mammal, mammal_index] = set_mammal(mammal);
+%                         elseif strcmpi(QRS_field_names{i}, 'Fs')   %~isempty(regexpi(QRS_field_names{i}, 'Fs'))
+%                             DATA.SamplingFrequency = curr_field;
+%                         elseif strcmpi(QRS_field_names{i}, 'Integration')  %~isempty(regexpi(QRS_field_names{i}, 'Integration'))
+%                             %                             DATA.Integration = curr_field;
+%                             integration = curr_field;
+%                         end
+%                     end
+%                     time_data = 0;                    
+                if strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                     try
                         [ ~, Fs, ~ ] = get_signal_channel( [PathName DATA.DataFileName] );
                         DATA.SamplingFrequency = Fs;
@@ -1668,24 +1668,27 @@ displayEndOfDemoMessage('');
                         throw(MException('LoadFile:text', 'Cann''t get sampling frequency or mammal.'));
                     end
                     time_data = 0;                    
-                elseif strcmpi(ExtensionFileName, 'txt')
-                    
-                    
+                elseif strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'mat')
+                                        
                     DataFileMap = loadDataFile([PathName QRS_FileName]);
                     MSG = DataFileMap('MSG');
                     if strcmp(MSG, 'OK')
                         data = DataFileMap('DATA');
-                        mammal = data.General.Mammal;
-                        [mammal, mammal_index] = set_mammal(mammal);
-                        integration = data.General.Integration_Level;
-                        DATA.SamplingFrequency = data.Time.Fs;
-                        QRS_data = data.Data.Data;
-                        time_data = data.Time.Data;                        
+                        if ~strcmp(data.Data.Type, 'electrography')
+                            mammal = data.General.mammal;
+                            [mammal, mammal_index] = set_mammal(mammal);
+                            integration = data.General.integration_level;
+                            DATA.SamplingFrequency = data.Time.Fs;
+                            QRS_data = data.Data.Data;
+                            time_data = data.Time.Data;
+                        else
+                            throw(MException('LoadFile:text', 'Please, choose right file format for this module.'));
+                        end
                     else
                         throw(MException('LoadFile:text', MSG));
                     end
-%                     file_name = [PathName DATA.DataFileName '.txt'];
-%                     fileID = fopen(file_name, 'r');
+                    %                     file_name = [PathName DATA.DataFileName '.txt'];
+                    %                     fileID = fopen(file_name, 'r');
 %                     if fileID ~= -1
 %                         %                         mammal = fscanf(fileID, '%*s %s', 1);
 %                         Mammal = fscanf(fileID, '%s', 1);
@@ -1782,7 +1785,9 @@ displayEndOfDemoMessage('');
                     waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Working on it...');
                     [mammal, mammal_index, integration] = Load_Data_from_SingleFile(QRS_FileName, PathName, waitbar_handle);
                 catch e
-                    close(waitbar_handle);
+                    if isvalid(waitbar_handle)
+                        close(waitbar_handle);
+                    end
                     errordlg(['onOpenFile error: ' e.message], 'Input Error');
                     clean_gui();
                     cla(GUI.RRDataAxes);
@@ -2940,46 +2945,46 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function signalDuration = calcDuration(varargin)
-        
-        signal_length = double(varargin{1});
-        if length(varargin) == 2
-            need_ms = varargin{2};
-        else
-            need_ms = 1;
-        end
-        % Duration of signal
-        duration_h  = mod(floor(signal_length / 3600), 60);
-        duration_m  = mod(floor(signal_length / 60), 60);
-        duration_s  = mod(floor(signal_length), 60);
-        duration_ms = floor(mod(signal_length, 1)*1000);
-        if need_ms
-            signalDuration = sprintf('%02d:%02d:%02d.%03d', duration_h, duration_m, duration_s, duration_ms);
-        else
-            signalDuration = sprintf('%02d:%02d:%02d', duration_h, duration_m, duration_s);
-        end
-    end
-%%
-    function [signalDurationInSec, isInputNumeric]  = calcDurationInSeconds(GUIFiled, NewFieldValue, OldFieldValue)
-        duration = sscanf(NewFieldValue, '%d:%d:%d.%d');
-        
-        isInputNumeric = true;
-        
-        if length(duration) == 1 && duration(1) > 0
-            signalDuration = calcDuration(duration(1), 0);
-            set(GUIFiled,'String', signalDuration);
-            signalDurationInSec = duration(1);
-        elseif length(duration) == 3 && duration(1) >= 0 && duration(2) >= 0 && duration(3) >= 0
-            signalDurationInSec = duration(1)*3600 + duration(2)*60 + duration(3);
-        elseif length(duration) == 4 && duration(1) >= 0 && duration(2) >= 0 && duration(3) >= 0 && duration(4) >= 0
-            signalDurationInSec = duration(1)*3600 + duration(2)*60 + duration(3)+ duration(4)/1000;
-        else
-            set(GUIFiled, 'String', calcDuration(OldFieldValue, 0));
-            warndlg('Please, check your input');
-            isInputNumeric = false;
-            signalDurationInSec = [];
-        end
-    end
+%     function signalDuration = calcDuration(varargin)
+%         
+%         signal_length = double(varargin{1});
+%         if length(varargin) == 2
+%             need_ms = varargin{2};
+%         else
+%             need_ms = 1;
+%         end
+%         % Duration of signal
+%         duration_h  = mod(floor(signal_length / 3600), 60);
+%         duration_m  = mod(floor(signal_length / 60), 60);
+%         duration_s  = mod(floor(signal_length), 60);
+%         duration_ms = floor(mod(signal_length, 1)*1000);
+%         if need_ms
+%             signalDuration = sprintf('%02d:%02d:%02d.%03d', duration_h, duration_m, duration_s, duration_ms);
+%         else
+%             signalDuration = sprintf('%02d:%02d:%02d', duration_h, duration_m, duration_s);
+%         end
+%     end
+% %%
+%     function [signalDurationInSec, isInputNumeric]  = calcDurationInSeconds(GUIFiled, NewFieldValue, OldFieldValue)
+%         duration = sscanf(NewFieldValue, '%d:%d:%d.%d');
+%         
+%         isInputNumeric = true;
+%         
+%         if length(duration) == 1 && duration(1) > 0
+%             signalDuration = calcDuration(duration(1), 0);
+%             set(GUIFiled,'String', signalDuration);
+%             signalDurationInSec = duration(1);
+%         elseif length(duration) == 3 && duration(1) >= 0 && duration(2) >= 0 && duration(3) >= 0
+%             signalDurationInSec = duration(1)*3600 + duration(2)*60 + duration(3);
+%         elseif length(duration) == 4 && duration(1) >= 0 && duration(2) >= 0 && duration(3) >= 0 && duration(4) >= 0
+%             signalDurationInSec = duration(1)*3600 + duration(2)*60 + duration(3)+ duration(4)/1000;
+%         else
+%             set(GUIFiled, 'String', calcDuration(OldFieldValue, 0));
+%             warndlg('Please, check your input');
+%             isInputNumeric = false;
+%             signalDurationInSec = [];
+%         end
+%     end
 %%
     function cancel_button_Callback( ~, ~, Window2Close )
         delete( Window2Close );
@@ -4756,10 +4761,10 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function setAxesXTicks(axes_handle)
-        x_ticks_array = get(axes_handle, 'XTick');
-        set(axes_handle, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0), x_ticks_array, 'UniformOutput', false));
-    end
+%     function setAxesXTicks(axes_handle)
+%         x_ticks_array = get(axes_handle, 'XTick');
+%         set(axes_handle, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0), x_ticks_array, 'UniformOutput', false));
+%     end
 %%
     function UpdateParametersFields(xdata)
         

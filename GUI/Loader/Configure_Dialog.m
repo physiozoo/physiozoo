@@ -22,7 +22,7 @@ function varargout = Configure_Dialog(varargin)
 
 % Edit the above text to modify the response to help Configure_Dialog
 
-% Last Modified by GUIDE v2.5 03-Jul-2018 13:53:30
+% Last Modified by GUIDE v2.5 16-Jul-2018 20:17:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,23 +59,55 @@ guidata(hObject, handles);
 cmd = FGV_CMD;
 UniqueMap = FGV_DATA(cmd.GET);
 ENABLE = [{'on'};{'off'}];
+FIRST_ITEM = [{'Select'};{'Auto'}];
+Config = ReadYaml('Loader Config.yml');
+Names = fieldnames(Config);
+
+for i = 1 : length(Names)-1
+    localName = cell2mat(Names(i));
+    if i > 1
+        strItems = Config.(localName)';
+    else
+        strItems =  fieldnames(Config.(localName));
+    end
+    set(handles.(['pm_',localName]),'string',strItems,'value',1)
+end
+
+hCh = findobj(handles.figure1,'style','popupmenu');
+set(hCh,'backgroundcolor',[ 1.0000    0.8667    0.8667],'value',1,'enable','on')
+
+    %% ------------------- Set Params Control ---------------------------------
+    hFileParams =  findobj(handles.uipGeneral,'style','popupmenu');
+
+    for iParameter = 1 : length(hFileParams)
+        hObj = hFileParams((iParameter));
+        pName = get(hObj,'tag');
+        try
+            strParamValue = replace(strtrim(lower(UniqueMap(pName(4:end)))),' ','_');
+        catch
+            continue
+        end
+        Set_Popupmenu(hObj, strParamValue, 'off')
+        Channels.General.(pName(4:end)) = strParamValue;
+    end
+    
+%     Item = Get_Popupmenu_Item_Text(handles.pm_file_type)
+%     set(handles.pm_data_type,'string',['select';strItems],'value',1)
 
 
 %% -------------- Init Fs control ---------------------------------------
 try
     eboxColor = 'w';
-    eboxString = UniqueMap('Fs');
+    eboxString = UniqueMap('fs');
     enable = 'off';
 catch
     eboxColor = [ 1.0000    0.8667    0.8667];
-    eboxString = 1;
+    eboxString = NaN;
     enable = 'on';
 end
 set(handles.ebFs,'backgroundcolor',eboxColor,'string',eboxString,'enable',enable)
 %% ----------- Init All popupmenu controls----------------
 
-hCh = findobj(handles.figure1,'style','popupmenu');
-set(hCh,'backgroundcolor',[ 1.0000    0.8667    0.8667],'value',1,'enable','on')
 
 %% --------------Get data -------------------------------------
 try
@@ -88,8 +120,8 @@ catch
 end
 
 %% --------------Get Channels  -------------------------------------
-if isKey(UniqueMap,'Channels')
-    rawChannels = UniqueMap('Channels');
+if isKey(UniqueMap,'channels')
+    rawChannels = UniqueMap('channels');
 else
     rawChannels = zeros(1,Data_Size);
 end
@@ -101,7 +133,6 @@ if length(rawChannels) ~= Data_Size
     return
 end
 
-Channels.General.File_Type = 'ECG';
 %% ---------------Get Channels Information -------------
 Channels.Time.Enable = 0;
 Channels.Time.No = 0;
@@ -113,13 +144,13 @@ Channels.Data.Enable = 0;
 Channels.Data.No =  Data_Size;
 Channels.Data.Scale_factor = 1;
 Channels.Data.Data = data(:,Channels.Data.No);
-Channels.Data.Unit = 'volt';
-Channels.Data.Type = 'data';
+Channels.Data.Unit = 'select';
+Channels.Data.Type = 'select';
 for i = 1 : Data_Size
     Channels.Data.Names{i} = sprintf('Ch%02d',i);
 end
-strTimeChannels = (0:Data_Size);
-set(handles.pmTime_Channel,'string',strTimeChannels)
+Channels.Data.Names = Channels.Data.Names';
+status_enable =2;
 if UniqueMap('IsHeader')
     for iCh = 1 : length(rawChannels)
         try
@@ -133,41 +164,45 @@ if UniqueMap('IsHeader')
                     type = 'Data';
             end
             if localChannel.enable
-                Channels = Update_Channel_Info(Channels,iCh,localChannel,data,type);
+                Channels = Update_Channel_Info(Channels,iCh,localChannel,data,type,Config);
             end
         catch
         end
     end
-    if ~Channels.Time.No
-        Channels.Time.Data = (1:length(data))*(1/Channels.Time.Fs)';
-    end
-
-    %% ------------------- Set Params Control ---------------------------------
-    set(handles.pmTime_Channel,'value',Channels.Time.No+1,'backgroundcolor','w','enable',cell2mat(ENABLE(Channels.Time.Enable+1)))
-    hFileParams =  findobj(handles.uipFile,'style','popupmenu');
-    for iParameter = 1 : length(hFileParams)
-        hObj = hFileParams((iParameter));
-        pName = get(hObj,'tag');
-        try
-            strParamValue = strtrim(lower(UniqueMap(pName(3:end))));
-        catch
-            continue
-        end
-        Set_Popupmenu(hObj, strParamValue, 'off')
-        Channels.General.(pName(3:end)) = strParamValue;
-    end
-    
-    %% Set pm
-    
-    
-    DataChannel_ChangeString(handles.pmData_Unit,Channels.General.File_Type)
-    Set_Popupmenu(handles.pmTime_Unit, Channels.Time.Unit, cell2mat(ENABLE(Channels.Time.Enable+1)))
-    Set_Popupmenu(handles.pmData_Unit, Channels.Data.Unit, cell2mat(ENABLE(Channels.Data.Enable+1)))
-    Channels = UpdateDataChannel(Channels,handles);
-    PlotData(Channels,handles.axData)
+    status_enable = 1;
 end
+if ~Channels.Time.No
+    if sum((diff(data(:,1)))>0) < (length(data)-1)
+        Channels.Time.Data = ((1:length(data))*(1/Channels.Time.Fs))';
+     else
+        status_enable = 1;
+        Channels.Time.Data = data(:,1);
+        Channels = Update_Fs(Channels,handles,enable);
+    end
+    if size(data,2) <= 1
+        status_enable = 2;
+    end
+else
+    status_enable = 2;
+    Channels = Update_Fs(Channels,handles,enable);
+end
+set(handles.pm_time_channel,'string',[FIRST_ITEM(status_enable);Channels.Data.Names])
+set(handles.pm_time_channel,'value',Channels.Time.No+1,'backgroundcolor','w','enable',cell2mat(ENABLE(status_enable)))
 
-    set(handles.pmChannels_Name,'string',Channels.Data.Names','value',Channels.Data.No,'backgroundcolor','w','enable','on')
+
+    %% Set pm
+    set(handles.pm_data_unit,'string',['select';Config.data_type.(Channels.Data.Type)'])
+%     set(handles.pm_data_unit,'string',['select';Config.file_type.(Channels.General.file_type).unit'])
+    %     DataChannel_ChangeString(handles.pm_data_unit,Channels.General.File_Type)
+    Set_Popupmenu(handles.pm_time_unit, Channels.Time.Unit, cell2mat(ENABLE(status_enable)))
+    Set_Popupmenu(handles.pm_data_unit, Channels.Data.Unit, cell2mat(ENABLE(Channels.Data.Enable+1)))
+    Set_Popupmenu(handles.pm_data_type, Channels.Data.Type, cell2mat(ENABLE(Channels.Data.Enable+1)))
+    Channels = UpdateDataChannel(Channels,handles);
+    Channels = UpdateTimeChannel(Channels,handles);
+    PlotData(Channels,handles.axData)
+   
+
+set(handles.pm_channels_name,'string',Channels.Data.Names','value',Channels.Data.No,'backgroundcolor','w','enable','on')
 
 
 
@@ -175,12 +210,9 @@ end
 % uiwait(handles.figure1);
 
 setappdata(handles.figure1,'Channels',Channels)
-assignin('base','handles',handles)
-assignin('base','data',data)
-assignin('base','Channels',Channels)
-
+setappdata(handles.figure1,'Config',Config)
 switch CheckStatus(handles.ebFs, eventdata, handles);
-    case 'on'
+    case 'onn'
             btnOK_Callback(handles.btnOK, 0, handles);
             return
     otherwise
@@ -199,22 +231,22 @@ catch
     varargout{1} = [];
 end
 
-% --- Executes on selection change in pmIntegration_Level.
-function pmIntegration_Level_Callback(hObject, eventdata, handles)
-% hObject    handle to pmIntegration_Level (see GCBO)
+% --- Executes on selection change in pm_integration_level.
+function pm_integration_level_Callback(hObject, eventdata, handles)
+% hObject    handle to pm_integration_level (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns pmIntegration_Level contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pmIntegration_Level
+% Hints: contents = cellstr(get(hObject,'String')) returns pm_integration_level contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from pm_integration_level
 Channels = getappdata(handles.figure1,'Channels');
-Channels.General.Integration_Level = Get_Popupmenu_Item_Text(hObject);
+Channels.General.integration_level = Get_Popupmenu_Item_Text(hObject);
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
 % --- Executes during object creation, after setting all properties.
-function pmIntegration_Level_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pmIntegration_Level (see GCBO)
+function pm_integration_level_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pm_integration_level (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -224,20 +256,20 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in pmData_Unit.
-function pmData_Unit_Callback(hObject, eventdata, handles)
-% hObject    handle to pmData_Unit (see GCBO)
+% --- Executes on selection change in pm_data_unit.
+function pm_data_unit_Callback(hObject, eventdata, handles)
+% hObject    handle to pm_data_unit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns pmData_Unit contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pmData_Unit
+% Hints: contents = cellstr(get(hObject,'String')) returns pm_data_unit contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from pm_data_unit
 
-data = get(handles.figure1,'userdata');
 Channels = getappdata(handles.figure1,'Channels');
 Channels.Data.Unit = Get_Popupmenu_Item_Text(hObject);
 Channels.Data.Scale_factor =  ScaleFactor('data',Channels.Data.Unit);
 Channels = UpdateDataChannel(Channels,handles);
+Channels = UpdateTimeChannel(Channels,handles);
 PlotData(Channels,handles.axData)
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
@@ -245,8 +277,8 @@ setappdata(handles.figure1,'Channels',Channels)
 
 
 % --- Executes during object creation, after setting all properties.
-function pmData_Unit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pmData_Unit (see GCBO)
+function pm_data_unit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pm_data_unit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -257,22 +289,22 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in pmMammal.
-function pmMammal_Callback(hObject, eventdata, handles)
-% hObject    handle to pmMammal (see GCBO)
+% --- Executes on selection change in pm_mammal.
+function pm_mammal_Callback(hObject, eventdata, handles)
+% hObject    handle to pm_mammal (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns pmMammal contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pmMammal
+% Hints: contents = cellstr(get(hObject,'String')) returns pm_mammal contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from pm_mammal
 Channels = getappdata(handles.figure1,'Channels');
-Channels.General.Mammal = Get_Popupmenu_Item_Text(hObject);
+Channels.General.mammal = Get_Popupmenu_Item_Text(hObject);
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
 % --- Executes during object creation, after setting all properties.
-function pmMammal_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pmMammal (see GCBO)
+function pm_mammal_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pm_mammal (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -299,10 +331,15 @@ if isnan(Fs) || Fs > 10000
 end
 Channels = getappdata(handles.figure1,'Channels');
 Channels.Time.Fs = Fs;
-Channels = SetTimeChannel(handles.pmTime_Channel,Channels,data);
+Channels = SetTimeChannel(handles.pm_time_channel,Channels,data);
+Channels = UpdateDataChannel(Channels,handles);
+Channels = UpdateTimeChannel(Channels,handles);
 PlotData(Channels,handles.axData)
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
+
+
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -318,24 +355,30 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in pmFile_Type.
-function pmFile_Type_Callback(hObject, eventdata, handles)
-% hObject    handle to pmFile_Type (see GCBO)
+% --- Executes on selection change in pm_file_type.
+function pm_file_type_Callback(hObject, eventdata, handles)
+% hObject    handle to pm_file_type (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns pmFile_Type contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pmFile_Type
+% Hints: contents = cellstr(get(hObject,'String')) returns pm_file_type contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from pm_file_type
+ENABLE = [{'on'};{'off'}];
 Channels = getappdata(handles.figure1,'Channels');
-Channels.General.File_Type = Get_Popupmenu_Item_Text(hObject);
-DataChannel_ChangeString(handles.pmData_Unit,Channels.General.File_Type)
+Config = getappdata(handles.figure1,'Config');
+Channels.General.file_type = Get_Popupmenu_Item_Text(hObject);
+set(handles.pm_data_unit,'string',Config.file_type.(Channels.General.file_type).unit')
+set(handles.pm_data_type,'string',['select';Config.file_type.(Channels.General.file_type).type'],'value',1)
+Set_Popupmenu(handles.pm_data_unit, Channels.Data.Unit, cell2mat(ENABLE(Channels.Data.Enable+1)))
+Set_Popupmenu(handles.pm_data_type, Channels.Data.Type, cell2mat(ENABLE(Channels.Data.Enable+1)))
+
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
 
 % --- Executes during object creation, after setting all properties.
-function pmFile_Type_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pmFile_Type (see GCBO)
+function pm_file_type_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pm_file_type (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -351,14 +394,7 @@ function btnOK_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 Channels = getappdata(handles.figure1,'Channels');
-if 0
-    if Channels.Data.Enable
-        Channels = UpdateDataChannel(Channels,handles);
-    end
-    if Channels.Time.Enable
-        Channels.Time.Data = Channels.Time.Data*Channels.Time.Scale_factor;
-    end
-end
+assignin('base','Channels',Channels)
 cmd = FGV_CMD;
 UniqueMap = FGV_DATA(cmd.GET);
 UniqueMap('DATA') = Channels;
@@ -389,16 +425,16 @@ function Status = CheckStatus(hObject, eventdata, handles)
 % hObject    handle to btnCancel (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-hCh = [findobj(handles.uipFile,'style','popupmenu');handles.pmData_Unit;handles.pmTime_Unit];
+hCh = [findobj(handles.uipGeneral,'style','popupmenu');handles.pm_data_unit;handles.pm_time_unit];
 Status = 'off';
-if prod([cell2mat(get(hCh,'value'))-1;str2double(get(handles.ebFs,'str'))>1])
+if prod([cell2mat(get(hCh,'value'))-1;~isnan(str2double(get(handles.ebFs,'str')))])
     Status = 'on';
 end
 set(handles.btnOK,'enable',Status)
 switch hObject
     case handles.ebFs
-        status = str2double(get(handles.ebFs,'str'))==1;
-     case {handles.pmTime_Channel,handles.pmChannels_Name}
+        status = isnan(str2double(get(handles.ebFs,'str')));
+     case {handles.pm_time_channel,handles.pm_channels_name}
          status = 0;
     otherwise
         status = ~(get(hObject,'value')-1);
@@ -411,23 +447,27 @@ else
 end
 
 
-% --- Executes on selection change in pmChannels_Name.
-function pmChannels_Name_Callback(hObject, eventdata, handles)
-% hObject    handle to pmChannels_Name (see GCBO)
+% --- Executes on selection change in pm_channels_name.
+function pm_channels_name_Callback(hObject, eventdata, handles)
+% hObject    handle to pm_channels_name (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns pmChannels_Name contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pmChannels_Name
+% Hints: contents = cellstr(get(hObject,'String')) returns pm_channels_name contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from pm_channels_name
 Channels = getappdata(handles.figure1,'Channels');
 Channels.Data.No = get(hObject,'value');
+Channels = UpdateDataChannel(Channels,handles);
+Channels = UpdateTimeChannel(Channels,handles);
+PlotData(Channels,handles.axData)
+
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
 
 % --- Executes during object creation, after setting all properties.
-function pmChannels_Name_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pmChannels_Name (see GCBO)
+function pm_channels_name_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pm_channels_name (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -448,26 +488,26 @@ function btnSaveAs_Callback(hObject, eventdata, handles)
 
 
 
-% --- Executes on selection change in pmTime_Channel.
-function pmTime_Channel_Callback(hObject, eventdata, handles)
-% hObject    handle to pmTime_Channel (see GCBO)
+% --- Executes on selection change in pm_time_channel.
+function pm_time_channel_Callback(hObject, eventdata, handles)
+% hObject    handle to pm_time_channel (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns pmTime_Channel contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pmTime_Channel
+% Hints: contents = cellstr(get(hObject,'String')) returns pm_time_channel contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from pm_time_channel
 Channels = getappdata(handles.figure1,'Channels');
 data = get(handles.figure1,'userdata');
 Channels.Time.No = Get_Popupmenu_Item_Text(hObject);
-Channels = SetTimeChannel(handles.pmTime_Channel,Channels,data);
+Channels = SetTimeChannel(handles.pm_time_channel,Channels,data);
 PlotData(Channels,handles.axData)
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
 
 % --- Executes during object creation, after setting all properties.
-function pmTime_Channel_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pmTime_Channel (see GCBO)
+function pm_time_channel_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pm_time_channel (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -482,70 +522,60 @@ function scale_factor = ScaleFactor(type,unit)
 switch type
     case 'time'
         switch lower(unit)
-            case 'milisecond'
+            case 'millisecond'
                 scale_factor = 0.001;
             case 'second'
                 scale_factor = 1;
-            case 'datapoint'
+            case 'index'
                 scale_factor = 1;
             otherwise
                 scale_factor = 1;
         end
-    case {'data','rr'}
+    case {'data','peak','interval'}
         switch lower(unit)
-            case 'milivolt'
+            case 'millivolt'
                 scale_factor = 1;
             case 'volt'
                 scale_factor = 1000;
-            case 'datapoint'
-                scale_factor = 0;
-            case 'milisecond'
+            case 'microvolt'
+                scale_factor = 0.001;
+            case 'millisecond'
                 scale_factor = 0.001;
             case 'second'
+                scale_factor = 1;
+            case 'index'
+                scale_factor = 0;
+            case 'bpm'
                 scale_factor = 1;
             otherwise
                 scale_factor = 1;
         end
-    case {'annotation'}
-        switch lower(unit)
-            case 'milivolt'
-                scale_factor = 1;
-            case 'volt'
-                scale_factor = 1000;
-            case 'datapoint'
-                scale_factor = 0;
-            case 'milisecond'
-                scale_factor = 0.001;
-            case 'second'
-                scale_factor = 1;
-            otherwise
-                scale_factor = 1;
-        end    
     otherwise
         scale_factor = 1;
 end
 
 
 
-function pmTime_Unit_Callback(hObject, eventdata, handles)
-% hObject    handle to pmFile_Type (see GCBO)
+function pm_time_unit_Callback(hObject, eventdata, handles)
+% hObject    handle to pm_file_type (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns pmFile_Type contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pmFile_Type
-data = get(handles.figure1,'userdata');
+% Hints: contents = cellstr(get(hObject,'String')) returns pm_file_type contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from pm_file_type
 Channels = getappdata(handles.figure1,'Channels');
 Channels.Time.Unit = Get_Popupmenu_Item_Text(hObject);
 Channels.Time.Scale_factor =  ScaleFactor('time',Channels.Time.Unit);
 Channels = UpdateDataChannel(Channels,handles);
+Channels = UpdateTimeChannel(Channels,handles);
+Channels = Update_Fs(Channels,handles,get(handles.ebFs,'enable'));
 PlotData(Channels,handles.axData)
 CheckStatus(hObject, eventdata, handles);
 setappdata(handles.figure1,'Channels',Channels)
 
 % --- Executes during object creation, after setting all properties.
-function pmTime_Unit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pmFile_Type (see GCBO)
+function pm_time_unit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pm_file_type (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -563,10 +593,13 @@ strNames = lower(get(hObject,'string'));
 [Lia,LocB] = ismember(pName,strNames);
     if Lia
         set(hObject,'value',LocB,'backgroundcolor','w','enable',status)
+    else
+        set(hObject,'value',1)
     end
 
     
     
+     
     % --- 
 function Item = Get_Popupmenu_Item_Text(hObject)
 
@@ -583,27 +616,43 @@ end
 
 %% ------------------
 function DataChannel_ChangeString(hObject,File_Type)
-timeUnits = [{'Select Units'};{'milisecond'};{'second'};{'minute'};{'datapoint'}];
-signalUnits = [{'Select Units'};{'microvolt'};{'millivolt'};{'volt'};{'datapoint'}];
-switch lower(File_Type)
-    case 'peak'
-        str = timeUnits;
-    case 'electrography'
-        str = signalUnits;
-    otherwise
-        str = timeUnits;
-end
-set(hObject,'string',str)
-
+    set(hObject,'string',header.file_type.(Channels.General.file_type).unit')
+    if 0
+        timeUnits = [{'Select Units'};{'milisecond'};{'second'};{'minute'};{'datapoint'}];
+        signalUnits = [{'Select Units'};{'microvolt'};{'millivolt'};{'volt'};{'datapoint'}];
+        switch lower(File_Type)
+            case 'beating_rate'
+                str = timeUnits;
+            case 'electrography'
+                str = signalUnits;
+            otherwise
+                str = timeUnits;
+        end
+        set(hObject,'string',str)
+    end
 
 %% ------------------
-function Channels = Update_Channel_Info(Channels,iCh,localChannel,data,type)
+function Channels = Update_Channel_Info(Channels,iCh,localChannel,data,type,Config)
 Channels.(type).No = iCh;
-Channels.(type).Unit = lower(localChannel.unit);
+Channels.(type).Unit = Update_Unit(Config,lower(localChannel.unit));
 Channels.(type).Scale_factor =  ScaleFactor(lower(type),Channels.(type).Unit);
 Channels.(type).Data = data(:,iCh);
 Channels.(type).Enable = 1;
-Channels.(type).Type =  lower(localChannel.type);
+Channels.(type).Type = replace(strtrim(lower(localChannel.type)),' ','_');
+
+ 
+
+%% ------------------
+function strUnit = Update_Unit(Config,unit)
+AllUnits = fieldnames(Config.units);
+strUnit = '';
+for i = 1 : length(AllUnits)
+    unitName = cell2mat(AllUnits(i));
+    if sum(strcmp(Config.units.(unitName),unit))
+         strUnit = unitName;
+         break
+    end
+end
 
 
 %% ------------------------- Set Time Channel
@@ -613,7 +662,7 @@ TimeChannel = int32(str2double(Get_Popupmenu_Item_Text(hObject)));
 if TimeChannel
     Channels.Time.Data = data(:,TimeChannel*Channels.Time.Scale_factor);
 else
-    Channels.Time.Data = ((1:length(data))*(1/(Channels.Time.Fs)))'*Channels.Time.Scale_factor;
+    Channels.Time.Data = (((1:length(data))*(1/(Channels.Time.Fs)))'*Channels.Time.Scale_factor)';
 end
 
 
@@ -623,34 +672,112 @@ end
 
   %% -----------------  Plot Data ------------------
     function PlotData(Channels,hAx)
-    try
-        iWc = int32(length(Channels.Data.Data)/2);
-        Span =int32(length(Channels.Data.Data)/1000);
-        if ~Span || Span < 10
-            Span = iWc;
+        try
+            iWc = int32(length(Channels.Data.Data)/2);
+            switch Channels.Data.Type
+                case 'electrography'
+                    title = 'Amplitude [volt]';
+                    Span = GetSpan(Channels);
+                otherwise
+                    title = 'Amplitude [sec]';
+                    Span =int32(length(Channels.Data.Data)/1000);
+                    if ~Span || Span < 10
+                        Span = iWc;
+                    end
+                    
+            end
+            dataWindow = iWc-Span+1:iWc+Span-1;
+            plot(hAx,Channels.Time.Data(dataWindow),Channels.Data.Data(dataWindow))
+            ylabel(hAx,title)
+        catch
         end
-        dataWindow = iWc-Span+1:iWc+Span-1;
-        plot(hAx,Channels.Time.Data(dataWindow),Channels.Data.Data(dataWindow))
-        zoom(hAx,'on')
-    catch
-    end
-    
-    
-    
-    
+       
+        
+%% ---------- Get Span Function ------------------
+        function Span = GetSpan(Channels)
+            Y = fft(Channels.Data.Data-mean(Channels.Data.Data));
+            Fs = Channels.Time.Fs;
+            L = length(Channels.Data.Data);
+            P2 = abs(Y/L);
+            P1 = P2(1:L/2+1);
+            P1(2:end-1) = 2*P1(2:end-1);
+            f = Fs*(0:(L/2))/L;
+            [~,k] = max(P1);
+            Span = 1/f(k)*10*Fs;
+            
     %% ------------------ Update Data Channels Function --------------
         function Channels = UpdateDataChannel(Channels,handles)
             data = get(handles.figure1,'userdata');
             switch lower(Channels.Data.Type)
-                case {'data','rr'}
-                    Channels.Data.Data = data(:,Channels.Data.No)*Channels.Data.Scale_factor;
-                case 'annotation'
-                    if Channels.Time.Scale_factor
-                        Channels.Time.Fs = 1;
+                case 'electrography'
+                      if Channels.Data.Scale_factor
+                        Fs = 1;
+                        Scale_factor = Channels.Data.Scale_factor;
+                    else
+                        Fs = Channels.Time.Fs;
+                        Scale_factor = 1;
                     end
-                    dData = diff(double(data(:,Channels.Data.No)));
-                    dData(end+1) = dData(end);
-                    Channels.Data.Data = dData/Channels.Time.Fs;
+                    Channels.Data.Data = (data(:,Channels.Data.No)/Fs)*Scale_factor;
+                case {'data','interval'}
+                    if Channels.Data.Scale_factor
+                        Fs = 1;
+                        Scale_factor = Channels.Data.Scale_factor;
+                    else
+                        Fs = Channels.Time.Fs;
+                        Scale_factor = 1;
+                    end
+                    Channels.Data.Data = (data(:,Channels.Data.No)/Fs)*Scale_factor;
+                case 'peak'
+                    if Channels.Data.Scale_factor
+                        Fs = 1;
+                        Scale_factor = Channels.Data.Scale_factor;
+                    else
+                        Fs = Channels.Time.Fs;
+                       Scale_factor = 1;
+                    end
+                    dData = diff((data(:,Channels.Data.No)));
+%                     dData(end+1) = dData(end);
+                    Channels.Data.Data = (dData/Fs)*Scale_factor;
+                case 'beating_rate'
+                    Channels.Data.Data =60./data(:,Channels.Data.No)*Channels.Data.Scale_factor;
+                otherwise
+            end
+                 
+    %% ------------------ Update Time Channel Function --------------
+        function Channels = UpdateTimeChannel(Channels,handles)
+            data = get(handles.figure1,'userdata');
+                    
+            switch lower(Channels.Data.Type)
+                case 'electrography'
+                    if sum((diff(data(:,1)))>0) < (length(data)-1)
+                        Channels.Time.Data = ((1:length(data))*(1/Channels.Time.Fs))';
+                    else
+                        Channels.Time.Data = data(:,1)*Channels.Time.Scale_factor;
+                    end
+                case 'peak'
+                    if Channels.Data.Scale_factor
+                        Fs = 1;
+                        %                         Scale_factor = Channels.Data.Scale_factor;
+                        Scale_factor = Channels.Data.Scale_factor;
+                    else
+                        Fs = Channels.Time.Fs;
+                        Scale_factor = 1;
+                    end
+                    Channels.Time.Data = (data(:,Channels.Data.No)/Fs)*Scale_factor';
+                case 'interval'
+                     if Channels.Data.Scale_factor
+                        Fs = 1;
+                        %                         Scale_factor = Channels.Data.Scale_factor;
+                        Scale_factor = 1;
+                    else
+                        Fs = 1;
+                        Scale_factor = 1;
+                    end
+                    Channels.Time.Data = ((cumsum(Channels.Data.Data)/Fs)*Scale_factor)';
+                case 'beating_rate'
+                    Fs = 1;
+                    Scale_factor = 1;
+                    Channels.Time.Data = ((cumsum(Channels.Data.Data)/Fs)*Scale_factor)';
                 otherwise
             end
                  
@@ -672,3 +799,51 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 
 % Hint: delete(hObject) closes the figure
 delete(hObject)
+
+
+% --- Executes on selection change in pm_data_type.
+function pm_data_type_Callback(hObject, eventdata, handles)
+% hObject    handle to pm_data_type (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns pm_data_type contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from pm_data_type
+
+ENABLE = [{'on'};{'off'}];
+Channels = getappdata(handles.figure1,'Channels');
+Config = getappdata(handles.figure1,'Config');
+Channels.Data.Type = Get_Popupmenu_Item_Text(hObject);
+set(handles.pm_data_unit,'string',['select';Config.data_type.(Channels.Data.Type)'])
+Set_Popupmenu(handles.pm_data_unit, Channels.Data.Unit, cell2mat(ENABLE(Channels.Data.Enable+1)))
+
+CheckStatus(hObject, eventdata, handles);
+setappdata(handles.figure1,'Channels',Channels)
+
+
+
+
+
+% --- Executes during object creation, after setting all properties.
+function pm_data_type_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pm_data_type (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+%% ------ Check and Update Fs function --------------
+    function Channels = Update_Fs(Channels,handles,enable)
+        switch Channels.Data.Type
+            case 'electrography'
+                if str2double(get(handles.ebFs,'string')) ~= 1/(mean(diff(Channels.Time.Data))*Channels.Time.Scale_factor)
+                    Channels.Time.Fs = 1/(mean(diff(Channels.Time.Data))*Channels.Time.Scale_factor);
+                    set(handles.ebFs,'string', num2str(Channels.Time.Fs),'enable',enable)
+                end
+            otherwise
+        end

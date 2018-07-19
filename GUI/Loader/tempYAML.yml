@@ -1,11 +1,5 @@
-File_Type: peak
-Integration_Level: ECG
+Mammal:            dog
+Fs:                500
+Integration_level: electrocardiogram
 
-Channels:
-   
-    - type:   annotation
-      name:   ECG
-      unit:   datapoint
-      enable: yes
-      
-Mammal: Dog
+

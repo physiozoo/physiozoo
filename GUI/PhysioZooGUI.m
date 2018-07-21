@@ -311,19 +311,19 @@ displayEndOfDemoMessage('');
         
         % + File menu
         GUI.FileMenu = uimenu( GUI.Window, 'Label', 'File' );
-        uimenu( GUI.FileMenu, 'Label', 'Open File', 'Callback', @onOpenFile, 'Accelerator','O');
-        GUI.DataQualityMenu = uimenu( GUI.FileMenu, 'Label', 'Open Data Quality File', 'Callback', @onOpenDataQualityFile, 'Accelerator','Q', 'Enable', 'off');
+        uimenu( GUI.FileMenu, 'Label', 'Open Data File', 'Callback', @onOpenFile, 'Accelerator','O');
+        GUI.DataQualityMenu = uimenu( GUI.FileMenu, 'Label', 'Open Signal Quality File', 'Callback', @onOpenDataQualityFile, 'Accelerator','Q', 'Enable', 'off');
         GUI.LoadConfigFile = uimenu( GUI.FileMenu, 'Label', 'Load Custom Config File', 'Callback', @onLoadCustomConfigFile, 'Accelerator','P', 'Enable', 'off');
         GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Config File', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');
         GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save Figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');
-        GUI.SaveMeasures = uimenu( GUI.FileMenu, 'Label', 'Save Measures', 'Callback', @onSaveMeasures, 'Accelerator', 'S', 'Enable', 'off');
+        GUI.SaveMeasures = uimenu( GUI.FileMenu, 'Label', 'Save HRV Measures', 'Callback', @onSaveMeasures, 'Accelerator', 'S', 'Enable', 'off');
         
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @onExit, 'Separator', 'on', 'Accelerator', 'E');
         
         % + Help menu
         helpMenu = uimenu( GUI.Window, 'Label', 'Help' );
         uimenu( helpMenu, 'Label', 'Documentation', 'Callback', @onHelp );
-        uimenu( helpMenu, 'Label', 'PhysioZoo Home', 'Callback', @onPhysioZooHome );
+%         uimenu( helpMenu, 'Label', 'PhysioZoo Home', 'Callback', @onPhysioZooHome );
         %uimenu( helpMenu, 'Label', 'About', 'Callback', @onAbout );
         
         % + Peak Detection menu
@@ -375,11 +375,12 @@ displayEndOfDemoMessage('');
         
         GUI.OptionsTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
         GUI.BatchTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
-        GUI.GroupTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
+%         GUI.GroupTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
         GUI.AdvancedTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
         GUI.DisplayTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
         
-        GUI.UpLeft_TabPanel.TabTitles = {'Main', 'Single', 'Group', 'Options', 'Display'};
+%         GUI.UpLeft_TabPanel.TabTitles = {'Main', 'Single', 'Group', 'Options', 'Display'};
+        GUI.UpLeft_TabPanel.TabTitles = {'Main', 'Single', 'Options', 'Display'};
         
         %------------------------------------
         two_axes_box = uix.VBox('Parent', GUI.UpCentral_TabPanel, 'Spacing', DATA.Spacing);
@@ -389,11 +390,11 @@ displayEndOfDemoMessage('');
         
         %------------------------------------
         
-        GUI.GroupAnalysisSclPanel = uix.ScrollingPanel( 'Parent', GUI.UpCentral_TabPanel);
-        GUI.GroupAnalysisBox = uix.VBox( 'Parent', GUI.GroupAnalysisSclPanel, 'Spacing', DATA.Spacing);
-        set( GUI.GroupAnalysisSclPanel, 'Widths', Right_Part_widths_in_pixels, 'Heights', 500 );
-        
-        GUI.UpCentral_TabPanel.Selection = 1;
+%         GUI.GroupAnalysisSclPanel = uix.ScrollingPanel( 'Parent', GUI.UpCentral_TabPanel);
+%         GUI.GroupAnalysisBox = uix.VBox( 'Parent', GUI.GroupAnalysisSclPanel, 'Spacing', DATA.Spacing);
+%         set( GUI.GroupAnalysisSclPanel, 'Widths', Right_Part_widths_in_pixels, 'Heights', 500 );
+%         
+%         GUI.UpCentral_TabPanel.Selection = 1;
         %------------------------------------
                         
         GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', MainCommandsButtons_Box, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'inactive');
@@ -421,13 +422,14 @@ displayEndOfDemoMessage('');
         GUI.TimeTab = uix.Panel( 'Parent', Analysis_TabPanel, 'Padding', DATA.Padding+2);
         GUI.FrequencyTab = uix.Panel( 'Parent', Analysis_TabPanel, 'Padding', DATA.Padding+2);
         GUI.NonLinearTab = uix.Panel( 'Parent', Analysis_TabPanel, 'Padding', DATA.Padding+2);
-        GUI.GroupSummaryTab = uix.Panel( 'Parent', Analysis_TabPanel, 'Padding', DATA.Padding+2);
-        Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', 'Group'};
+%         GUI.GroupSummaryTab = uix.Panel( 'Parent', Analysis_TabPanel, 'Padding', DATA.Padding+2);
+%         Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', 'Group'};
+        Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear'};
         
         %-----------------------------------------
         
         tabs_widths = Left_Part_widths_in_pixels;
-        tabs_heights = 370;
+        tabs_heights = 340; % 370
         
         GUI.OptionsSclPanel = uix.ScrollingPanel( 'Parent', GUI.OptionsTab);
         GUI.OptionsBox = uix.VBox( 'Parent', GUI.OptionsSclPanel, 'Spacing', DATA.Spacing);
@@ -441,9 +443,9 @@ displayEndOfDemoMessage('');
         GUI.DisplayBox = uix.VBox( 'Parent', GUI.DisplaySclPanel, 'Spacing', DATA.Spacing);
         set( GUI.DisplaySclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         
-        GUI.GroupSclPanel = uix.ScrollingPanel( 'Parent', GUI.GroupTab);
-        GUI.GroupBox = uix.VBox( 'Parent', GUI.GroupSclPanel, 'Spacing', DATA.Spacing);
-        set( GUI.GroupSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
+%         GUI.GroupSclPanel = uix.ScrollingPanel( 'Parent', GUI.GroupTab);
+%         GUI.GroupBox = uix.VBox( 'Parent', GUI.GroupSclPanel, 'Spacing', DATA.Spacing);
+%         set( GUI.GroupSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         
         %--------------------------------------------------------------------------------------------
         
@@ -475,12 +477,12 @@ displayEndOfDemoMessage('');
         %------------------------------------------------------------------------------
         
         GUI.RecordNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
-        a{1} = uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'String', 'Peaks file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        a{1} = uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'String', 'File name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.RecordName_text = uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', GUI.RecordNameBox );
         
         GUI.DataQualityBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
-        a{2} = uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'String', 'Quality file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        a{2} = uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'String', 'Signal quality file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.DataQuality_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', GUI.DataQualityBox );
         
@@ -617,18 +619,40 @@ displayEndOfDemoMessage('');
         
         uix.Empty( 'Parent', GUI.DisplayBox );
         b = [];
+                        
+        SelectedWindowStartBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
+        b{1} = uicontrol( 'Style', 'text', 'Parent', SelectedWindowStartBox, 'String', 'Selected window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.Active_Window_Start = uicontrol( 'Style', 'edit', 'Parent', SelectedWindowStartBox, 'Callback', @Active_Window_Start_Callback, 'FontSize', BigFontSize);
+        uicontrol( 'Style', 'text', 'Parent', SelectedWindowStartBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        
+        SelectedWindowLengthtBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
+        b{2} = uicontrol( 'Style', 'text', 'Parent', SelectedWindowLengthtBox, 'String', 'Selected window length:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        GUI.Active_Window_Length = uicontrol( 'Style', 'edit', 'Parent', SelectedWindowLengthtBox, 'Callback', @Active_Window_Length_Callback, 'FontSize', BigFontSize);
+        uicontrol( 'Style', 'text', 'Parent', SelectedWindowLengthtBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        
+        uix.Empty( 'Parent', GUI.DisplayBox );
+        
+        Filt_RawDataSliderBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
+        uix.Empty( 'Parent', Filt_RawDataSliderBox );
+        GUI.Filt_RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', Filt_RawDataSliderBox, 'Callback', @filt_slider_Callback, 'Enable', 'off');
+        addlistener(GUI.Filt_RawDataSlider, 'ContinuousValueChange', @filt_sldrFrame_Motion);
+        uix.Empty( 'Parent', Filt_RawDataSliderBox );
+        set( Filt_RawDataSliderBox, 'Widths', [-0.1 300 -1]  );
+        
+        uix.Empty( 'Parent', GUI.DisplayBox );        
+        
         WindowStartBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
-        b{1} = uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'Window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        b{3} = uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'Focus window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.FirstSecond = uicontrol( 'Style', 'edit', 'Parent', WindowStartBox, 'Callback', @FirstSecond_Callback, 'FontSize', BigFontSize); % , 'Enable', 'off'
         units_control_handle = uicontrol( 'Style', 'text', 'Parent', WindowStartBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         
         WindowLengthBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
-        b{2} = uicontrol( 'Style', 'text', 'Parent', WindowLengthBox, 'String', 'Window length:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        b{4} = uicontrol( 'Style', 'text', 'Parent', WindowLengthBox, 'String', 'Focus window length:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.WindowSize = uicontrol( 'Style', 'edit', 'Parent', WindowLengthBox, 'Callback', @WindowSize_Callback, 'FontSize', BigFontSize);
         uicontrol( 'Style', 'text', 'Parent', WindowLengthBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         
         YLimitBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
-        b{3} = uicontrol( 'Style', 'text', 'Parent', YLimitBox, 'String', 'Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        b{5} = uicontrol( 'Style', 'text', 'Parent', YLimitBox, 'String', 'Y Limit:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
         GUI.MinYLimitUpperAxes_Edit = uicontrol( 'Style', 'edit', 'Parent', YLimitBox, 'Callback', @MinMaxYLimitUpperAxes_Edit_Callback, 'FontSize', BigFontSize);
         uicontrol( 'Style', 'text', 'Parent', YLimitBox, 'String', '-', 'FontSize', BigFontSize);
         GUI.MaxYLimitUpperAxes_Edit = uicontrol( 'Style', 'edit', 'Parent', YLimitBox, 'Callback', @MinMaxYLimitUpperAxes_Edit_Callback, 'FontSize', BigFontSize);
@@ -643,34 +667,14 @@ displayEndOfDemoMessage('');
         addlistener(GUI.RawDataSlider, 'ContinuousValueChange', @sldrFrame_Motion);
         uix.Empty( 'Parent', RawDataSliderBox );
         set( RawDataSliderBox, 'Widths', [-0.1 300 -1]  );
-        
-        uix.Empty( 'Parent', GUI.DisplayBox );
-        
-        SelectedWindowStartBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
-        b{4} = uicontrol( 'Style', 'text', 'Parent', SelectedWindowStartBox, 'String', 'Selected window start:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.Active_Window_Start = uicontrol( 'Style', 'edit', 'Parent', SelectedWindowStartBox, 'Callback', @Active_Window_Start_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', SelectedWindowStartBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        
-        SelectedWindowLengthtBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
-        b{5} = uicontrol( 'Style', 'text', 'Parent', SelectedWindowLengthtBox, 'String', 'Selected window length:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.Active_Window_Length = uicontrol( 'Style', 'edit', 'Parent', SelectedWindowLengthtBox, 'Callback', @Active_Window_Length_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', SelectedWindowLengthtBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        
-        uix.Empty( 'Parent', GUI.DisplayBox );
-        
-        Filt_RawDataSliderBox = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
-        uix.Empty( 'Parent', Filt_RawDataSliderBox );
-        GUI.Filt_RawDataSlider = uicontrol( 'Style', 'slider', 'Parent', Filt_RawDataSliderBox, 'Callback', @filt_slider_Callback, 'Enable', 'off');
-        addlistener(GUI.Filt_RawDataSlider, 'ContinuousValueChange', @filt_sldrFrame_Motion);
-        uix.Empty( 'Parent', Filt_RawDataSliderBox );
-        set( Filt_RawDataSliderBox, 'Widths', [-0.1 300 -1]  );
-        
+                
         uix.Empty( 'Parent', GUI.DisplayBox );
         
         RRIntPageLengthtBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
-        b{6} = uicontrol( 'Style', 'text', 'Parent', RRIntPageLengthtBox, 'String', 'Display duration:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.RRIntPage_Length = uicontrol( 'Style', 'edit', 'Parent', RRIntPageLengthtBox, 'Callback', @RRIntPage_Length_Callback, 'FontSize', BigFontSize);
-        uicontrol( 'Style', 'text', 'Parent', RRIntPageLengthtBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left');
+        tooltip = 'Choose the length of the segment to display on the lower panel. This is useful for particularly long time series';
+        b{6} = uicontrol( 'Style', 'text', 'Parent', RRIntPageLengthtBox, 'String', 'Displayed segment duration:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'Tooltip', tooltip);
+        GUI.RRIntPage_Length = uicontrol( 'Style', 'edit', 'Parent', RRIntPageLengthtBox, 'Callback', @RRIntPage_Length_Callback, 'FontSize', BigFontSize, 'Tooltip', tooltip);
+        uicontrol( 'Style', 'text', 'Parent', RRIntPageLengthtBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'Tooltip', tooltip);
         
         
         YLimitBoxLowAxes = uix.HBox('Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
@@ -694,87 +698,87 @@ displayEndOfDemoMessage('');
         set( YLimitBoxLowAxes, 'Widths', [max_extent_control + 2, 45, 2, 39, -1]  );
         
         uix.Empty( 'Parent', GUI.DisplayBox );
-        set( GUI.DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -7 -10 -7 -7 -7 -7 -7 -7 -7 -15] );
+        set( GUI.DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -10 -7 -7 -7 -7 -7 -10 -7 -7 -15] );
         
         %-----------------------------------------------------------------------------------------------
         
-        uix.Empty( 'Parent', GUI.GroupBox );
-        
-        DataTypeBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        aa{1} = uicontrol( 'Style', 'text', 'Parent', DataTypeBox, 'String', 'Data Type', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.DataType_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DataTypeBox, 'Callback', @DataType_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', {'QRS'; 'ECG'}, 'Enable', 'off');
-        uix.Empty( 'Parent', DataTypeBox );
-        uix.Empty( 'Parent', DataTypeBox );
-        
-        FileTypeBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        aa{2} = uicontrol( 'Style', 'text', 'Parent', FileTypeBox, 'String', 'File Type', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.Group.pmFileType = uicontrol( 'Style', 'PopUpMenu', 'Parent', FileTypeBox, 'Callback', @FileType_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', DATA.file_types);
-        uix.Empty( 'Parent', FileTypeBox );
-        uix.Empty( 'Parent', FileTypeBox );
-        
-        %         DataType_bg = uibuttongroup( 'Parent', DataTypeBox, 'Title', 'Data Type');
-        %         uix.Empty( 'Parent', DataTypeBox );
-        %         uix.Empty( 'Parent', DataTypeBox );
-        %         ECG_radiobutton = uicontrol('Parent', DataType_bg, 'Style', 'radiobutton', 'String', 'ECG');
-        %         QRS_radiobutton = uicontrol('Parent', DataType_bg, 'Style', 'radiobutton', 'String', 'QRS');
-        %         get(ECG_radiobutton, 'Units')
-        %         get(ECG_radiobutton, 'Position')
-        %         DataType_bg.Visible = 'on';
-        
-        GUI.LoadBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        aa{3} = uicontrol( 'Style', 'text', 'Parent', GUI.LoadBox, 'String', 'Load', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.Group.pmWorkDir = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.LoadBox, 'Callback', @LoadGroupDir_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', '  ');
-        GUI.LoadButtons_Box = uix.HButtonBox('Parent', GUI.LoadBox, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'ButtonSize', [70, 30]);
-        GUI.Group.btnLoadDir = uicontrol( 'Style', 'PushButton', 'Parent', GUI.LoadButtons_Box, 'Callback', @LoadDir_pushbutton_Callback, 'FontSize', BigFontSize, 'String', '  ...  ');
-        uix.Empty( 'Parent', GUI.LoadBox );
-        
-        uix.Empty( 'Parent', GUI.GroupBox );
-        
-        GUI.MembersBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        aa{4} = uicontrol( 'Style', 'text', 'Parent', GUI.MembersBox, 'String', 'Members', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.Group.lbMembers = uicontrol( 'Style', 'ListBox', 'Parent', GUI.MembersBox, 'Callback', @Members_listbox_Callback, 'FontSize', SmallFontSize, 'String', {' '; ' '; ' '; ' '}, 'Max', 5);
-        uix.Empty( 'Parent', GUI.MembersBox );
-        uix.Empty( 'Parent', GUI.MembersBox );
-        
-        uix.Empty( 'Parent', GUI.GroupBox );
-        
-        GUI.NamesBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        aa{5} = uicontrol( 'Style', 'text', 'Parent', GUI.NamesBox, 'String', 'Name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.Group.ebName = uicontrol( 'Style', 'edit', 'Parent', GUI.NamesBox, 'Callback', @Name_edit_Callback, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.AddDelButtons_Box = uix.HButtonBox('Parent', GUI.NamesBox, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'ButtonSize', [70, 30]);
-        GUI.Group.btnAddGroup = uicontrol( 'Style', 'PushButton', 'Parent', GUI.AddDelButtons_Box, 'Callback', @Add_PushButton_Callback, 'FontSize', BigFontSize, 'String', 'Add', 'Enable', 'off');
-        GUI.Group.btnDelGroup = uicontrol( 'Style', 'PushButton', 'Parent', GUI.AddDelButtons_Box, 'Callback', @Del_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Del');
-        uix.Empty( 'Parent', GUI.NamesBox );
-        
-        uix.Empty( 'Parent', GUI.GroupBox );
-        
-        GUI.GroupsBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        aa{6} = uicontrol( 'Style', 'text', 'Parent', GUI.GroupsBox, 'String', 'Groups', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.Group.lbGroups = uicontrol( 'Style', 'ListBox', 'Parent', GUI.GroupsBox, 'Callback', @Groups_listbox_Callback, 'FontSize', SmallFontSize, 'String', {' '; ' '; ' '; ' '});
-        uix.Empty( 'Parent', GUI.GroupsBox );
-        uix.Empty( 'Parent', GUI.GroupsBox );
-        
-        uix.Empty( 'Parent', GUI.GroupBox );
-        
-        Comp_Box = uix.HBox('Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        uix.Empty( 'Parent', Comp_Box );
-        uicontrol( 'Style', 'PushButton', 'Parent', Comp_Box, 'Callback', @GroupsCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'on');
-        uix.Empty( 'Parent', Comp_Box );
-        uix.Empty( 'Parent', Comp_Box );
-        
-        max_extent_control = calc_max_control_x_extend(aa);
-        field_size = [max_extent_control + 5, 225, 80 -1];
-        set( DataTypeBox, 'Widths', field_size );
-        set( FileTypeBox, 'Widths', field_size );
-        set( GUI.LoadBox, 'Widths', field_size );
-        set( GUI.MembersBox, 'Widths', field_size );
-        set( GUI.NamesBox, 'Widths', field_size );
-        set( GUI.GroupsBox, 'Widths', field_size );
-        set( Comp_Box, 'Widths', field_size );
-        
-        uix.Empty( 'Parent', GUI.GroupBox );
-        
-        set( GUI.GroupBox, 'Heights', [-1 -7.5 -7.5 -7.5 -1 -20 -1 -7 -1 -20 -5 -7 -1] );
+%         uix.Empty( 'Parent', GUI.GroupBox );
+%         
+%         DataTypeBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+%         aa{1} = uicontrol( 'Style', 'text', 'Parent', DataTypeBox, 'String', 'Data Type', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+%         GUI.DataType_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DataTypeBox, 'Callback', @DataType_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', {'QRS'; 'ECG'}, 'Enable', 'off');
+%         uix.Empty( 'Parent', DataTypeBox );
+%         uix.Empty( 'Parent', DataTypeBox );
+%         
+%         FileTypeBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+%         aa{2} = uicontrol( 'Style', 'text', 'Parent', FileTypeBox, 'String', 'File Type', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+%         GUI.Group.pmFileType = uicontrol( 'Style', 'PopUpMenu', 'Parent', FileTypeBox, 'Callback', @FileType_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', DATA.file_types);
+%         uix.Empty( 'Parent', FileTypeBox );
+%         uix.Empty( 'Parent', FileTypeBox );
+%         
+%         %         DataType_bg = uibuttongroup( 'Parent', DataTypeBox, 'Title', 'Data Type');
+%         %         uix.Empty( 'Parent', DataTypeBox );
+%         %         uix.Empty( 'Parent', DataTypeBox );
+%         %         ECG_radiobutton = uicontrol('Parent', DataType_bg, 'Style', 'radiobutton', 'String', 'ECG');
+%         %         QRS_radiobutton = uicontrol('Parent', DataType_bg, 'Style', 'radiobutton', 'String', 'QRS');
+%         %         get(ECG_radiobutton, 'Units')
+%         %         get(ECG_radiobutton, 'Position')
+%         %         DataType_bg.Visible = 'on';
+%         
+%         GUI.LoadBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+%         aa{3} = uicontrol( 'Style', 'text', 'Parent', GUI.LoadBox, 'String', 'Load', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+%         GUI.Group.pmWorkDir = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.LoadBox, 'Callback', @LoadGroupDir_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', '  ');
+%         GUI.LoadButtons_Box = uix.HButtonBox('Parent', GUI.LoadBox, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'ButtonSize', [70, 30]);
+%         GUI.Group.btnLoadDir = uicontrol( 'Style', 'PushButton', 'Parent', GUI.LoadButtons_Box, 'Callback', @LoadDir_pushbutton_Callback, 'FontSize', BigFontSize, 'String', '  ...  ');
+%         uix.Empty( 'Parent', GUI.LoadBox );
+%         
+%         uix.Empty( 'Parent', GUI.GroupBox );
+%         
+%         GUI.MembersBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+%         aa{4} = uicontrol( 'Style', 'text', 'Parent', GUI.MembersBox, 'String', 'Members', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+%         GUI.Group.lbMembers = uicontrol( 'Style', 'ListBox', 'Parent', GUI.MembersBox, 'Callback', @Members_listbox_Callback, 'FontSize', SmallFontSize, 'String', {' '; ' '; ' '; ' '}, 'Max', 5);
+%         uix.Empty( 'Parent', GUI.MembersBox );
+%         uix.Empty( 'Parent', GUI.MembersBox );
+%         
+%         uix.Empty( 'Parent', GUI.GroupBox );
+%         
+%         GUI.NamesBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+%         aa{5} = uicontrol( 'Style', 'text', 'Parent', GUI.NamesBox, 'String', 'Name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+%         GUI.Group.ebName = uicontrol( 'Style', 'edit', 'Parent', GUI.NamesBox, 'Callback', @Name_edit_Callback, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+%         GUI.AddDelButtons_Box = uix.HButtonBox('Parent', GUI.NamesBox, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'ButtonSize', [70, 30]);
+%         GUI.Group.btnAddGroup = uicontrol( 'Style', 'PushButton', 'Parent', GUI.AddDelButtons_Box, 'Callback', @Add_PushButton_Callback, 'FontSize', BigFontSize, 'String', 'Add', 'Enable', 'off');
+%         GUI.Group.btnDelGroup = uicontrol( 'Style', 'PushButton', 'Parent', GUI.AddDelButtons_Box, 'Callback', @Del_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Del');
+%         uix.Empty( 'Parent', GUI.NamesBox );
+%         
+%         uix.Empty( 'Parent', GUI.GroupBox );
+%         
+%         GUI.GroupsBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+%         aa{6} = uicontrol( 'Style', 'text', 'Parent', GUI.GroupsBox, 'String', 'Groups', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+%         GUI.Group.lbGroups = uicontrol( 'Style', 'ListBox', 'Parent', GUI.GroupsBox, 'Callback', @Groups_listbox_Callback, 'FontSize', SmallFontSize, 'String', {' '; ' '; ' '; ' '});
+%         uix.Empty( 'Parent', GUI.GroupsBox );
+%         uix.Empty( 'Parent', GUI.GroupsBox );
+%         
+%         uix.Empty( 'Parent', GUI.GroupBox );
+%         
+%         Comp_Box = uix.HBox('Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+%         uix.Empty( 'Parent', Comp_Box );
+%         uicontrol( 'Style', 'PushButton', 'Parent', Comp_Box, 'Callback', @GroupsCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'on');
+%         uix.Empty( 'Parent', Comp_Box );
+%         uix.Empty( 'Parent', Comp_Box );
+%         
+%         max_extent_control = calc_max_control_x_extend(aa);
+%         field_size = [max_extent_control + 5, 225, 80 -1];
+%         set( DataTypeBox, 'Widths', field_size );
+%         set( FileTypeBox, 'Widths', field_size );
+%         set( GUI.LoadBox, 'Widths', field_size );
+%         set( GUI.MembersBox, 'Widths', field_size );
+%         set( GUI.NamesBox, 'Widths', field_size );
+%         set( GUI.GroupsBox, 'Widths', field_size );
+%         set( Comp_Box, 'Widths', field_size );
+%         
+%         uix.Empty( 'Parent', GUI.GroupBox );
+%         
+%         set( GUI.GroupBox, 'Heights', [-1 -7.5 -7.5 -7.5 -1 -20 -1 -7 -1 -20 -5 -7 -1] );
         
         %---------------------------
         tables_field_size = [-85 -15];
@@ -830,8 +834,8 @@ displayEndOfDemoMessage('');
         GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticsTab, 'FontSize', SmallFontSize, 'ColumnWidth',{800 'auto'}, 'FontName', 'Calibri');    % 550
         GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};
         %---------------------------
-        GUI.GroupSummaryTable = uitable( 'Parent', GUI.GroupSummaryTab, 'FontSize', SmallFontSize, 'ColumnWidth',{800 'auto'}, 'FontName', 'Calibri');    % 550
-        GUI.GroupSummaryTable.ColumnName = {'Description'; 'Values'};
+%         GUI.GroupSummaryTable = uitable( 'Parent', GUI.GroupSummaryTab, 'FontSize', SmallFontSize, 'ColumnWidth',{800 'auto'}, 'FontName', 'Calibri');    % 550
+%         GUI.GroupSummaryTable.ColumnName = {'Description'; 'Values'};
         %---------------------------
         
         % Upper Part
@@ -852,6 +856,12 @@ displayEndOfDemoMessage('');
         set(findobj(Low_Part_BoxPanel,'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
         set(findobj(Low_Part_BoxPanel,'Type', 'uipanel'), 'BackgroundColor', myLowBackgroundColor);
         
+        GUI.Active_Window_Start.BackgroundColor = DATA.rectangle_color;
+        GUI.Active_Window_Length.BackgroundColor = DATA.rectangle_color;
+        
+        GUI.FirstSecond.BackgroundColor = [0.9 0.7 0.7];
+        GUI.WindowSize.BackgroundColor = [0.9 0.7 0.7];
+        
     end % createInterface
 %%
     function max_extent_control = calc_max_control_x_extend(uitext_handle)
@@ -870,11 +880,11 @@ displayEndOfDemoMessage('');
     end
 %%
     function TabChange_Callback(~, eventData)
-        if eventData.NewValue == 3
-            GUI.UpCentral_TabPanel.Selection = 2;
-        else
-            GUI.UpCentral_TabPanel.Selection = 1;
-        end
+%         if eventData.NewValue == 3
+%             GUI.UpCentral_TabPanel.Selection = 2;
+%         else
+%             GUI.UpCentral_TabPanel.Selection = 1;
+%         end
     end
 %%
     function [param_keys_length, max_extent_control, handles_boxes] = FillParamFields(VBoxHandle, param_map)
@@ -1634,43 +1644,43 @@ displayEndOfDemoMessage('');
                 mammal = '';
                 mammal_index = '';
                 
-%                 if strcmpi(ExtensionFileName, 'mat')
-%                     QRS = load([PathName QRS_FileName]);
-%                     QRS_field_names = fieldnames(QRS);
-%                     QRS_data = [];
-%                     for i = 1 :  length(QRS_field_names)
-%                         curr_field = QRS.(QRS_field_names{i});
-%                         if ~isempty(regexpi(QRS_field_names{i}, 'qrs|data'))
-%                             QRS_data = curr_field;
-%                         elseif strcmpi(QRS_field_names{i}, 'mammal')  % ~isempty(regexpi(QRS_field_names{i}, 'mammal'))
-%                             mammal = curr_field;
-%                             [mammal, mammal_index] = set_mammal(mammal);
-%                         elseif strcmpi(QRS_field_names{i}, 'Fs')   %~isempty(regexpi(QRS_field_names{i}, 'Fs'))
-%                             DATA.SamplingFrequency = curr_field;
-%                         elseif strcmpi(QRS_field_names{i}, 'Integration')  %~isempty(regexpi(QRS_field_names{i}, 'Integration'))
-%                             %                             DATA.Integration = curr_field;
-%                             integration = curr_field;
-%                         end
-%                     end
-%                     time_data = 0;                    
-                if strcmpi(ExtensionFileName, 'qrs') % || strcmpi(ExtensionFileName, 'atr') atr - for quality; qrs - for annotations (peaks)
+                %                 if strcmpi(ExtensionFileName, 'mat')
+                %                     QRS = load([PathName QRS_FileName]);
+                %                     QRS_field_names = fieldnames(QRS);
+                %                     QRS_data = [];
+                %                     for i = 1 :  length(QRS_field_names)
+                %                         curr_field = QRS.(QRS_field_names{i});
+                %                         if ~isempty(regexpi(QRS_field_names{i}, 'qrs|data'))
+                %                             QRS_data = curr_field;
+                %                         elseif strcmpi(QRS_field_names{i}, 'mammal')  % ~isempty(regexpi(QRS_field_names{i}, 'mammal'))
+                %                             mammal = curr_field;
+                %                             [mammal, mammal_index] = set_mammal(mammal);
+                %                         elseif strcmpi(QRS_field_names{i}, 'Fs')   %~isempty(regexpi(QRS_field_names{i}, 'Fs'))
+                %                             DATA.SamplingFrequency = curr_field;
+                %                         elseif strcmpi(QRS_field_names{i}, 'Integration')  %~isempty(regexpi(QRS_field_names{i}, 'Integration'))
+                %                             %                             DATA.Integration = curr_field;
+                %                             integration = curr_field;
+                %                         end
+                %                     end
+                %                     time_data = 0;
+                %                 if strcmpi(ExtensionFileName, 'qrs') % || strcmpi(ExtensionFileName, 'atr') atr - for quality; qrs - for annotations (peaks)
+                %
+                %                         [ ~, Fs, ~ ] = get_signal_channel( [PathName DATA.DataFileName] );
+                %                         DATA.SamplingFrequency = Fs;
+                %                         [mammal, integration] = get_description_from_wfdb_header([PathName DATA.DataFileName]);
+                %                         [mammal, mammal_index] = set_mammal(mammal);
+                %                         %                         if ~isempty(integration)
+                %                         %                             DATA.Integration = integration;
+                %                         %                         end
+                %                     try
+                %                         QRS_data = rdann([PathName DATA.DataFileName], ExtensionFileName); % atr qrs
+                %                     catch
+                %                         close(waitbar_handle);
+                %                         throw(MException('LoadFile:text', 'Cann''t read file.'));
+                %                     end
+                %                     time_data = 0;
+                if strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'qrs')
                     
-                        [ ~, Fs, ~ ] = get_signal_channel( [PathName DATA.DataFileName] );
-                        DATA.SamplingFrequency = Fs;
-                        [mammal, integration] = get_description_from_wfdb_header([PathName DATA.DataFileName]);
-                        [mammal, mammal_index] = set_mammal(mammal);
-                        %                         if ~isempty(integration)
-                        %                             DATA.Integration = integration;
-                        %                         end
-                    try
-                        QRS_data = rdann([PathName DATA.DataFileName], ExtensionFileName); % atr qrs
-                    catch
-                        close(waitbar_handle);
-                        throw(MException('LoadFile:text', 'Cann''t read file.'));
-                    end
-                    time_data = 0;                    
-                elseif strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'mat')
-                                        
                     DataFileMap = loadDataFile([PathName QRS_FileName]);
                     MSG = DataFileMap('MSG');
                     if strcmp(MSG, 'OK')
@@ -1690,24 +1700,24 @@ displayEndOfDemoMessage('');
                     end
                     %                     file_name = [PathName DATA.DataFileName '.txt'];
                     %                     fileID = fopen(file_name, 'r');
-%                     if fileID ~= -1
-%                         %                         mammal = fscanf(fileID, '%*s %s', 1);
-%                         Mammal = fscanf(fileID, '%s', 1);
-%                         if ~isempty(regexpi(Mammal, 'mammal'))
-%                             mammal = fscanf(fileID, '%s', 1);
-%                             [mammal, mammal_index] = set_mammal(mammal);
-%                             DATA.SamplingFrequency = fscanf(fileID, '%*s %d', 1);
-%                             %                         DATA.Integration = fscanf(fileID, '%*s %s', 1);
-%                             integration = fscanf(fileID, '%*s %s', 1);
-%                             if strcmpi(integration, 'AP') || strcmpi(integration, 'Action') % strcmpi(DATA.Integration, 'AP') || strcmpi(DATA.Integration, 'Action')
-%                                 %                             DATA.Integration = 'Action Potential';
-%                                 integration = 'Action Potential';
-%                             end
-%                             QRS_data = dlmread(file_name,' ', 4, 0);
-%                         else
-%                             QRS_data = dlmread(file_name,' ', 0, 0);
-%                         end
-%                         fclose(fileID);
+                    %                     if fileID ~= -1
+                    %                         %                         mammal = fscanf(fileID, '%*s %s', 1);
+                    %                         Mammal = fscanf(fileID, '%s', 1);
+                    %                         if ~isempty(regexpi(Mammal, 'mammal'))
+                    %                             mammal = fscanf(fileID, '%s', 1);
+                    %                             [mammal, mammal_index] = set_mammal(mammal);
+                    %                             DATA.SamplingFrequency = fscanf(fileID, '%*s %d', 1);
+                    %                             %                         DATA.Integration = fscanf(fileID, '%*s %s', 1);
+                    %                             integration = fscanf(fileID, '%*s %s', 1);
+                    %                             if strcmpi(integration, 'AP') || strcmpi(integration, 'Action') % strcmpi(DATA.Integration, 'AP') || strcmpi(DATA.Integration, 'Action')
+                    %                                 %                             DATA.Integration = 'Action Potential';
+                    %                                 integration = 'Action Potential';
+                    %                             end
+                    %                             QRS_data = dlmread(file_name,' ', 4, 0);
+                    %                         else
+                    %                             QRS_data = dlmread(file_name,' ', 0, 0);
+                    %                         end
+                    %                         fclose(fileID);
 %                     end
                 else
                     close(waitbar_handle);
@@ -3337,7 +3347,7 @@ displayEndOfDemoMessage('');
         main_screensize = DATA.screensize;
         
         GUI.SaveMeasuresWindow = figure( ...
-            'Name', 'Save Measures Options', ...
+            'Name', 'Save HRV Measures Options', ...
             'NumberTitle', 'off', ...
             'MenuBar', 'none', ...
             'Toolbar', 'none', ...
@@ -3475,7 +3485,8 @@ displayEndOfDemoMessage('');
     end
 %%
     function onPhysioZooHome( ~, ~ )
-        url = 'http://www.physiozoo.com/';
+%         url = 'http://www.physiozoo.com/';
+        url = 'https://physiozoo.readthedocs.io/';
         web(url,'-browser')
     end
 %%
@@ -5116,6 +5127,8 @@ displayEndOfDemoMessage('');
     end
 %%
     function onHelp( ~, ~ )
+        url = 'https://physiozoo.readthedocs.io/';
+        web(url,'-browser')
     end
 %%
     function LoadDir_pushbutton_Callback(~, ~)

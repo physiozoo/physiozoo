@@ -37,6 +37,7 @@ DEFAULT_SUB = int8(0);
 DEFAULT_CHAN = int8(0);
 DEFAULT_NUM = int8(0);
 DEFAULT_AUX = '';
+% DEFAULT_comments = {''};
 
 % Define input
 p = inputParser;
@@ -50,6 +51,7 @@ p.addParameter('chan', DEFAULT_CHAN, @isnumeric);
 p.addParameter('num', DEFAULT_NUM, @isnumeric);
 p.addParameter('aux', DEFAULT_AUX, @(x)ischar(x)||iscellstr(x));
 p.addParameter('plot', nargout == 0, @islogical);
+% p.addParameter('comments', DEFAULT_comments, @(x) ischar(x));
 
 % Get input
 p.parse(rec_name, ann_ext, ann_idx, varargin{:});
@@ -111,7 +113,8 @@ if ~isrecord(rec_name, 'hea')
         % Create a basic header file to allow wrann to work
         header_filename = [rec_name '.hea'];
         fid = fopen(header_filename, 'w');
-        fprintf(fid, '%s 0 %f 0\n', rec_name, p.fs);
+        fprintf(fid, '%s 0 %f 0 %s\n', rec_name, p.fs);
+%         fprintf(fid, '%s 1 %f 0 %s\n', rec_name, p.fs, p.comments);
         fclose(fid);
         files_written{end+1} = header_filename;
     end
@@ -156,7 +159,7 @@ catch e
 end
 
 %% Cleanup
-if isfile(temp_file_name)
+if exist(temp_file_name, 'file')
     delete(temp_file_name);
 end
 

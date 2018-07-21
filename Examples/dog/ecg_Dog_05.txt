@@ -1,3 +1,22 @@
+---
+Mammal:            dog
+Fs:                500
+Integration_level: electrocardiogram
+
+Channels:
+
+    - type:   time
+      name:   time
+      unit:   second
+      enable: yes
+
+    - type:   electrography
+      name:   data
+      unit:   millivolt
+      enable: yes
+
+---
+	
 0.000000	0.060057
 0.002000	0.064323
 0.004000	0.068589

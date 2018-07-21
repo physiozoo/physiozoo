@@ -1342,19 +1342,21 @@ GUI = createInterface();
 %                 saved_path = pwd;
 %                 cd(results_folder_name);
                 try
-                    %                     wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
-                    %                     addpath(wfdb_path);
-                    %                     mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
-                    %                     wrann(filename_noExt, 'qrs', int64(Data));
-                    %                     rmpath(wfdb_path);
-                    %                     delete([filename_noExt '.dat']);
+%                                         wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
+%                                         addpath(wfdb_path);
+%                                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
+%                                         wrann(filename_noExt, 'qrs', int64(Data));
+%                                         rmpath(wfdb_path);
+%                                         delete([filename_noExt '.dat']);
                     
-                    % Create header
-                    saved_path = pwd;
-                    cd(results_folder_name);
-                    mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
-                    delete([filename_noExt '.dat']);
-                    cd(saved_path);
+                    if ~isrecord([results_folder_name filename_noExt], 'hea')
+                        % Create header
+                        saved_path = pwd;
+                        cd(results_folder_name);
+                        mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
+                        delete([filename_noExt '.dat']);
+                        cd(saved_path);
+                    end
                     
 %                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs);

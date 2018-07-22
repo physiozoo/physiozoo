@@ -204,9 +204,9 @@ GUI = createInterface();
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @Exit_Callback, 'Separator', 'on', 'Accelerator', 'E');
         
         % + Help menu
-        helpMenu = uimenu( GUI.Window, 'Label', 'Help' );
-        uimenu( helpMenu, 'Label', 'Documentation', 'Callback', @onHelp, 'Visible', 'off' );
-        uimenu( helpMenu, 'Label', 'PhysioZoo Home', 'Callback', @onPhysioZooHome );
+%         helpMenu = uimenu( GUI.Window, 'Label', 'Help' );
+%         uimenu( helpMenu, 'Label', 'Documentation', 'Callback', @onHelp, 'Visible', 'off' );
+%         uimenu( helpMenu, 'Label', 'PhysioZoo Home', 'Callback', @onPhysioZooHome );
         
         % Create the layout (Arrange the main interface)
         mainLayout = uix.VBoxFlex('Parent', GUI.Window, 'Spacing', DATA.Spacing);
@@ -297,6 +297,7 @@ GUI = createInterface();
         [GUI, textBox{8}, text_handles{8}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Class_popupmenu', 'Class', RecordBox, @Class_popupmenu_Callback, DATA.GUI_Class);
         
         GUI.GUIRecord.Class_popupmenu.Visible = 'off';
+        GUI.GUIRecord.Class_popupmenu.Value = 3;
         GUI.Class_Text = text_handles{8};
         GUI.Class_Text.Visible = 'off';
         
@@ -1125,7 +1126,7 @@ GUI = createInterface();
             EXT = 'mat';
         end
         [Peaks_FileName, PathName] = uigetfile( ...
-            {'*.qrs',  'WFDB Files (*.qrs)'; ...
+            {'*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'; ...
             '*.mat','MAT-files (*.mat)'; ...
             '*.txt','Text Files (*.txt)'}, ...
             'Open ECG File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
@@ -1142,7 +1143,7 @@ GUI = createInterface();
             
             set(GUI.GUIRecord.PeaksFileName_text, 'String', [PathName Peaks_FileName]);
             
-            if strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'qrs')
+            if strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                 %                 QRS = load(DATA.peaks_file_name);
                 %                 DATA.qrs = QRS.Data;
                 %                 DATA.Fs = QRS.Fs;
@@ -1292,7 +1293,7 @@ GUI = createInterface();
         [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...
             '*.txt','Text Files (*.txt)';...
             '*.mat','MAT-files (*.mat)';...
-            '*.qrs',  'WFDB Files (*.qrs)'},...
+            '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'},...
             'Choose Analyzed Data File Name',...
             [DIRS.analyzedDataDirectory, filesep, file_name, '.', EXT]);
         if ~isequal(results_folder_name, 0)
@@ -1337,7 +1338,7 @@ GUI = createInterface();
                 dlmwrite(full_file_name, Data, 'delimiter', '\t', 'precision', '%d', 'newline', 'pc', '-append', 'roffset', 1);
                 
                 fclose(header_fileID);
-            elseif strcmpi(ExtensionFileName, 'qrs')
+            elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                 [~, filename_noExt, ~] = fileparts(filename);
 %                 saved_path = pwd;
 %                 cd(results_folder_name);
@@ -1359,7 +1360,7 @@ GUI = createInterface();
                     end
                     
 %                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
-                    wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs);
+                    wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data), 'fs', Fs);
                     
                 catch e
                     disp(e);
@@ -1404,11 +1405,19 @@ GUI = createInterface();
         if isfield(DATA, 'sig') && ~isempty(DATA.sig)
             
             if isfield(GUI, 'quality_win')
-                for i = 1 : length(GUI.quality_win)
-                    delete(GUI.quality_win(i));
-                end
+%                 for i = 1 : length(GUI.quality_win)
+%                     try
+%                         delete(GUI.quality_win(i));
+%                         GUI.quality_win(i) = [];
+%                     catch e
+%                         i
+%                         disp(e);                        
+%                     end
+%                 end
+                delete(GUI.quality_win);
+                GUI.quality_win = [];
                 DATA.quality_win_num = 0;
-            end
+            end                        
             
             GUI.AutoCalc_checkbox.Value = 1;
             GUI.RR_or_HR_plot_button.String = 'Plot HR';
@@ -1490,18 +1499,18 @@ GUI = createInterface();
                 catch
                 end
                 set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
-            case 'select_quality_win'                    
+            case 'select_quality_win'
                 try
-                    quality_range = get(GUI.quality_rect_handle, 'XData');
+                    quality_range = get(GUI.quality_rect_handle, 'XData');                                        
                     
-                    Select_Quality_Win(quality_range);
-%                     try
-                        delete(GUI.quality_rect_handle);
+                    Select_Quality_Win(quality_range);                    
+                    delete(GUI.quality_rect_handle);
+                    
+                    if min(quality_range) ~= max(quality_range)                        
                         DATA.quality_win_num = DATA.quality_win_num + 1;
                         quality_class = GUI.GUIRecord.Class_popupmenu.Value;
                         plot_quality_rect(quality_range, DATA.quality_win_num, quality_class);
-%                     catch
-%                     end
+                    end                    
                     set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
                 catch
                 end
@@ -1519,8 +1528,8 @@ GUI = createInterface();
                 elseif annotation == 1 && (hittest(GUI.Window) == GUI.ECG_Axes) %  || get(hittest(GUI.Window), 'Parent') == GUI.ECG_Axes % white space, draw del rect
                     setptr(GUI.Window, 'ddrag');
                     DATA.hObject = 'del_win_peaks';
-                elseif annotation == 2 && (hittest(GUI.Window) == GUI.ECG_Axes) % signal quality 
-                    setptr(GUI.Window, 'circle'); % eraser
+                elseif annotation == 2 && hittest(GUI.Window) == GUI.ECG_Axes % signal quality 
+                    setptr(GUI.Window, 'rdrag'); % eraser circle
                     DATA.hObject = 'select_quality_win';    
                 elseif annotation == 2 && (isfield(GUI, 'quality_win') && ismember(hittest(GUI.Window), GUI.quality_win)) % delete signal quality win
                     setptr(GUI.Window, 'eraser');
@@ -2047,7 +2056,7 @@ GUI = createInterface();
         [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...
             '*.txt','Text Files (*.txt)';...
             '*.mat','MAT-files (*.mat)';...
-            '*.atr',  'WFDB Files (*.atr)'},...
+            '*.sqi',  'WFDB Files (*.sqi)'},...
             'Choose Signal Quality File Name',...
             [DIRS.analyzedDataDirectory, filesep, file_name, '.', EXT]);
         if ~isequal(results_folder_name, 0)
@@ -2064,31 +2073,31 @@ GUI = createInterface();
                     
                     quality_range{i} = get(GUI.quality_win(i), 'XData');
                     class_number = get(GUI.quality_win(i), 'UserData');
-                    Class{i, 1} = DATA.GUI_Class{class_number};
-                    Quality_anns(i, :) = [min(quality_range{i}) max(quality_range{i})];                                       
+                    class{i, 1} = DATA.GUI_Class{class_number};
+                    signal_quality(i, :) = [min(quality_range{i}) max(quality_range{i})];                                       
                 end
             else
-                Class{1, 1} = DATA.GUI_Class{1};
-                Quality_anns = [0, 0];
+                class{1, 1} = DATA.GUI_Class{3};
+                signal_quality = [0, 0];
             end
             
             if strcmpi(ExtensionFileName, 'mat')
-                save(full_file_name, 'Quality_anns', 'Class');
+                save(full_file_name, 'signal_quality', 'class');
             elseif strcmpi(ExtensionFileName, 'txt')
                 header_fileID = fopen(full_file_name, 'wt');                
                 fprintf(header_fileID, 'Beginning\tEnd\t\tClass\n');
-                for i = 1 : length(Class)
-                    fprintf(header_fileID, '%.6f\t%.6f\t%s\n', Quality_anns(i, 1), Quality_anns(i, 2), Class{i, 1});
+                for i = 1 : length(class)
+                    fprintf(header_fileID, '%.6f\t%.6f\t%s\n', signal_quality(i, 1), signal_quality(i, 2), class{i, 1});
                 end                
                 fclose(header_fileID);
                 
-            elseif strcmpi(ExtensionFileName, 'atr')
+            elseif strcmpi(ExtensionFileName, 'sqi')
                 [~, filename_noExt, ~] = fileparts(full_file_name);
                 
-                Quality_annotations_for_wfdb = reshape(Quality_anns', [size(Quality_anns, 1) * size(Quality_anns, 2), 1]);                
-                Class_for_wfdb = reshape([Class Class]', [2*size(Class, 1), 1]);
+                Quality_annotations_for_wfdb = reshape(signal_quality', [size(signal_quality, 1) * size(signal_quality, 2), 1]);                
+                Class_for_wfdb = reshape([class class]', [2*size(class, 1), 1]);
                 
-                wrann([results_folder_name filename_noExt], 'atr', int64(Quality_annotations_for_wfdb*DATA.Fs), 'fs', DATA.Fs, 'type', Class_for_wfdb);                    
+                wrann([results_folder_name filename_noExt], 'sqi', int64(Quality_annotations_for_wfdb*DATA.Fs), 'fs', DATA.Fs, 'type', Class_for_wfdb);                    
             end
         end
     end
@@ -2108,7 +2117,7 @@ GUI = createInterface();
             EXT = 'mat';
         end
         [Quality_FileName, PathName] = uigetfile( ...
-            {'*.atr',  'WFDB Files (*.atr)'; ...
+            {'*.sqi',  'WFDB Files (*.sqi)'; ...
             '*.mat','MAT-files (*.mat)'; ...
             '*.txt','Text Files (*.txt)'}, ...
             'Open ECG File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
@@ -2130,9 +2139,9 @@ GUI = createInterface();
                 QualityAnnotations_Data = [];
                 
                 for i = 1 : length(QualityAnnotations_field_names)
-                    if ~isempty(regexpi(QualityAnnotations_field_names{i}, 'Quality_anns|quality_anno'))
+                    if ~isempty(regexpi(QualityAnnotations_field_names{i}, 'signal_quality')) % Quality_anns|quality_anno
                         QualityAnnotations_Data = QualityAnnotations.(QualityAnnotations_field_names{i});
-                    elseif ~isempty(regexpi(QualityAnnotations_field_names{i}, 'Class'))
+                    elseif ~isempty(regexpi(QualityAnnotations_field_names{i}, 'class'))
                         Class = QualityAnnotations.(QualityAnnotations_field_names{i});
                     end
                 end
@@ -2165,7 +2174,7 @@ GUI = createInterface();
                     return;
                 end
                 
-            elseif strcmpi(ExtensionFileName, 'atr')
+            elseif strcmpi(ExtensionFileName, 'sqi')
 %                 [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"');
 %                 [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"ABC"');
                 [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName);
@@ -2185,7 +2194,7 @@ GUI = createInterface();
             for i = 1 : length(DATA_Class)
                 [is_member, class_ind] = ismember(DATA_Class{i}, DATA.GUI_Class);
                 if ~is_member
-                    class_ind = 1;
+                    class_ind = 3;
                 end
                 if DATA_QualityAnnotations_Data(i, 1) ~= DATA_QualityAnnotations_Data(i, 2)
                     plot_quality_rect(DATA_QualityAnnotations_Data(i, :), quality_win_ind, class_ind);

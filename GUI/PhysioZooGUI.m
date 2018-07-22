@@ -321,8 +321,8 @@ displayEndOfDemoMessage('');
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @onExit, 'Separator', 'on', 'Accelerator', 'E');
         
         % + Help menu
-        helpMenu = uimenu( GUI.Window, 'Label', 'Help' );
-        uimenu( helpMenu, 'Label', 'Documentation', 'Callback', @onHelp );
+%         helpMenu = uimenu( GUI.Window, 'Label', 'Help' );
+%         uimenu( helpMenu, 'Label', 'Documentation', 'Callback', @onHelp );
 %         uimenu( helpMenu, 'Label', 'PhysioZoo Home', 'Callback', @onPhysioZooHome );
         %uimenu( helpMenu, 'Label', 'About', 'Callback', @onAbout );
         
@@ -672,7 +672,7 @@ displayEndOfDemoMessage('');
         
         RRIntPageLengthtBox = uix.HBox( 'Parent', GUI.DisplayBox, 'Spacing', DATA.Spacing);
         tooltip = 'Choose the length of the segment to display on the lower panel. This is useful for particularly long time series';
-        b{6} = uicontrol( 'Style', 'text', 'Parent', RRIntPageLengthtBox, 'String', 'Displayed segment duration:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'Tooltip', tooltip);
+        b{6} = uicontrol( 'Style', 'text', 'Parent', RRIntPageLengthtBox, 'String', 'Displayed segment:', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'Tooltip', tooltip);
         GUI.RRIntPage_Length = uicontrol( 'Style', 'edit', 'Parent', RRIntPageLengthtBox, 'Callback', @RRIntPage_Length_Callback, 'FontSize', BigFontSize, 'Tooltip', tooltip);
         uicontrol( 'Style', 'text', 'Parent', RRIntPageLengthtBox, 'String', 'h:min:sec', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'Tooltip', tooltip);
         
@@ -698,7 +698,7 @@ displayEndOfDemoMessage('');
         set( YLimitBoxLowAxes, 'Widths', [max_extent_control + 2, 45, 2, 39, -1]  );
         
         uix.Empty( 'Parent', GUI.DisplayBox );
-        set( GUI.DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -10 -7 -7 -7 -7 -7 -10 -7 -7 -15] );
+        set( GUI.DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -10 -7 -7 -7 -7 -7 -10 -7 -7 -10] );
         
         %-----------------------------------------------------------------------------------------------
         
@@ -1528,7 +1528,7 @@ displayEndOfDemoMessage('');
         
         [DataQuality_FileName, PathName] = uigetfile({'*.*', 'All files';...
             '*.mat','MAT-files (*.mat)'; ...
-            '*.atr',  'WFDB Files (*.atr)'; ... %'*.qrs;
+            '*.sqi',  'WFDB Files (*.sqi)'; ... %'*.qrs;
             '*.txt','Text Files (*.txt)'}, ...
             'Open Data-Quality-Annotations File', [DIRS.dataQualityDirectory filesep '*.' DIRS.Ext_open]);
         
@@ -1548,7 +1548,7 @@ displayEndOfDemoMessage('');
                 i = 1;
                 QualityAnnotations_Data = [];
                 while i <= QualityAnnotations_field_names_number
-                    if ~isempty(regexpi(QualityAnnotations_field_names{i}, 'Quality_anns|quality_anno'))
+                    if ~isempty(regexpi(QualityAnnotations_field_names{i}, 'signal_quality')) % Quality_anns|quality_anno
                         QualityAnnotations_Data = QualityAnnotations.(QualityAnnotations_field_names{i});
                         break;
                     end
@@ -1561,9 +1561,10 @@ displayEndOfDemoMessage('');
                     errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
                     return;
                 end
-            elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
+            elseif strcmpi(ExtensionFileName, 'sqi') % strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                 if DATA.SamplingFrequency ~= 0
-                    quality_data = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"')/DATA.SamplingFrequency;
+%                     quality_data = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"')/DATA.SamplingFrequency;
+                    quality_data = rdann( [PathName QualityFileName], ExtensionFileName)/DATA.SamplingFrequency;
                     DATA.QualityAnnotations_Data = [quality_data(1:2:end), quality_data(2:2:end)];
                 else
                     errordlg('Cann''t get sampling frequency.', 'Input Error');
@@ -1679,7 +1680,7 @@ displayEndOfDemoMessage('');
                 %                         throw(MException('LoadFile:text', 'Cann''t read file.'));
                 %                     end
                 %                     time_data = 0;
-                if strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'qrs')
+                if strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                     
                     DataFileMap = loadDataFile([PathName QRS_FileName]);
                     MSG = DataFileMap('MSG');
@@ -1778,7 +1779,7 @@ displayEndOfDemoMessage('');
         
         [QRS_FileName, PathName] = uigetfile({'*.*', 'All files';...
             '*.mat','MAT-files (*.mat)'; ...
-            '*.qrs',  'WFDB Files (*.qrs)'; ... %     ; *.atr
+            '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'; ... %     ; *.atr
             '*.txt','Text Files (*.txt)'}, ...
             'Open QRS File', [DIRS.dataDirectory filesep '*.' DIRS.Ext_open]);
         Load_Single_File(QRS_FileName, PathName);
@@ -1806,7 +1807,7 @@ displayEndOfDemoMessage('');
                     return;
                 end
                 
-                if isempty(integration)
+                if isempty(integration) || strcmp(integration, 'electrocardiogram')
                     integration = 'ECG';
                 end
                 
@@ -2547,7 +2548,7 @@ displayEndOfDemoMessage('');
         DATA_Fig.Ext = 'fig';
         
         DATA_Measure.measures = [1 1 1 1];
-        DATA_Measure.Ext_save = 'mat';
+        DATA_Measure.Ext_save = 'txt'; % mat
     end
 %%
     function Reset_pushbutton_Callback( ~, ~ )

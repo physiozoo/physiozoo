@@ -1,7 +1,5 @@
-Channels:
+Mammal:            dog
+Fs:                500
+Integration_level: electrocardiogram
 
-    - type:   beating rate
-      name:   HR
-      unit:   bpm
-      enable: yes
 

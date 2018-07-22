@@ -22,7 +22,7 @@ function varargout = Configure_Dialog(varargin)
 
 % Edit the above text to modify the response to help Configure_Dialog
 
-% Last Modified by GUIDE v2.5 18-Jul-2018 21:18:35
+% Last Modified by GUIDE v2.5 21-Jul-2018 16:29:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,8 +59,9 @@ guidata(hObject, handles);
 cmd = FGV_CMD;
 UniqueMap = FGV_DATA(cmd.GET);
 ENABLE = [{'on'};{'off'}];
-FIRST_ITEM = [{'Select'};{'Auto'}];
+FIRST_ITEM = [{'select'};{'auto'}];
 Config = ReadYaml('Loader Config.yml');
+BGColor = [[ 1.0000    0.8667    0.8667];[1 1 1]];
 setappdata(handles.figure1,'Config',Config)
 Names = fieldnames(Config);
 
@@ -69,15 +70,16 @@ for i = 1 : length(Names)-2
     if i > 1
         strItems = Config.(localName)';
     else
-        strItems =  fieldnames(Config.(localName));
+%         strItems =  fieldnames(Config.(localName));
+        strItems =  replace(fieldnames(Config.(localName)),'_',' ');
     end
     set(handles.(['pm_',localName]),'string',strItems,'value',1)
 end
-set(handles.txtFileName,'string',['File Name:  ',UniqueMap('Name')])
+set(handles.txtFileName,'string',['File name:  ',UniqueMap('Name')])
 set(handles.txtAlarm,'string','')
 hCh = findobj(handles.figure1,'style','popupmenu');
 set(hCh,'backgroundcolor',[ 1.0000    0.8667    0.8667],'value',1,'enable','on')
-
+handles.btnSaveAs.Visible = 'off';
     %% ------------------- Set Params Control ---------------------------------
     hFileParams =  findobj(handles.uipGeneral,'style','popupmenu');
 
@@ -101,10 +103,12 @@ set(hCh,'backgroundcolor',[ 1.0000    0.8667    0.8667],'value',1,'enable','on')
 try
     eboxColor = 'w';
     eboxString = UniqueMap('fs');
+    Fs = eboxString;
     enable = 'off';
 catch
     eboxColor = [ 1.0000    0.8667    0.8667];
-    eboxString = NaN;
+    eboxString = ' '; %NaN
+    Fs = NaN;
     enable = 'on';
 end
 set(handles.ebFs,'backgroundcolor',eboxColor,'string',eboxString,'enable',enable)
@@ -139,7 +143,7 @@ end
 Channels.Time.Enable = 0;
 Channels.Time.No = 0;
 Channels.Time.Scale_factor= 1;
-Channels.Time.Fs = eboxString;
+Channels.Time.Fs = Fs;
 Channels.Time.Unit = 'second';
 Channels.Time.Type = 'time';
 Channels.Time.Name = 'time';
@@ -181,17 +185,17 @@ if ~Channels.Time.No
      else
         status_enable = 1;
         Channels.Time.Data = data(:,1);
-        Channels = Update_Fs(Channels,handles,cell2mat(ENABLE(status_enable)));
+        Channels = Update_Fs(Channels,handles,cell2mat(ENABLE(status_enable)),'msg_1');
     end
     if size(data,2) <= 1
         status_enable = 2;
     end
 else
     status_enable = 2;
-    Channels = Update_Fs(Channels,handles,cell2mat(ENABLE(status_enable)));
+    Channels = Update_Fs(Channels,handles,cell2mat(ENABLE(status_enable)),'msg_1');
 end
 set(handles.pm_time_channel,'string',[FIRST_ITEM(status_enable);Channels.Data.Names])
-set(handles.pm_time_channel,'value',Channels.Time.No+1,'backgroundcolor','w','enable',cell2mat(ENABLE(status_enable)))
+set(handles.pm_time_channel,'value',Channels.Time.No+1,'backgroundcolor',BGColor(status_enable,:),'enable',cell2mat(ENABLE(status_enable)))
 
 
     %% Set pm
@@ -222,7 +226,7 @@ set(handles.pm_time_channel,'value',Channels.Time.No+1,'backgroundcolor','w','en
     
     setappdata(handles.figure1,'Channels',Channels)
     switch CheckStatus(handles.ebFs, eventdata, handles);
-        case 'onn'
+        case 'on'
             btnOK_Callback(handles.btnOK, 0, handles);
             return
         otherwise
@@ -342,7 +346,7 @@ data = get(handles.figure1,'userdata');
 Fs = str2double(get(hObject,'string'));
 if isnan(Fs) || Fs > 10000
     Fs = NaN;
-    set(hObject,'string',Fs)
+    set(hObject,'string',' ')
 end
 Channels = getappdata(handles.figure1,'Channels');
 Channels.Time.Fs = Fs;
@@ -358,12 +362,15 @@ else
 end
 switch Channels.Data.Type
     case 'electrography'
-        if str2double(get(handles.ebFs,'string')) ~= 1/(mean(diff(Channels.Time.Data))*Channels.Time.Scale_factor)
-            err = true;
-        else
-            err = false;
+        Update_Fs(Channels,handles,get(hObject,'enable'),'msg_1')
+        if false
+            if Channels.Time.Fs ~= 1/(mean(diff(Channels.Time.Data))*Channels.Time.Scale_factor)
+                err = true;
+            else
+                err = false;
+            end
+            AlarmStatus(err,handles,'msg_1');
         end
-        AlarmStatus(err,handles,'msg_1');
     otherwise
 end
 CheckStatus(hObject, eventdata, handles);
@@ -466,13 +473,13 @@ switch hObject
     case handles.ebFs
         status = isnan(str2double(get(handles.ebFs,'str')));
      case {handles.pm_time_channel}
-         status = 0;
-    otherwise
+         status =  (~(get(hObject,'value')-1) & strcmp(Get_Popupmenu_Item_Text(hObject),'select'));
+     otherwise
         status = ~(get(hObject,'value')-1);
 end
 
 if status
-    set(hObject,'backgroundcolor',[ 1.0000    0.8667    0.8667])
+    set(hObject,'backgroundcolor',[ 1.0000    0.8667    0.8667])  % red color
 else
     set(hObject,'backgroundcolor','white')
 end
@@ -560,13 +567,11 @@ Channels.Time.No = get(hObject,'value')-1;
 if Channels.Time.No
     strNames(Channels.Time.No+1)=[];
 end
-    dataName = Get_Popupmenu_Item_Text(handles.pm_channels_name);
-    set(handles.pm_channels_name,'value',1,'string',strNames)
-    Set_Popupmenu(handles.pm_channels_name, lower(dataName), get(handles.pm_channels_name,'enable'))
-
-
+dataName = Get_Popupmenu_Item_Text(handles.pm_channels_name);
+set(handles.pm_channels_name,'value',1,'string',strNames)
+Set_Popupmenu(handles.pm_channels_name, lower(dataName), get(handles.pm_channels_name,'enable'))
 Channels = SetTimeChannel(handles.pm_time_channel,Channels,data);
-
+% Channels = Update_Fs(Channels,handles,'on');
 if IsPlotData(hObject, [], handles)
     PlotData(Channels,handles.axData)
 else
@@ -641,7 +646,7 @@ Channels.Time.Scale_factor =  ScaleFactor('time',Channels.Time.Unit);
 AlarmStatus(err,handles,'msg_2');
 if IsPlotData(hObject, [], handles)
     Channels = UpdateTimeChannel(Channels,handles);
-    Channels = Update_Fs(Channels,handles,get(handles.ebFs,'enable'));
+    Channels = Update_Fs(Channels,handles,get(handles.ebFs,'enable'),'msg_1');
     
     PlotData(Channels,handles.axData)
 else
@@ -756,10 +761,13 @@ end
                 case 'electrography'
                     title = 'Amplitude (millivolt)';
                     Span = GetSpan(Channels);
+                    if Span > iWc
+                        Span = iWc;
+                    end
                 otherwise
                     title = 'Amplitude [sec]';
                     Span =int32(length(Channels.Data.Data)/1000);
-                    if ~Span || Span < 10
+                    if ~Span || Span < 10 || Span > iWc
                         Span = iWc;
                     end
                     
@@ -902,19 +910,29 @@ function pm_data_type_Callback(hObject, eventdata, handles)
 
 ENABLE = [{'on'};{'off'}];
 Channels = getappdata(handles.figure1,'Channels');
-Config = getappdata(handles.figure1,'Config');
-Channels.Data.Type = Get_Popupmenu_Item_Text(hObject);
-set(handles.pm_data_unit,'string',['select';Config.data_type.(Channels.Data.Type)'])
-Set_Popupmenu(handles.pm_data_unit, Channels.Data.Unit, cell2mat(ENABLE(Channels.Data.Enable+1)))
-%% --- added from pm_data_unit_Callback ----
-Channels.Data.Scale_factor =  ScaleFactor('data',Channels.Data.Unit);
-if IsPlotData(hObject, [], handles)
-    [Channels,err] = UpdateDataChannel(Channels,handles);
-    AlarmStatus(err,handles,'msg_2');
-    Channels = UpdateTimeChannel(Channels,handles);
-    PlotData(Channels,handles.axData)
+Config = getappdata(handles.figure1,'Config');  
+% Channels.Data.Type = Get_Popupmenu_Item_Text(hObject);
+Channels.Data.Type = replace(Get_Popupmenu_Item_Text(hObject),' ','_');
+if ~(get(hObject,'value')-1)
+    set(handles.pm_data_unit,'string','select','value',1,'enable','off')
 else
-    cla(handles.axData)
+    set(handles.pm_data_unit,'string',['select';Config.data_type.(Channels.Data.Type)'],'enable','on','value',1)
+%     Set_Popupmenu(handles.pm_data_unit, Channels.Data.Unit, cell2mat(ENABLE(Channels.Data.Enable+1)))
+end
+CheckStatus(handles.pm_data_unit, eventdata, handles);
+
+%% --- added from pm_data_unit_Callback ----
+if false
+    Channels.Data.Scale_factor =  ScaleFactor('data',Channels.Data.Unit);
+    if IsPlotData(hObject, [], handles)
+        [Channels,err] = UpdateDataChannel(Channels,handles);
+        AlarmStatus(err,handles,'msg_2');
+        Channels = UpdateTimeChannel(Channels,handles);
+        PlotData(Channels,handles.axData)
+    else
+        cla(handles.axData)
+    end
+    
 end
 %% -----
 CheckStatus(hObject, eventdata, handles);
@@ -938,17 +956,20 @@ end
 
 
 %% ------ Check and Update Fs function --------------
-    function Channels = Update_Fs(Channels,handles,enable)
+    function Channels = Update_Fs(Channels,handles,enable,alarm)
+        if nargin < 4
+            alarm = 'msg_1';
+        end
         switch Channels.Data.Type
             case 'electrography'
-                 if Channels.Time.Fs ~= 1/(mean(diff(Channels.Time.Data))*Channels.Time.Scale_factor)
-                    Channels.Time.Fs = 1/(mean(diff(Channels.Time.Data))*Channels.Time.Scale_factor);
+                if Channels.Time.Fs ~= 1/(mean(diff(Channels.Time.Data)))%*Channels.Time.Scale_factor)
+                    Channels.Time.Fs = 1/(mean(diff(Channels.Time.Data)));%*Channels.Time.Scale_factor);
                     set(handles.ebFs,'string', num2str(Channels.Time.Fs),'enable',enable)
                     err = true;
                 else
                     err = false;
                  end
-                AlarmStatus(err,handles,'msg_1')
+                AlarmStatus(err,handles,alarm)
             otherwise
         end
 

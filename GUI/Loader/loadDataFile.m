@@ -8,13 +8,13 @@ UniqueMap('MSG') = 'Canceled by User';
 UniqueMap('IsHeader') = 0;
 %% ----- GET Filename if w/o input --------
 if ~nargin
-    %     [f,p] = uigetfile([P,'/*.txt']);
+%     [f,p] = uigetfile([P,'/*.txt']);
     [f,p] = uigetfile({'*.*', 'All files';...
-        '*.mat','MAT-files (*.mat)'; ...
-        '*.dat',  'WFDB Files (*.dat)'; ...
-        '*.qrs',  'WFDB Files (*.qrs)'; ...
-        '*.txt','Text Files (*.txt)'}, ...
-        'Open Data-Quality-Annotations File',[P,'*',Ext]);
+            '*.mat','MAT-files (*.mat)'; ...
+            '*.dat',  'WFDB Files (*.dat)'; ... 
+            '*.qrs',  'WFDB Files (*.qrs)'; ... 
+            '*.txt','Text Files (*.txt)'}, ...
+            'Open Data-Quality-Annotations File',[P,'*',Ext]);
     if p
         P = p;
     else
@@ -26,9 +26,8 @@ UniqueMap('MSG') = 'No data';
 keySet = [];
 valueSet=keySet;
 %% ------ Check File extantion and load file --------
-[file_pass,name,ext] = fileparts(FileName);
+[P,name,ext] = fileparts(FileName);
 Ext = ext;
-P = file_pass;
 UniqueMap('Name') = name;
 switch ext(2:end)
     case 'mat'
@@ -51,30 +50,35 @@ switch ext(2:end)
             header = ReadYaml('tempYAML.yml');                                                                                 % Read from temporary file YAML format
             UniqueMap('IsHeader') = 1;
         end
-    case {'dat','qrs'}  % WFDB files
-                
+    case {'dat','qrs','atr'}  % WFDB files
         FileName = [P, '\', name];                                                                                                                       % build filename w/o ext, for WFDB
-        
-        header_info = wfdb_header(FileName);                                                                                   % parse WFDB header file
+        header_info = wfdb_header(FileName);                                                                                   % parse WFDB header file 
         [ChannelNo,Fs,~] = get_signal_channel(FileName, 'header_info', header_info);   % get signal info from header, number of channels , frequency, number of samples
         if (isempty(ChannelNo))                                                                                                            % return if have no signals
             return
         end
         Description = strsplit(header_info.channel_info{1}.description,'-');                     % get mammal and integration level from description
-        header.Mammal = Description{2};
-        header.Integration_level = Description{1};
+        header.Mammal = 'dog';
+        header.Integration_level = 'electrocardiogram';
+        try
+            header.Integration_level = Description{1};
+            header.Mammal = Description{2};
+        catch
+        end
         %% -----------  Read data from WFDB file ------------------------
         if strcmp(ext(2:end),'dat')
-            [tm, sig, Fs] = rdsamp(FileName, ChannelNo, 'header_info', header_info);
-            data.data = [tm,sig];
+            [tm, sig, Fs] = rdsamp(FileName, 1:header_info.N_channels, 'header_info', header_info);
+           data.data = [tm,sig];
             type = 'electrography';
             unit = 'millivolt';
+            offset = 0;
         else
-            sig = rdann(FileName, ext(2:end));
+            sig = double(rdann(FileName, ext(2:end)));
             tm = [];
-            data.data = double(sig);
+            data.data = sig;
             type = 'peak';
             unit = 'index';
+            offset = 1;
         end
         %% --------------------Build Channels Information for Loader ---------------------------------------------
         tCh = 0;
@@ -85,10 +89,10 @@ switch ext(2:end)
             header.Channels{tCh}.enable = 'yes';
             header.Channels{tCh}.name = 'time';
         end
-        for iCh = 1+tCh : length(header_info.channel_info)+tCh
+        for iCh = 1+tCh : length(header_info.channel_info)+tCh-offset
             localChannel = header_info.channel_info{iCh-tCh};
             header.Channels{iCh}.type = type;
-            if ~isempty(localChannel.units)
+            if isfield(localChannel,'unit')
                 unit = localChannel.units;
             end
             header.Channels{iCh}.unit = unit;

@@ -5,8 +5,7 @@ data_type:
     interval: [second,millisecond,index]
     beating_rate: [bpm]
     peak: [second,millisecond,index]
-    signal_quality: [signal quality]
-    time: [second,millisecond,minute,index]
+
 integration_level:
     - select
     - electrocardiogram
@@ -30,3 +29,4 @@ units:
 alarm:
     msg_1: The sampling frequency Fs was re-computed to match the time axis that was entered
     msg_2: The set of channels selected do not match
+    msg_3: The sampling frequency entered Fs does not match with the selected time channel

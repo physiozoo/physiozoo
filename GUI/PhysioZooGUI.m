@@ -1682,9 +1682,12 @@ displayEndOfDemoMessage('');
                 %                     time_data = 0;
                 if strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                     
+                    
+                    Config = ReadYaml('Loader Config.yml');
+                    
                     DataFileMap = loadDataFile([PathName QRS_FileName]);
                     MSG = DataFileMap('MSG');
-                    if strcmp(MSG, 'OK')
+                    if strcmp(Config.alarm.(MSG), 'OK')
                         data = DataFileMap('DATA');
                         if ~strcmp(data.Data.Type, 'electrography')
                             mammal = data.General.mammal;
@@ -1697,7 +1700,7 @@ displayEndOfDemoMessage('');
                             throw(MException('LoadFile:text', 'Please, choose right file format for this module.'));
                         end
                     else
-                        throw(MException('LoadFile:text', MSG));
+                        throw(MException('LoadFile:text', Config.alarm.(MSG)));
                     end
                     %                     file_name = [PathName DATA.DataFileName '.txt'];
                     %                     fileID = fopen(file_name, 'r');
@@ -2085,7 +2088,7 @@ displayEndOfDemoMessage('');
             
             set(GUI.ShowLegend_checkbox, 'Value', 1);
             set(GUI.AutoCalc_checkbox, 'Value', 1);
-            GUI.AutoCompute_pushbutton.Enable = 'inactive';
+            GUI.AutoCompute_pushbutton.Enable = 'off';
             GUI.WinAverage_checkbox.Value = 0;
             
             GUI.DefaultMethod_popupmenu.Value = DATA.default_frequency_method_index;
@@ -3329,7 +3332,7 @@ displayEndOfDemoMessage('');
                             plot_data = DATA.NonLinStat.PlotData{i};
                             fprintf(mse_fileID, 'scale_axis\tmse_result\r\n');
                             dlmwrite(mse_win_file_name, [plot_data.mse.scale_axis; plot_data.mse.mse_result]', ...
-                                'precision', '%.5f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
+                                'precision', '%.3f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
                             fclose(mse_fileID);
                         end
                     elseif strcmp(ext, '.mat')
@@ -3702,7 +3705,7 @@ displayEndOfDemoMessage('');
         doFilt = 0;
         if regexpi(param_name, 'filtrr')
             DATA.custom_filters_thresholds.(param_category{2}).(param_category{3}) = param_value;
-            if strcmp(Filter, 'Combined filters') && (strcmp(param_category{2}, 'moving_average') || strcmp(param_category{3}, 'range'))
+            if strcmp(Filter, 'Combined filters') && (strcmp(param_category{2}, 'moving_average') || strcmp(param_category{2}, 'range'))
                 doFilt = 1;
             elseif strcmp(Filter, 'Moving average') && strcmp(param_category{2}, 'moving_average')
                 doFilt = 1;
@@ -4886,7 +4889,15 @@ displayEndOfDemoMessage('');
             set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
             
             plotMultipleWindows();
-            DATA.doCalc = true;
+%             DATA.doCalc = true;
+            clear_statistics_plots();
+            clearStatTables();
+            calcBatchWinNum();
+            plotFilteredData();
+            plotMultipleWindows();
+            if get(GUI.AutoCalc_checkbox, 'Value')
+                calcStatistics();
+            end
         end
     end
 %%
@@ -5117,7 +5128,7 @@ displayEndOfDemoMessage('');
 %%
     function AutoCalc_checkbox_Callback( src, ~ )
         if get(src, 'Value') == 1
-            GUI.AutoCompute_pushbutton.Enable = 'inactive';
+            GUI.AutoCompute_pushbutton.Enable = 'off';
         else
             GUI.AutoCompute_pushbutton.Enable = 'on';
         end

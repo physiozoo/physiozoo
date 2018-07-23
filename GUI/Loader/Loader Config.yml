@@ -30,3 +30,8 @@ alarm:
     msg_1: The sampling frequency Fs was re-computed to match the time axis that was entered
     msg_2: The set of channels selected do not match
     msg_3: The sampling frequency entered Fs does not match with the selected time channel
+    msg_4: Wrong TXT file
+    msg_5: No Data
+    msg_6: OK
+    msg_7: Canceled by User
+    msg_8: Channel Info problem

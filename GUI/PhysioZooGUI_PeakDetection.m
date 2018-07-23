@@ -23,6 +23,7 @@ GUI = createInterface();
         DATA.peaks_added = 0;
         DATA.peaks_deleted = 0;
         DATA.peaks_total = 0;
+        DATA.peaks_bad_quality = 0;
         
         DATA.DataFileName = '';
         DATA.peaks_file_name = '';
@@ -31,7 +32,7 @@ GUI = createInterface();
         DATA.tm = [];
         DATA.sig = [];
         DATA.Fs = 0;
-        DATA.qrs = [];                
+        DATA.qrs = [];
         
         DATA.Mammal = '';
         DATA.mammal_index = 1;
@@ -46,11 +47,11 @@ GUI = createInterface();
         
         DATA.PlotHR = 0;
         
-        DATA.maxRRTime = 0;        
+        DATA.maxRRTime = 0;
         
         DATA.prev_point_ecg = 0;
         DATA.prev_point = 0;
-                
+        
         DATA.RRIntPage_Length = 0;
         
         DATA.quality_win_num = 0;
@@ -136,7 +137,7 @@ GUI = createInterface();
         DATA.GUI_Annotation = {'Peak'; 'Signal quality'};
         DATA.GUI_Class = {'A'; 'B'; 'C'};
         
-        rec_colors = lines(5);                
+        rec_colors = lines(5);
         DATA.quality_color = {rec_colors(5, :); rec_colors(3, :); rec_colors(2, :)};
         
         DATA.temp_rec_name4wfdb = 'temp_ecg_wfdb';
@@ -197,16 +198,16 @@ GUI = createInterface();
         GUI.OpenDataQuality = uimenu( GUI.FileMenu, 'Label', 'Open signal quality file', 'Callback', @OpenDataQuality_Callback, 'Accelerator', 'Q');
         GUI.SaveDataQuality = uimenu( GUI.FileMenu, 'Label', 'Save signal quality file', 'Callback', @SaveDataQuality_Callback, 'Accelerator', 'D');
         GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load Peaks', 'Callback', @LoadPeaks_Callback, 'Accelerator', 'L');
-        GUI.SavePeaks = uimenu( GUI.FileMenu, 'Label', 'Save Peaks', 'Callback', @SavePeaks_Callback, 'Accelerator', 'S');        
+        GUI.SavePeaks = uimenu( GUI.FileMenu, 'Label', 'Save Peaks', 'Callback', @SavePeaks_Callback, 'Accelerator', 'S');
         GUI.LoadConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Load configuration file', 'Callback', @LoadConfigurationFile_Callback, 'Accelerator', 'F');
         GUI.SaveConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Save configuration file', 'Callback', @SaveConfigurationFile_Callback, 'Accelerator', 'C');
         
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @Exit_Callback, 'Separator', 'on', 'Accelerator', 'E');
         
         % + Help menu
-%         helpMenu = uimenu( GUI.Window, 'Label', 'Help' );
-%         uimenu( helpMenu, 'Label', 'Documentation', 'Callback', @onHelp, 'Visible', 'off' );
-%         uimenu( helpMenu, 'Label', 'PhysioZoo Home', 'Callback', @onPhysioZooHome );
+        %         helpMenu = uimenu( GUI.Window, 'Label', 'Help' );
+        %         uimenu( helpMenu, 'Label', 'Documentation', 'Callback', @onHelp, 'Visible', 'off' );
+        %         uimenu( helpMenu, 'Label', 'PhysioZoo Home', 'Callback', @onPhysioZooHome );
         
         % Create the layout (Arrange the main interface)
         mainLayout = uix.VBoxFlex('Parent', GUI.Window, 'Spacing', DATA.Spacing);
@@ -256,13 +257,13 @@ GUI = createInterface();
         
         set(two_axes_box, 'Heights', [-1, 100]);
         
-        GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Compute', 'Enable', 'inactive');
+        GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Compute', 'Enable', 'off');
         GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', CommandsButtons_Box, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'Auto Compute', 'Value', 1);
         
         GUI.RR_or_HR_plot_button = uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
         GUI.Reset_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
         set(CommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing); % [70, 25]
-                
+        
         GUI.PageDownButton = uicontrol( 'Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', @page_down_pushbutton_Callback, 'FontSize', BigFontSize, 'String', sprintf('\x25C0'), 'Visible', 'on');  % 2190'
         GUI.PageUpButton = uicontrol( 'Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', @page_up_pushbutton_Callback, 'FontSize', BigFontSize, 'String', sprintf('\x25B6'), 'Visible', 'on');  % 2192
         set( PageUpDownButtons_Box, 'ButtonSize', [70, 25], 'Spacing', DATA.Spacing  );
@@ -375,14 +376,13 @@ GUI = createInterface();
         [GUI, textBox{11}, text_handles{11}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
         [GUI, YLimitBox2, text_handles{13}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', '');
         
-        GUI.GUIDisplay.FirstSecond.Enable = 'inactive';
-        GUI.GUIDisplay.WindowSize.Enable = 'inactive';
-        GUI.GUIDisplay.MinYLimit_Edit.Enable = 'inactive';
-        GUI.GUIDisplay.MaxYLimit_Edit.Enable = 'inactive';
-        GUI.GUIDisplay.MinYLimitLowAxes_Edit.Enable = 'inactive';
-        GUI.GUIDisplay.MaxYLimitLowAxes_Edit.Enable = 'inactive';
-        
-        
+        set(GUI.GUIDisplay.FirstSecond, 'Enable', 'off');
+        set(GUI.GUIDisplay.WindowSize, 'Enable', 'off');
+        set(GUI.GUIDisplay.MinYLimit_Edit, 'Enable', 'off');
+        set(GUI.GUIDisplay.MaxYLimit_Edit, 'Enable', 'off');
+        set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'Enable', 'off');
+        set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'Enable', 'off');
+                
         max_extent_control = calc_max_control_x_extend(text_handles);
         
         field_size = [max_extent_control, 150, 10 -1];
@@ -396,10 +396,10 @@ GUI = createInterface();
         field_size = [max_extent_control, 72, 2, 70, 10];
         set(YLimitBox2, 'Widths', field_size);
         
-        GUI.AutoScaleY_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1);
+        GUI.AutoScaleY_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'off');
         set(YLimitBox, 'Widths', [field_size, 95]);
         
-        GUI.AutoScaleYLowAxes_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', YLimitBox2, 'Callback', @AutoScaleYLowAxes_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1);
+        GUI.AutoScaleYLowAxes_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', YLimitBox2, 'Callback', @AutoScaleYLowAxes_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'off');
         set(YLimitBox2, 'Widths', [field_size, 95]);
         
         uix.Empty( 'Parent', DisplayBox );
@@ -614,56 +614,59 @@ GUI = createInterface();
             ExtensionFileName = ExtensionFileName(2:end);
             EXT = ExtensionFileName;
             DATA.rec_name = [PathName, DATA.DataFileName];
-%             if strcmpi(ExtensionFileName, 'dat')
-%                 header_info = wfdb_header(DATA.rec_name);
-%                 DATA.ecg_channel = get_signal_channel(DATA.rec_name, 'header_info', header_info);
-%                 if (isempty(DATA.ecg_channel))
-%                     error('Failed to find an ECG channel in the record %s', DATA.rec_name);
-%                 end
-%                 
-%                 waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Loading data...');
-%                 
-%                 [DATA.Mammal, DATA.Integration] = get_description_from_wfdb_header(DATA.rec_name);
-%                 
-%                 % Read Signal
-%                 [DATA.tm, DATA.sig, DATA.Fs] = rdsamp(DATA.rec_name, DATA.ecg_channel, 'header_info', header_info);
-%                 
-%                 
-%                 if isvalid(waitbar_handle)
-%                     close(waitbar_handle);
-%                 end
-                
+            %             if strcmpi(ExtensionFileName, 'dat')
+            %                 header_info = wfdb_header(DATA.rec_name);
+            %                 DATA.ecg_channel = get_signal_channel(DATA.rec_name, 'header_info', header_info);
+            %                 if (isempty(DATA.ecg_channel))
+            %                     error('Failed to find an ECG channel in the record %s', DATA.rec_name);
+            %                 end
+            %
+            %                 waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Loading data...');
+            %
+            %                 [DATA.Mammal, DATA.Integration] = get_description_from_wfdb_header(DATA.rec_name);
+            %
+            %                 % Read Signal
+            %                 [DATA.tm, DATA.sig, DATA.Fs] = rdsamp(DATA.rec_name, DATA.ecg_channel, 'header_info', header_info);
+            %
+            %
+            %                 if isvalid(waitbar_handle)
+            %                     close(waitbar_handle);
+            %                 end
+            
             if strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'dat')
-                
-                
-                
-                DataFileMap = loadDataFile([DATA.rec_name '.' EXT]);
-                MSG = DataFileMap('MSG');
-                if strcmp(MSG, 'OK')
-                    data = DataFileMap('DATA');
-                    if strcmp(data.Data.Type, 'electrography')
-                        DATA.Mammal = data.General.mammal;
-                        DATA.mammal_index = find(strcmp(DATA.mammals, DATA.Mammal));
-                        DATA.Integration = data.General.integration_level;
-                        DATA.integration_index = find(strcmp(DATA.Integration_From_Files, DATA.Integration));
-                        set(GUI.GUIRecord.Integration_popupmenu, 'Value', DATA.integration_index);
-                        DATA.Fs = data.Time.Fs;
-                        ECG_data = data.Data.Data;
-                        time_data = data.Time.Data;
-                        header_info = set_data([time_data ECG_data]);
+                                
+                try
+                    Config = ReadYaml('Loader Config.yml');    
+                    DataFileMap = loadDataFile([DATA.rec_name '.' EXT]);
+                    MSG = DataFileMap('MSG');
+                    if strcmp(Config.alarm.(MSG), 'OK')
+                        data = DataFileMap('DATA');
+                        if strcmp(data.Data.Type, 'electrography')
+                            DATA.Mammal = data.General.mammal;
+                            DATA.mammal_index = find(strcmp(DATA.mammals, DATA.Mammal));
+                            DATA.Integration = data.General.integration_level;
+                            DATA.integration_index = find(strcmp(DATA.Integration_From_Files, DATA.Integration));
+                            set(GUI.GUIRecord.Integration_popupmenu, 'Value', DATA.integration_index);
+                            DATA.Fs = data.Time.Fs;
+                            ECG_data = data.Data.Data;
+                            time_data = data.Time.Data;
+                            header_info = set_data([time_data ECG_data]);
+                        else
+                            %                         throw(MException('LoadFile:text', 'Please, choose right file format for this module.'));
+                            errordlg(['onOpenFile error: ' 'Please, choose right file format for this module.'], 'Input Error');
+                            return;
+                        end
+                    elseif strcmp(Config.alarm.(MSG), 'Canceled')
+                        return;
                     else
-                        %                         throw(MException('LoadFile:text', 'Please, choose right file format for this module.'));
-                        errordlg(['onOpenFile error: ' 'Please, choose right file format for this module.'], 'Input Error');
+                        %                     throw(MException('LoadFile:text', MSG));
+                        errordlg(['onOpenFile error: ' Config.alarm.(MSG)], 'Input Error');
                         return;
                     end
-                elseif strcmp(MSG, 'Canceled')
-                    return;
-                else
-                    %                     throw(MException('LoadFile:text', MSG));
-                    errordlg(['onOpenFile error: ' MSG], 'Input Error');
+                catch e
+                    errordlg(['onOpenFile error: ' e.message], 'Input Error');
                     return;
                 end
-                
                 
                 %                 ECG = load(DATA.rec_name);
                 %                 ECG_field_names = fieldnames(ECG);
@@ -976,7 +979,7 @@ GUI = createInterface();
         
         if ~isfield(DIRS, 'analyzedDataDirectory')
             DIRS.analyzedDataDirectory = [basepath filesep 'Results'];
-        end        
+        end
         
         [Config_FileName, PathName] = uigetfile({'*.conf','Conf files (*.conf)'}, 'Open Configuration File', [DIRS.analyzedDataDirectory filesep 'gqrs.custom.conf']);
         if ~isequal(Config_FileName, 0)
@@ -992,9 +995,9 @@ GUI = createInterface();
     end
 %%
     function SaveConfigurationFile_Callback(~, ~)
-                
+        
         persistent DIRS;
-               
+        
         % Add third-party dependencies to path
         gui_basepath = fileparts(mfilename('fullpath'));
         basepath = fileparts(gui_basepath);
@@ -1008,7 +1011,7 @@ GUI = createInterface();
         if ~isfield(DIRS, 'analyzedDataDirectory')
             DIRS.analyzedDataDirectory = [basepath filesep 'Results'];
         end
-                        
+        
         [filename, results_folder_name, ~] = uiputfile({'*.','Conf Files (*.conf)'},'Choose Config File Name', [DIRS.analyzedDataDirectory filesep 'gqrs.custom.conf']);
         
         if ~isequal(results_folder_name, 0)
@@ -1151,36 +1154,39 @@ GUI = createInterface();
                 %                 DATA.Integration = QRS.Integration_level;
                 
                 
-                
-                
-                
-                DataFileMap = loadDataFile([DATA.peaks_file_name '.' EXT]);
-                MSG = DataFileMap('MSG');
-                if strcmp(MSG, 'OK')
-                    data = DataFileMap('DATA');
-                    if ~strcmp(data.Data.Type, 'electrography')
-                        Mammal = data.General.mammal;
-                        integration = data.General.integration_level;
-                        DATA.Fs = data.Time.Fs;
-                        %                         DATA.qrs = data.Data.Data;
-                        time_data = data.Time.Data;
-                        DATA.qrs = int64(time_data * DATA.Fs);
-                        if ~strcmp(Mammal, DATA.Mammal) || ~strcmp(integration, DATA.Integration)
-                            errordlg(['on Load Peaks error: ' 'Please, choose same mammal and integration level.'], 'Input Error');
+                try
+                    Config = ReadYaml('Loader Config.yml');
+                    
+                    DataFileMap = loadDataFile([DATA.peaks_file_name '.' EXT]);
+                    MSG = DataFileMap('MSG');
+                    if strcmp(Config.alarm.(MSG), 'OK')
+                        data = DataFileMap('DATA');
+                        if ~strcmp(data.Data.Type, 'electrography')
+                            Mammal = data.General.mammal;
+                            integration = data.General.integration_level;
+                            DATA.Fs = data.Time.Fs;
+                            %                         DATA.qrs = data.Data.Data;
+                            time_data = data.Time.Data;
+                            DATA.qrs = int64(time_data * DATA.Fs);
+                            if ~strcmp(Mammal, DATA.Mammal) || ~strcmp(integration, DATA.Integration)
+                                errordlg(['on Load Peaks error: ' 'Please, choose same mammal and integration level.'], 'Input Error');
+                                return;
+                            end
+                        else
+                            errordlg(['on Load Peaks error: ' 'Please, choose right file format for this module.'], 'Input Error');
                             return;
                         end
+                    elseif strcmp(Config.alarm.(MSG), 'Canceled')
+                        return;
                     else
-                        errordlg(['on Load Peaks error: ' 'Please, choose right file format for this module.'], 'Input Error');
+                        errordlg(['on Load Peaks error: ' Config.alarm.(MSG)], 'Input Error');
                         return;
                     end
-                elseif strcmp(MSG, 'Canceled')
-                    return;
-                else
-                    errordlg(['on Load Peaks error: ' MSG], 'Input Error');
+                    
+                catch e
+                    errordlg(['onOpenFile error: ' e.message], 'Input Error');
                     return;
                 end
-                
-                
                 
                 
                 
@@ -1205,8 +1211,8 @@ GUI = createInterface();
                 %                     return;
                 %                 end
                 
-%             elseif strcmpi(ExtensionFileName, 'qrs') % || strcmpi(ExtensionFileName, 'atr')
-%                 DATA.qrs = rdann(DATA.peaks_file_name, EXT);
+                %             elseif strcmpi(ExtensionFileName, 'qrs') % || strcmpi(ExtensionFileName, 'atr')
+                %                 DATA.qrs = rdann(DATA.peaks_file_name, EXT);
             else
                 errordlg(['on Load Peaks error: ' 'Please, choose another file format.'], 'Input Error');
                 return;
@@ -1292,10 +1298,12 @@ GUI = createInterface();
         
         [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...
             '*.txt','Text Files (*.txt)';...
-            '*.mat','MAT-files (*.mat)';...
-            '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'},...
+            '*.mat','MAT-files (*.mat)'},...
             'Choose Analyzed Data File Name',...
             [DIRS.analyzedDataDirectory, filesep, file_name, '.', EXT]);
+        
+        % ;'*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'
+        
         if ~isequal(results_folder_name, 0)
             DIRS.analyzedDataDirectory = results_folder_name;
             [~, ~, ExtensionFileName] = fileparts(filename);
@@ -1334,38 +1342,41 @@ GUI = createInterface();
                 fprintf(header_fileID, '      enable: %s\n\n', Channels{1}.enable);
                 
                 fprintf(header_fileID, '---\n');
-                                
+                
                 dlmwrite(full_file_name, Data, 'delimiter', '\t', 'precision', '%d', 'newline', 'pc', '-append', 'roffset', 1);
                 
                 fclose(header_fileID);
-            elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
-                [~, filename_noExt, ~] = fileparts(filename);
-%                 saved_path = pwd;
-%                 cd(results_folder_name);
-                try
-%                                         wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
-%                                         addpath(wfdb_path);
-%                                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
-%                                         wrann(filename_noExt, 'qrs', int64(Data));
-%                                         rmpath(wfdb_path);
-%                                         delete([filename_noExt '.dat']);
-                    
-                    if ~isrecord([results_folder_name filename_noExt], 'hea')
-                        % Create header
-                        saved_path = pwd;
-                        cd(results_folder_name);
-                        mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
-                        delete([filename_noExt '.dat']);
-                        cd(saved_path);
-                    end
-                    
-%                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
-                    wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data), 'fs', Fs);
-                    
-                catch e
-                    disp(e);
-                end
-%                 cd(saved_path);
+%             elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
+%                 [~, filename_noExt, ~] = fileparts(filename);
+%                 %                 saved_path = pwd;
+%                 %                 cd(results_folder_name);
+%                 try
+%                     %                                         wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
+%                     %                                         addpath(wfdb_path);
+%                     %                                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
+%                     %                                         wrann(filename_noExt, 'qrs', int64(Data));
+%                     %                                         rmpath(wfdb_path);
+%                     %                                         delete([filename_noExt '.dat']);
+%                     
+%                     if ~isrecord([results_folder_name filename_noExt], 'hea')
+%                         % Create header
+%                         saved_path = pwd;
+%                         cd(results_folder_name);
+%                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
+%                         delete([filename_noExt '.dat']);
+%                         cd(saved_path);
+%                     end
+%                     
+%                     %                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
+%                     wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data), 'fs', Fs); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
+%                     
+%                 catch e
+%                     disp(e);
+%                 end
+                %                 cd(saved_path);
+            else
+                errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
+                return;
             end
         end
     end
@@ -1376,7 +1387,7 @@ GUI = createInterface();
 %%
     function AutoCalc_checkbox_Callback( src, ~ )
         if get(src, 'Value') == 1
-            GUI.AutoCompute_pushbutton.Enable = 'inactive';
+            GUI.AutoCompute_pushbutton.Enable = 'off';
         else
             GUI.AutoCompute_pushbutton.Enable = 'on';
         end
@@ -1405,19 +1416,21 @@ GUI = createInterface();
         if isfield(DATA, 'sig') && ~isempty(DATA.sig)
             
             if isfield(GUI, 'quality_win')
-%                 for i = 1 : length(GUI.quality_win)
-%                     try
-%                         delete(GUI.quality_win(i));
-%                         GUI.quality_win(i) = [];
-%                     catch e
-%                         i
-%                         disp(e);                        
-%                     end
-%                 end
+                %                 for i = 1 : length(GUI.quality_win)
+                %                     try
+                %                         delete(GUI.quality_win(i));
+                %                         GUI.quality_win(i) = [];
+                %                     catch e
+                %                         i
+                %                         disp(e);
+                %                     end
+                %                 end
                 delete(GUI.quality_win);
                 GUI.quality_win = [];
                 DATA.quality_win_num = 0;
-            end                        
+                DATA.peaks_total = 0;
+                DATA.peaks_bad_quality = 0;
+            end
             
             GUI.AutoCalc_checkbox.Value = 1;
             GUI.RR_or_HR_plot_button.String = 'Plot HR';
@@ -1442,38 +1455,38 @@ GUI = createInterface();
             set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
             set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
             setAxesXTicks(GUI.RRInt_Axes);
-            EnablePageUpDown();                                                            
+            EnablePageUpDown();
         end
     end
 %%
     function redraw_quality_rect()
         
         ylim = get(GUI.ECG_Axes, 'YLim');
-%         f = [1 2 3 4];
+        %         f = [1 2 3 4];
         
-        if isfield(GUI, 'quality_win') 
+        if isfield(GUI, 'quality_win')
             for i = 1 : DATA.quality_win_num
-%                 try
-                    set(GUI.quality_win(i), 'YData', [min(ylim) min(ylim) max(ylim) max(ylim)]);
-%                 catch
-%                 end
+                %                 try
+                set(GUI.quality_win(i), 'YData', [min(ylim) min(ylim) max(ylim) max(ylim)]);
+                %                 catch
+                %                 end
                 
-%                 quality_range{i} = get(GUI.quality_win(i), 'XData');
-%                 FaceColor{i} = get(GUI.quality_win(i), 'FaceColor');
-%                 
-%                 delete(GUI.quality_win(i));
-%                 
-%                 v = [min(quality_range{i}) min(ylim); max(quality_range{i}) min(ylim); max(quality_range{i}) max(ylim); min(quality_range{i}) max(ylim)];
-%                 
-%                 GUI.quality_win(i) = patch('Faces', f, 'Vertices', v, 'FaceColor', FaceColor{i}, 'EdgeColor', FaceColor{i}, 'LineWidth', 1, 'FaceAlpha', 0.1, 'EdgeAlpha', 0.3, 'Parent', GUI.ECG_Axes);
-%                 uistack(GUI.quality_win(i), 'down');
+                %                 quality_range{i} = get(GUI.quality_win(i), 'XData');
+                %                 FaceColor{i} = get(GUI.quality_win(i), 'FaceColor');
+                %
+                %                 delete(GUI.quality_win(i));
+                %
+                %                 v = [min(quality_range{i}) min(ylim); max(quality_range{i}) min(ylim); max(quality_range{i}) max(ylim); min(quality_range{i}) max(ylim)];
+                %
+                %                 GUI.quality_win(i) = patch('Faces', f, 'Vertices', v, 'FaceColor', FaceColor{i}, 'EdgeColor', FaceColor{i}, 'LineWidth', 1, 'FaceAlpha', 0.1, 'EdgeAlpha', 0.3, 'Parent', GUI.ECG_Axes);
+                %                 uistack(GUI.quality_win(i), 'down');
             end
-%             DATA.quality_win_num = 0;
-        end        
+            %             DATA.quality_win_num = 0;
+        end
     end
 %%
     function plot_quality_rect(quality_range, quality_win_num, quality_class)
-%         quality_class = GUI.GUIRecord.Class_popupmenu.Value;
+        %         quality_class = GUI.GUIRecord.Class_popupmenu.Value;
         
         ylim = get(GUI.ECG_Axes, 'YLim');
         
@@ -1482,8 +1495,8 @@ GUI = createInterface();
         
         %         DATA.quality_win_num = DATA.quality_win_num + 1;
         GUI.quality_win(quality_win_num) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{quality_class}, 'EdgeColor', DATA.quality_color{quality_class}, ...
-                                                 'LineWidth', 1, 'FaceAlpha', 0.1, 'EdgeAlpha', 0.3, 'UserData', quality_class, 'Parent', GUI.ECG_Axes);
-                
+            'LineWidth', 1, 'FaceAlpha', 0.1, 'EdgeAlpha', 0.3, 'UserData', quality_class, 'Parent', GUI.ECG_Axes);
+        
         uistack(GUI.quality_win(quality_win_num), 'down');
         
     end
@@ -1501,16 +1514,16 @@ GUI = createInterface();
                 set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
             case 'select_quality_win'
                 try
-                    quality_range = get(GUI.quality_rect_handle, 'XData');                                        
+                    quality_range = get(GUI.quality_rect_handle, 'XData');
                     
-                    Select_Quality_Win(quality_range);                    
+                    Select_Quality_Win(quality_range);
                     delete(GUI.quality_rect_handle);
                     
-                    if min(quality_range) ~= max(quality_range)                        
+                    if min(quality_range) ~= max(quality_range)
                         DATA.quality_win_num = DATA.quality_win_num + 1;
                         quality_class = GUI.GUIRecord.Class_popupmenu.Value;
                         plot_quality_rect(quality_range, DATA.quality_win_num, quality_class);
-                    end                    
+                    end
                     set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
                 catch
                 end
@@ -1521,19 +1534,19 @@ GUI = createInterface();
     function my_WindowButtonMotionFcn(src, callbackdata, type)
         switch type
             case 'init'
-                annotation = get(GUI.GUIRecord.Annotation_popupmenu, 'Value');                
+                annotation = get(GUI.GUIRecord.Annotation_popupmenu, 'Value');
                 if annotation == 1 && ((hittest(GUI.Window) == GUI.RawData_handle || get(hittest(GUI.Window), 'Parent') == GUI.RawData_handle)) % ECG data
                     setptr(GUI.Window, 'datacursor');
                     DATA.hObject = 'add_del_peak';
                 elseif annotation == 1 && (hittest(GUI.Window) == GUI.ECG_Axes) %  || get(hittest(GUI.Window), 'Parent') == GUI.ECG_Axes % white space, draw del rect
                     setptr(GUI.Window, 'ddrag');
                     DATA.hObject = 'del_win_peaks';
-                elseif annotation == 2 && hittest(GUI.Window) == GUI.ECG_Axes % signal quality 
+                elseif annotation == 2 && hittest(GUI.Window) == GUI.ECG_Axes % signal quality
                     setptr(GUI.Window, 'rdrag'); % eraser circle
-                    DATA.hObject = 'select_quality_win';    
+                    DATA.hObject = 'select_quality_win';
                 elseif annotation == 2 && (isfield(GUI, 'quality_win') && ismember(hittest(GUI.Window), GUI.quality_win)) % delete signal quality win
                     setptr(GUI.Window, 'eraser');
-                    DATA.hObject = 'delete_current_quality_win'; 
+                    DATA.hObject = 'delete_current_quality_win';
                 elseif hittest(GUI.Window) == GUI.red_rect_handle  % || get(hittest(GUI.Window), 'Parent') == GUI.RRInt_Axes  % GUI.red_rect_handle
                     try
                         xdata = get(GUI.red_rect_handle, 'XData');
@@ -1597,6 +1610,15 @@ GUI = createInterface();
             case 'delete_current_quality_win'
                 if isfield(GUI, 'quality_win') && ~isempty(GUI.quality_win)
                     [is_member, win_ind] = ismember(hittest(GUI.Window), GUI.quality_win);
+                    
+                    
+                    red_peaks_x_data = GUI.red_peaks_handle.XData;
+                    quality_range = get(GUI.quality_win(win_ind), 'XData');
+                    peak_ind = find(red_peaks_x_data >= min(quality_range) & red_peaks_x_data <= max(quality_range));
+                    
+                    DATA.peaks_bad_quality = DATA.peaks_bad_quality - length(peak_ind);
+                    GUI.PeaksTable.Data(4, 2) = {DATA.peaks_bad_quality/DATA.peaks_total*100};
+                    
                     if is_member
                         delete(GUI.quality_win(win_ind));
                         GUI.quality_win(win_ind) = [];
@@ -1721,7 +1743,7 @@ GUI = createInterface();
         x_box = [DATA.prev_point_ecg(1, 1) DATA.prev_point_ecg(1, 1) point1(1, 1) point1(1, 1) DATA.prev_point_ecg(1, 1)];
         y_box = [DATA.prev_point_ecg(1, 2) point1(1, 2) point1(1, 2) DATA.prev_point_ecg(1, 2) DATA.prev_point_ecg(1, 2)];
         
-%         set(GUI.del_rect_handle, 'XData', x_box, 'YData', y_box);
+        %         set(GUI.del_rect_handle, 'XData', x_box, 'YData', y_box);
         
         set(rect_handle, 'XData', x_box, 'YData', y_box);
     end
@@ -1740,7 +1762,7 @@ GUI = createInterface();
         GUI.GUIDisplay.WindowSize.String = calcDuration(xdata(2) - xdata(1), 0);
         
         %         linkaxes([GUI.ECG_Axes, GUI.RRInt_Axes], 'on');
-                
+        
         %         if abs(DATA.maxSignalLength - DATA.MyWindowSize ) <=  1 %0.0005
         %             set(GUI.RawDataSlider, 'Enable', 'off');
         %             set(GUI.FirstSecond, 'Enable', 'off');
@@ -1873,6 +1895,10 @@ GUI = createInterface();
         xlim = get(GUI.ECG_Axes, 'XLim');
         
         if min(quality_range) >= xlim(1) || max(quality_range) <= xlim(2)
+            red_peaks_x_data = GUI.red_peaks_handle.XData;
+            peak_ind = find(red_peaks_x_data >= min(quality_range) & red_peaks_x_data <= max(quality_range));
+            DATA.peaks_bad_quality = DATA.peaks_bad_quality + length(peak_ind);
+            GUI.PeaksTable.Data(4, 2) = {DATA.peaks_bad_quality/DATA.peaks_total*100};
         else
             disp('Not in range!');
         end
@@ -2055,10 +2081,11 @@ GUI = createInterface();
         
         [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...
             '*.txt','Text Files (*.txt)';...
-            '*.mat','MAT-files (*.mat)';...
-            '*.sqi',  'WFDB Files (*.sqi)'},...
+            '*.mat','MAT-files (*.mat)'},...
             'Choose Signal Quality File Name',...
             [DIRS.analyzedDataDirectory, filesep, file_name, '.', EXT]);
+        % ;...
+        %             '*.sqi',  'WFDB Files (*.sqi)'
         if ~isequal(results_folder_name, 0)
             DIRS.analyzedDataDirectory = results_folder_name;
             [~, ~, ExtensionFileName] = fileparts(filename);
@@ -2068,13 +2095,13 @@ GUI = createInterface();
             full_file_name = [results_folder_name, filename];
             
             if isfield(GUI, 'quality_win') && DATA.quality_win_num
-                               
+                
                 for i = 1 : length(GUI.quality_win)
                     
                     quality_range{i} = get(GUI.quality_win(i), 'XData');
                     class_number = get(GUI.quality_win(i), 'UserData');
                     class{i, 1} = DATA.GUI_Class{class_number};
-                    signal_quality(i, :) = [min(quality_range{i}) max(quality_range{i})];                                       
+                    signal_quality(i, :) = [min(quality_range{i}) max(quality_range{i})];
                 end
             else
                 class{1, 1} = DATA.GUI_Class{3};
@@ -2084,20 +2111,23 @@ GUI = createInterface();
             if strcmpi(ExtensionFileName, 'mat')
                 save(full_file_name, 'signal_quality', 'class');
             elseif strcmpi(ExtensionFileName, 'txt')
-                header_fileID = fopen(full_file_name, 'wt');                
+                header_fileID = fopen(full_file_name, 'wt');
                 fprintf(header_fileID, 'Beginning\tEnd\t\tClass\n');
                 for i = 1 : length(class)
                     fprintf(header_fileID, '%.6f\t%.6f\t%s\n', signal_quality(i, 1), signal_quality(i, 2), class{i, 1});
-                end                
+                end
                 fclose(header_fileID);
                 
-            elseif strcmpi(ExtensionFileName, 'sqi')
-                [~, filename_noExt, ~] = fileparts(full_file_name);
-                
-                Quality_annotations_for_wfdb = reshape(signal_quality', [size(signal_quality, 1) * size(signal_quality, 2), 1]);                
-                Class_for_wfdb = reshape([class class]', [2*size(class, 1), 1]);
-                
-                wrann([results_folder_name filename_noExt], 'sqi', int64(Quality_annotations_for_wfdb*DATA.Fs), 'fs', DATA.Fs, 'type', Class_for_wfdb);                    
+                %             elseif strcmpi(ExtensionFileName, 'sqi')
+                %                 [~, filename_noExt, ~] = fileparts(full_file_name);
+                %
+                %                 Quality_annotations_for_wfdb = reshape(signal_quality', [size(signal_quality, 1) * size(signal_quality, 2), 1]);
+                %                 Class_for_wfdb = reshape([class class]', [2*size(class, 1), 1])';
+                %
+                %                 wrann([results_folder_name filename_noExt], 'sqi', int64(Quality_annotations_for_wfdb*DATA.Fs), 'fs', DATA.Fs, 'type', Class_for_wfdb);
+            else
+                errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
+                return;
             end
         end
     end
@@ -2117,10 +2147,11 @@ GUI = createInterface();
             EXT = 'mat';
         end
         [Quality_FileName, PathName] = uigetfile( ...
-            {'*.sqi',  'WFDB Files (*.sqi)'; ...
-            '*.mat','MAT-files (*.mat)'; ...
+            {'*.mat','MAT-files (*.mat)'; ...
             '*.txt','Text Files (*.txt)'}, ...
             'Open ECG File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
+        
+        %         '*.sqi',  'WFDB Files (*.sqi)'; ...
         
         if ~isequal(Quality_FileName, 0)
             
@@ -2129,7 +2160,7 @@ GUI = createInterface();
             EXT = ExtensionFileName;
             DIRS.analyzedDataDirectory = PathName;
             
-            DATA.quality_file_name = [PathName, QualityFileName];                                    
+            DATA.quality_file_name = [PathName, QualityFileName];
             
             if strcmpi(ExtensionFileName, 'mat')
                 
@@ -2154,7 +2185,7 @@ GUI = createInterface();
                 end
                 if ~isempty(Class)
                     DATA_Class = Class;
-                end                                
+                end
             elseif strcmpi(ExtensionFileName, 'txt')
                 
                 file_name = [PathName Quality_FileName];
@@ -2164,7 +2195,7 @@ GUI = createInterface();
                     if ~isempty(quality_data{1}) && ~isempty(quality_data{2}) && ~isempty(quality_data{3})
                         DATA_QualityAnnotations_Data = [cell2mat(quality_data(1)) cell2mat(quality_data(2))];
                         class = quality_data(3);
-                        DATA_Class = class{1};                        
+                        DATA_Class = class{1};
                     else
                         errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
                         return;
@@ -2174,13 +2205,16 @@ GUI = createInterface();
                     return;
                 end
                 
-            elseif strcmpi(ExtensionFileName, 'sqi')
-%                 [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"');
-%                 [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"ABC"');
-                [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName);
-                quality_data = double(quality_data)/DATA.Fs;
-                DATA_QualityAnnotations_Data = [quality_data(1:2:end), quality_data(2:2:end)];
-                DATA_Class = class(1:2:end);                
+                %             elseif strcmpi(ExtensionFileName, 'sqi')
+                % %                 [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"');
+                % %                 [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"ABC"');
+                %                 [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName);
+                %                 quality_data = double(quality_data)/DATA.Fs;
+                %                 DATA_QualityAnnotations_Data = [quality_data(1:2:end), quality_data(2:2:end)];
+                %                 DATA_Class = class(1:2:end);
+            else
+                errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
+                return;
             end
             
             set(GUI.GUIRecord.DataQualityFileName_text, 'String', [PathName Quality_FileName]);
@@ -2190,7 +2224,7 @@ GUI = createInterface();
             else
                 quality_win_ind = 1;
             end
-                        
+            
             for i = 1 : length(DATA_Class)
                 [is_member, class_ind] = ismember(DATA_Class{i}, DATA.GUI_Class);
                 if ~is_member
@@ -2201,12 +2235,12 @@ GUI = createInterface();
                     DATA.quality_win_num = DATA.quality_win_num + 1;
                     quality_win_ind = quality_win_ind + 1;
                 end
-            end            
+            end
         end
     end
 %%
     function onPhysioZooHome( ~, ~ )
-%         url = 'http://www.physiozoo.com/';
+        %         url = 'http://www.physiozoo.com/';
         url = 'https://physiozoo.readthedocs.io/';
         web(url,'-browser')
     end

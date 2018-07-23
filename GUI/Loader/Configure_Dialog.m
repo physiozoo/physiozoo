@@ -75,11 +75,12 @@ for i = 1 : length(Names)-2
     end
     set(handles.(['pm_',localName]),'string',strItems,'value',1)
 end
+handles.btnSaveAs.Visible = 'off';
 set(handles.txtFileName,'string',['File name:  ',UniqueMap('Name')])
 set(handles.txtAlarm,'string','')
 hCh = findobj(handles.figure1,'style','popupmenu');
 set(hCh,'backgroundcolor',[ 1.0000    0.8667    0.8667],'value',1,'enable','on')
-handles.btnSaveAs.Visible = 'off';
+
     %% ------------------- Set Params Control ---------------------------------
     hFileParams =  findobj(handles.uipGeneral,'style','popupmenu');
 
@@ -132,7 +133,7 @@ else
     rawChannels = zeros(1,Data_Size);
 end
 if length(rawChannels) ~= Data_Size
-     UniqueMap('MSG') = 'Channel Info problem';
+     UniqueMap('MSG') = 'msg_8';
     FGV_DATA(cmd.SET,UniqueMap);
      btnOK_Callback(hObject, eventdata, handles)
 %     figure1_CloseRequestFcn(hObject, eventdata, handles)
@@ -225,7 +226,7 @@ set(handles.pm_time_channel,'value',Channels.Time.No+1,'backgroundcolor',BGColor
     % uiwait(handles.figure1);
     
     setappdata(handles.figure1,'Channels',Channels)
-    switch CheckStatus(handles.ebFs, eventdata, handles);
+    switch CheckStatus(handles.ebFs, eventdata, handles)
         case 'on'
             btnOK_Callback(handles.btnOK, 0, handles);
             return
@@ -452,7 +453,7 @@ function btnCancel_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 cmd = FGV_CMD;
 UniqueMap = FGV_DATA(cmd.GET);
-UniqueMap('MSG') = 'Canceled';
+UniqueMap('MSG') = 'msg_7';
 FGV_DATA(cmd.SET,UniqueMap);
 
 my_closereq(handles.figure1)

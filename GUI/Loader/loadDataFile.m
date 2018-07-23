@@ -4,7 +4,7 @@ persistent Ext
 curDir = pwd;
 cmd = FGV_CMD;
 UniqueMap = containers.Map;
-UniqueMap('MSG') = 'Canceled by User';
+UniqueMap('MSG') = 'msg_7';
 UniqueMap('IsHeader') = 0;
 %% ----- GET Filename if w/o input --------
 if ~nargin
@@ -22,11 +22,11 @@ if ~nargin
     end
     FileName = [P,f];
 end
-UniqueMap('MSG') = 'No data';
+UniqueMap('MSG') = 'msg_5';
 keySet = [];
 valueSet=keySet;
 %% ------ Check File extantion and load file --------
-[P,name,ext] = fileparts(FileName);
+[file_path,name,ext] = fileparts(FileName);
 Ext = ext;
 UniqueMap('Name') = name;
 switch ext(2:end)
@@ -47,11 +47,17 @@ switch ext(2:end)
         end
         if isfield(data,'textdata')
             WriteHeaderYAML(data)                                                                                                              % Write header to text file with *.yml
-            header = ReadYaml('tempYAML.yml');                                                                                 % Read from temporary file YAML format
-            UniqueMap('IsHeader') = 1;
+            try
+                header = ReadYaml('tempYAML.yml');                                                                             % Read from temporary file YAML format
+            catch
+                UniqueMap('MSG') = 'msg_4';
+                return
+            end
+            UniqueMap('IsHeader') = 1;    
         end
+        
     case {'dat','qrs','atr'}  % WFDB files
-        FileName = [P, '\', name];                                                                                                                       % build filename w/o ext, for WFDB
+        FileName = [file_path,filesep,name];                                                                                                                       % build filename w/o ext, for WFDB
         header_info = wfdb_header(FileName);                                                                                   % parse WFDB header file 
         [ChannelNo,Fs,~] = get_signal_channel(FileName, 'header_info', header_info);   % get signal info from header, number of channels , frequency, number of samples
         if (isempty(ChannelNo))                                                                                                            % return if have no signals
@@ -75,7 +81,7 @@ switch ext(2:end)
         else
             sig = double(rdann(FileName, ext(2:end)));
             tm = [];
-            data.data = sig;
+            data.data = sig(3:end);
             type = 'peak';
             unit = 'index';
             offset = 1;
@@ -117,11 +123,11 @@ keySet{end+1} = 'rawData';
 valueSet{end+1} = data.data;
 UniqueMap = [UniqueMap;containers.Map(keySet,valueSet)];
 
-UniqueMap('MSG') = 'OK';
+UniqueMap('MSG') = 'msg_6';
 FGV_DATA(cmd.SET,UniqueMap);
 cd(curDir)
 hDialog = Configure_Dialog;
-%% ------ Wait OK btn press -----------------------
+%% ------ Wait OK btn press  -----------------------
 if ishandle(hDialog)
     handles = guihandles(hDialog);
     waitfor(handles.btnOK,'value',1)

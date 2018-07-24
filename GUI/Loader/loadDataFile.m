@@ -48,7 +48,7 @@ switch ext(2:end)
         if isfield(data,'textdata')
             WriteHeaderYAML(data)                                                                                                              % Write header to text file with *.yml
             try
-                header = ReadYaml('tempYAML.yml');                                                                             % Read from temporary file YAML format
+                header = ReadYaml([pwd filesep 'tempYAML.yml']);                                                                             % Read from temporary file YAML format
             catch
                 UniqueMap('MSG') = 'msg_4';
                 return

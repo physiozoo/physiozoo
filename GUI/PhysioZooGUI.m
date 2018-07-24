@@ -2549,7 +2549,7 @@ displayEndOfDemoMessage('');
 %%
     function reset_defaults_extensions()
         DATA_Fig.export_figures = [1 1 1 1 1 1 1];
-        DATA_Fig.Ext = 'fig';
+        DATA_Fig.Ext = 'png';
         
         DATA_Measure.measures = [1 1 1 1];
         DATA_Measure.Ext_save = 'txt'; % mat
@@ -3035,7 +3035,7 @@ displayEndOfDemoMessage('');
             if ~isempty(fig_ext)
                 DATA_Fig.Ext = fig_ext(2:end);
             else
-                DATA_Fig.Ext = 'fig';
+                DATA_Fig.Ext = 'png';
             end
             saveAs_figures_button();
         end

@@ -1115,11 +1115,11 @@ GUI = createInterface();
 %     end
 %%
     function delete_temp_wfdb_files()
-        if exist([pwd '\' DATA.temp_rec_name4wfdb '.hea'], 'file')
-            delete([pwd '\' DATA.temp_rec_name4wfdb '.hea']);
+        if exist([pwd filesep DATA.temp_rec_name4wfdb '.hea'], 'file')
+            delete([pwd filesep DATA.temp_rec_name4wfdb '.hea']);
         end
-        if exist([pwd '\' DATA.temp_rec_name4wfdb '.dat'], 'file')
-            delete([pwd '\' DATA.temp_rec_name4wfdb '.dat']);
+        if exist([pwd filesep DATA.temp_rec_name4wfdb '.dat'], 'file')
+            delete([pwd filesep DATA.temp_rec_name4wfdb '.dat']);
         end
     end
 %%

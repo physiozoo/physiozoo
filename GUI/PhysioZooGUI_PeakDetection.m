@@ -197,8 +197,8 @@ GUI = createInterface();
         uimenu( GUI.FileMenu, 'Label', 'Open data file', 'Callback', @OpenFile_Callback, 'Accelerator', 'O');
         GUI.OpenDataQuality = uimenu( GUI.FileMenu, 'Label', 'Open signal quality file', 'Callback', @OpenDataQuality_Callback, 'Accelerator', 'Q');
         GUI.SaveDataQuality = uimenu( GUI.FileMenu, 'Label', 'Save signal quality file', 'Callback', @SaveDataQuality_Callback, 'Accelerator', 'D');
-        GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load Peaks', 'Callback', @LoadPeaks_Callback, 'Accelerator', 'L');
-        GUI.SavePeaks = uimenu( GUI.FileMenu, 'Label', 'Save Peaks', 'Callback', @SavePeaks_Callback, 'Accelerator', 'S');
+        GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load peaks', 'Callback', @LoadPeaks_Callback, 'Accelerator', 'L');
+        GUI.SavePeaks = uimenu( GUI.FileMenu, 'Label', 'Save peaks', 'Callback', @SavePeaks_Callback, 'Accelerator', 'S');
         GUI.LoadConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Load configuration file', 'Callback', @LoadConfigurationFile_Callback, 'Accelerator', 'F');
         GUI.SaveConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Save configuration file', 'Callback', @SaveConfigurationFile_Callback, 'Accelerator', 'C');
         
@@ -293,7 +293,7 @@ GUI = createInterface();
         [GUI, textBox{4}, text_handles{4}] = createGUITextLine(GUI, 'GUIRecord', 'TimeSeriesLength_text', 'Time series length:', RecordBox);
         
         [GUI, textBox{5}, text_handles{5}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Mammal_popupmenu', 'Mammal', RecordBox, @Mammal_popupmenu_Callback, DATA.GUI_mammals);
-        [GUI, textBox{6}, text_handles{6}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Integration_popupmenu', 'Integration Level', RecordBox, @Integration_popupmenu_Callback, DATA.GUI_Integration);
+        [GUI, textBox{6}, text_handles{6}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Integration_popupmenu', 'Integration level', RecordBox, @Integration_popupmenu_Callback, DATA.GUI_Integration);
         [GUI, textBox{7}, text_handles{7}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Annotation_popupmenu', 'Annotation', RecordBox, @Annotation_popupmenu_Callback, DATA.GUI_Annotation);
         [GUI, textBox{8}, text_handles{8}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Class_popupmenu', 'Class', RecordBox, @Class_popupmenu_Callback, DATA.GUI_Class);
         
@@ -586,13 +586,13 @@ GUI = createInterface();
             DIRS.dataDirectory = [basepath filesep 'Examples'];
         end
         if isempty(EXT)
-            EXT = 'mat';
+            EXT = 'txt';
         end
         
         [ECG_FileName, PathName] = uigetfile( ...
-            {'*.dat',  'WFDB Files (*.dat)'; ...
-            '*.mat','MAT-files (*.mat)'; ...
-            '*.txt','Text Files (*.txt)'}, ...
+            {'*.txt','Text Files (*.txt)'; ...
+            '*.dat',  'WFDB Files (*.dat)'; ...
+            '*.mat','MAT-files (*.mat)'}, ...
             'Open ECG File', [DIRS.dataDirectory filesep '*.' EXT]); %
         
         if ~isequal(ECG_FileName, 0)
@@ -636,8 +636,12 @@ GUI = createInterface();
             if strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'dat')
                                 
                 try
+                    waitbar_handle = waitbar(1/2, 'Loading data...', 'Name', 'Loading data');
                     Config = ReadYaml('Loader Config.yml');    
                     DataFileMap = loadDataFile([DATA.rec_name '.' EXT]);
+                    if isvalid(waitbar_handle)
+                        close(waitbar_handle);
+                    end
                     MSG = DataFileMap('MSG');
                     if strcmp(Config.alarm.(MSG), 'OK')
                         data = DataFileMap('DATA');
@@ -653,7 +657,7 @@ GUI = createInterface();
                             header_info = set_data([time_data ECG_data]);
                         else
                             %                         throw(MException('LoadFile:text', 'Please, choose right file format for this module.'));
-                            errordlg(['onOpenFile error: ' 'Please, choose right file format for this module.'], 'Input Error');
+                            errordlg(['onOpenFile error: ' 'Please, choose another file type.'], 'Input Error');
                             return;
                         end
                     elseif strcmp(Config.alarm.(MSG), 'Canceled')
@@ -786,11 +790,16 @@ GUI = createInterface();
         header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
         
         DATA.ecg_channel = 1;
-        DATA.rec_name = DATA.temp_rec_name4wfdb;
+        DATA.rec_name = DATA.temp_rec_name4wfdb;                
+                
+        waitbar_handle = waitbar(1/2, 'Loading...', 'Name', 'Loading data');
         
-        mat2wfdb(DATA.sig, DATA.rec_name, DATA.Fs, [], ' ' ,{} ,[]);
+        mat2wfdb(DATA.sig, DATA.rec_name, DATA.Fs, [], ' ' ,{} ,[]);        
         if exist([DATA.rec_name '.dat'], 'file') && exist([DATA.rec_name '.hea'], 'file')
             [DATA.tm, DATA.sig, DATA.Fs] = rdsamp(DATA.rec_name, DATA.ecg_channel);
+        end
+        if isvalid(waitbar_handle)
+           close(waitbar_handle); 
         end
     end
 %%
@@ -876,7 +885,7 @@ GUI = createInterface();
             end
             if isfield(DATA, 'customConfigFile') && ~strcmp(DATA.customConfigFile, '')
                 
-                waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Loading configuration...');
+                waitbar_handle = waitbar(1/2, 'Loading configuration...', 'Name', 'Loading data');
                 
                 load_updateGUI_config_param();
                 
@@ -884,7 +893,7 @@ GUI = createInterface();
                     close(waitbar_handle);
                 end
                 
-                waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Compute peaks...');
+                waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Loading data');
                 [DATA.qrs, tm, sig, Fs] = rqrs(DATA.rec_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
                 if isvalid(waitbar_handle)
                     close(waitbar_handle);
@@ -1126,12 +1135,12 @@ GUI = createInterface();
             DIRS.analyzedDataDirectory = [basepath filesep 'Examples'];
         end
         if isempty(EXT)
-            EXT = 'mat';
+            EXT = 'txt';
         end
         [Peaks_FileName, PathName] = uigetfile( ...
-            {'*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'; ...
-            '*.mat','MAT-files (*.mat)'; ...
-            '*.txt','Text Files (*.txt)'}, ...
+            {'*.txt','Text Files (*.txt)'; ...
+            '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'; ...
+            '*.mat','MAT-files (*.mat)'}, ...
             'Open ECG File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
         
         if ~isequal(Peaks_FileName, 0)
@@ -1144,7 +1153,7 @@ GUI = createInterface();
             DATA.peaks_file_name = [PathName, PeaksFileName];
             cla(GUI.RRInt_Axes);
             
-            set(GUI.GUIRecord.PeaksFileName_text, 'String', [PathName Peaks_FileName]);
+            set(GUI.GUIRecord.PeaksFileName_text, 'String', Peaks_FileName);
             
             if strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                 %                 QRS = load(DATA.peaks_file_name);
@@ -1173,7 +1182,7 @@ GUI = createInterface();
                                 return;
                             end
                         else
-                            errordlg(['on Load Peaks error: ' 'Please, choose right file format for this module.'], 'Input Error');
+                            errordlg(['on Load Peaks error: ' 'Please, choose another file type.'], 'Input Error');
                             return;
                         end
                     elseif strcmp(Config.alarm.(MSG), 'Canceled')
@@ -1214,7 +1223,7 @@ GUI = createInterface();
                 %             elseif strcmpi(ExtensionFileName, 'qrs') % || strcmpi(ExtensionFileName, 'atr')
                 %                 DATA.qrs = rdann(DATA.peaks_file_name, EXT);
             else
-                errordlg(['on Load Peaks error: ' 'Please, choose another file format.'], 'Input Error');
+                errordlg(['on Load Peaks error: ' 'Please, choose another file type.'], 'Input Error');
                 return;
             end
             
@@ -1290,7 +1299,7 @@ GUI = createInterface();
             DIRS.analyzedDataDirectory = [basepath filesep 'Results'];
         end
         if isempty(EXT)
-            EXT = 'mat';
+            EXT = 'txt';
         end
         
         original_file_name = DATA.DataFileName;
@@ -1739,11 +1748,17 @@ GUI = createInterface();
 %%
     function draw_rect_to_del_peaks(rect_handle)
         point1 = get(GUI.ECG_Axes, 'CurrentPoint');
+        xlim = get(GUI.ECG_Axes, 'XLim');
+        
+        if point1(1, 1) < min(xlim)
+            point1(1, 1) = min(xlim);
+        end
+        if point1(1, 1) > max(xlim)
+            point1(1, 1) = max(xlim);
+        end
         
         x_box = [DATA.prev_point_ecg(1, 1) DATA.prev_point_ecg(1, 1) point1(1, 1) point1(1, 1) DATA.prev_point_ecg(1, 1)];
-        y_box = [DATA.prev_point_ecg(1, 2) point1(1, 2) point1(1, 2) DATA.prev_point_ecg(1, 2) DATA.prev_point_ecg(1, 2)];
-        
-        %         set(GUI.del_rect_handle, 'XData', x_box, 'YData', y_box);
+        y_box = [DATA.prev_point_ecg(1, 2) point1(1, 2) point1(1, 2) DATA.prev_point_ecg(1, 2) DATA.prev_point_ecg(1, 2)];                
         
         set(rect_handle, 'XData', x_box, 'YData', y_box);
     end
@@ -2073,7 +2088,7 @@ GUI = createInterface();
             DIRS.analyzedDataDirectory = [basepath filesep 'Results'];
         end
         if isempty(EXT)
-            EXT = 'mat';
+            EXT = 'txt';
         end
         
         original_file_name = DATA.DataFileName;
@@ -2144,11 +2159,11 @@ GUI = createInterface();
             DIRS.analyzedDataDirectory = [basepath filesep 'Examples'];
         end
         if isempty(EXT)
-            EXT = 'mat';
+            EXT = 'txt';
         end
         [Quality_FileName, PathName] = uigetfile( ...
-            {'*.mat','MAT-files (*.mat)'; ...
-            '*.txt','Text Files (*.txt)'}, ...
+            {'*.txt','Text Files (*.txt)'; ...
+            '*.mat','MAT-files (*.mat)'}, ...
             'Open ECG File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
         
         %         '*.sqi',  'WFDB Files (*.sqi)'; ...
@@ -2217,7 +2232,7 @@ GUI = createInterface();
                 return;
             end
             
-            set(GUI.GUIRecord.DataQualityFileName_text, 'String', [PathName Quality_FileName]);
+            set(GUI.GUIRecord.DataQualityFileName_text, 'String', Quality_FileName);
             
             if isfield(DATA, 'quality_win_num') && DATA.quality_win_num
                 quality_win_ind = DATA.quality_win_num + 1;

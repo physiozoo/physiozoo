@@ -5,7 +5,7 @@ gui_basepath = fileparts(mfilename('fullpath'));
 addpath(genpath([gui_basepath filesep 'lib']));
 basepath = fileparts(gui_basepath);
 
-% rhrv_init;
+rhrv_init;
 
 %myBackgroundColor = [0.9 1 1];
 myUpBackgroundColor = [0.863 0.941 0.906];
@@ -311,12 +311,12 @@ displayEndOfDemoMessage('');
         
         % + File menu
         GUI.FileMenu = uimenu( GUI.Window, 'Label', 'File' );
-        uimenu( GUI.FileMenu, 'Label', 'Open Data File', 'Callback', @onOpenFile, 'Accelerator','O');
-        GUI.DataQualityMenu = uimenu( GUI.FileMenu, 'Label', 'Open Signal Quality File', 'Callback', @onOpenDataQualityFile, 'Accelerator','Q', 'Enable', 'off');
-        GUI.LoadConfigFile = uimenu( GUI.FileMenu, 'Label', 'Load Custom Config File', 'Callback', @onLoadCustomConfigFile, 'Accelerator','P', 'Enable', 'off');
-        GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save Config File', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');
-        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save Figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');
-        GUI.SaveMeasures = uimenu( GUI.FileMenu, 'Label', 'Save HRV Measures', 'Callback', @onSaveMeasures, 'Accelerator', 'S', 'Enable', 'off');
+        uimenu( GUI.FileMenu, 'Label', 'Open data file', 'Callback', @onOpenFile, 'Accelerator','O');
+        GUI.DataQualityMenu = uimenu( GUI.FileMenu, 'Label', 'Open signal quality file', 'Callback', @onOpenDataQualityFile, 'Accelerator','Q', 'Enable', 'off');
+        GUI.LoadConfigFile = uimenu( GUI.FileMenu, 'Label', 'Load custom config file', 'Callback', @onLoadCustomConfigFile, 'Accelerator','P', 'Enable', 'off');
+        GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save config file', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');
+        GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');
+        GUI.SaveMeasures = uimenu( GUI.FileMenu, 'Label', 'Save HRV measures', 'Callback', @onSaveMeasures, 'Accelerator', 'S', 'Enable', 'off');
         
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @onExit, 'Separator', 'on', 'Accelerator', 'E');
         
@@ -1527,10 +1527,11 @@ displayEndOfDemoMessage('');
         set_defaults_path();
         
         [DataQuality_FileName, PathName] = uigetfile({'*.*', 'All files';...
-            '*.mat','MAT-files (*.mat)'; ...
-            '*.sqi',  'WFDB Files (*.sqi)'; ... %'*.qrs;
-            '*.txt','Text Files (*.txt)'}, ...
+            '*.txt','Text Files (*.txt)'
+            '*.mat','MAT-files (*.mat)'}, ...
             'Open Data-Quality-Annotations File', [DIRS.dataQualityDirectory filesep '*.' DIRS.Ext_open]);
+        
+%         '*.sqi',  'WFDB Files (*.sqi)'
         
         if ~isequal(DataQuality_FileName, 0)
             
@@ -1561,15 +1562,15 @@ displayEndOfDemoMessage('');
                     errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
                     return;
                 end
-            elseif strcmpi(ExtensionFileName, 'sqi') % strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
-                if DATA.SamplingFrequency ~= 0
-%                     quality_data = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"')/DATA.SamplingFrequency;
-                    quality_data = rdann( [PathName QualityFileName], ExtensionFileName)/DATA.SamplingFrequency;
-                    DATA.QualityAnnotations_Data = [quality_data(1:2:end), quality_data(2:2:end)];
-                else
-                    errordlg('Cann''t get sampling frequency.', 'Input Error');
-                    return;
-                end
+%             elseif strcmpi(ExtensionFileName, 'sqi') % strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
+%                 if DATA.SamplingFrequency ~= 0
+% %                     quality_data = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"')/DATA.SamplingFrequency;
+%                     quality_data = rdann( [PathName QualityFileName], ExtensionFileName)/DATA.SamplingFrequency;
+%                     DATA.QualityAnnotations_Data = [quality_data(1:2:end), quality_data(2:2:end)];
+%                 else
+%                     errordlg('Cann''t get sampling frequency.', 'Input Error');
+%                     return;
+%                 end
             elseif strcmpi(ExtensionFileName, 'txt')
                 file_name = [PathName DataQuality_FileName];
                 fileID = fopen(file_name);
@@ -1697,7 +1698,7 @@ displayEndOfDemoMessage('');
                             QRS_data = data.Data.Data;
                             time_data = data.Time.Data;
                         else
-                            throw(MException('LoadFile:text', 'Please, choose right file format for this module.'));
+                            throw(MException('LoadFile:text', 'Please, choose another file type.'));
                         end
                     else
                         throw(MException('LoadFile:text', Config.alarm.(MSG)));
@@ -1725,7 +1726,7 @@ displayEndOfDemoMessage('');
 %                     end
                 else
                     close(waitbar_handle);
-                    throw(MException('LoadFile:text', 'Please, choose another file format.'));
+                    throw(MException('LoadFile:text', 'Please, choose another file type.'));
                 end
                 
                 if isempty(DATA.SamplingFrequency)
@@ -1781,9 +1782,9 @@ displayEndOfDemoMessage('');
         set_defaults_path();
         
         [QRS_FileName, PathName] = uigetfile({'*.*', 'All files';...
+            '*.txt','Text Files (*.txt)'
             '*.mat','MAT-files (*.mat)'; ...
-            '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'; ... %     ; *.atr
-            '*.txt','Text Files (*.txt)'}, ...
+            '*.qrs; *.atr', 'WFDB Files (*.qrs; *.atr)'}, ...
             'Open QRS File', [DIRS.dataDirectory filesep '*.' DIRS.Ext_open]);
         Load_Single_File(QRS_FileName, PathName);
     end
@@ -2536,8 +2537,8 @@ displayEndOfDemoMessage('');
         DIRS.dataQualityDirectory = [basepath filesep 'Examples'];
         DIRS.DataBaseDirectory = basepath;
         DIRS.ExportResultsDirectory = [basepath filesep 'Results'];
-        DIRS.Ext_open = 'mat';
-        DIRS.Ext_group = 'mat';
+        DIRS.Ext_open = 'txt';
+        DIRS.Ext_group = 'txt';
     end
 %%
     function create_defaults_results_path()
@@ -3382,8 +3383,8 @@ displayEndOfDemoMessage('');
         set_defaults_path();
         
         [res_full_name, results_folder_name, FilterIndex] = uiputfile({'*.*', 'All files';...
-            '*.mat','MAT-files (*.mat)';...
-            '*.txt','Text Files (*.txt)'},...
+            '*.txt','Text Files (*.txt)'
+            '*.mat','MAT-files (*.mat)'},...
             'Choose Results File Name',...
             [DIRS.ExportResultsDirectory, filesep, [DATA.DataFileName, '.', DATA_Measure.Ext_save]]);
         if ~isequal(results_folder_name, 0)
@@ -3395,7 +3396,7 @@ displayEndOfDemoMessage('');
             if ~isempty(res_ext)
                 DATA_Measure.Ext_save = res_ext(2:end);
             else
-                DATA_Measure.Ext_save = 'mat';
+                DATA_Measure.Ext_save = 'txt';
             end
             if DATA_Measure.measures(1)
                 onSaveResultsAsFile(res_name);
@@ -4335,12 +4336,15 @@ displayEndOfDemoMessage('');
     function Full_Length_pushbutton_Callback( ~, ~ )
         
         if ~isempty(DATA.maxSignalLength)
-            src_tag = 'segment_endTime';
+            src_tag1 = 'segment_endTime';
+            src_tag2 = 'segment_startTime';
             
             set(GUI.segment_endTime, 'String', calcDuration(DATA.maxSignalLength, 0));
+            set(GUI.segment_startTime, 'String', calcDuration(0, 0));
             
             DATA.active_window = 1;
-            DATA.AnalysisParams.(src_tag) = DATA.maxSignalLength;
+            DATA.AnalysisParams.(src_tag1) = DATA.maxSignalLength;
+            DATA.AnalysisParams.(src_tag2) = 0;
             clear_statistics_plots();
             clearStatTables();
             calcBatchWinNum();

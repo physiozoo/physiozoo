@@ -27,6 +27,7 @@ keySet = [];
 valueSet=keySet;
 %% ------ Check File extantion and load file --------
 [file_path,name,ext] = fileparts(FileName);
+waitbar_handle = waitbar(1/2, sprintf('Loading "%s" file',replace(name, '_', '\_')), 'Name', 'Working on it...');
 Ext = ext;
 UniqueMap('Name') = name;
 switch ext(2:end)
@@ -43,17 +44,27 @@ switch ext(2:end)
     case {'txt', 'csv','yml'}
         data = ImportDataFile(FileName);
         if ~isfield(data,'data')
+            close(waitbar_handle);
+            delete(waitbar_handle)
+            
             return
         end
         if isfield(data,'textdata')
-            WriteHeaderYAML(data)                                                                                                              % Write header to text file with *.yml
+            tempPath = [pwd filesep 'tempYAML.yml'];
+            WriteHeaderYAML(data,tempPath)                                                                                                              % Write header to text file with *.yml
+%             tempPath2 = [pwd filesep 'tempYAML.yml'];
             try
-                header = ReadYaml([pwd filesep 'tempYAML.yml']);                                                                             % Read from temporary file YAML format
+                header = ReadYaml(tempPath);                                                                                                            % Read from temporary file YAML format
             catch
                 UniqueMap('MSG') = 'msg_4';
+                close(waitbar_handle);
+                delete(waitbar_handle)
+                
                 return
             end
-            UniqueMap('IsHeader') = 1;    
+%            save('tempFile.mat','tempPath','tempPath2','header','data')
+
+            UniqueMap('IsHeader') = 1;
         end
         
     case {'dat','qrs','atr'}  % WFDB files
@@ -95,7 +106,7 @@ switch ext(2:end)
             header.Channels{tCh}.enable = 'yes';
             header.Channels{tCh}.name = 'time';
         end
-        for iCh = 1+tCh : length(header_info.channel_info)+tCh-offset
+        for iCh = 1+tCh : max(length(header_info.channel_info)+tCh-offset,1)
             localChannel = header_info.channel_info{iCh-tCh};
             header.Channels{iCh}.type = type;
             if isfield(localChannel,'unit')
@@ -126,6 +137,8 @@ UniqueMap = [UniqueMap;containers.Map(keySet,valueSet)];
 UniqueMap('MSG') = 'msg_6';
 FGV_DATA(cmd.SET,UniqueMap);
 cd(curDir)
+close(waitbar_handle);
+delete(waitbar_handle)
 hDialog = Configure_Dialog;
 %% ------ Wait OK btn press  -----------------------
 if ishandle(hDialog)

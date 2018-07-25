@@ -636,12 +636,12 @@ GUI = createInterface();
             if strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'dat')
                                 
                 try
-                    waitbar_handle = waitbar(1/2, 'Loading data...', 'Name', 'Loading data');
+%                     waitbar_handle = waitbar(1/2, 'Loading data...', 'Name', 'Loading data');
                     Config = ReadYaml('Loader Config.yml');    
                     DataFileMap = loadDataFile([DATA.rec_name '.' EXT]);
-                    if isvalid(waitbar_handle)
-                        close(waitbar_handle);
-                    end
+%                     if isvalid(waitbar_handle)
+%                         close(waitbar_handle);
+%                     end
                     MSG = DataFileMap('MSG');
                     if strcmp(Config.alarm.(MSG), 'OK')
                         data = DataFileMap('DATA');
@@ -799,7 +799,7 @@ GUI = createInterface();
             [DATA.tm, DATA.sig, DATA.Fs] = rdsamp(DATA.rec_name, DATA.ecg_channel);
         end
         if isvalid(waitbar_handle)
-           close(waitbar_handle); 
+             close(waitbar_handle); 
         end
     end
 %%

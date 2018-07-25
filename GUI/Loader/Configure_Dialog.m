@@ -75,11 +75,22 @@ for i = 1 : length(Names)-2
     end
     set(handles.(['pm_',localName]),'string',strItems,'value',1)
 end
+
+%% ------------- Put the figure on screen centre --------------------
+figUnits = handles.figure1.Units;
+handles.figure1.Units = 'pixels';
+screen = get(0,'ScreenSize');
+figPos = handles.figure1.Position;
+handles.figure1.Position(1) = int32((screen(3)-figPos(3))/2);
+handles.figure1.Position(2) = int32((screen(4)-figPos(4))/2);
+handles.figure1.Units = figUnits;
+%% ---------------------------------------------------------------
+
 handles.btnSaveAs.Visible = 'off';
 set(handles.txtFileName,'string',['File name:  ',UniqueMap('Name')])
 set(handles.txtAlarm,'string','')
 hCh = findobj(handles.figure1,'style','popupmenu');
-set(hCh,'backgroundcolor',[ 1.0000    0.8667    0.8667],'value',1,'enable','on')
+set(hCh,'backgroundcolor',BGColor(1,:),'value',1,'enable','on')
 
     %% ------------------- Set Params Control ---------------------------------
     hFileParams =  findobj(handles.uipGeneral,'style','popupmenu');

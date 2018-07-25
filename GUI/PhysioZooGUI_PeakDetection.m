@@ -162,6 +162,10 @@ GUI = createInterface();
             'Position', [20, 50, DATA.window_size(1), DATA.window_size(2)], ...
             'Tag', 'fPhysioZooPD');
         
+        
+        set(GUI.Window, 'CloseRequestFcn', {@Exit_Callback});
+        
+        
         %         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
         %         set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
         %         set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
@@ -559,7 +563,13 @@ GUI = createInterface();
                 return; % Canceled by user
             end
             if get(GUI.AutoCalc_checkbox, 'Value')
-                RunAndPlotPeakDetector();
+                try
+                    RunAndPlotPeakDetector();
+                catch e
+                    errordlg(['mammal set error: ' e.message], 'Input Error');
+                    src.Value = DATA.mammal_index;
+                    return;
+                end
             end
         else
             src.Value = DATA.mammal_index;
@@ -695,10 +705,18 @@ GUI = createInterface();
                     return; % Canceled by user
                 end
                 if GUI.AutoCalc_checkbox.Value
-                    RunAndPlotPeakDetector();
-                    set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
-                    set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
-                    setAxesXTicks(GUI.RRInt_Axes);
+                    try
+                        RunAndPlotPeakDetector();
+                        set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+                        set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
+                        
+                        disp(['DATA.maxRRTime = ' num2str(DATA.maxRRTime)]);
+                        
+                        setAxesXTicks(GUI.RRInt_Axes);
+                    catch e
+                        errordlg(['OpenFile error: ' e.message], 'Input Error');
+                        return;
+                    end
                 end
                 %             elseif strcmpi(ExtensionFileName, 'txt')
                 
@@ -792,15 +810,35 @@ GUI = createInterface();
         DATA.ecg_channel = 1;
         DATA.rec_name = DATA.temp_rec_name4wfdb;                
                 
-        waitbar_handle = waitbar(1/2, 'Loading...', 'Name', 'Loading data');
+%         waitbar_handle = waitbar(1/2, 'Loading...', 'Name', 'Loading data');
         
-        mat2wfdb(DATA.sig, DATA.rec_name, DATA.Fs, [], ' ' ,{} ,[]);        
-        if exist([DATA.rec_name '.dat'], 'file') && exist([DATA.rec_name '.hea'], 'file')
-            [DATA.tm, DATA.sig, DATA.Fs] = rdsamp(DATA.rec_name, DATA.ecg_channel);
+        mat2wfdb(DATA.sig, DATA.rec_name, DATA.Fs, [], ' ' ,{} ,[]);    
+        
+%         [a, b, c] = fileparts(mfilename('fullpath'))
+%         
+%         mfilename('fullpath')
+%         
+%         disp(['exist(fullfile(pwd, [DATA.rec_name .dat])) = ' num2str(exist(fullfile(pwd, [DATA.rec_name '.dat']), 'file'))]);
+%         disp(['exist(fullfile(pwd, [DATA.rec_name .hea])) = ' num2str(exist(fullfile(pwd, [DATA.rec_name '.hea']), 'file'))]);
+        
+%         curr_path_dat = which([pwd filesep DATA.rec_name '.dat'])
+%         curr_path_hea = which([pwd filesep DATA.rec_name '.hea'])
+        
+        if ~exist(fullfile(pwd, [DATA.rec_name '.dat']), 'file') && ~exist(fullfile(pwd, [DATA.rec_name '.hea']), 'file')
+            throw(MException('set_data:text', 'Wfdb file cannot be created.'));
         end
-        if isvalid(waitbar_handle)
-             close(waitbar_handle); 
-        end
+        
+        
+        
+                
+        
+%         if exist([DATA.rec_name '.dat'], 'file') && exist([DATA.rec_name '.hea'], 'file')
+% %             [DATA.tm, DATA.sig, DATA.Fs] = rdsamp(DATA.rec_name, DATA.ecg_channel);
+%             [DATA.tm, DATA.sig, ~] = rdsamp(DATA.rec_name, DATA.ecg_channel);
+%         end
+%         if isvalid(waitbar_handle)
+%              close(waitbar_handle); 
+%         end
     end
 %%
     function setECGXLim(minLimit, maxLimit)
@@ -891,12 +929,24 @@ GUI = createInterface();
                 
                 if isvalid(waitbar_handle)
                     close(waitbar_handle);
-                end
+                end                                
                 
-                waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Loading data');
-                [DATA.qrs, tm, sig, Fs] = rqrs(DATA.rec_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
-                if isvalid(waitbar_handle)
-                    close(waitbar_handle);
+%                 curr_path_dat = which([pwd filesep DATA.rec_name '.dat']);
+%                 curr_path_hea = which([pwd filesep DATA.rec_name '.hea']);
+                
+%                 if ~isempty(curr_path_dat) && ~isempty(curr_path_hea)
+                if exist(fullfile([pwd filesep DATA.rec_name '.dat']), 'file') && exist(fullfile([pwd filesep DATA.rec_name '.hea']), 'file')
+                    waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Loading data');
+                    
+                    [DATA.qrs, tm, sig, Fs] = rqrs(DATA.rec_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
+                    
+                    if isvalid(waitbar_handle)
+                        close(waitbar_handle);
+                    end
+                else
+%                     errordlg('Problems with peaks calculation. Wfdb file not exists.', 'Input Error');                    
+                    throw(MException('calc_peaks:text', 'Problems with peaks calculation. Wfdb file not exists.'));
+%                     return;
                 end
                 
                 if ~isempty(DATA.qrs)
@@ -955,6 +1005,10 @@ GUI = createInterface();
                 DATA.maxRRTime = max(rr_time);
                 DATA.RRIntPage_Length = DATA.maxRRTime;
                 
+                disp(['DATA.maxRRTime = ' num2str(DATA.maxRRTime)]);
+                disp(['DATA.RRIntPage_Length = ', num2str(DATA.RRIntPage_Length)]);
+                
+                
                 min_sig = min(rr_data);
                 max_sig = max(rr_data);
                 delta = (max_sig - min_sig)*0.1;
@@ -996,7 +1050,12 @@ GUI = createInterface();
             DATA.customConfigFile = fullfile(PathName, Config_FileName);
             load_updateGUI_config_param();
             if get(GUI.AutoCalc_checkbox, 'Value')
-                RunAndPlotPeakDetector();
+                try
+                    RunAndPlotPeakDetector();
+                catch e
+                    errordlg(['LoadConfigurationFile error: ' e.message], 'Input Error');
+                    return;
+                end
             end
             GUI.GUIRecord.Mammal_popupmenu.Value = mammal_index;
             DATA.mammal_index = mammal_index;
@@ -1085,7 +1144,12 @@ GUI = createInterface();
                     return;
                 end
                 if get(GUI.AutoCalc_checkbox, 'Value')
-                    RunAndPlotPeakDetector();
+                    try
+                        RunAndPlotPeakDetector();
+                    catch e
+                        errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
+                        return;
+                    end
                 end
             end
         end
@@ -1117,9 +1181,15 @@ GUI = createInterface();
     function delete_temp_wfdb_files()
         if exist([pwd filesep DATA.temp_rec_name4wfdb '.hea'], 'file')
             delete([pwd filesep DATA.temp_rec_name4wfdb '.hea']);
+%             disp('Deleting .hea');
         end
         if exist([pwd filesep DATA.temp_rec_name4wfdb '.dat'], 'file')
             delete([pwd filesep DATA.temp_rec_name4wfdb '.dat']);
+%             disp('Deleting .dat');
+        end
+        if exist([pwd filesep 'tempYAML.yml'], 'file')
+            delete([pwd filesep 'tempYAML.yml']);
+%             disp('Deleting .yml');
         end
     end
 %%
@@ -1391,7 +1461,12 @@ GUI = createInterface();
     end
 %%
     function AutoCompute_pushbutton_Callback( ~, ~ )
-        RunAndPlotPeakDetector();
+        try
+            RunAndPlotPeakDetector();
+        catch e
+            errordlg(['AutoCompute_pushbutton_Callback error: ' e.message], 'Input Error');
+            return;
+        end
     end
 %%
     function AutoCalc_checkbox_Callback( src, ~ )
@@ -1460,7 +1535,12 @@ GUI = createInterface();
             set_mammal(mammal_index);
             GUI.GUIRecord.Mammal_popupmenu.Value = mammal_index;
             
-            RunAndPlotPeakDetector();
+            try
+                RunAndPlotPeakDetector();
+            catch e
+                errordlg(['AutoCompute_pushbutton_Callback error: ' e.message], 'Input Error');
+                return;
+            end
             set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
             set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
             setAxesXTicks(GUI.RRInt_Axes);

@@ -4,6 +4,8 @@ function PhysioZooGUI()
 gui_basepath = fileparts(mfilename('fullpath'));
 addpath(genpath([gui_basepath filesep 'lib']));
 addpath(genpath([gui_basepath filesep 'Loader']));
+addpath(genpath([gui_basepath filesep 'myWFDB']));
+addpath(genpath([gui_basepath filesep 'rhrv']));
 basepath = fileparts(gui_basepath);
 
 % rhrv_init;

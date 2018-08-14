@@ -112,7 +112,19 @@ ecg_Fs = header_info.Fs;
 ecg_N = header_info.N_samples;
 
 if ecg_N == 0
-    warning('Number of samples in the record wasn''t specified in the header file. Can''t calculate duration or split into windows.');
+    if isempty(ann_ext)
+        warning('Number of samples in the record wasn''t specified in the header file. Can''t calculate duration or split into windows.');
+    else
+        % This header file contains no channels, so the number of samples
+        % is zero. Since we have an annotation file, we'll determine the
+        % number of samples from it.
+        ann = rdann(rec_name, ann_ext);
+        ecg_N = double(ann(end));
+
+        % Set length of record based on it
+        header_info.total_seconds = ecg_N / ecg_Fs;
+        header_info.duration = seconds_to_hmsms(header_info.total_seconds);
+    end
 end
 
 % Get ECG channel number
@@ -238,6 +250,11 @@ if isempty(hrv_metrics)
 end
 
 hrv_metrics.Properties.Description = sprintf('HRV metrics for %s', rec_name);
+
+% Remove empty entries from plot data (windows that were skipped and don't
+% appear in the hrv metrics table).
+nonempty_idx = cellfun(@(x) ~isempty(x), plot_datas);
+plot_datas = plot_datas(nonempty_idx);
 
 %% Create stats table
 fprintf('[%.3f] >> rhrv: Building statistics table...\n', cputime-t0);

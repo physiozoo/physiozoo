@@ -8,7 +8,7 @@ addpath(genpath([gui_basepath filesep 'myWFDB']));
 addpath(genpath([gui_basepath filesep 'rhrv']));
 basepath = fileparts(gui_basepath);
 
-% rhrv_init;
+rhrv_init;
 
 %myBackgroundColor = [0.9 1 1];
 myUpBackgroundColor = [0.863 0.941 0.906];
@@ -1121,11 +1121,12 @@ displayEndOfDemoMessage('');
         
         setWidthsConfigParams(max_extent_control, handles_boxes);
         
-        GUI.WinAverage_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.FrequencyParamBox, 'Callback', @WinAverage_checkbox_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Use window average', 'Value', 0);
+        GUI.WinAverage_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.FrequencyParamBox, 'Callback', @WinAverage_checkbox_Callback, 'FontSize', DATA.BigFontSize, ...
+                                             'String', 'Use window average', 'Value', 0, 'Tooltip', 'Divide the signal into segments of size Spectral window length in order to compute the power spectrum and average across them');
         
         uix.Empty( 'Parent', GUI.FrequencyParamBox );
         rs = 19;
-        set( GUI.FrequencyParamBox, 'Height', [-10, rs * ones(1, freq_param_length), -10, -10, -50]  );
+        set( GUI.FrequencyParamBox, 'Height', [-10, rs * ones(1, freq_param_length), -1, -10, -55]  );
         
         %-----------------------------------
         
@@ -1487,11 +1488,12 @@ displayEndOfDemoMessage('');
                 if ~(DATA.QualityAnnotations_Data(1, 1) + DATA.QualityAnnotations_Data(1,2))==0
                     
                     if ~isfield(GUI, 'RedLineHandle') || ~isvalid(GUI.RedLineHandle(1))
-                        GUI.RedLineHandle = line((DATA.QualityAnnotations_Data-time_data(1))', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3, 'Parent', ha);
+%                         GUI.RedLineHandle = line((DATA.QualityAnnotations_Data-time_data(1))', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3, 'Parent', ha);
+                        GUI.RedLineHandle = line((DATA.QualityAnnotations_Data)', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3, 'Parent', ha);
                         uistack(GUI.RedLineHandle, 'top');
                     else
                         for i = 1 : intervals_num
-                            GUI.RedLineHandle(i).XData = (DATA.QualityAnnotations_Data(i, :)-time_data(1))';
+                            GUI.RedLineHandle(i).XData = (DATA.QualityAnnotations_Data(i, :))';
                             GUI.RedLineHandle(i).YData = [MaxYLimit MaxYLimit]';
                         end
                     end
@@ -1509,7 +1511,7 @@ displayEndOfDemoMessage('');
                         elseif a2(end) < a1(1)
                             low_quality_indexes = [a2(end)-1 : a1(1)];
                         else
-                            low_quality_indexes = [a1(1)-2 : a2(end)+1];
+                            low_quality_indexes = [a1(1)-1 : a2(end)+1];
                         end
                         
                         if ~isempty(low_quality_indexes)
@@ -1699,7 +1701,7 @@ displayEndOfDemoMessage('');
                             integration = data.General.integration_level;
                             DATA.SamplingFrequency = data.Time.Fs;
                             QRS_data = data.Data.Data;
-                            time_data = data.Time.Data;
+                            time_data = data.Time.Data;                            
                         else
                             throw(MException('LoadFile:text', 'Please, choose another file type.'));
                         end
@@ -1836,9 +1838,10 @@ displayEndOfDemoMessage('');
                 else
                     close(waitbar_handle);
                 end
-                
+                                
                 reset_plot_Data();
                 reset_plot_GUI();
+                EnablePageUpDown();
                 
                 if isfield(GUI, 'RRDataAxes')
                     PathName = strrep(PathName, '\', '\\');
@@ -2401,7 +2404,7 @@ displayEndOfDemoMessage('');
             Active_Window_Length = get(GUI.Active_Window_Length, 'String');
             try
                 Spectral_Window_Length(GUI.Active_Window_Length, Active_Window_Length);
-                set(GUI.SpectralWindowLengthHandle, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));
+%                 set(GUI.SpectralWindowLengthHandle, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));
             catch e
                 errordlg(e.message, 'Input Error');
             end
@@ -3619,15 +3622,25 @@ displayEndOfDemoMessage('');
                 set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
             end
         elseif strcmp(param_name, 'hrv_freq.window_minutes')
-            try
-                Spectral_Window_Length(GUI.SpectralWindowLengthHandle, string_screen_value);
-                set(GUI.Active_Window_Length, 'String', string_screen_value);
-                screen_value = calcDurationInSeconds(GUI.SpectralWindowLengthHandle, string_screen_value, 0)/60; % to minutes
-                doCalc = false;
-            catch e
-                errordlg(e.message, 'Input Error');
-                return;
-            end
+%             try
+%                 Spectral_Window_Length(GUI.SpectralWindowLengthHandle, string_screen_value);
+%                 set(GUI.Active_Window_Length, 'String', string_screen_value);
+
+                [screen_value, isInputNumeric] = calcDurationInSeconds(GUI.SpectralWindowLengthHandle, string_screen_value, prev_screen_value*60);
+                
+                if isInputNumeric && screen_value <= 0                    
+                    errordlg('The spectral window length must be greater than 0 sec!', 'Input Error');
+                    return;
+                elseif ~isInputNumeric
+                    return;
+                end
+                
+                screen_value = screen_value / 60; % to minutes
+%                 doCalc = false;
+%             catch e
+%                 errordlg(e.message, 'Input Error');
+%                 return;
+%             end
         elseif  isnan(screen_value) || ~(screen_value > 0)
             errordlg(['set_config_Callback error: ' 'This parameter must be numeric positive single value!'], 'Input Error');
             set(src, 'String', prev_screen_value);
@@ -3731,8 +3744,13 @@ displayEndOfDemoMessage('');
             catch e
                 errordlg(['set_config_Callback error: ' e.message], 'Input Error');
                 
-                rhrv_set_default( param_name, prev_param_array );                
-                set(src, 'String', num2str(prev_param_value));
+                rhrv_set_default( param_name, prev_param_array );    
+                
+                if strcmp(param_name, 'hrv_freq.window_minutes')
+                    set(src, 'String', calcDuration(prev_param_value*60, 0));
+                else
+                    set(src, 'String', num2str(prev_param_value));
+                end
                 
                 if ~isempty(cp_param_array)
                     rhrv_set_default( couple_name, cp_param_array );
@@ -3877,6 +3895,10 @@ displayEndOfDemoMessage('');
                     set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
                     errordlg('Selected window length must be less than total signal length!', 'Input Error');
                     return;
+                elseif param_value > DATA.AnalysisParams.segment_endTime - DATA.AnalysisParams.segment_startTime
+                    set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
+                    errordlg('Selected window length must be less than or equal to the segment length!', 'Input Error');
+                    return;
                 elseif param_value <= 10
                     set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
                     errordlg('Selected window size must be greater than 10 sec!', 'Input Error');
@@ -3911,7 +3933,7 @@ displayEndOfDemoMessage('');
                 
                 set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
                 set(GUI.Active_Window_Length, 'String', window_length);
-                set(GUI.SpectralWindowLengthHandle, 'String', window_length);
+%                 set(GUI.SpectralWindowLengthHandle, 'String', window_length);
                 setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);
                 set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
                 set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
@@ -4113,9 +4135,10 @@ displayEndOfDemoMessage('');
                     fprintf('[win % d: %.3f] >> rhrv: Calculating frequency-domain metrics...\n', i, cputime-t0);
                     
                     if DATA.WinAverage
-                        [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', []);
+                        window_minutes = rhrv_get_default('hrv_freq.window_minutes');
+                        [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', window_minutes.value);
                     else
-                        [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'});
+                        [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', []);
                     end
                     
                     DATA.FrStat.PlotData{i} = pd_freq;
@@ -4811,7 +4834,7 @@ displayEndOfDemoMessage('');
         set(GUI.segment_startTime, 'String', min_x_string);
         set(GUI.segment_endTime, 'String', max_x_string);
         set(GUI.activeWindow_length, 'String', delta_x_string);
-        set(GUI.SpectralWindowLengthHandle, 'String', delta_x_string);
+%         set(GUI.SpectralWindowLengthHandle, 'String', delta_x_string);
         
         set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
         

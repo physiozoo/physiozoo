@@ -40,6 +40,8 @@ GUI = createInterface();
         DATA.Integration = 'ECG';
         DATA.integration_index = 1;
         
+        DATA.peakDetection_index = 1;
+        
         DATA.config_map = [];
         DATA.customConfigFile = '';
         
@@ -90,6 +92,7 @@ GUI = createInterface();
         %         GUI.AutoCompute_pushbutton.Enable = 'inactive';
         
         set(GUI.GUIRecord.Mammal_popupmenu, 'Value', 1);
+        set(GUI.GUIRecord.PeakDetector_popupmenu, 'Value', 1);
         
         GUI.LoadConfigurationFile.Enable = 'off';
         GUI.SaveConfigurationFile.Enable = 'off';
@@ -133,6 +136,9 @@ GUI = createInterface();
         %         DATA.Integration = 'ECG';
         %         DATA.integration_index = 1;
         
+        
+        DATA.GUI_PeakDetector = {'rgrs'; 'aqrs'};
+        DATA.peakDetection_index = 1;
         
         DATA.GUI_Annotation = {'Peak'; 'Signal quality'};
         DATA.GUI_Class = {'A'; 'B'; 'C'};
@@ -298,12 +304,13 @@ GUI = createInterface();
         
         [GUI, textBox{5}, text_handles{5}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Mammal_popupmenu', 'Mammal', RecordBox, @Mammal_popupmenu_Callback, DATA.GUI_mammals);
         [GUI, textBox{6}, text_handles{6}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Integration_popupmenu', 'Integration level', RecordBox, @Integration_popupmenu_Callback, DATA.GUI_Integration);
-        [GUI, textBox{7}, text_handles{7}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Annotation_popupmenu', 'Annotation', RecordBox, @Annotation_popupmenu_Callback, DATA.GUI_Annotation);
-        [GUI, textBox{8}, text_handles{8}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Class_popupmenu', 'Class', RecordBox, @Class_popupmenu_Callback, DATA.GUI_Class);
+        [GUI, textBox{7}, text_handles{7}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'PeakDetector_popupmenu', 'Peak detector', RecordBox, @PeakDetector_popupmenu_Callback, DATA.GUI_PeakDetector);
+        [GUI, textBox{8}, text_handles{8}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Annotation_popupmenu', 'Annotation', RecordBox, @Annotation_popupmenu_Callback, DATA.GUI_Annotation);
+        [GUI, textBox{9}, text_handles{9}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Class_popupmenu', 'Class', RecordBox, @Class_popupmenu_Callback, DATA.GUI_Class);
         
         GUI.GUIRecord.Class_popupmenu.Visible = 'off';
         GUI.GUIRecord.Class_popupmenu.Value = 3;
-        GUI.Class_Text = text_handles{8};
+        GUI.Class_Text = text_handles{9};
         GUI.Class_Text.Visible = 'off';
         
         max_extent_control = calc_max_control_x_extend(text_handles);
@@ -319,18 +326,12 @@ GUI = createInterface();
             field_size = [max_extent_control + 5, -0.45, -0.5];
         end
         
-        for i = 5 : 8
+        for i = 5 : 9
             set(textBox{i}, 'Widths', field_size);
         end
-        
-        %         TempBox = uix.HBox( 'Parent', RecordBox, 'Spacing', DATA.Spacing);
-        %         GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', TempBox, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Auto Compute', 'Value', 1);
-        %         GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', TempBox, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Compute', 'Enable', 'inactive');
-        %         uix.Empty( 'Parent', TempBox );
-        %         set(TempBox, 'Widths', field_size );
-        
+                
         uix.Empty( 'Parent', RecordBox);
-        set(RecordBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -25] );
+        set(RecordBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -20] );
         
         %-------------------------------------------------------
         % Config Params Tab
@@ -583,6 +584,19 @@ GUI = createInterface();
         DATA.Integration = items{index_selected};
     end
 %%
+    function PeakDetector_popupmenu_Callback(src, ~)
+        if get(GUI.AutoCalc_checkbox, 'Value')
+            try
+                RunAndPlotPeakDetector();
+                DATA.peakDetection_index = src.Value;
+            catch e
+                errordlg(['PeakDetector error: ' e.message], 'Input Error');                
+%                 src.Value = DATA.peakDetection_index;
+                return;
+            end
+        end
+    end
+%%
     function OpenFile_Callback(~, ~)
         
         persistent DIRS;
@@ -664,6 +678,7 @@ GUI = createInterface();
                             DATA.Fs = data.Time.Fs;
                             ECG_data = data.Data.Data;
                             time_data = data.Time.Data;
+                            time_data = time_data - time_data(1);
                             header_info = set_data([time_data ECG_data]);
                         else
                             %                         throw(MException('LoadFile:text', 'Please, choose right file format for this module.'));
@@ -710,7 +725,7 @@ GUI = createInterface();
                         set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
                         set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
                         
-                        disp(['DATA.maxRRTime = ' num2str(DATA.maxRRTime)]);
+%                         disp(['DATA.maxRRTime = ' num2str(DATA.maxRRTime)]);
                         
                         setAxesXTicks(GUI.RRInt_Axes);
                     catch e
@@ -790,7 +805,7 @@ GUI = createInterface();
             GUI.OpenDataQuality.Enable = 'on';
             
             DATA.zoom_rect_limits = [0 DATA.firstZoom];
-            
+            EnablePageUpDown();
             %             GUI.PeaksTable.Data(:, 2) = {0};
         end
     end
@@ -812,7 +827,12 @@ GUI = createInterface();
                 
 %         waitbar_handle = waitbar(1/2, 'Loading...', 'Name', 'Loading data');
         
+        curr_dir = pwd;
+        cd(tempdir);
+
         mat2wfdb(DATA.sig, DATA.rec_name, DATA.Fs, [], ' ' ,{} ,[]);    
+    
+        cd(curr_dir);
         
 %         [a, b, c] = fileparts(mfilename('fullpath'))
 %         
@@ -824,7 +844,7 @@ GUI = createInterface();
 %         curr_path_dat = which([pwd filesep DATA.rec_name '.dat'])
 %         curr_path_hea = which([pwd filesep DATA.rec_name '.hea'])
         
-        if ~exist(fullfile(pwd, [DATA.rec_name '.dat']), 'file') && ~exist(fullfile(pwd, [DATA.rec_name '.hea']), 'file')
+        if ~exist(fullfile(tempdir, [DATA.rec_name '.dat']), 'file') && ~exist(fullfile(tempdir, [DATA.rec_name '.hea']), 'file')
             throw(MException('set_data:text', 'Wfdb file cannot be created.'));
         end
         
@@ -935,18 +955,35 @@ GUI = createInterface();
 %                 curr_path_hea = which([pwd filesep DATA.rec_name '.hea']);
                 
 %                 if ~isempty(curr_path_dat) && ~isempty(curr_path_hea)
-                if exist(fullfile([pwd filesep DATA.rec_name '.dat']), 'file') && exist(fullfile([pwd filesep DATA.rec_name '.hea']), 'file')
-                    waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Loading data');
-                    
-                    [DATA.qrs, tm, sig, Fs] = rqrs(DATA.rec_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
-                    
-                    if isvalid(waitbar_handle)
-                        close(waitbar_handle);
-                    end
+
+
+                pd_items = get(GUI.GUIRecord.PeakDetector_popupmenu, 'String');
+                pd_index_selected = get(GUI.GUIRecord.PeakDetector_popupmenu, 'Value');
+
+                peak_detector = pd_items{pd_index_selected};
+
+                waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
+                
+                if strcmp(peak_detector, 'aqrs')
+                    bpecg = prefilter(DATA.sig, DATA.Fs, 3, 100);                                                            
+                    f = str2double(get(GUI.GUIConfig.HR, 'String'))/60;
+                    DATA.qrs = PeakDetection(bpecg, f/DATA.Fs);
                 else
-%                     errordlg('Problems with peaks calculation. Wfdb file not exists.', 'Input Error');                    
-                    throw(MException('calc_peaks:text', 'Problems with peaks calculation. Wfdb file not exists.'));
-%                     return;
+                    if exist(fullfile([tempdir DATA.rec_name '.dat']), 'file') && exist(fullfile([tempdir DATA.rec_name '.hea']), 'file')
+%                         waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
+                        
+                        [DATA.qrs, tm, sig, Fs] = rqrs([tempdir DATA.rec_name], 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
+                        
+%                         if isvalid(waitbar_handle)
+%                             close(waitbar_handle);
+%                         end
+                    else                        
+                        throw(MException('calc_peaks:text', 'Problems with peaks calculation. Wfdb file not exists.'));                        
+                    end
+                end                
+                
+                if isvalid(waitbar_handle)
+                    close(waitbar_handle);
                 end
                 
                 if ~isempty(DATA.qrs)
@@ -963,11 +1000,7 @@ GUI = createInterface();
                     GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
                     
                     set(GUI.GUIDisplay.FirstSecond, 'String', calcDuration(min(DATA.zoom_rect_limits), 0));
-                    set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(max(DATA.zoom_rect_limits) - min(DATA.zoom_rect_limits), 0));
-                    
-                    %                     set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
-                    %                     setAxesXTicks(GUI.RRInt_Axes);
-                    %                     setRRIntYLim();
+                    set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(max(DATA.zoom_rect_limits) - min(DATA.zoom_rect_limits), 0));                                        
                 else
                     errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
                 end
@@ -1005,8 +1038,8 @@ GUI = createInterface();
                 DATA.maxRRTime = max(rr_time);
                 DATA.RRIntPage_Length = DATA.maxRRTime;
                 
-                disp(['DATA.maxRRTime = ' num2str(DATA.maxRRTime)]);
-                disp(['DATA.RRIntPage_Length = ', num2str(DATA.RRIntPage_Length)]);
+%                 disp(['DATA.maxRRTime = ' num2str(DATA.maxRRTime)]);
+%                 disp(['DATA.RRIntPage_Length = ', num2str(DATA.RRIntPage_Length)]);
                 
                 
                 min_sig = min(rr_data);
@@ -1179,16 +1212,16 @@ GUI = createInterface();
 %     end
 %%
     function delete_temp_wfdb_files()
-        if exist([pwd filesep DATA.temp_rec_name4wfdb '.hea'], 'file')
-            delete([pwd filesep DATA.temp_rec_name4wfdb '.hea']);
+        if exist([tempdir DATA.temp_rec_name4wfdb '.hea'], 'file')
+            delete([tempdir DATA.temp_rec_name4wfdb '.hea']);
 %             disp('Deleting .hea');
         end
-        if exist([pwd filesep DATA.temp_rec_name4wfdb '.dat'], 'file')
-            delete([pwd filesep DATA.temp_rec_name4wfdb '.dat']);
+        if exist([tempdir DATA.temp_rec_name4wfdb '.dat'], 'file')
+            delete([tempdir DATA.temp_rec_name4wfdb '.dat']);
 %             disp('Deleting .dat');
         end
-        if exist([pwd filesep 'tempYAML.yml'], 'file')
-            delete([pwd filesep 'tempYAML.yml']);
+        if exist([tempdir 'tempYAML.yml'], 'file')
+            delete([tempdir 'tempYAML.yml']);
 %             disp('Deleting .yml');
         end
     end
@@ -1525,6 +1558,8 @@ GUI = createInterface();
             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
             GUI.Class_Text.Visible = 'off';
             GUI.GUIRecord.Class_popupmenu.Value = 1;
+            GUI.GUIRecord.PeakDetector_popupmenu.Value = 1;
+            DATA.peakDetection_index = 1;
             
             if isempty(DATA.Mammal)
                 mammal_index = 1; % ?????

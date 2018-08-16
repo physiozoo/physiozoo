@@ -50,7 +50,7 @@ switch ext(2:end)
             return
         end
         if isfield(data,'textdata')
-            tempPath = [pwd filesep 'tempYAML.yml'];
+            tempPath = [tempdir 'tempYAML.yml'];
             WriteHeaderYAML(data,tempPath)                                                                                                              % Write header to text file with *.yml
 %             tempPath2 = [pwd filesep 'tempYAML.yml'];
             try

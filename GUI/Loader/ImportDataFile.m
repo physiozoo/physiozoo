@@ -14,9 +14,9 @@ while ~feof(fid)
             strF = ['%f',cell2mat(m(1))];
         else
             lCh = 1;
-            strF = '%f';
+            strF = '';
         end
-        strFormat = repmat(strF,1,lCh);
+        strFormat = [repmat(strF,1,lCh),'%f'];
         chNo = length(sscanf(strLine,strFormat));
         fseek(fid,currentPos,'bof');                  % Remove the file pointer to previous position @ strart data block
         data.data = fscanf(fid,strFormat,[chNo,Inf])';

@@ -237,7 +237,7 @@ end
 
 %Loop through all signals, digitizing them and generating lines in header file
 for m=1:M
-    nameArray = regexp(fname,'/','split');
+    nameArray = regexp(fname, filesep, 'split');
     if ~isempty(nameArray)
         fname = nameArray{end};
     end
@@ -258,7 +258,7 @@ end
 
 %Write *.dat file
 fid = fopen([fname '.dat'],'wb',machine_format);
-if(~fid)
+if fid == -1
     error(['Could not create data file for writing: ' fname])
 end
 
@@ -273,13 +273,14 @@ if(~count)
     error(['Could not data write to file: ' fname])  
 end
 
-fprintf(['Generated *.dat file: ' fname '\n'])
+% fprintf(['Generated *.dat file: ' fname '\n'])
+disp(['Generated *.dat file: ' fname]);
 fclose(fid);
 
 %Write *.hea file
 fid = fopen([fname '.hea'],'w');
 for m=1:M+1
-    if(~fid)
+    if fid == -1
         error(['Could not create header file for writing: ' fname])
     end
     fprintf(fid,'%s\n',head_str{m});
@@ -298,7 +299,8 @@ end
 if(nargout==1)
     varargout(1)={y};
 end
-fprintf(['Generated *.hea file: ' fname '\n'])
+% fprintf(['Generated *.hea file: ' fname '\n'])
+disp(['Generated *.hea file: ' fname]);
 fclose(fid);
 
 end

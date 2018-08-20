@@ -44,6 +44,7 @@ GUI = createInterface();
         
         DATA.config_map = [];
         DATA.customConfigFile = '';
+        DATA.wfdb_record_name = '';
         
         DATA.peak_search_win = 100;
         
@@ -137,7 +138,7 @@ GUI = createInterface();
         %         DATA.integration_index = 1;
         
         
-        DATA.GUI_PeakDetector = {'rgrs'; 'aqrs'};
+        DATA.GUI_PeakDetector = {'rgrs'; 'ptqrs'; 'wptqrs'};
         DATA.peakDetection_index = 1;
         
         DATA.GUI_Annotation = {'Peak'; 'Signal quality'};
@@ -338,9 +339,11 @@ GUI = createInterface();
         
         %         field_size = [80, 150, 10 -1];
         
-        uix.Empty( 'Parent', GUI.ConfigBox );
+        uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'rqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
         
-        [GUI, textBox{1}, text_handles{1}] = createGUISingleEditLine(GUI, 'GUIConfig', 'HR', 'HR', 'BMP', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'HR');
+%         uix.Empty( 'Parent', GUI.ConfigBox );
+        
+        [GUI, textBox{1}, text_handles{1}] = createGUISingleEditLine(GUI, 'GUIConfig', 'HR', 'HR', 'BPM', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'HR');
         [GUI, textBox{2}, text_handles{2}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QS', 'QS', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QS');
         [GUI, textBox{3}, text_handles{3}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QT', 'QT', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QT');
         [GUI, textBox{4}, text_handles{4}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSa', 'QRSa', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSa');
@@ -350,8 +353,17 @@ GUI = createInterface();
         
         uix.Empty('Parent', GUI.ConfigBox );
         
+        uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'ptqrs/wptqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+        [GUI, textBox{8}, text_handles{8}] = createGUISingleEditLine(GUI, 'GUIConfig', 'lcf', 'Lower cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'lcf');
+        [GUI, textBox{9}, text_handles{9}] = createGUISingleEditLine(GUI, 'GUIConfig', 'hcf', 'Upper cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'hcf');
+        [GUI, textBox{10}, text_handles{10}] = createGUISingleEditLine(GUI, 'GUIConfig', 'thr', 'Threshold', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'thr');
+        [GUI, textBox{11}, text_handles{11}] = createGUISingleEditLine(GUI, 'GUIConfig', 'rp', 'Refractory period', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'rp');
+        [GUI, textBox{12}, text_handles{12}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ws', 'Window size', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ws');
+                        
+        uix.Empty('Parent', GUI.ConfigBox );
+        
         GUI.AutoPeakWin_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', SmallFontSize, 'String', 'Auto', 'Value', 1);
-        [GUI, textBox{8}, text_handles{8}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', '');
+        [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', '');
         
         %         uix.Empty('Parent', GUI.ConfigBox );
         %
@@ -361,25 +373,25 @@ GUI = createInterface();
         %         uix.Empty('Parent', tempBox );
         %         uix.Empty('Parent', tempBox );
         
-        uix.Empty('Parent', GUI.ConfigBox );
-        set(GUI.ConfigBox, 'Heights', [-7 -7  -7 -7 -7 -7 -7 -7 -10 -7 -7 -35] );
+%         uix.Empty('Parent', GUI.ConfigBox );
+        set(GUI.ConfigBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7   -1 -7 -7 -7 -7 -7 -7   -8 -7 -7] );
         %-------------------------------------------------------
         % Display Tab
         %         field_size = [110, 140, 10, -1];
         
         uix.Empty( 'Parent', DisplayBox );
         
-        [GUI, textBox{9}, text_handles{9}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', '');
-        [GUI, textBox{10}, text_handles{10}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', '');
+        [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', '');
+        [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', '');
         
         %         field_size = [110, 64, 4, 63, 10];
-        [GUI, YLimitBox, text_handles{12}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', '');
+        [GUI, YLimitBox, text_handles{16}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', '');                
         
         uix.Empty('Parent', DisplayBox );
         
         
-        [GUI, textBox{11}, text_handles{11}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
-        [GUI, YLimitBox2, text_handles{13}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', '');
+        [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
+        [GUI, YLimitBox2, text_handles{18}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', '');                
         
         set(GUI.GUIDisplay.FirstSecond, 'Enable', 'off');
         set(GUI.GUIDisplay.WindowSize, 'Enable', 'off');
@@ -391,7 +403,7 @@ GUI = createInterface();
         max_extent_control = calc_max_control_x_extend(text_handles);
         
         field_size = [max_extent_control, 150, 10 -1];
-        for i = 1 : length(text_handles) - 2
+        for i = 1 : length(text_handles) - 1
             set(textBox{i}, 'Widths', field_size);
         end
         
@@ -542,16 +554,34 @@ GUI = createInterface();
         
         if strcmp(mammal, 'dog')
             DATA.peak_search_win = 90;
+%             hcf = 125; % Hz
+%             rp = 0.170;
         elseif strcmp(mammal, 'rabbit')
             DATA.peak_search_win = 40;
+%             hcf = 150; % Hz
+%             rp = 0.088;
         elseif strcmp(mammal, 'mouse')
             DATA.peak_search_win = 17;
+%             hcf = 300; % Hz
+%             rp = 0.030;
         elseif strcmp(mammal, 'human')
             DATA.peak_search_win = 150;
+%             hcf = 100; % Hz
+%             rp = 0.250;
         else
             DATA.peak_search_win = 100;
+%             hcf = 100; % Hz
+%             rp = 0.250;
         end
+%         lcf = 3; % Hz
+%         thr = 0.5;
+%         ws = 10; % sec
         set(GUI.GUIConfig.PeaksWindow, 'String', DATA.peak_search_win);
+%         set(GUI.GUIConfig_ptqrs.lcf, 'String', lcf);
+%         set(GUI.GUIConfig_ptqrs.hcf, 'String', hcf);
+%         set(GUI.GUIConfig_ptqrs.thr, 'String', thr);
+%         set(GUI.GUIConfig_ptqrs.rp, 'String', rp);
+%         set(GUI.GUIConfig_ptqrs.ws, 'String', ws);
     end
 %%
     function Mammal_popupmenu_Callback(src, ~)
@@ -591,7 +621,6 @@ GUI = createInterface();
                 DATA.peakDetection_index = src.Value;
             catch e
                 errordlg(['PeakDetector error: ' e.message], 'Input Error');                
-%                 src.Value = DATA.peakDetection_index;
                 return;
             end
         end
@@ -675,11 +704,38 @@ GUI = createInterface();
                             DATA.Integration = data.General.integration_level;
                             DATA.integration_index = find(strcmp(DATA.Integration_From_Files, DATA.Integration));
                             set(GUI.GUIRecord.Integration_popupmenu, 'Value', DATA.integration_index);
-                            DATA.Fs = data.Time.Fs;
-                            ECG_data = data.Data.Data;
+                            DATA.Fs = double(data.Time.Fs);
+                            DATA.sig = data.Data.Data;
                             time_data = data.Time.Data;
-                            time_data = time_data - time_data(1);
-                            header_info = set_data([time_data ECG_data]);
+                            DATA.tm = time_data - time_data(1);
+                            
+                            [t_max, h, m, s ,ms] = signal_duration(length(DATA.tm), DATA.Fs);
+                            header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
+
+                            DATA.ecg_channel = 1;
+%                             DATA.rec_name = DATA.temp_rec_name4wfdb;                                                       
+        
+                            if strcmpi(EXT, 'txt') || strcmpi(EXT, 'mat')
+                                
+                                curr_dir = pwd;
+                                cd(tempdir);
+                                
+%                                 DATA.wfdb_record_name = [tempdir DATA.temp_rec_name4wfdb];
+                                DATA.wfdb_record_name = [DATA.temp_rec_name4wfdb];
+
+
+                                mat2wfdb(DATA.sig, DATA.wfdb_record_name, DATA.Fs, [], ' ' ,{} ,[]);
+                                
+                                cd(curr_dir);
+                                
+                                DATA.wfdb_record_name = [tempdir DATA.temp_rec_name4wfdb];
+                                
+                                if ~exist([DATA.wfdb_record_name '.dat'], 'file') && ~exist([DATA.wfdb_record_name '.hea'], 'file')   % && ~exist(fullfile(tempdir, [DATA.temp_rec_name4wfdb '.hea']), 'file')
+                                    throw(MException('set_data:text', 'Wfdb file cannot be created.'));
+                                end
+                            else
+                                DATA.wfdb_record_name = DATA.rec_name;
+                            end                                                        
                         else
                             %                         throw(MException('LoadFile:text', 'Please, choose right file format for this module.'));
                             errordlg(['onOpenFile error: ' 'Please, choose another file type.'], 'Input Error');
@@ -810,10 +866,10 @@ GUI = createInterface();
         end
     end
 %%
-    function header_info = set_data(ecg_data)
+    function header_info = set_data(time_data, ECG_data)
         
-        DATA.tm = ecg_data(:, 1);
-        DATA.sig = ecg_data(:, 2);
+        DATA.tm = time_data;
+        DATA.sig = ECG_data;
         
         if ~DATA.Fs
             DATA.Fs = 1/median(diff(DATA.tm));
@@ -935,75 +991,99 @@ GUI = createInterface();
     end
 %%
     function RunAndPlotPeakDetector()
-        if isfield(DATA, 'rec_name') && ~strcmp(DATA.rec_name, '')
+        if isfield(DATA, 'wfdb_record_name') && ~strcmp(DATA.wfdb_record_name, '')
             
             cla(GUI.RRInt_Axes);
             if isfield(GUI, 'red_peaks_handle') && ishandle(GUI.red_peaks_handle) && isvalid(GUI.red_peaks_handle)
                 delete(GUI.red_peaks_handle);
             end
-            if isfield(DATA, 'customConfigFile') && ~strcmp(DATA.customConfigFile, '')
-                
-                waitbar_handle = waitbar(1/2, 'Loading configuration...', 'Name', 'Loading data');
-                
-                load_updateGUI_config_param();
-                
-                if isvalid(waitbar_handle)
-                    close(waitbar_handle);
-                end                                
-                
-%                 curr_path_dat = which([pwd filesep DATA.rec_name '.dat']);
-%                 curr_path_hea = which([pwd filesep DATA.rec_name '.hea']);
-                
-%                 if ~isempty(curr_path_dat) && ~isempty(curr_path_hea)
-
-
-                pd_items = get(GUI.GUIRecord.PeakDetector_popupmenu, 'String');
-                pd_index_selected = get(GUI.GUIRecord.PeakDetector_popupmenu, 'Value');
-
-                peak_detector = pd_items{pd_index_selected};
-
-                waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
-                
-                if strcmp(peak_detector, 'aqrs')
-                    bpecg = prefilter(DATA.sig, DATA.Fs, 3, 100);                                                            
-                    f = str2double(get(GUI.GUIConfig.HR, 'String'))/60;
-                    DATA.qrs = PeakDetection(bpecg, f/DATA.Fs);
-                else
-                    if exist(fullfile([tempdir DATA.rec_name '.dat']), 'file') && exist(fullfile([tempdir DATA.rec_name '.hea']), 'file')
-%                         waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
-                        
-                        [DATA.qrs, tm, sig, Fs] = rqrs([tempdir DATA.rec_name], 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
-                        
-%                         if isvalid(waitbar_handle)
-%                             close(waitbar_handle);
-%                         end
-                    else                        
-                        throw(MException('calc_peaks:text', 'Problems with peaks calculation. Wfdb file not exists.'));                        
+            try
+                if isfield(DATA, 'customConfigFile') && ~strcmp(DATA.customConfigFile, '')
+                    
+                    waitbar_handle = waitbar(1/2, 'Loading configuration...', 'Name', 'Loading data');
+                    
+                    load_updateGUI_config_param();
+                    
+                    if isvalid(waitbar_handle)
+                        close(waitbar_handle);
                     end
-                end                
-                
+                    
+                    %                 curr_path_dat = which([pwd filesep DATA.rec_name '.dat']);
+                    %                 curr_path_hea = which([pwd filesep DATA.rec_name '.hea']);
+                    
+                    %                 if ~isempty(curr_path_dat) && ~isempty(curr_path_hea)
+                                        
+                    pd_items = get(GUI.GUIRecord.PeakDetector_popupmenu, 'String');
+                    pd_index_selected = get(GUI.GUIRecord.PeakDetector_popupmenu, 'Value');
+                    
+                    peak_detector = pd_items{pd_index_selected};
+                    
+                    waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
+                    
+                    if ~strcmpi(peak_detector, 'rgrs')
+                        
+                        lcf = str2double(DATA.config_map('lcf'));
+                        hcf = str2double(DATA.config_map('hcf'));
+                        thr = str2double(DATA.config_map('thr'));
+                        rp = str2double(DATA.config_map('rp'));
+                        ws = str2double(DATA.config_map('ws'));
+                        
+                        bpecg = prefilter2(DATA.sig, DATA.Fs, lcf, hcf, 0);  % bpecg = prefilter2(ecg,fs,lcf,hcf,0);
+                    end
+                    
+                    if strcmp(peak_detector, 'ptqrs')
+                        qrs_pos = ptqrs(bpecg, DATA.Fs, thr, rp, 0); % qrs_pos = ptqrs(bpecg,fs,thr,rp,0);
+                        DATA.qrs = qrs_pos';
+                    elseif strcmp(peak_detector, 'wptqrs')
+                        qrs_pos = run_qrsdet_by_seg(bpecg, DATA.Fs, thr, rp, ws);
+                        DATA.qrs = qrs_pos';
+                    else
+                        
+                        %                     if exist(fullfile([tempdir DATA.rec_name '.dat']), 'file') && exist(fullfile([tempdir DATA.rec_name '.hea']), 'file')
+                        
+                        
+                        if exist(fullfile([DATA.wfdb_record_name '.dat']), 'file') && exist(fullfile([DATA.wfdb_record_name '.hea']), 'file')
+                            
+                            
+                            %                         [DATA.qrs, tm, sig, Fs] = rqrs([tempdir DATA.rec_name], 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
+                            [DATA.qrs, tm, sig, Fs] = rqrs(DATA.wfdb_record_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
+                            
+                            %                         if isvalid(waitbar_handle)
+                            %                             close(waitbar_handle);
+                            %                         end
+                        else
+                            throw(MException('calc_peaks:text', 'Problems with peaks calculation. Wfdb file not exists.'));
+                        end
+                    end
+                    
+                    if isvalid(waitbar_handle)
+                        close(waitbar_handle);
+                    end
+                    
+                    if ~isempty(DATA.qrs)
+                        DATA.qrs = double(DATA.qrs);
+                        GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
+                        uistack(GUI.red_peaks_handle, 'top');  % bottom
+                        
+                        plot_rr_data();
+                        plot_red_rectangle(DATA.zoom_rect_limits);
+                        GUI.PeaksTable.Data(:, 2) = {0};
+                        DATA.peaks_added = 0;
+                        DATA.peaks_deleted = 0;
+                        DATA.peaks_total = length(DATA.qrs);
+                        GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
+                        
+                        set(GUI.GUIDisplay.FirstSecond, 'String', calcDuration(min(DATA.zoom_rect_limits), 0));
+                        set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(max(DATA.zoom_rect_limits) - min(DATA.zoom_rect_limits), 0));
+                    else
+                        errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
+                    end
+                end
+            catch e
                 if isvalid(waitbar_handle)
                     close(waitbar_handle);
                 end
-                
-                if ~isempty(DATA.qrs)
-                    DATA.qrs = double(DATA.qrs);
-                    GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
-                    uistack(GUI.red_peaks_handle, 'bottom');
-                    
-                    plot_rr_data();
-                    plot_red_rectangle(DATA.zoom_rect_limits);
-                    GUI.PeaksTable.Data(:, 2) = {0};
-                    DATA.peaks_added = 0;
-                    DATA.peaks_deleted = 0;
-                    DATA.peaks_total = length(DATA.qrs);
-                    GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
-                    
-                    set(GUI.GUIDisplay.FirstSecond, 'String', calcDuration(min(DATA.zoom_rect_limits), 0));
-                    set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(max(DATA.zoom_rect_limits) - min(DATA.zoom_rect_limits), 0));                                        
-                else
-                    errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
-                end
+                rethrow(e);
             end
             set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
             set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
@@ -1166,27 +1246,61 @@ GUI = createInterface();
     end
 %%
     function config_edit_Callback(src, ~)
-        field_value = get(src, 'String');
-        if ~strcmp(field_value, '')
-            if isfield(DATA, 'config_map') && ~isempty(DATA.config_map)
-                DATA.config_map(get(src, 'UserData')) = get(src, 'String');
-                DATA.customConfigFile = 'gqrs.temp_custom.conf';
-                temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
-                if temp_custom_conf_fileID == -1
-                    errordlg('Problems with creation of custom config file.', 'Input Error');
+        
+        field_value = get(src, 'String');        
+        numeric_field_value = str2double(field_value);
+        
+        if isnan(numeric_field_value)
+            errordlg('Please, enter numeric value.', 'Input Error');
+            set(src, 'String', DATA.config_map(get(src, 'UserData')));
+            return;
+        elseif strcmp(get(src, 'UserData'), 'rp') && ~(numeric_field_value >= 0)
+            errordlg('The refractory period must be greater or equal to 0.', 'Input Error');
+            set(src, 'String', DATA.config_map(get(src, 'UserData')));
+            return;
+        elseif (numeric_field_value <= 0) && ~(strcmp(get(src, 'UserData'), 'rp'))
+            errordlg('The value must be greater then 0.', 'Input Error');
+            set(src, 'String', DATA.config_map(get(src, 'UserData')));
+            return;
+        end        
+        if strcmp(get(src, 'UserData'), 'hcf') && (numeric_field_value > DATA.Fs/2)
+            errordlg('The upper cutoff frequency must be inferior to half of the sampling frequency.', 'Input Error');
+            set(src, 'String', DATA.config_map(get(src, 'UserData')));
+            return;
+        end
+        
+        if isfield(DATA, 'config_map') && ~isempty(DATA.config_map)
+            DATA.config_map(get(src, 'UserData')) = get(src, 'String');
+            DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
+            temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
+            if temp_custom_conf_fileID == -1
+                errordlg('Problems with creation of custom config file.', 'Input Error');
+                return;
+            end
+            if get(GUI.AutoCalc_checkbox, 'Value')
+                try
+                    RunAndPlotPeakDetector();
+                catch e
+                    errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
                     return;
-                end
-                if get(GUI.AutoCalc_checkbox, 'Value')
-                    try
-                        RunAndPlotPeakDetector();
-                    catch e
-                        errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
-                        return;
-                    end
                 end
             end
         end
     end
+%%
+%     function ptqrs_config_edit_Callback(src, ~)
+%         field_value = get(src, 'String');
+%         if ~strcmp(field_value, '')
+%             if get(GUI.AutoCalc_checkbox, 'Value')
+%                 try
+%                     RunAndPlotPeakDetector();
+%                 catch e
+%                     errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
+%                     return;
+%                 end
+%             end
+%         end
+%     end
 %%
     function Peaks_Window_edit_Callback(src, ~)
         field_value = str2double(get(src, 'String'));
@@ -1410,7 +1524,8 @@ GUI = createInterface();
         
         [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...
             '*.txt','Text Files (*.txt)';...
-            '*.mat','MAT-files (*.mat)'},...
+            '*.mat','MAT-files (*.mat)';
+            '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'},...
             'Choose Analyzed Data File Name',...
             [DIRS.analyzedDataDirectory, filesep, file_name, '.', EXT]);
         
@@ -1458,18 +1573,18 @@ GUI = createInterface();
                 dlmwrite(full_file_name, Data, 'delimiter', '\t', 'precision', '%d', 'newline', 'pc', '-append', 'roffset', 1);
                 
                 fclose(header_fileID);
-%             elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
-%                 [~, filename_noExt, ~] = fileparts(filename);
-%                 %                 saved_path = pwd;
-%                 %                 cd(results_folder_name);
-%                 try
-%                     %                                         wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
-%                     %                                         addpath(wfdb_path);
-%                     %                                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
-%                     %                                         wrann(filename_noExt, 'qrs', int64(Data));
-%                     %                                         rmpath(wfdb_path);
-%                     %                                         delete([filename_noExt '.dat']);
-%                     
+            elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
+                [~, filename_noExt, ~] = fileparts(filename);
+                %                 saved_path = pwd;
+                %                 cd(results_folder_name);
+                try
+                    %                                         wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
+                    %                                         addpath(wfdb_path);
+                    %                                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
+                    %                                         wrann(filename_noExt, 'qrs', int64(Data));
+                    %                                         rmpath(wfdb_path);
+                    %                                         delete([filename_noExt '.dat']);
+                    
 %                     if ~isrecord([results_folder_name filename_noExt], 'hea')
 %                         % Create header
 %                         saved_path = pwd;
@@ -1478,14 +1593,16 @@ GUI = createInterface();
 %                         delete([filename_noExt '.dat']);
 %                         cd(saved_path);
 %                     end
-%                     
-%                     %                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
-%                     wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data), 'fs', Fs); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
-%                     
-%                 catch e
-%                     disp(e);
-%                 end
-                %                 cd(saved_path);
+                    
+                    comments = {['Mammal:' Mammal ',Integration_level:' Integration_level]};
+                    
+                    %                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
+                    wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data), 'fs', Fs, 'comments', comments); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
+                    
+                catch e
+                    disp(e);
+                end
+%                                 cd(saved_path);
             else
                 errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
                 return;

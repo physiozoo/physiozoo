@@ -5029,7 +5029,7 @@ displayEndOfDemoMessage('');
             rate = 'Breathing';
         end
         if isnan(value) || value < min_val || value > max_val
-            errordlg(['Typical ' rate ' Rate must be greater than '  num2str(min_val) ' BMP and less than ' num2str(max_val) ' BMP!'], 'Input Error');
+            errordlg(['Typical ' rate ' Rate must be greater than '  num2str(min_val) ' BPM and less than ' num2str(max_val) ' BPM!'], 'Input Error');
             HR = 0;
             return;
         else

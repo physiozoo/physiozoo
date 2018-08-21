@@ -9,7 +9,7 @@ gui_A_path = [basepath filesep 'GUI'];
 config_path = [basepath filesep 'Config'];
 % wfdb_path = [basepath filesep 'wfdb'];
 % wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
-myWFDB = [basepath filesep 'myWFDB'];
+% myWFDB = [basepath filesep 'myWFDB'];
 myLoader = [gui_A_path filesep 'Loader'];
 
 %% Initialize rhrv toolbox
@@ -23,7 +23,7 @@ addpath(gui_A_path);
 % addpath(gui_PZ_path);
 addpath(config_path);
 % addpath(wfdb_path);
-addpath(myWFDB);
+% addpath(myWFDB);
 addpath(myLoader);
 
 PhysioZooGUI();

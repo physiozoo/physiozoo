@@ -84,6 +84,7 @@ figPos = handles.figure1.Position;
 handles.figure1.Position(1) = int32((screen(3)-figPos(3))/2);
 handles.figure1.Position(2) = int32((screen(4)-figPos(4))/2);
 handles.figure1.Units = figUnits;
+movegui(handles.figure1, 'northwest');
 %% ---------------------------------------------------------------
 
 handles.btnSaveAs.Visible = 'off';

@@ -34,6 +34,8 @@ switch ext(2:end)
     case 'mat'
         header = load(FileName);
         if ~isfield(header,'Data')
+            close(waitbar_handle);
+            delete(waitbar_handle)
             return
         end
         data.data = header.Data;

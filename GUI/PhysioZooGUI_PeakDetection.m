@@ -1,7 +1,7 @@
 function PhysioZooGUI_PeakDetection()
 
-myUpBackgroundColor = [219 237 240]/255; % Blue %[0.863 0.941 0.906];
-myLowBackgroundColor = [219 237 240]/255; %[1 1 1];
+myUpBackgroundColor = [205 237 240]/255; % Blue %[0.863 0.941 0.906]; % [219 237 240]/255
+myLowBackgroundColor = [205 237 240]/255; %[219 237 240]/255
 myEditTextColor = [1 1 1];
 mySliderColor = [0.8 0.9 0.9];
 myPushButtonColor = [0.26 0.37 0.41];
@@ -634,7 +634,7 @@ GUI = createInterface();
         % Add third-party dependencies to path
         gui_basepath = fileparts(mfilename('fullpath'));
         basepath = fileparts(gui_basepath);
-        
+                      
         if ~isfield(DIRS, 'dataDirectory')
             DIRS.dataDirectory = [basepath filesep 'Examples'];
         end
@@ -713,20 +713,10 @@ GUI = createInterface();
                             header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
 
                             DATA.ecg_channel = 1;
-%                             DATA.rec_name = DATA.temp_rec_name4wfdb;                                                       
         
-                            if strcmpi(EXT, 'txt') || strcmpi(EXT, 'mat')
-                                
-                                curr_dir = pwd;
-                                cd(tempdir);
-                                
-%                                 DATA.wfdb_record_name = [tempdir DATA.temp_rec_name4wfdb];
-                                DATA.wfdb_record_name = [DATA.temp_rec_name4wfdb];
+                            if strcmpi(EXT, 'txt') || strcmpi(EXT, 'mat')                                
 
-
-                                mat2wfdb(DATA.sig, DATA.wfdb_record_name, DATA.Fs, [], ' ' ,{} ,[]);
-                                
-                                cd(curr_dir);
+                                mat2wfdb(DATA.sig, DATA.temp_rec_name4wfdb, DATA.Fs, [], ' ' ,{} ,[]);                                
                                 
                                 DATA.wfdb_record_name = [tempdir DATA.temp_rec_name4wfdb];
                                 
@@ -736,15 +726,13 @@ GUI = createInterface();
                             else
                                 DATA.wfdb_record_name = DATA.rec_name;
                             end                                                        
-                        else
-                            %                         throw(MException('LoadFile:text', 'Please, choose right file format for this module.'));
+                        else                            
                             errordlg(['onOpenFile error: ' 'Please, choose another file type.'], 'Input Error');
                             return;
                         end
                     elseif strcmp(Config.alarm.(MSG), 'Canceled')
                         return;
-                    else
-                        %                     throw(MException('LoadFile:text', MSG));
+                    else                        
                         errordlg(['onOpenFile error: ' Config.alarm.(MSG)], 'Input Error');
                         return;
                     end
@@ -1524,8 +1512,7 @@ GUI = createInterface();
         
         [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...
             '*.txt','Text Files (*.txt)';...
-            '*.mat','MAT-files (*.mat)';
-            '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'},...
+            '*.mat','MAT-files (*.mat)'},...
             'Choose Analyzed Data File Name',...
             [DIRS.analyzedDataDirectory, filesep, file_name, '.', EXT]);
         
@@ -1573,35 +1560,36 @@ GUI = createInterface();
                 dlmwrite(full_file_name, Data, 'delimiter', '\t', 'precision', '%d', 'newline', 'pc', '-append', 'roffset', 1);
                 
                 fclose(header_fileID);
-            elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
-                [~, filename_noExt, ~] = fileparts(filename);
-                %                 saved_path = pwd;
-                %                 cd(results_folder_name);
-                try
-                    %                                         wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
-                    %                                         addpath(wfdb_path);
-                    %                                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
-                    %                                         wrann(filename_noExt, 'qrs', int64(Data));
-                    %                                         rmpath(wfdb_path);
-                    %                                         delete([filename_noExt '.dat']);
-                    
-%                     if ~isrecord([results_folder_name filename_noExt], 'hea')
-%                         % Create header
-%                         saved_path = pwd;
-%                         cd(results_folder_name);
-%                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
-%                         delete([filename_noExt '.dat']);
-%                         cd(saved_path);
-%                     end
-                    
-                    comments = {['Mammal:' Mammal ',Integration_level:' Integration_level]};
-                    
-                    %                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
-                    wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data), 'fs', Fs, 'comments', comments); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
-                    
-                catch e
-                    disp(e);
-                end
+%             elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
+%                 [~, filename_noExt, ~] = fileparts(filename);
+%                 %                 saved_path = pwd;
+%                 %                 cd(results_folder_name);
+%                 try
+%                     %                                         wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
+%                     %                                         addpath(wfdb_path);
+%                     %                                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
+%                     %                                         wrann(filename_noExt, 'qrs', int64(Data));
+%                     %                                         rmpath(wfdb_path);
+%                     %                                         delete([filename_noExt '.dat']);
+%                     
+% %                     if ~isrecord([results_folder_name filename_noExt], 'hea')
+% %                         % Create header
+% %                         saved_path = pwd;
+% %                         cd(results_folder_name);
+% %                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
+% %                         delete([filename_noExt '.dat']);
+% %                         cd(saved_path);
+% %                     end
+%                     
+%                     comments = {['Mammal:' Mammal ',Integration_level:' Integration_level]};
+%                     
+%                     %                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
+%                     
+%                     wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data), 'fs', Fs, 'comments', comments); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
+%                     
+%                 catch e
+%                     disp(e);
+%                 end
 %                                 cd(saved_path);
             else
                 errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');

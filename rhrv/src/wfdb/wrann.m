@@ -116,8 +116,11 @@ if ~isrecord(rec_name, 'hea')
         header_filename = [rec_name '.hea'];
         fid = fopen(header_filename, 'w');
 
+        [~, file_name ,~] = fileparts(header_filename);
+        
         % Header line
-        fprintf(fid, '%s 0 %f 0\n', rec_name, p.fs);
+        %fprintf(fid, '%s 0 %f 0\n', rec_name, p.fs);
+        fprintf(fid, '%s 0 %f 0\n', file_name, p.fs);
 
         % Comment lines
         for jj = 1:length(p.comments)

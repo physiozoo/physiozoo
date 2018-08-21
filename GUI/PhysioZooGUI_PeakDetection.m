@@ -259,7 +259,7 @@ GUI = createInterface();
         ConfigParamTab = uix.Panel( 'Parent', RightLeft_TabPanel, 'Padding', DATA.Padding);
         DisplayTab = uix.Panel( 'Parent', RightLeft_TabPanel, 'Padding', DATA.Padding);
         
-        RightLeft_TabPanel.TabTitles = {'Record', 'Config Params', 'Display'};
+        RightLeft_TabPanel.TabTitles = {'Record', 'Configuration', 'Display'};
         RightLeft_TabPanel.TabWidth = 100;
         RightLeft_TabPanel.FontSize = BigFontSize;
         
@@ -636,7 +636,7 @@ GUI = createInterface();
         basepath = fileparts(gui_basepath);
                       
         if ~isfield(DIRS, 'dataDirectory')
-            DIRS.dataDirectory = [basepath filesep 'Examples'];
+            DIRS.dataDirectory = [basepath filesep 'ExamplesTXT'];
         end
         if isempty(EXT)
             EXT = 'txt';
@@ -1337,7 +1337,7 @@ GUI = createInterface();
         basepath = fileparts(gui_basepath);
         
         if ~isfield(DIRS, 'analyzedDataDirectory')
-            DIRS.analyzedDataDirectory = [basepath filesep 'Examples'];
+            DIRS.analyzedDataDirectory = [basepath filesep 'ExamplesTXT'];
         end
         if isempty(EXT)
             EXT = 'txt';
@@ -2376,7 +2376,7 @@ GUI = createInterface();
         basepath = fileparts(gui_basepath);
         
         if ~isfield(DIRS, 'analyzedDataDirectory')
-            DIRS.analyzedDataDirectory = [basepath filesep 'Examples'];
+            DIRS.analyzedDataDirectory = [basepath filesep 'ExamplesTXT'];
         end
         if isempty(EXT)
             EXT = 'txt';

@@ -2,8 +2,8 @@ function PhysioZooGUI()
 
 % Add third-party dependencies to path
 gui_basepath = fileparts(mfilename('fullpath'));
-addpath(genpath([gui_basepath filesep 'lib']));
-addpath(genpath([gui_basepath filesep 'Loader']));
+% addpath(genpath([gui_basepath filesep 'lib']));
+% addpath(genpath([gui_basepath filesep 'Loader']));
 % addpath(genpath([gui_basepath filesep 'myWFDB']));
 % addpath(genpath([gui_basepath filesep 'rhrv']));
 basepath = fileparts(gui_basepath);
@@ -11,6 +11,8 @@ basepath = fileparts(gui_basepath);
 rhrv_init;
 
 disp(['ctfroot: ', ctfroot]);
+disp(['pwd: ', pwd]);
+disp(['userpath: ', userpath]);
 
 
 %myBackgroundColor = [0.9 1 1];
@@ -2541,7 +2543,7 @@ displayEndOfDemoMessage('');
     end
 %%
     function reset_defaults_path()
-        DIRS.dataDirectory = [basepath filesep 'Examples'];
+        DIRS.dataDirectory = [basepath filesep 'ExamplesTXT'];
         DIRS.configDirectory = [basepath filesep 'Config'];
         DIRS.dataQualityDirectory = [basepath filesep 'Examples'];
         DIRS.DataBaseDirectory = basepath;

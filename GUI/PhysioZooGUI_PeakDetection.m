@@ -716,9 +716,8 @@ GUI = createInterface();
         
                             if strcmpi(EXT, 'txt') || strcmpi(EXT, 'mat')                                
 
-                                mat2wfdb(DATA.sig, DATA.temp_rec_name4wfdb, DATA.Fs, [], ' ' ,{} ,[]);                                
-                                
                                 DATA.wfdb_record_name = [tempdir DATA.temp_rec_name4wfdb];
+                                mat2wfdb(DATA.sig, DATA.wfdb_record_name, DATA.Fs, [], ' ' ,{} ,[]);                                                                                                
                                 
                                 if ~exist([DATA.wfdb_record_name '.dat'], 'file') && ~exist([DATA.wfdb_record_name '.hea'], 'file')   % && ~exist(fullfile(tempdir, [DATA.temp_rec_name4wfdb '.hea']), 'file')
                                     throw(MException('set_data:text', 'Wfdb file cannot be created.'));
@@ -763,20 +762,7 @@ GUI = createInterface();
                 catch
                     return; % Canceled by user
                 end
-                if GUI.AutoCalc_checkbox.Value
-                    try
-                        RunAndPlotPeakDetector();
-                        set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
-                        set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
-                        
-%                         disp(['DATA.maxRRTime = ' num2str(DATA.maxRRTime)]);
-                        
-                        setAxesXTicks(GUI.RRInt_Axes);
-                    catch e
-                        errordlg(['OpenFile error: ' e.message], 'Input Error');
-                        return;
-                    end
-                end
+                
                 %             elseif strcmpi(ExtensionFileName, 'txt')
                 
                 %                 %               txt_data = dlmread([DATA.rec_name '.' EXT], '\t');
@@ -841,12 +827,30 @@ GUI = createInterface();
             set(GUI.GUIRecord.TimeSeriesLength_text, 'String', [[num2str(header_info.duration.h) ':' num2str(header_info.duration.m) ':' ...
                 num2str(header_info.duration.s) '.' num2str(header_info.duration.ms)] '    h:min:sec.msec']);
             
+            
+             if GUI.AutoCalc_checkbox.Value
+                 try
+                     RunAndPlotPeakDetector();
+                     set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+                     set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
+                     
+                     setAxesXTicks(GUI.RRInt_Axes);
+                 catch e
+                     errordlg(['OpenFile error: ' e.message], 'Input Error');
+                     return;
+                 end
+             end
+             
+             
             GUI.LoadConfigurationFile.Enable = 'on';
             GUI.SaveConfigurationFile.Enable = 'on';
             GUI.SavePeaks.Enable = 'on';
             GUI.LoadPeaks.Enable = 'on';
             GUI.SaveDataQuality.Enable = 'on';
             GUI.OpenDataQuality.Enable = 'on';
+            
+           
+            
             
             DATA.zoom_rect_limits = [0 DATA.firstZoom];
             EnablePageUpDown();
@@ -1048,6 +1052,10 @@ GUI = createInterface();
                         close(waitbar_handle);
                     end
                     
+                    if length(DATA.qrs) == 1
+                        throw(MException('peaks_detection_algorithm:text', 'Not enough peaks!'));
+                    end
+                    
                     if ~isempty(DATA.qrs)
                         DATA.qrs = double(DATA.qrs);
                         GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
@@ -1105,11 +1113,7 @@ GUI = createInterface();
                 
                 DATA.maxRRTime = max(rr_time);
                 DATA.RRIntPage_Length = DATA.maxRRTime;
-                
-%                 disp(['DATA.maxRRTime = ' num2str(DATA.maxRRTime)]);
-%                 disp(['DATA.RRIntPage_Length = ', num2str(DATA.RRIntPage_Length)]);
-                
-                
+                               
                 min_sig = min(rr_data);
                 max_sig = max(rr_data);
                 delta = (max_sig - min_sig)*0.1;
@@ -1123,6 +1127,9 @@ GUI = createInterface();
                 set(GUI.RRInt_Axes, 'YLim', [RRMinYLimit RRMaxYLimit]);
                 
                 ylabel(GUI.RRInt_Axes, yString);
+            else
+%                 errordlg('plot_rr_data: Not enough peaks!', 'Input Error');
+                throw(MException('plot_rr_data:text', 'Not enough peaks!'));
             end
         end
     end
@@ -1135,14 +1142,20 @@ GUI = createInterface();
         gui_basepath = fileparts(mfilename('fullpath'));
         basepath = fileparts(gui_basepath);
         
-        if ~isdir([basepath filesep 'Results'])
+        if isdeployed
+            res_parh = [userpath filesep 'PhysioZoo' filesep 'Results'];
+        else
+            res_parh = [basepath filesep 'Results'];
+        end
+        
+        if ~isdir(res_parh)
             warning('off');
-            mkdir(basepath, 'Results');
+            mkdir(res_parh);
             warning('on');
         end
         
         if ~isfield(DIRS, 'analyzedDataDirectory')
-            DIRS.analyzedDataDirectory = [basepath filesep 'Results'];
+            DIRS.analyzedDataDirectory = res_parh;
         end
         
         [Config_FileName, PathName] = uigetfile({'*.conf','Conf files (*.conf)'}, 'Open Configuration File', [DIRS.analyzedDataDirectory filesep 'gqrs.custom.conf']);
@@ -1169,16 +1182,22 @@ GUI = createInterface();
         
         % Add third-party dependencies to path
         gui_basepath = fileparts(mfilename('fullpath'));
-        basepath = fileparts(gui_basepath);
+        basepath = fileparts(gui_basepath);                
         
-        if ~isdir([basepath filesep 'Results'])
+        if isdeployed
+            res_parh = [userpath filesep 'PhysioZoo' filesep 'Results'];
+        else
+            res_parh = [basepath filesep 'Results'];
+        end
+        
+        if ~isdir(res_parh)
             warning('off');
-            mkdir(basepath, 'Results');
+            mkdir(res_parh);
             warning('on');
         end
         
         if ~isfield(DIRS, 'analyzedDataDirectory')
-            DIRS.analyzedDataDirectory = [basepath filesep 'Results'];
+            DIRS.analyzedDataDirectory = res_parh;
         end
         
         [filename, results_folder_name, ~] = uiputfile({'*.','Conf Files (*.conf)'},'Choose Config File Name', [DIRS.analyzedDataDirectory filesep 'gqrs.custom.conf']);
@@ -1494,14 +1513,20 @@ GUI = createInterface();
         gui_basepath = fileparts(mfilename('fullpath'));
         basepath = fileparts(gui_basepath);
         
-        if ~isdir([basepath filesep 'Results'])
+        if isdeployed
+            res_parh = [userpath filesep 'PhysioZoo' filesep 'Results'];
+        else
+            res_parh = [basepath filesep 'Results'];
+        end
+        
+        if ~isdir(res_parh)
             warning('off');
-            mkdir(basepath, 'Results');
+            mkdir(res_parh);
             warning('on');
         end
         
         if ~isfield(DIRS, 'analyzedDataDirectory')
-            DIRS.analyzedDataDirectory = [basepath filesep 'Results'];
+            DIRS.analyzedDataDirectory = res_parh;
         end
         if isempty(EXT)
             EXT = 'txt';
@@ -2298,14 +2323,20 @@ GUI = createInterface();
         gui_basepath = fileparts(mfilename('fullpath'));
         basepath = fileparts(gui_basepath);
         
-        if ~isdir([basepath filesep 'Results'])
+        if isdeployed
+            res_parh = [userpath filesep 'PhysioZoo' filesep 'Results'];
+        else
+            res_parh = [basepath filesep 'Results'];
+        end
+        
+        if ~isdir(res_parh)
             warning('off');
-            mkdir(basepath, 'Results');
+            mkdir(res_parh);
             warning('on');
         end
         
         if ~isfield(DIRS, 'analyzedDataDirectory')
-            DIRS.analyzedDataDirectory = [basepath filesep 'Results'];
+            DIRS.analyzedDataDirectory = res_parh;
         end
         if isempty(EXT)
             EXT = 'txt';

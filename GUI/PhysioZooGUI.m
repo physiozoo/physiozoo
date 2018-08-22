@@ -8,12 +8,13 @@ gui_basepath = fileparts(mfilename('fullpath'));
 % addpath(genpath([gui_basepath filesep 'rhrv']));
 basepath = fileparts(gui_basepath);
 
-rhrv_init;
-
-disp(['ctfroot: ', ctfroot]);
-disp(['pwd: ', pwd]);
-disp(['userpath: ', userpath]);
-
+if isdeployed
+    rhrv_init;
+    
+    disp(['ctfroot: ', ctfroot]);
+    disp(['pwd: ', pwd]);
+    disp(['userpath: ', userpath]);
+end
 
 %myBackgroundColor = [0.9 1 1];
 myUpBackgroundColor = [0.863 0.941 0.906];
@@ -1796,7 +1797,11 @@ displayEndOfDemoMessage('');
             '*.mat','MAT-files (*.mat)'; ...
             '*.qrs; *.atr', 'WFDB Files (*.qrs; *.atr)'}, ...
             'Open QRS File', [DIRS.dataDirectory filesep '*.' DIRS.Ext_open]);
-        Load_Single_File(QRS_FileName, PathName);
+        try
+            Load_Single_File(QRS_FileName, PathName);
+        catch
+            errordlg(['onOpenFile: ' e.message], 'Input Error');
+        end
     end
 %%
     function Load_Single_File(QRS_FileName, PathName)
@@ -1814,7 +1819,7 @@ displayEndOfDemoMessage('');
                     if isvalid(waitbar_handle)
                         close(waitbar_handle);
                     end
-                    errordlg(['onOpenFile error: ' e.message], 'Input Error');
+                    errordlg(['Load Single File error: ' e.message], 'Input Error');
                     clean_gui();
                     cla(GUI.RRDataAxes);
                     cla(GUI.AllDataAxes);
@@ -1833,7 +1838,15 @@ displayEndOfDemoMessage('');
                     DATA.mammal = mammal;
                     DATA.mammal_index = mammal_index;
                     Set_MammalIntegration_After_Load();
-                    rhrv_load_defaults(DATA.mammals{DATA.mammal_index});
+                    try
+                        rhrv_load_defaults(DATA.mammals{DATA.mammal_index});
+                    catch e
+                        errordlg(['rhrv_load_defaults: ' e.message], 'Input Error');
+                        if isvalid(waitbar_handle)
+                            close(waitbar_handle);
+                        end
+                        return;
+                    end
                     waitbar(2 / 2, waitbar_handle, 'Create Config Parameters Windows');
                     createConfigParametersInterface();
                     close(waitbar_handle);
@@ -2182,7 +2195,7 @@ displayEndOfDemoMessage('');
                 
                 set(GUI.Active_Window_Length, 'Enable', 'on');
                 if isfield(GUI, 'SpectralWindowLengthHandle') && isvalid(GUI.SpectralWindowLengthHandle)
-                    GUI.SpectralWindowLengthHandle.Enable = 'on';
+                    GUI.SpectralWindowLengthHandle.Enable = 'off';
                 end
             catch e
                 errordlg(['Reset Plot: ' e.message], 'Input Error');
@@ -2528,7 +2541,12 @@ displayEndOfDemoMessage('');
     end
 %%
     function set_defaults_path()
-        if ~isdir([basepath filesep 'Results'])
+        if isdeployed
+            res_dir = [userpath filesep 'PhysioZoo' filesep 'Results'];
+        else
+            res_dir = [basepath filesep 'Results'];
+        end
+        if ~isdir(res_dir)
             create_defaults_results_path();
         end
         if isempty(who('DIRS')) || isempty(DIRS)
@@ -2542,19 +2560,27 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function reset_defaults_path()
+    function reset_defaults_path()        
+        DIRS.configDirectory = [basepath filesep 'Config'];        
+        DIRS.DataBaseDirectory = basepath;        
+        DIRS.dataQualityDirectory = [basepath filesep 'ExamplesTXT'];
         DIRS.dataDirectory = [basepath filesep 'ExamplesTXT'];
-        DIRS.configDirectory = [basepath filesep 'Config'];
-        DIRS.dataQualityDirectory = [basepath filesep 'Examples'];
-        DIRS.DataBaseDirectory = basepath;
-        DIRS.ExportResultsDirectory = [basepath filesep 'Results'];
         DIRS.Ext_open = 'txt';
         DIRS.Ext_group = 'txt';
+        if isdeployed
+            DIRS.ExportResultsDirectory = [userpath filesep 'PhysioZoo' filesep  'Results'];            
+        else
+            DIRS.ExportResultsDirectory = [basepath filesep  'Results'];            
+        end
     end
 %%
     function create_defaults_results_path()
         warning('off');
-        mkdir(basepath, 'Results');
+        if isdeployed
+            mkdir(userpath, 'PhysioZoo\Results');
+        else
+            mkdir(basepath, 'Results');
+        end
         warning('on');
     end
 %%
@@ -4950,6 +4976,12 @@ displayEndOfDemoMessage('');
     function WinAverage_checkbox_Callback(src, ~)
         
         DATA.WinAverage = get(src, 'Value');
+        
+        if DATA.WinAverage
+            GUI.SpectralWindowLengthHandle.Enable = 'on';
+        else
+            GUI.SpectralWindowLengthHandle.Enable = 'off';
+        end                
         
         if get(GUI.AutoCalc_checkbox, 'Value')
 %             DATA.WinAverage = 1;

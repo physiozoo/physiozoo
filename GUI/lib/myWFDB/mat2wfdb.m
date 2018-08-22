@@ -221,10 +221,14 @@ elseif numel(isquant)~=M
     error('isquant:wrongNumberOfElements','isquant  array has incorrect number of elements');
 end
 
-
+nameArray = regexp(fname, filesep, 'split');
+if ~isempty(nameArray)
+    file_name = nameArray{end};
+end
+    
 %Head record specification line
 head_str=cell(M+1,1);
-head_str(1)={[fname ' ' num2str(M) ' ' num2str(Fs) ' ' num2str(N)]};
+head_str(1)={[file_name ' ' num2str(M) ' ' num2str(Fs) ' ' num2str(N)]};
 
 switch bit_res % Allocate space for digital signals
     case 8
@@ -237,10 +241,10 @@ end
 
 %Loop through all signals, digitizing them and generating lines in header file
 for m=1:M
-    nameArray = regexp(fname, filesep, 'split');
-    if ~isempty(nameArray)
-        fname = nameArray{end};
-    end
+%     nameArray = regexp(fname, filesep, 'split');
+%     if ~isempty(nameArray)
+%         fname = nameArray{end};
+%     end
     
     [tmp_bit1,bit_gain,baseline_tmp,ck_sum]=quant(x(:,m), ...
         bit_res, gain{m}, baseline{m}, isquant(m), isdigital);
@@ -249,17 +253,17 @@ for m=1:M
     
     % Header file signal specification lines
     % Should we specify precision of num2str(gain)?
-    head_str(m+1)={[fname '.dat ' fmt ' ' num2str(bit_gain) '(' ...
+    head_str(m+1)={[file_name '.dat ' fmt ' ' num2str(bit_gain) '(' ...
         num2str(baseline_tmp) ')/' adu{m} ' ' '0 0 ' num2str(tmp_bit1(1)) ' ' num2str(ck_sum) ' 0 ' sg_name{m}]};
 end
 if(length(y)<1)
-    error(['Converted data is empty. Exiting without saving file...'])
+    error('Converted data is empty. Exiting without saving file...');
 end
 
 %Write *.dat file
-fid = fopen(fullfile(tempdir, [fname '.dat']), 'wb', machine_format);
+fid = fopen([fname '.dat'], 'wb', machine_format);
 if fid == -1  % ~(fid)
-    error(['Could not create data file for writing: ' fname])
+    error(['Could not create data file for writing: ' fname '.dat'])
 end
 
 if (bit_res==8)
@@ -268,20 +272,20 @@ else
     count=fwrite(fid, y',['int' num2str(bit_res)],skip,machine_format);
 end
 
-if(~count)
+if (~count)
     fclose(fid);
-    error(['Could not data write to file: ' fname])  
+    error(['Could not data write to file: ' fname '.dat'])  
 end
 
 % fprintf(['Generated *.dat file: ' fname '\n'])
-disp(['Generated *.dat file: ' fname]);
+disp(['Generated *.dat file: ' fname '.dat']);
 fclose(fid);
 
 %Write *.hea file
-fid = fopen(fullfile(tempdir, [fname '.hea']),'w');
+fid = fopen([fname '.hea'], 'w');
 for m=1:M+1
     if fid == -1
-        error(['Could not create header file for writing: ' fname])
+        error(['Could not create header file for writing: ' fname '.hea'])
     end
     fprintf(fid,'%s\n',head_str{m});
 end
@@ -300,7 +304,7 @@ if(nargout==1)
     varargout(1)={y};
 end
 % fprintf(['Generated *.hea file: ' fname '\n'])
-disp(['Generated *.hea file: ' fname]);
+disp(['Generated *.hea file: ' fname '.hea']);
 fclose(fid);
 
 end

@@ -5,11 +5,11 @@ gui_basepath = fileparts(mfilename('fullpath'));
 % addpath(genpath([gui_basepath filesep 'lib']));
 % addpath(genpath([gui_basepath filesep 'Loader']));
 % addpath(genpath([gui_basepath filesep 'myWFDB']));
-% addpath(genpath([gui_basepath filesep 'rhrv']));
+% addpath(genpath([gui_basepath filesep 'mhrv']));
 basepath = fileparts(gui_basepath);
 
 if isdeployed
-    rhrv_init;
+    mhrv_init;
     
     disp(['ctfroot: ', ctfroot]);
     disp(['pwd: ', pwd]);
@@ -29,9 +29,9 @@ persistent DATA_Fig;
 persistent DATA_Measure;
 persistent defaultRate;
 
-%rhrv_init();
+%mhrv_init();
 %% Load default toolbox parameters
-%rhrv_load_defaults --clear;
+%mhrv_load_defaults --clear;
 
 %%
 DATA = createData();
@@ -1027,7 +1027,7 @@ displayEndOfDemoMessage('');
         
         GUI.ConfigParamHandlesMap = containers.Map;
         
-        defaults_map = rhrv_get_all_defaults();
+        defaults_map = mhrv_get_all_defaults();
         param_keys = keys(defaults_map);
         
         filtrr_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'filtrr')), param_keys)));
@@ -1039,15 +1039,15 @@ displayEndOfDemoMessage('');
         ma_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), ma_range_keys))) = [];
         quotient_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), quotient_range_keys))) = [];
         
-        DATA.filter_quotient = rhrv_get_default('filtrr.quotient.enable', 'value');
-        DATA.filter_ma = rhrv_get_default('filtrr.moving_average.enable', 'value');
-        DATA.filter_range = rhrv_get_default('filtrr.range.enable', 'value');
+        DATA.filter_quotient = mhrv_get_default('filtrr.quotient.enable', 'value');
+        DATA.filter_ma = mhrv_get_default('filtrr.moving_average.enable', 'value');
+        DATA.filter_range = mhrv_get_default('filtrr.range.enable', 'value');
         
-        DATA.default_filters_thresholds.moving_average.win_threshold = rhrv_get_default('filtrr.moving_average.win_threshold', 'value');
-        DATA.default_filters_thresholds.moving_average.win_length = rhrv_get_default('filtrr.moving_average.win_length', 'value');
-        DATA.default_filters_thresholds.quotient.rr_max_change = rhrv_get_default('filtrr.quotient.rr_max_change', 'value');
-        DATA.default_filters_thresholds.range.rr_max = rhrv_get_default('filtrr.range.rr_max', 'value');
-        DATA.default_filters_thresholds.range.rr_min = rhrv_get_default('filtrr.range.rr_min', 'value');        
+        DATA.default_filters_thresholds.moving_average.win_threshold = mhrv_get_default('filtrr.moving_average.win_threshold', 'value');
+        DATA.default_filters_thresholds.moving_average.win_length = mhrv_get_default('filtrr.moving_average.win_length', 'value');
+        DATA.default_filters_thresholds.quotient.rr_max_change = mhrv_get_default('filtrr.quotient.rr_max_change', 'value');
+        DATA.default_filters_thresholds.range.rr_max = mhrv_get_default('filtrr.range.rr_max', 'value');
+        DATA.default_filters_thresholds.range.rr_min = mhrv_get_default('filtrr.range.rr_min', 'value');        
         
         DATA.custom_filters_thresholds = DATA.default_filters_thresholds;
 %         DATA.custom_config_params = defaults_map;
@@ -1839,9 +1839,9 @@ displayEndOfDemoMessage('');
                     DATA.mammal_index = mammal_index;
                     Set_MammalIntegration_After_Load();
                     try
-                        rhrv_load_defaults(DATA.mammals{DATA.mammal_index});
+                        mhrv_load_defaults(DATA.mammals{DATA.mammal_index});
                     catch e
-                        errordlg(['rhrv_load_defaults: ' e.message], 'Input Error');
+                        errordlg(['mhrv_load_defaults: ' e.message], 'Input Error');
                         if isvalid(waitbar_handle)
                             close(waitbar_handle);
                         end
@@ -2039,7 +2039,7 @@ displayEndOfDemoMessage('');
             DATA.maxSignalLength = DATA.trr(end);
             DATA.RRIntPage_Length = DATA.maxSignalLength;
             
-            DATA.Filt_MyDefaultWindowSize = rhrv_get_default('hrv_freq.window_minutes', 'value') * 60; % min to sec
+            DATA.Filt_MyDefaultWindowSize = mhrv_get_default('hrv_freq.window_minutes', 'value') * 60; % min to sec
             
             DATA.PlotHR = 0;
             DATA.firstSecond2Show = 0;
@@ -2608,7 +2608,7 @@ displayEndOfDemoMessage('');
         DATA.mammal_index = mammal_index;
         
         % Load user-specified default parameters
-        rhrv_load_defaults(DATA.mammals{ DATA.mammal_index} );
+        mhrv_load_defaults(DATA.mammals{ DATA.mammal_index} );
         createConfigParametersInterface();
         
         GUI.Mammal_popupmenu.Value = mammal_index;
@@ -2660,7 +2660,7 @@ displayEndOfDemoMessage('');
             if ~isequal(Config_FileName, 0)
                 params_filename = fullfile(PathName, Config_FileName);
                 [pathstr, name, ~] = fileparts(params_filename);
-                rhrv_load_defaults([pathstr filesep name]);
+                mhrv_load_defaults([pathstr filesep name]);
                 DIRS.configDirectory = PathName;
             else % Cancel by user
                 GUI.Mammal_popupmenu.Value = DATA.mammal_index;
@@ -2668,7 +2668,7 @@ displayEndOfDemoMessage('');
             end
         else
             % Load user-specified default parameters
-            rhrv_load_defaults(DATA.mammals{index_selected});
+            mhrv_load_defaults(DATA.mammals{index_selected});
         end
         createConfigParametersInterface();
         %         reset_plot();
@@ -2692,7 +2692,7 @@ displayEndOfDemoMessage('');
             if ~isequal(Config_FileName, 0)
                 params_filename = fullfile(PathName, Config_FileName);
                 [pathstr, name, ~] = fileparts(params_filename);
-                rhrv_load_defaults([pathstr filesep name]);
+                mhrv_load_defaults([pathstr filesep name]);
                 DIRS.configDirectory = PathName;
                 createConfigParametersInterface();
                 reset_plot_Data();
@@ -2720,7 +2720,7 @@ displayEndOfDemoMessage('');
             if ~isequal(Config_FileName, 0)
                 params_filename = fullfile(PathName, Config_FileName);
                 [pathstr, name, ~] = fileparts(params_filename);
-                rhrv_load_defaults([pathstr filesep name]);
+                mhrv_load_defaults([pathstr filesep name]);
                 DIRS.configDirectory = PathName;
                 DATA.mammal_index = length(DATA.mammals);
                 createConfigParametersInterface();
@@ -2739,7 +2739,7 @@ displayEndOfDemoMessage('');
     function set_default_filters_threshoulds(param_field, param_value)
         if isfield(GUI, 'ConfigParamHandlesMap')
             set(GUI.ConfigParamHandlesMap(param_field), 'String', num2str(param_value));
-            rhrv_set_default(param_field, param_value);
+            mhrv_set_default(param_field, param_value);
         end
     end
 %%
@@ -2932,9 +2932,9 @@ displayEndOfDemoMessage('');
         else
             error('Unknown filter!');
         end
-        rhrv_set_default('filtrr.range.enable', DATA.filter_range);
-        rhrv_set_default('filtrr.quotient.enable', DATA.filter_quotient);
-        rhrv_set_default('filtrr.ma.enable', DATA.filter_ma);
+        mhrv_set_default('filtrr.range.enable', DATA.filter_range);
+        mhrv_set_default('filtrr.quotient.enable', DATA.filter_quotient);
+        mhrv_set_default('filtrr.ma.enable', DATA.filter_ma);
     end
 %%
     function FirstSecond_Callback ( ~, ~ )
@@ -3681,7 +3681,7 @@ displayEndOfDemoMessage('');
         if ~isempty(min_suffix_ind)
             param_name = param_name(1 : min_suffix_ind - 1);
             min_param_value = screen_value;
-            prev_param_array = rhrv_get_default(param_name);
+            prev_param_array = mhrv_get_default(param_name);
             max_param_value = prev_param_array.value(2);
             
             if min_param_value > max_param_value
@@ -3703,8 +3703,8 @@ displayEndOfDemoMessage('');
             end
             
             if do_couple
-                cp_param_array = rhrv_get_default(couple_name);
-                rhrv_set_default( couple_name, [cp_param_array.value(1) screen_value] );
+                cp_param_array = mhrv_get_default(couple_name);
+                mhrv_set_default( couple_name, [cp_param_array.value(1) screen_value] );
                 couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
                 set(findobj(couple_handle, 'Tag', [couple_name '.max']), 'String', num2str(screen_value));
             end
@@ -3712,7 +3712,7 @@ displayEndOfDemoMessage('');
         elseif ~isempty(max_suffix_ind)
             param_name = param_name(1 : max_suffix_ind - 1);
             max_param_value = screen_value;
-            prev_param_array = rhrv_get_default(param_name);
+            prev_param_array = mhrv_get_default(param_name);
             min_param_value = prev_param_array.value(1);
             
             if max_param_value < min_param_value
@@ -3733,18 +3733,18 @@ displayEndOfDemoMessage('');
                 do_couple = true;
             end
             if do_couple
-                cp_param_array = rhrv_get_default(couple_name);
-                rhrv_set_default( couple_name, [screen_value cp_param_array.value(2)] );
+                cp_param_array = mhrv_get_default(couple_name);
+                mhrv_set_default( couple_name, [screen_value cp_param_array.value(2)] );
                 couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
                 set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(screen_value));
             end
         else
             param_value = screen_value;
-            prev_param_array = rhrv_get_default(param_name);
+            prev_param_array = mhrv_get_default(param_name);
             prev_param_value = prev_param_array.value;
         end
         
-        rhrv_set_default( param_name, param_value );
+        mhrv_set_default( param_name, param_value );
         
 %         if ~get(GUI.AutoCalc_checkbox, 'Value')
 %             DATA.custom_config_params(param_name) = param_value;
@@ -3775,7 +3775,7 @@ displayEndOfDemoMessage('');
             catch e
                 errordlg(['set_config_Callback error: ' e.message], 'Input Error');
                 
-                rhrv_set_default( param_name, prev_param_array );    
+                mhrv_set_default( param_name, prev_param_array );    
                 
                 if strcmp(param_name, 'hrv_freq.window_minutes')
                     set(src, 'String', calcDuration(prev_param_value*60, 0));
@@ -3784,7 +3784,7 @@ displayEndOfDemoMessage('');
                 end
                 
                 if ~isempty(cp_param_array)
-                    rhrv_set_default( couple_name, cp_param_array );
+                    mhrv_set_default( couple_name, cp_param_array );
                     couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
                     if ~isempty(min_suffix_ind)
                         set(findobj(couple_handle, 'Tag', [couple_name '.max']), 'String', num2str(prev_param_value))
@@ -3803,7 +3803,7 @@ displayEndOfDemoMessage('');
         if ~isequal(Config_FileName, 0)
             params_filename = fullfile(PathName, Config_FileName);
             [pathstr, name, ~] = fileparts(params_filename);
-            rhrv_load_defaults([pathstr filesep name]);
+            mhrv_load_defaults([pathstr filesep name]);
             DIRS.configDirectory = PathName;
             GUI.Mammal_popupmenu.Value = length(DATA.mammals);
             
@@ -3857,22 +3857,22 @@ displayEndOfDemoMessage('');
         if ~isequal(results_folder_name, 0)
             DIRS.configDirectory = results_folder_name;
             full_file_name = fullfile(results_folder_name, filename);
-            rhrv_save_defaults( full_file_name );
+            mhrv_save_defaults( full_file_name );
             
-            temp_rhrv_default_values = ReadYaml(full_file_name);
+            temp_mhrv_default_values = ReadYaml(full_file_name);
             
-            temp_hrv_freq = temp_rhrv_default_values.hrv_freq;
-            temp_mse = temp_rhrv_default_values.mse;
+            temp_hrv_freq = temp_mhrv_default_values.hrv_freq;
+            temp_mse = temp_mhrv_default_values.mse;
             
-            temp_rhrv_default_values = rmfield(temp_rhrv_default_values, {'hrv_freq'; 'rqrs'; 'rhrv'});
+            temp_mhrv_default_values = rmfield(temp_mhrv_default_values, {'hrv_freq'; 'rqrs'; 'mhrv'});
             
             temp_hrv_freq = rmfield(temp_hrv_freq, {'methods'; 'power_methods'; 'extra_bands'});
             temp_mse = rmfield(temp_mse, {'mse_metrics'});
             
-            temp_rhrv_default_values.hrv_freq = temp_hrv_freq;
-            temp_rhrv_default_values.mse = temp_mse;
+            temp_mhrv_default_values.hrv_freq = temp_hrv_freq;
+            temp_mhrv_default_values.mse = temp_mse;
             
-            result = WriteYaml(full_file_name, temp_rhrv_default_values);
+            result = WriteYaml(full_file_name, temp_mhrv_default_values);
         end
     end
 %%
@@ -4079,10 +4079,10 @@ displayEndOfDemoMessage('');
                     
                     waitbar(1 / 3, waitbar_handle, ['Calculating time measures for window ' num2str(i)]);
                     % Time Domain metrics
-                    fprintf('[win % d: %.3f] >> rhrv: Calculating time-domain metrics...\n', i, cputime-t0);
+                    fprintf('[win % d: %.3f] >> mhrv: Calculating time-domain metrics...\n', i, cputime-t0);
                     [hrv_td, pd_time] = hrv_time(nni_window);
                     % Heart rate fragmentation metrics
-                    fprintf('[win % d: %.3f] >> rhrv: Calculating fragmentation metrics...\n', i, cputime-t0);
+                    fprintf('[win % d: %.3f] >> mhrv: Calculating fragmentation metrics...\n', i, cputime-t0);
                     hrv_frag = hrv_fragmentation(nni_window);
                     
                     DATA.TimeStat.PlotData{i} = pd_time;
@@ -4163,10 +4163,10 @@ displayEndOfDemoMessage('');
                     
                     waitbar(2 / 3, waitbar_handle, ['Calculating frequency measures for window ' num2str(i)]);
                     % Freq domain metrics
-                    fprintf('[win % d: %.3f] >> rhrv: Calculating frequency-domain metrics...\n', i, cputime-t0);
+                    fprintf('[win % d: %.3f] >> mhrv: Calculating frequency-domain metrics...\n', i, cputime-t0);
                     
                     if DATA.WinAverage
-                        window_minutes = rhrv_get_default('hrv_freq.window_minutes');
+                        window_minutes = mhrv_get_default('hrv_freq.window_minutes');
                         [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', window_minutes.value);
                     else
                         [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', []);
@@ -4251,7 +4251,7 @@ displayEndOfDemoMessage('');
                 nni_window = DATA.nni(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
                 
                 waitbar(3 / 3, waitbar_handle, ['Calculating nolinear measures for window ' num2str(i)]);
-                fprintf('[win % d: %.3f] >> rhrv: Calculating nonlinear metrics...\n', i, cputime-t0);
+                fprintf('[win % d: %.3f] >> mhrv: Calculating nonlinear metrics...\n', i, cputime-t0);
                 [hrv_nl, pd_nl] = hrv_nonlinear(nni_window);
                 
                 DATA.NonLinStat.PlotData{i} = pd_nl;
@@ -4964,7 +4964,7 @@ displayEndOfDemoMessage('');
 %%
     function Normalize_STD_checkbox_Callback(src, ~)
         
-        rhrv_set_default('mse.normalize_std', get(src, 'Value'));
+        mhrv_set_default('mse.normalize_std', get(src, 'Value'));
         
         if get(GUI.AutoCalc_checkbox, 'Value')
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
@@ -5090,15 +5090,15 @@ displayEndOfDemoMessage('');
             if strcmp(tag, 'Frequency_Bands')
                 [f_VLF_LF, f_LF_HF, f_HF_up] = compute_bands(HR);
                 
-                prev_vlf = rhrv_get_default('hrv_freq.vlf_band');
-                prev_lf = rhrv_get_default('hrv_freq.lf_band');
-                prev_hf = rhrv_get_default('hrv_freq.hf_band');
-                beta_band = rhrv_get_default('hrv_freq.beta_band');
+                prev_vlf = mhrv_get_default('hrv_freq.vlf_band');
+                prev_lf = mhrv_get_default('hrv_freq.lf_band');
+                prev_hf = mhrv_get_default('hrv_freq.hf_band');
+                beta_band = mhrv_get_default('hrv_freq.beta_band');
                 
-                rhrv_set_default('hrv_freq.hf_band', [f_LF_HF f_HF_up]);
-                rhrv_set_default('hrv_freq.lf_band', [f_VLF_LF f_LF_HF]);
-                rhrv_set_default('hrv_freq.vlf_band', [prev_vlf.value(1) f_VLF_LF]);
-                rhrv_set_default('hrv_freq.beta_band', [prev_vlf.value(1) f_VLF_LF]);
+                mhrv_set_default('hrv_freq.hf_band', [f_LF_HF f_HF_up]);
+                mhrv_set_default('hrv_freq.lf_band', [f_VLF_LF f_LF_HF]);
+                mhrv_set_default('hrv_freq.vlf_band', [prev_vlf.value(1) f_VLF_LF]);
+                mhrv_set_default('hrv_freq.beta_band', [prev_vlf.value(1) f_VLF_LF]);
                 
                 if get(GUI.AutoCalc_checkbox, 'Value')
                     try
@@ -5106,10 +5106,10 @@ displayEndOfDemoMessage('');
                     catch e
                         errordlg(['ok_estimate_button_Callback error: ' e.message], 'Input Error');
                         
-                        rhrv_set_default('hrv_freq.hf_band', prev_hf);
-                        rhrv_set_default('hrv_freq.lf_band', prev_lf);
-                        rhrv_set_default('hrv_freq.vlf_band', prev_vlf);
-                        rhrv_set_default('hrv_freq.beta_band', beta_band);
+                        mhrv_set_default('hrv_freq.hf_band', prev_hf);
+                        mhrv_set_default('hrv_freq.lf_band', prev_lf);
+                        mhrv_set_default('hrv_freq.vlf_band', prev_vlf);
+                        mhrv_set_default('hrv_freq.beta_band', beta_band);
                         delete(GUI.EstimateLFBandWindow);
                         return;
                     end
@@ -5126,15 +5126,15 @@ displayEndOfDemoMessage('');
                 xx = compute_pnnxx(HR);
                 param_name = 'hrv_time.pnn_thresh_ms';
                 
-                prev_pnn_thresh = rhrv_get_default(param_name);
-                rhrv_set_default(param_name, xx);
+                prev_pnn_thresh = mhrv_get_default(param_name);
+                mhrv_set_default(param_name, xx);
                 
                 if get(GUI.AutoCalc_checkbox, 'Value')
                     try
                         update_statistics('hrv_time');
                     catch e
                         errordlg(['ok_estimate_button_Callback error: ' e.message], 'Input Error');
-                        rhrv_set_default(param_name, prev_pnn_thresh);
+                        mhrv_set_default(param_name, prev_pnn_thresh);
                         delete(GUI.EstimateLFBandWindow);
                         return;
                     end
@@ -5371,7 +5371,7 @@ displayEndOfDemoMessage('');
         [mammal, mammal_index] = Load_Data_from_SingleFile(curr_file_name, curr_path, waitbar_handle);
         
         if ~isfield(GUI, 'ConfigParamHandlesMap')
-            rhrv_load_defaults(DATA.mammals{DATA.mammal_index});
+            mhrv_load_defaults(DATA.mammals{DATA.mammal_index});
         end
         
         set_default_values();

@@ -13,15 +13,14 @@ function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
 %           - SD2: Poincare plot SD2 descriptor (std. dev. of intervals along the line of identity).
 %           - alpha1: Log-log slope of DFA in the low-scale region.
 %           - alpha2: Log-log slope of DFA in the high-scale region.
-%           - beta: Log-log slope of frequency in VLF band.
 %           - SampEn: The sample entropy.
 %
 
 %% Input
-DEFAULT_MSE_MAX_SCALE = rhrv_get_default('mse.mse_max_scale', 'value');
-DEFAULT_MSE_METRICS = rhrv_get_default('mse.mse_metrics', 'value');
-DEFAULT_SAMPEN_R = rhrv_get_default('mse.sampen_r', 'value');
-DEFAULT_SAMPEN_M = rhrv_get_default('mse.sampen_m', 'value');
+DEFAULT_MSE_MAX_SCALE = mhrv_get_default('mse.mse_max_scale', 'value');
+DEFAULT_MSE_METRICS = mhrv_get_default('mse.mse_metrics', 'value');
+DEFAULT_SAMPEN_R = mhrv_get_default('mse.sampen_r', 'value');
+DEFAULT_SAMPEN_M = mhrv_get_default('mse.sampen_m', 'value');
 
 % Define input
 p = inputParser;

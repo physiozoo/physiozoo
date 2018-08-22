@@ -18,15 +18,24 @@ myLoader = [gui_A_path filesep 'Loader'];
 %check for updates
 url = ['https://github.com/shemla/physiozoo.github.io/blob/master/version.txt'];%%%%url to version file
 new_version1=webread(url);
-k=findstr(new_version,'##version:');
+k=findstr(new_version1,'##version:');
 new_version=new_version1(k:k+16);
-current_version=load(strrep(basepath,'PhysioZoo','version.txt'));
+
+filename=[basepath '/version.txt'];
+fid = fopen(filename,'rt');
+tmp = textscan(fid,'%s','Delimiter','\n');
+fclose(fid);
+current_version = tmp{1};
+
+
 
 if ~strcmp(current_version,new_version)
 	meassage_updates={'Good news!','There''s a new version of the PhysioZoo program, now available online for download.','We at the PhysioZoo community work constantly on new updates, features, and maintainance of the existing features of the program.','In order to enjoy the full extension of the tools we provide with PhysioZoo, we suggest you always to work with the latest release of the program.'};  ;
 	answer = questdlg(meassage_updates,'New Update','Go to website','Not now','Go to website');
 	if strcmp(answer,'Go to website')
-		web('http://physiozoo.com/');
+		
+        web('http://physiozoo.com/');
+        return
 	end
 end
 

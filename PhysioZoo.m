@@ -4,7 +4,7 @@ function [] = PhysioZoo()
 
 %% Set up paths
 basepath = fileparts(mfilename('fullpath'));
-% rhrv_path = [basepath filesep 'rhrv'];
+% mhrv_path = [basepath filesep 'mhrv'];
 % gui_path = [basepath filesep 'GUI'];
 % lib_path = [gui_path filesep 'lib'];
 % % gui_PZ_path = [basepath filesep 'Test'];
@@ -39,10 +39,10 @@ if ~strcmp(current_version,new_version)
 	end
 end
 
-%% Initialize rhrv toolbox
+%% Initialize mhrv toolbox
 
-rhrv_init_script = [basepath filesep 'rhrv' filesep 'rhrv_init'];
-run(rhrv_init_script);
+mhrv_init_script = [basepath filesep 'mhrv' filesep 'mhrv_init'];
+run(mhrv_init_script);
 
 %% Start PhysioZoo GUI
 % addpath('D:\Temp\wfdb-app-toolbox-0-9-10\mcode');

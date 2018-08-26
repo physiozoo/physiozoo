@@ -773,10 +773,14 @@ end
             switch Channels.Data.Type
                 case 'electrography'
                     title = 'Amplitude (millivolt)';
-                    Span = GetSpan(Channels);
-                    if Span > iWc
-                        Span = iWc;
-                    end
+                    Span = ((Channels.Time.Data(iWc)-2.5) < Channels.Time.Data & Channels.Time.Data < (Channels.Time.Data(iWc)+2.5));
+%                     Span = GetSpan(Channels,5);
+                    
+                case {'interval','peak'}
+                    title = 'Amplitude [millisec]';
+                    Span = ((Channels.Time.Data(iWc)-15) < Channels.Time.Data & Channels.Time.Data < (Channels.Time.Data(iWc)+15));
+%                     Span = GetSpan(Channels,30);
+                                      
                 otherwise
                     title = 'Amplitude [sec]';
                     Span =int32(length(Channels.Data.Data)/1000);
@@ -785,8 +789,8 @@ end
                     end
                     
             end
-            dataWindow = iWc-Span+1:iWc+Span-1;
-            hp = plot(hAx,Channels.Time.Data(dataWindow),Channels.Data.Data(dataWindow));
+%             dataWindow = iWc-Span+1:iWc+Span-1;
+            hp = plot(hAx,Channels.Time.Data(Span),Channels.Data.Data(Span));
             set(hp,'linewidth',1.5,'color',[0.1412    0.2745    0.2902]);
             axis(hAx,'tight')
             zoom(hAx,'on')
@@ -796,20 +800,23 @@ end
        
         
 %% ---------- Get Span Function ------------------
-        function Span = GetSpan(Channels)
-            Y = fft(Channels.Data.Data-mean(Channels.Data.Data));
-            Fs = Channels.Time.Fs;
-            L = length(Channels.Data.Data);
-            P2 = abs(Y/L);
-            iC = floor(L/2);
-            P1 = P2(1:iC+1);
-            P1(2:end-1) = 2*P1(2:end-1);
-            f = Fs*(0:(iC))/L;
-            [~,k] = max(P1);
-            if f(k) > 5
-                [~,k] = max(P1(1:k-1));
+        function Span = GetSpan(Channels,window)
+            Span = (window/2)*Channels.Time.Fs;
+            if 0
+                Y = fft(Channels.Data.Data-mean(Channels.Data.Data));
+                Fs = Channels.Time.Fs;
+                L = length(Channels.Data.Data);
+                P2 = abs(Y/L);
+                iC = floor(L/2);
+                P1 = P2(1:iC+1);
+                P1(2:end-1) = 2*P1(2:end-1);
+                f = Fs*(0:(iC))/L;
+                [~,k] = max(P1);
+                if f(k) > 5
+                    [~,k] = max(P1(1:k-1));
+                end
+                Span = 1/f(k)*5*Fs;
             end
-            Span = 1/f(k)*5*Fs;
             
     %% ------------------ Update Data Channels Function --------------
         function [Channels,err] = UpdateDataChannel(Channels,handles)

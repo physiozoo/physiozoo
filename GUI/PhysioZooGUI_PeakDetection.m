@@ -173,6 +173,10 @@ GUI = createInterface();
         set(GUI.Window, 'CloseRequestFcn', {@Exit_Callback});
         
         
+        javaFrame = get(GUI.Window,'JavaFrame');
+        javaFrame.setFigureIcon(javax.swing.ImageIcon('logo.png'));
+        
+        
         %         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
         %         set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
         %         set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
@@ -795,17 +799,9 @@ GUI = createInterface();
                 % %                     header_info = set_data(txt_data);
                 %                     header_info = set_data([time_data' ECG_data]);
                 % %                 end
-            end
+            end                        
             
-            
-            
-            set(GUI.GUIRecord.RecordFileName_text, 'String', ECG_FileName);
-            
-            %             cla(GUI.ECG_Axes); % RawData_axes
-            %             cla(GUI.RRInt_Axes); % RR_axes
-            %
-            %             DATA.mammal_index = 1;
-            %             set(GUI.GUIRecord.Mammal_popupmenu, 'Value', 1);
+            set(GUI.GUIRecord.RecordFileName_text, 'String', ECG_FileName);                        
             
             GUI.RawData_handle = line(DATA.tm, DATA.sig, 'Parent', GUI.ECG_Axes);
             
@@ -826,35 +822,29 @@ GUI = createInterface();
             
             set(GUI.GUIRecord.TimeSeriesLength_text, 'String', [[num2str(header_info.duration.h) ':' num2str(header_info.duration.m) ':' ...
                 num2str(header_info.duration.s) '.' num2str(header_info.duration.ms)] '    h:min:sec.msec']);
-            
-            
+                        
              if GUI.AutoCalc_checkbox.Value
                  try
                      RunAndPlotPeakDetector();
-                     set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
-                     set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
-                     
-                     setAxesXTicks(GUI.RRInt_Axes);
+%                      set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+%                      set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
+%                      
+%                      setAxesXTicks(GUI.RRInt_Axes);
                  catch e
                      errordlg(['OpenFile error: ' e.message], 'Input Error');
                      return;
                  end
              end
-             
-             
+                          
             GUI.LoadConfigurationFile.Enable = 'on';
             GUI.SaveConfigurationFile.Enable = 'on';
             GUI.SavePeaks.Enable = 'on';
             GUI.LoadPeaks.Enable = 'on';
             GUI.SaveDataQuality.Enable = 'on';
-            GUI.OpenDataQuality.Enable = 'on';
-            
-           
-            
+            GUI.OpenDataQuality.Enable = 'on';            
             
             DATA.zoom_rect_limits = [0 DATA.firstZoom];
-            EnablePageUpDown();
-            %             GUI.PeaksTable.Data(:, 2) = {0};
+%             EnablePageUpDown();            
         end
     end
 %%
@@ -948,7 +938,9 @@ GUI = createInterface();
         min_y_lim = min(min_sig, max_sig) - delta;
         max_y_lim = max(min_sig, max_sig) + delta;
         
-        set(GUI.RRInt_Axes, 'YLim', [min_y_lim max_y_lim]);
+        if max_y_lim > min_y_lim
+            set(GUI.RRInt_Axes, 'YLim', [min_y_lim max_y_lim]);
+        end
         
         set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', num2str(min_y_lim));
         set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', num2str(max_y_lim));
@@ -1052,9 +1044,14 @@ GUI = createInterface();
                         close(waitbar_handle);
                     end
                     
-                    if length(DATA.qrs) == 1
-                        throw(MException('peaks_detection_algorithm:text', 'Not enough peaks!'));
-                    end
+%                     if length(DATA.qrs) == 1
+%                         GUI.PeaksTable.Data(:, 2) = {0};
+%                         DATA.peaks_added = 0;
+%                         DATA.peaks_deleted = 0;
+%                         DATA.peaks_total = length(DATA.qrs);
+%                         GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
+%                         throw(MException('peaks_detection_algorithm:text', 'Not enough peaks!'));
+%                     end
                     
                     if ~isempty(DATA.qrs)
                         DATA.qrs = double(DATA.qrs);
@@ -1071,7 +1068,17 @@ GUI = createInterface();
                         
                         set(GUI.GUIDisplay.FirstSecond, 'String', calcDuration(min(DATA.zoom_rect_limits), 0));
                         set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(max(DATA.zoom_rect_limits) - min(DATA.zoom_rect_limits), 0));
+                                                
+                        set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+                        set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);                        
+                        setAxesXTicks(GUI.RRInt_Axes);
+                        EnablePageUpDown();                        
                     else
+                        GUI.PeaksTable.Data(:, 2) = {0};
+                        DATA.peaks_added = 0;
+                        DATA.peaks_deleted = 0;
+                        DATA.peaks_total = length(DATA.qrs);
+                        GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
                         errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
                     end
                 end
@@ -1079,11 +1086,17 @@ GUI = createInterface();
                 if isvalid(waitbar_handle)
                     close(waitbar_handle);
                 end
+                GUI.PeaksTable.Data(:, 2) = {0};
+                DATA.peaks_added = 0;
+                DATA.peaks_deleted = 0;
+                DATA.peaks_total = length(DATA.qrs);
+                GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
                 rethrow(e);
             end
             set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
             set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
             set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
+            set(GUI.Window, 'WindowScrollWheelFcn', @my_WindowScrollWheelFcn);
         end
     end
 %%
@@ -1097,7 +1110,7 @@ GUI = createInterface();
     function plot_rr_data()
         if isfield(DATA, 'qrs')
             
-            qrs = DATA.qrs(~isnan(DATA.qrs));
+            qrs = double(DATA.qrs(~isnan(DATA.qrs)));
             
             rr_time = qrs(1:end-1)/DATA.Fs;
             rr_data = diff(qrs)/DATA.Fs;
@@ -1124,7 +1137,9 @@ GUI = createInterface();
                 set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', num2str(RRMinYLimit));
                 set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', num2str(RRMaxYLimit));
                 
-                set(GUI.RRInt_Axes, 'YLim', [RRMinYLimit RRMaxYLimit]);
+                if RRMaxYLimit > RRMinYLimit 
+                    set(GUI.RRInt_Axes, 'YLim', [RRMinYLimit RRMaxYLimit]);
+                end
                 
                 ylabel(GUI.RRInt_Axes, yString);
             else
@@ -1537,7 +1552,8 @@ GUI = createInterface();
         
         [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...
             '*.txt','Text Files (*.txt)';...
-            '*.mat','MAT-files (*.mat)'},...
+            '*.mat','MAT-files (*.mat)';
+            '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'},...
             'Choose Analyzed Data File Name',...
             [DIRS.analyzedDataDirectory, filesep, file_name, '.', EXT]);
         
@@ -1585,37 +1601,37 @@ GUI = createInterface();
                 dlmwrite(full_file_name, Data, 'delimiter', '\t', 'precision', '%d', 'newline', 'pc', '-append', 'roffset', 1);
                 
                 fclose(header_fileID);
-%             elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
-%                 [~, filename_noExt, ~] = fileparts(filename);
-%                 %                 saved_path = pwd;
-%                 %                 cd(results_folder_name);
-%                 try
-%                     %                                         wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
-%                     %                                         addpath(wfdb_path);
-%                     %                                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
-%                     %                                         wrann(filename_noExt, 'qrs', int64(Data));
-%                     %                                         rmpath(wfdb_path);
-%                     %                                         delete([filename_noExt '.dat']);
-%                     
-% %                     if ~isrecord([results_folder_name filename_noExt], 'hea')
-% %                         % Create header
-% %                         saved_path = pwd;
-% %                         cd(results_folder_name);
-% %                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
-% %                         delete([filename_noExt '.dat']);
-% %                         cd(saved_path);
-% %                     end
-%                     
-%                     comments = {['Mammal:' Mammal ',Integration_level:' Integration_level]};
-%                     
-%                     %                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
-%                     
-%                     wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data), 'fs', Fs, 'comments', comments); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
-%                     
-%                 catch e
-%                     disp(e);
-%                 end
-%                                 cd(saved_path);
+            elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
+                [~, filename_noExt, ~] = fileparts(filename);
+                %                 saved_path = pwd;
+                %                 cd(results_folder_name);
+                try
+                    %                                         wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
+                    %                                         addpath(wfdb_path);
+                    %                                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
+                    %                                         wrann(filename_noExt, 'qrs', int64(Data));
+                    %                                         rmpath(wfdb_path);
+                    %                                         delete([filename_noExt '.dat']);
+                    
+%                     if ~isrecord([results_folder_name filename_noExt], 'hea')
+%                         % Create header
+%                         saved_path = pwd;
+%                         cd(results_folder_name);
+%                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
+%                         delete([filename_noExt '.dat']);
+%                         cd(saved_path);
+%                     end
+                    
+                    comments = {['Mammal:' Mammal ',Integration_level:' Integration_level]};
+                    
+                    %                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
+                    
+                    wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data), 'fs', Fs, 'comments', comments); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
+                    
+                catch e
+                    disp(e);
+                end
+                                cd(saved_path);
             else
                 errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
                 return;
@@ -1662,16 +1678,7 @@ GUI = createInterface();
         
         if isfield(DATA, 'sig') && ~isempty(DATA.sig)
             
-            if isfield(GUI, 'quality_win')
-                %                 for i = 1 : length(GUI.quality_win)
-                %                     try
-                %                         delete(GUI.quality_win(i));
-                %                         GUI.quality_win(i) = [];
-                %                     catch e
-                %                         i
-                %                         disp(e);
-                %                     end
-                %                 end
+            if isfield(GUI, 'quality_win')                
                 delete(GUI.quality_win);
                 GUI.quality_win = [];
                 DATA.quality_win_num = 0;
@@ -1706,48 +1713,73 @@ GUI = createInterface();
                 errordlg(['AutoCompute_pushbutton_Callback error: ' e.message], 'Input Error');
                 return;
             end
-            set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
-            set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
-            setAxesXTicks(GUI.RRInt_Axes);
+%             set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+%             set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
+%             setAxesXTicks(GUI.RRInt_Axes);
+%             EnablePageUpDown();
+        end
+    end
+%%
+    function my_WindowScrollWheelFcn(~, callbackdata, ~)
+        if (isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)) && hittest(GUI.Window) == GUI.ECG_Axes % white space
+            
+            if callbackdata.VerticalScrollCount > 0
+                direction = 1;
+            elseif callbackdata.VerticalScrollCount < 0
+                direction = -1;
+            end            
+            
+            xdata = get(GUI.red_rect_handle, 'XData');                        
+            cp = get(GUI.ECG_Axes, 'CurrentPoint');                        
+            
+            delta_x1 = cp(1, 1) - xdata(1);
+            delta_x2 = xdata(2) - cp(1, 1);
+                         
+            xdata([1, 4, 5]) = xdata(1) + direction * 0.1 * delta_x1;            
+            xdata([2, 3]) = xdata(2) - direction * 0.1 * delta_x2;                                    
+            
+            RR_XLim = get(GUI.RRInt_Axes,  'XLim');
+            min_XLim = min(RR_XLim);
+            max_XLim = max(RR_XLim);
+                        
+            if xdata(2) <= xdata(1)
+                return;
+            end            
+
+            if min(xdata) < min_XLim
+                xdata([1, 4, 5]) = min_XLim;
+            end
+            if max(xdata) > max_XLim                
+                xdata([2, 3]) = max_XLim ;
+            end
+
+            ChangePlot(xdata);
+            set(GUI.red_rect_handle, 'XData', xdata);
+            DATA.zoom_rect_limits = [xdata(1) xdata(2)];
             EnablePageUpDown();
+            redraw_quality_rect();
         end
     end
 %%
     function redraw_quality_rect()
         
-        ylim = get(GUI.ECG_Axes, 'YLim');
-        %         f = [1 2 3 4];
+        ylim = get(GUI.ECG_Axes, 'YLim');        
         
         if isfield(GUI, 'quality_win')
             for i = 1 : DATA.quality_win_num
-                %                 try
-                set(GUI.quality_win(i), 'YData', [min(ylim) min(ylim) max(ylim) max(ylim)]);
-                %                 catch
-                %                 end
                 
-                %                 quality_range{i} = get(GUI.quality_win(i), 'XData');
-                %                 FaceColor{i} = get(GUI.quality_win(i), 'FaceColor');
-                %
-                %                 delete(GUI.quality_win(i));
-                %
-                %                 v = [min(quality_range{i}) min(ylim); max(quality_range{i}) min(ylim); max(quality_range{i}) max(ylim); min(quality_range{i}) max(ylim)];
-                %
-                %                 GUI.quality_win(i) = patch('Faces', f, 'Vertices', v, 'FaceColor', FaceColor{i}, 'EdgeColor', FaceColor{i}, 'LineWidth', 1, 'FaceAlpha', 0.1, 'EdgeAlpha', 0.3, 'Parent', GUI.ECG_Axes);
-                %                 uistack(GUI.quality_win(i), 'down');
-            end
-            %             DATA.quality_win_num = 0;
+                set(GUI.quality_win(i), 'YData', [min(ylim) min(ylim) max(ylim) max(ylim)]);                
+            end            
         end
     end
 %%
-    function plot_quality_rect(quality_range, quality_win_num, quality_class)
-        %         quality_class = GUI.GUIRecord.Class_popupmenu.Value;
+    function plot_quality_rect(quality_range, quality_win_num, quality_class)        
         
         ylim = get(GUI.ECG_Axes, 'YLim');
         
         v = [min(quality_range) min(ylim); max(quality_range) min(ylim); max(quality_range) max(ylim); min(quality_range) max(ylim)];
         f = [1 2 3 4];
-        
-        %         DATA.quality_win_num = DATA.quality_win_num + 1;
+                
         GUI.quality_win(quality_win_num) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{quality_class}, 'EdgeColor', DATA.quality_color{quality_class}, ...
             'LineWidth', 1, 'FaceAlpha', 0.1, 'EdgeAlpha', 0.3, 'UserData', quality_class, 'Parent', GUI.ECG_Axes);
         
@@ -2045,7 +2077,7 @@ GUI = createInterface();
     end
 %%
     function Remove_Peak()
-        
+                        
         point1 = get(GUI.ECG_Axes, 'CurrentPoint');
         my_point = point1(1, 1);
         peak_search_win_sec = DATA.peak_search_win / 1000;
@@ -2072,12 +2104,15 @@ GUI = createInterface();
             nearest_point_value = DATA.sig(nearest_point_ind);
         end
         
-        red_peaks_x_data = GUI.red_peaks_handle.XData;
-        
         x_min = max(0, my_point - peak_search_win_sec);
         x_max = min(max(DATA.tm), my_point + peak_search_win_sec);
         
-        peak_ind = find(red_peaks_x_data >= x_min & red_peaks_x_data <= x_max);
+        if isfield(GUI, 'red_peaks_handle') && isvalid(GUI.red_peaks_handle)
+            red_peaks_x_data = GUI.red_peaks_handle.XData;            
+            peak_ind = find(red_peaks_x_data >= x_min & red_peaks_x_data <= x_max);
+        else
+            peak_ind = [];            
+        end
         
         if isempty(peak_ind)
             
@@ -2089,9 +2124,13 @@ GUI = createInterface();
                 time_new_peak = nearest_point_time;
                 new_peak = nearest_point_value;
             end
-            temp_XData = [GUI.red_peaks_handle.XData, time_new_peak];
-            temp_YData = [GUI.red_peaks_handle.YData, new_peak];
-            
+            if isfield(GUI, 'red_peaks_handle') && isvalid(GUI.red_peaks_handle)
+                temp_XData = [GUI.red_peaks_handle.XData, time_new_peak];
+                temp_YData = [GUI.red_peaks_handle.YData, new_peak];
+            else
+                temp_XData = time_new_peak;
+                temp_YData = new_peak;
+            end
             [temp_XData, ind_sort] = sort(temp_XData);
             temp_YData = temp_YData(ind_sort);
             
@@ -2104,9 +2143,13 @@ GUI = createInterface();
             
             DATA.peaks_total = DATA.peaks_total + length(global_ind);
             GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
-            
-            set(GUI.red_peaks_handle, 'XData', temp_XData, 'YData', temp_YData);
-            
+                                    
+            if isfield(GUI, 'red_peaks_handle') && isvalid(GUI.red_peaks_handle)
+                set(GUI.red_peaks_handle, 'XData', temp_XData, 'YData', temp_YData);
+            else
+                GUI.red_peaks_handle = line(temp_XData, temp_YData, 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
+                uistack(GUI.red_peaks_handle, 'top');
+            end            
         else
             GUI.red_peaks_handle.XData(peak_ind) = [];
             GUI.red_peaks_handle.YData(peak_ind) = [];
@@ -2128,26 +2171,29 @@ GUI = createInterface();
     function Del_win(range2del)
         xlim = get(GUI.ECG_Axes, 'XLim');
         
-        if min(range2del) >= xlim(1) || max(range2del) <= xlim(2)
-            red_peaks_x_data = GUI.red_peaks_handle.XData;
-            peak_ind = find(red_peaks_x_data >= min(range2del) & red_peaks_x_data <= max(range2del));
-            GUI.red_peaks_handle.XData(peak_ind) = [];
-            GUI.red_peaks_handle.YData(peak_ind) = [];
-            DATA.qrs(peak_ind) = [];
-            %             DATA.qrs(peak_ind) = NaN;
-            DATA.peaks_deleted = DATA.peaks_deleted + length(peak_ind);
-            GUI.PeaksTable.Data(3, 2) = {DATA.peaks_deleted};
+        if isfield(GUI, 'red_peaks_handle') && isvalid(GUI.red_peaks_handle)
             
-            DATA.peaks_total = DATA.peaks_total - length(peak_ind);
-            GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
-            
-            cla(GUI.RRInt_Axes);
-            plot_rr_data();
-            plot_red_rectangle(DATA.zoom_rect_limits);
-            
-            setRRIntYLim();
-        else
-            disp('Not in range!');
+            if min(range2del) >= xlim(1) || max(range2del) <= xlim(2)
+                red_peaks_x_data = GUI.red_peaks_handle.XData;
+                peak_ind = find(red_peaks_x_data >= min(range2del) & red_peaks_x_data <= max(range2del));
+                GUI.red_peaks_handle.XData(peak_ind) = [];
+                GUI.red_peaks_handle.YData(peak_ind) = [];
+                DATA.qrs(peak_ind) = [];
+                %             DATA.qrs(peak_ind) = NaN;
+                DATA.peaks_deleted = DATA.peaks_deleted + length(peak_ind);
+                GUI.PeaksTable.Data(3, 2) = {DATA.peaks_deleted};
+                
+                DATA.peaks_total = DATA.peaks_total - length(peak_ind);
+                GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
+                
+                cla(GUI.RRInt_Axes);
+                plot_rr_data();
+                plot_red_rectangle(DATA.zoom_rect_limits);
+                
+                setRRIntYLim();
+            else
+                disp('Not in range!');
+            end
         end
     end
 %%

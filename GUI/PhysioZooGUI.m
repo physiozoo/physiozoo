@@ -310,8 +310,8 @@ displayEndOfDemoMessage('');
         %         jicon=javax.swing.ImageIcon(['logo_v1.gif']);
         %         jFrame.setFigureIcon(jicon);
         
-        % javaFrame = get(hObject,'JavaFrame');
-        % javaFrame.setFigureIcon(javax.swing.ImageIcon('myicon.PNG'));
+        javaFrame = get(GUI.Window,'JavaFrame');
+        javaFrame.setFigureIcon(javax.swing.ImageIcon('logo.png'));
         
         DATA.zoom_handle = zoom(GUI.Window);
         %DATA.zoom_handle.Motion = 'vertical';

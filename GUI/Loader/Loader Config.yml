@@ -35,3 +35,6 @@ alarm:
     msg_6: OK
     msg_7: Canceled by User
     msg_8: Channel Info problem
+    msg_9: WFDB No Header file has existed
+    msg_10: WFDB No Channel's information has found
+    msg_11: Some problem with data was detected.WFDB No Channel's information has found

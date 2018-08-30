@@ -1,4 +1,4 @@
-function PhysioZooGUI_PeakDetection()
+function PhysioZooGUI_PeakDetection(fileNameFromM2)
 
 myUpBackgroundColor = [205 237 240]/255; % Blue %[0.863 0.941 0.906]; % [219 237 240]/255
 myLowBackgroundColor = [205 237 240]/255; %[219 237 240]/255
@@ -9,6 +9,9 @@ myPushButtonColor = [0.26 0.37 0.41];
 clearData();
 DATA = createData();
 GUI = createInterface();
+if nargin >= 1
+    OpenFile_Callback([], [], fileNameFromM2);
+end
 %%
     function clearHandles()
         GUI.RRInt_handle = [];
@@ -104,9 +107,14 @@ GUI = createInterface();
         
         GUI.PeaksTable.Data(:, 2) = {0};
         
+        DATA.Action = 'move';
+        
         set(GUI.Window, 'WindowButtonMotionFcn', '');
         set(GUI.Window, 'WindowButtonUpFcn', '');
         set(GUI.Window, 'WindowButtonDownFcn', '');
+        set(GUI.Window, 'WindowScrollWheelFcn', '');
+        set(GUI.Window, 'WindowKeyPressFcn', '');
+        set(GUI.Window, 'WindowKeyReleaseFcn', '');
     end
 %%
     function DATA = createData()
@@ -138,7 +146,7 @@ GUI = createInterface();
         %         DATA.integration_index = 1;
         
         
-        DATA.GUI_PeakDetector = {'rgrs'; 'ptqrs'; 'wptqrs'};
+        DATA.GUI_PeakDetector = {'rgrs'; 'jqrs'; 'wjqrs'};
         DATA.peakDetection_index = 1;
         
         DATA.GUI_Annotation = {'Peak'; 'Signal quality'};
@@ -172,10 +180,10 @@ GUI = createInterface();
         
         set(GUI.Window, 'CloseRequestFcn', {@Exit_Callback});
         
-        
+        warning('off');
         javaFrame = get(GUI.Window,'JavaFrame');
-        javaFrame.setFigureIcon(javax.swing.ImageIcon('logo.png'));
-        
+        javaFrame.setFigureIcon(javax.swing.ImageIcon([fileparts(fileparts(mfilename('fullpath'))) filesep 'GUI' filesep 'Logo' filesep 'logoBlue.png']));
+        warning('on');
         
         %         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
         %         set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
@@ -357,7 +365,7 @@ GUI = createInterface();
         
         uix.Empty('Parent', GUI.ConfigBox );
         
-        uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'ptqrs/wptqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+        uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'jqrs/wjqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
         [GUI, textBox{8}, text_handles{8}] = createGUISingleEditLine(GUI, 'GUIConfig', 'lcf', 'Lower cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'lcf');
         [GUI, textBox{9}, text_handles{9}] = createGUISingleEditLine(GUI, 'GUIConfig', 'hcf', 'Upper cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'hcf');
         [GUI, textBox{10}, text_handles{10}] = createGUISingleEditLine(GUI, 'GUIConfig', 'thr', 'Threshold', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'thr');
@@ -558,34 +566,16 @@ GUI = createInterface();
         
         if strcmp(mammal, 'dog')
             DATA.peak_search_win = 90;
-%             hcf = 125; % Hz
-%             rp = 0.170;
         elseif strcmp(mammal, 'rabbit')
             DATA.peak_search_win = 40;
-%             hcf = 150; % Hz
-%             rp = 0.088;
         elseif strcmp(mammal, 'mouse')
             DATA.peak_search_win = 17;
-%             hcf = 300; % Hz
-%             rp = 0.030;
         elseif strcmp(mammal, 'human')
             DATA.peak_search_win = 150;
-%             hcf = 100; % Hz
-%             rp = 0.250;
         else
             DATA.peak_search_win = 100;
-%             hcf = 100; % Hz
-%             rp = 0.250;
         end
-%         lcf = 3; % Hz
-%         thr = 0.5;
-%         ws = 10; % sec
         set(GUI.GUIConfig.PeaksWindow, 'String', DATA.peak_search_win);
-%         set(GUI.GUIConfig_ptqrs.lcf, 'String', lcf);
-%         set(GUI.GUIConfig_ptqrs.hcf, 'String', hcf);
-%         set(GUI.GUIConfig_ptqrs.thr, 'String', thr);
-%         set(GUI.GUIConfig_ptqrs.rp, 'String', rp);
-%         set(GUI.GUIConfig_ptqrs.ws, 'String', ws);
     end
 %%
     function Mammal_popupmenu_Callback(src, ~)
@@ -630,7 +620,7 @@ GUI = createInterface();
         end
     end
 %%
-    function OpenFile_Callback(~, ~)
+    function OpenFile_Callback(~, ~, fileNameFromM2)
         
         persistent DIRS;
         persistent EXT;
@@ -646,31 +636,25 @@ GUI = createInterface();
             EXT = 'txt';
         end
         
-        [ECG_FileName, PathName] = uigetfile( ...
-            {'*.txt','Text Files (*.txt)'; ...
-            '*.dat',  'WFDB Files (*.dat)'; ...
-            '*.mat','MAT-files (*.mat)'}, ...
-            'Open ECG File', [DIRS.dataDirectory filesep '*.' EXT]); %
+        if nargin < 3
+            [ECG_FileName, PathName] = uigetfile( ...
+                {'*.txt','Text Files (*.txt)'; ...
+                '*.dat',  'WFDB Files (*.dat)'; ...
+                '*.mat','MAT-files (*.mat)'}, ...
+                'Open ECG File', [DIRS.dataDirectory filesep '*.' EXT]); %
+        else
+            ECG_FileName = fileNameFromM2.FileName;
+            PathName = fileNameFromM2.PathName;
+        end
         
-        if ~isequal(ECG_FileName, 0)
-            
-            clearData();
-            clean_gui();
-            %             clearHandles();
-            clean_config_param_fields();
-            delete_temp_wfdb_files();
-            
-            %             set(GUI.GUIRecord.RecordFileName_text, 'String', '');
-            %             set(GUI.GUIRecord.PeaksFileName_text, 'String', '');
-            %             set(GUI.GUIRecord.DataQualityFileName_text, 'String', '');
-            %             set(GUI.GUIRecord.TimeSeriesLength_text, 'String', '');
-            
+        if ~isequal(ECG_FileName, 0)                        
+                        
             DIRS.dataDirectory = PathName;
             
-            [~, DATA.DataFileName, ExtensionFileName] = fileparts(ECG_FileName);
+            [~, DataFileName, ExtensionFileName] = fileparts(ECG_FileName);
             ExtensionFileName = ExtensionFileName(2:end);
             EXT = ExtensionFileName;
-            DATA.rec_name = [PathName, DATA.DataFileName];
+            
             %             if strcmpi(ExtensionFileName, 'dat')
             %                 header_info = wfdb_header(DATA.rec_name);
             %                 DATA.ecg_channel = get_signal_channel(DATA.rec_name, 'header_info', header_info);
@@ -695,7 +679,7 @@ GUI = createInterface();
                 try
 %                     waitbar_handle = waitbar(1/2, 'Loading data...', 'Name', 'Loading data');
                     Config = ReadYaml('Loader Config.yml');    
-                    DataFileMap = loadDataFile([DATA.rec_name '.' EXT]);
+                    DataFileMap = loadDataFile([PathName DataFileName '.' EXT]);
 %                     if isvalid(waitbar_handle)
 %                         close(waitbar_handle);
 %                     end
@@ -703,6 +687,16 @@ GUI = createInterface();
                     if strcmp(Config.alarm.(MSG), 'OK')
                         data = DataFileMap('DATA');
                         if strcmp(data.Data.Type, 'electrography')
+                            
+                            clearData();
+                            clean_gui();
+                            %             clearHandles();
+                            clean_config_param_fields();
+                            delete_temp_wfdb_files();
+                            
+                            DATA.DataFileName = DataFileName;
+                            DATA.rec_name = [PathName, DATA.DataFileName];
+                            
                             DATA.Mammal = data.General.mammal;
                             DATA.mammal_index = find(strcmp(DATA.mammals, DATA.Mammal));
                             DATA.Integration = data.General.integration_level;
@@ -728,14 +722,31 @@ GUI = createInterface();
                                 end
                             else
                                 DATA.wfdb_record_name = DATA.rec_name;
-                            end                                                        
-                        else                            
-                            errordlg(['onOpenFile error: ' 'Please, choose another file type.'], 'Input Error');
-                            return;
+                            end 
+                            isM2 = 0;
+                        else
+                            %                             errordlg(['onOpenFile error: ' 'Please, choose another file type.'], 'Input Error');
+                            %                             return;
+                            
+                            choice = questdlg('This recording contains peak annotations or an RR intervals time series. It will be opened in the HRV analysis module.', ...
+                                'Select module', 'OK', 'Cancel', 'OK');
+                            switch choice
+                                case 'OK'
+                                    
+                                    fileNameFromM1.FileName = ECG_FileName;
+                                    fileNameFromM1.PathName = PathName;
+                                    PhysioZooGUI(fileNameFromM1);
+                                    isM2 = 1;
+                                    return;
+                                case 'Cancel'
+                                    isM2 = 1;
+                                    return;
+                            end
+                            %                             [DATA_M2, GUI_M2] = Load_Single_File(DATA_M2, GUI_M2, myDirs, myColors, ECG_FileName, PathName);
                         end
                     elseif strcmp(Config.alarm.(MSG), 'Canceled')
                         return;
-                    else                        
+                    else
                         errordlg(['onOpenFile error: ' Config.alarm.(MSG)], 'Input Error');
                         return;
                     end
@@ -760,6 +771,8 @@ GUI = createInterface();
                 %                         return;
                 %                     end
                 %                 end
+                
+                if ~isM2
                 GUI.GUIRecord.Mammal_popupmenu.Value = DATA.mammal_index;
                 try
                     set_mammal(DATA.mammal_index);
@@ -845,6 +858,7 @@ GUI = createInterface();
             
             DATA.zoom_rect_limits = [0 DATA.firstZoom];
 %             EnablePageUpDown();            
+            end
         end
     end
 %%
@@ -972,6 +986,21 @@ GUI = createInterface();
                 set(params_GUI_edit_values(i), 'String', param_value);
             end
         end
+        
+        % Check that the upper freqquency of the filter is below Fs/2
+        if DATA.Fs/2 < str2double(get(GUI.GUIConfig.hcf, 'String'))
+            set(GUI.GUIConfig.hcf, 'String', floor(DATA.Fs/2) - 2);
+        end
+        
+        if isfield(DATA, 'config_map') && ~isempty(DATA.config_map)
+            DATA.config_map(get(GUI.GUIConfig.hcf, 'UserData')) = get(GUI.GUIConfig.hcf, 'String');
+            DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
+            temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
+            if temp_custom_conf_fileID == -1
+                errordlg('Problems with creation of custom config file.', 'Input Error');
+                return;
+            end            
+        end        
     end
 %%
     function RunAndPlotPeakDetector()
@@ -1012,14 +1041,14 @@ GUI = createInterface();
                         rp = str2double(DATA.config_map('rp'));
                         ws = str2double(DATA.config_map('ws'));
                         
-                        bpecg = prefilter2(DATA.sig, DATA.Fs, lcf, hcf, 0);  % bpecg = prefilter2(ecg,fs,lcf,hcf,0);
+                        bpecg = bpfilt(DATA.sig, DATA.Fs, lcf, hcf, [], 0);  % bpecg = prefilter2(ecg,fs,lcf,hcf,0);
                     end
                     
-                    if strcmp(peak_detector, 'ptqrs')
-                        qrs_pos = ptqrs(bpecg, DATA.Fs, thr, rp, 0); % qrs_pos = ptqrs(bpecg,fs,thr,rp,0);
+                    if strcmp(peak_detector, 'jqrs')
+                        qrs_pos = jqrs(bpecg, DATA.Fs, thr, rp, 0); % qrs_pos = ptqrs(bpecg,fs,thr,rp,0);
                         DATA.qrs = qrs_pos';
-                    elseif strcmp(peak_detector, 'wptqrs')
-                        qrs_pos = run_qrsdet_by_seg(bpecg, DATA.Fs, thr, rp, ws);
+                    elseif strcmp(peak_detector, 'wjqrs')
+                        qrs_pos = wjqrs(bpecg, DATA.Fs, thr, rp, ws);
                         DATA.qrs = qrs_pos';
                     else
                         
@@ -1028,6 +1057,7 @@ GUI = createInterface();
                         
                         if exist(fullfile([DATA.wfdb_record_name '.dat']), 'file') && exist(fullfile([DATA.wfdb_record_name '.hea']), 'file')
                             
+                            mhrv_set_default('rqrs.window_size_sec', 0.8 * str2double(get(GUI.GUIConfig.QS, 'String')));
                             
                             %                         [DATA.qrs, tm, sig, Fs] = rqrs([tempdir DATA.rec_name], 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
                             [DATA.qrs, tm, sig, Fs] = rqrs(DATA.wfdb_record_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
@@ -1097,6 +1127,8 @@ GUI = createInterface();
             set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
             set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
             set(GUI.Window, 'WindowScrollWheelFcn', @my_WindowScrollWheelFcn);
+            set(GUI.Window, 'WindowKeyPressFcn', @my_WindowKeyPressFcn);
+            set(GUI.Window, 'WindowKeyReleaseFcn', @my_WindowKeyReleaseFcn);
         end
     end
 %%
@@ -1720,45 +1752,83 @@ GUI = createInterface();
         end
     end
 %%
+    function my_WindowKeyPressFcn(~, ~, ~)
+        DATA.Action = 'zoom';
+    end
+%%
+    function my_WindowKeyReleaseFcn(~, ~, ~)
+        DATA.Action = 'move';
+    end
+%%
     function my_WindowScrollWheelFcn(~, callbackdata, ~)
-        if (isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)) && hittest(GUI.Window) == GUI.ECG_Axes % white space
-            
-            if callbackdata.VerticalScrollCount > 0
-                direction = 1;
-            elseif callbackdata.VerticalScrollCount < 0
-                direction = -1;
-            end            
-            
-            xdata = get(GUI.red_rect_handle, 'XData');                        
-            cp = get(GUI.ECG_Axes, 'CurrentPoint');                        
-            
-            delta_x1 = cp(1, 1) - xdata(1);
-            delta_x2 = xdata(2) - cp(1, 1);
-                         
-            xdata([1, 4, 5]) = xdata(1) + direction * 0.1 * delta_x1;            
-            xdata([2, 3]) = xdata(2) - direction * 0.1 * delta_x2;                                    
-            
-            RR_XLim = get(GUI.RRInt_Axes,  'XLim');
-            min_XLim = min(RR_XLim);
-            max_XLim = max(RR_XLim);
-                        
-            if xdata(2) <= xdata(1)
-                return;
-            end            
-
-            if min(xdata) < min_XLim
-                xdata([1, 4, 5]) = min_XLim;
-            end
-            if max(xdata) > max_XLim                
-                xdata([2, 3]) = max_XLim ;
-            end
-
-            ChangePlot(xdata);
-            set(GUI.red_rect_handle, 'XData', xdata);
-            DATA.zoom_rect_limits = [xdata(1) xdata(2)];
-            EnablePageUpDown();
-            redraw_quality_rect();
+        
+        hObj = hittest(GUI.Window);
+        if callbackdata.VerticalScrollCount > 0
+            direction = 1;
+        elseif callbackdata.VerticalScrollCount < 0
+            direction = -1;
         end
+        
+        % ECG Axes (up axes)
+        if (isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)) && (any(ismember([hObj, hObj.Parent], GUI.ECG_Axes)))
+            switch DATA.Action
+                case 'zoom'
+                    xdata = get(GUI.red_rect_handle, 'XData');
+                    cp = get(GUI.ECG_Axes, 'CurrentPoint');
+                    
+                    delta_x1 = cp(1, 1) - xdata(1);
+                    delta_x2 = xdata(2) - cp(1, 1);
+                    
+                    xdata([1, 4, 5]) = xdata(1) + direction * 0.1 * delta_x1;
+                    xdata([2, 3]) = xdata(2) - direction * 0.1 * delta_x2;
+                    
+                    RR_XLim = get(GUI.RRInt_Axes,  'XLim');
+                    min_XLim = min(RR_XLim);
+                    max_XLim = max(RR_XLim);
+                    
+                    if xdata(2) <= xdata(1)
+                        return;
+                    end
+                    
+                    if min(xdata) < min_XLim
+                        xdata([1, 4, 5]) = min_XLim;
+                    end
+                    if max(xdata) > max_XLim
+                        xdata([2, 3]) = max_XLim ;
+                    end
+                    
+                    ChangePlot(xdata);
+                    set(GUI.red_rect_handle, 'XData', xdata);
+                    DATA.zoom_rect_limits = [xdata(1) xdata(2)];
+                    EnablePageUpDown();
+                    redraw_quality_rect();
+                otherwise
+            end
+        end
+        
+        % RR Interval Axes (down axes)        
+        if (isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)) && (any(ismember([hObj, hObj.Parent], GUI.RRInt_Axes)))            
+            switch DATA.Action
+                case 'zoom'                    
+                    RRIntPage_Length = get(GUI.GUIDisplay.RRIntPage_Length, 'String');
+                    [RRIntPage_Length, isInputNumeric] = calcDurationInSeconds(GUI.GUIDisplay.RRIntPage_Length, RRIntPage_Length, DATA.RRIntPage_Length);
+                    
+                    if direction > 0
+                        RRIntPage_Length = RRIntPage_Length * 0.9;
+                    else
+                        RRIntPage_Length = RRIntPage_Length * 1.1;
+                    end                    
+                    set_RRIntPage_Length(RRIntPage_Length, 2);
+                case 'move'                    
+                    if direction > 0
+                        page_down_pushbutton_Callback({}, 0);
+                    else
+                        page_up_pushbutton_Callback({}, 0);
+                    end                    
+                otherwise
+            end
+        end
+        
     end
 %%
     function redraw_quality_rect()
@@ -2210,9 +2280,7 @@ GUI = createInterface();
         end
     end
 %%
-    function RRIntPage_Length_Callback(~, ~)
-        RRIntPage_Length = get(GUI.GUIDisplay.RRIntPage_Length, 'String');
-        [RRIntPage_Length, isInputNumeric] = calcDurationInSeconds(GUI.GUIDisplay.RRIntPage_Length, RRIntPage_Length, DATA.RRIntPage_Length);
+    function set_RRIntPage_Length(RRIntPage_Length, isInputNumeric)
         red_rect_xdata = get(GUI.red_rect_handle, 'XData');
         min_red_rect_xdata = min(red_rect_xdata);
         max_red_rect_xdata = max(red_rect_xdata);
@@ -2220,13 +2288,18 @@ GUI = createInterface();
         if isInputNumeric
             if RRIntPage_Length <= 1 || RRIntPage_Length > DATA.maxRRTime
                 set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
-                errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error');
+                if isInputNumeric ~= 2
+                    errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error');
+                end
                 return;
             elseif RRIntPage_Length < red_rect_length
                 set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
-                errordlg('The window size must be greater than zoom window length!', 'Input Error');
+                if isInputNumeric ~= 2
+                    errordlg('The window size must be greater than zoom window length!', 'Input Error');
+                end
                 return;
             end
+            
             DATA.RRIntPage_Length = RRIntPage_Length;
             
             delta_axes_red_rect = DATA.RRIntPage_Length - red_rect_length;
@@ -2239,10 +2312,7 @@ GUI = createInterface();
             end
             
             setAxesXTicks(GUI.RRInt_Axes);
-            EnablePageUpDown();
-            %             setAutoYAxisLimLowAxes(get(GUI.RRInt_Axes, 'XLim'));
-            %             DATA.YLimLowAxes = setYAxesLim(GUI.RRInt_Axes, GUI.AutoScaleYLowAxes_checkbox, GUI.MinYLimitLowAxes_Edit, GUI.MaxYLimitLowAxes_Edit, DATA.YLimLowAxes, DATA.AutoYLimitLowAxes);
-            %             set_rectangles_YData();
+            EnablePageUpDown();            
             
             AllDataAxes_XLim = get(GUI.RRInt_Axes, 'XLim');
             RRIntPage_Length = max(AllDataAxes_XLim) - min(AllDataAxes_XLim);
@@ -2251,6 +2321,12 @@ GUI = createInterface();
             setRRIntYLim();
             redraw_quality_rect();
         end
+    end
+%%
+    function RRIntPage_Length_Callback(~, ~)
+        RRIntPage_Length = get(GUI.GUIDisplay.RRIntPage_Length, 'String');
+        [RRIntPage_Length, isInputNumeric] = calcDurationInSeconds(GUI.GUIDisplay.RRIntPage_Length, RRIntPage_Length, DATA.RRIntPage_Length);
+        set_RRIntPage_Length(RRIntPage_Length, isInputNumeric);
     end
 %%
     function page_down_pushbutton_Callback(~, ~)

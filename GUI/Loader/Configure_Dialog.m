@@ -560,6 +560,7 @@ function btnSaveAs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+Channels = getappdata(handles.figure1,'Channels');
 
 
 
@@ -790,7 +791,8 @@ end
                     
             end
 %             dataWindow = iWc-Span+1:iWc+Span-1;
-            hp = plot(hAx,Channels.Time.Data(Span),Channels.Data.Data(Span));
+            firstPoint = find(Span == 1);
+            hp = plot(hAx,Channels.Time.Data(Span)-Channels.Time.Data(firstPoint(1)),Channels.Data.Data(Span));
             set(hp,'linewidth',1.5,'color',[0.1412    0.2745    0.2902]);
             axis(hAx,'tight')
             zoom(hAx,'on')

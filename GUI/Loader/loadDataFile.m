@@ -30,6 +30,8 @@ valueSet=keySet;
 waitbar_handle = waitbar(1/2, sprintf('Loading "%s" file',replace(name, '_', '\_')), 'Name', 'Working on it...');
 Ext = ext;
 UniqueMap('Name') = name;
+UniqueMap('file_path') = name;
+UniqueMap('ext') = name;
 switch ext(2:end)
     case 'mat'
         header = load(FileName);

@@ -16,7 +16,7 @@ Examples OLD/
 Examples OLD OLD/
 
 # Mis dir
-Logo/
+Logo Main/
 Module1/
 My Results/
 PhysioZoo/
@@ -44,7 +44,7 @@ Examples All/
 tempYAML.yml
 
 *.prj
-*.png
+#*.png
 *.docx
 *.rar
 *.pdf

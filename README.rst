@@ -1,5 +1,9 @@
-Introduction
-************
+PhysioZoo
+*********
+
+.. image:: https://readthedocs.org/projects/physiozoo/badge/?version=latest
+   :target: https://docs.physiozoo.com/en/latest/?badge=latest
+   :alt: Documentation Status
 
 **PhysioZoo** is a collaborative platform dedicated to the study of the heart
 rate variability (HRV) from Humans and other mammals’ electrophysiological

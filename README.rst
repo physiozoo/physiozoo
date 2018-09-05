@@ -39,13 +39,6 @@ recordings. The main components of the platform are:
   - All HRV measures can be further adapted for the analysis of other mammals by
     creating simple human-readable mammal-specific configuration files.
 
-.. Note::
-
-    The ``PZ-UI`` user interface has two modules: a ``Peak detection``
-    (used to process electrophysiological signals and obtain the RR time series)
-    module and a ``HRV analysis`` module (used to process the RR time series and
-    compute HRV measures).
-
 
 The **PhysioZoo** mission is to standardize and enable the reproducibility of
 HRV analysis in mammals’ electrophysiological data. This is achieved through its

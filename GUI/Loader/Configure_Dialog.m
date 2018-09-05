@@ -76,6 +76,13 @@ for i = 1 : length(Names)-2
     set(handles.(['pm_',localName]),'string',strItems,'value',1)
 end
 
+%% ------------- Put Logo --------------------
+warning('off');
+javaFrame = get(handles.figure1, 'JavaFrame');
+javaFrame.setFigureIcon(javax.swing.ImageIcon([fileparts(fileparts(mfilename('fullpath'))) filesep 'Logo' filesep 'logoRed.png']));
+warning('on');
+
+
 %% ------------- Put the figure on screen centre --------------------
 figUnits = handles.figure1.Units;
 handles.figure1.Units = 'pixels';
@@ -87,27 +94,27 @@ handles.figure1.Units = figUnits;
 movegui(handles.figure1, 'northwest');
 %% ---------------------------------------------------------------
 
-handles.btnSaveAs.Visible = 'off';
+% handles.btnSaveAs.Visible = 'off';
 set(handles.txtFileName,'string',['File name:  ',UniqueMap('Name')])
 set(handles.txtAlarm,'string','')
 hCh = findobj(handles.figure1,'style','popupmenu');
 set(hCh,'backgroundcolor',BGColor(1,:),'value',1,'enable','on')
 
-    %% ------------------- Set Params Control ---------------------------------
-    hFileParams =  findobj(handles.uipGeneral,'style','popupmenu');
+%% ------------------- Set Params Control ---------------------------------
+hFileParams =  findobj(handles.uipGeneral,'style','popupmenu');
 
-    for iParameter = 1 : length(hFileParams)
-        hObj = hFileParams((iParameter));
-        pName = get(hObj,'tag');
-        try
-            strParamValue = replace(strtrim(lower(UniqueMap(pName(4:end)))),' ','_');
-        catch
-            continue
-        end
-        Set_Popupmenu(hObj, strParamValue, 'off')
-        Channels.General.(pName(4:end)) = strParamValue;
+for iParameter = 1 : length(hFileParams)
+    hObj = hFileParams((iParameter));
+    pName = get(hObj,'tag');
+    try
+        strParamValue = replace(strtrim(lower(UniqueMap(pName(4:end)))),' ','_');
+    catch
+        continue
     end
-    
+    Set_Popupmenu(hObj, strParamValue, 'off')
+    Channels.General.(pName(4:end)) = strParamValue;
+end
+
 %     Item = Get_Popupmenu_Item_Text(handles.pm_file_type)
 %     set(handles.pm_data_type,'string',['select';strItems],'value',1)
 
@@ -134,7 +141,7 @@ try
     Data_Size = size(data,2);
     set(handles.figure1,'userdata',data)
 catch
-     btnOK_Callback(hObject, eventdata, handles)
+    btnOK_Callback(hObject, eventdata, handles)
     return
 end
 
@@ -145,10 +152,9 @@ else
     rawChannels = zeros(1,Data_Size);
 end
 if length(rawChannels) ~= Data_Size
-     UniqueMap('MSG') = 'msg_8';
+    UniqueMap('MSG') = 'msg_8';
     FGV_DATA(cmd.SET,UniqueMap);
-     btnOK_Callback(hObject, eventdata, handles)
-%     figure1_CloseRequestFcn(hObject, eventdata, handles)
+    btnOK_Callback(hObject, eventdata, handles)
     return
 end
 
@@ -211,39 +217,37 @@ set(handles.pm_time_channel,'string',[FIRST_ITEM(status_enable);Channels.Data.Na
 set(handles.pm_time_channel,'value',Channels.Time.No+1,'backgroundcolor',BGColor(status_enable,:),'enable',cell2mat(ENABLE(status_enable)))
 
 
-    %% Set pm
-    set(handles.pm_data_unit,'string',['select';Config.data_type.(Channels.Data.Type)'])
-%     set(handles.pm_data_unit,'string',['select';Config.file_type.(Channels.General.file_type).unit'])
-    %     DataChannel_ChangeString(handles.pm_data_unit,Channels.General.File_Type)
-    Set_Popupmenu(handles.pm_time_unit, Channels.Time.Unit, cell2mat(ENABLE(status_enable)))
-    Set_Popupmenu(handles.pm_data_unit, Channels.Data.Unit, cell2mat(ENABLE(Channels.Data.Enable+1)))
-    Set_Popupmenu(handles.pm_data_type, Channels.Data.Type, cell2mat(ENABLE(Channels.Data.Enable+1)))
-    [Channels,err] = UpdateDataChannel(Channels,handles);
-    AlarmStatus(err,handles,'msg_2');
-    Channels = UpdateTimeChannel(Channels,handles);
-    
-    
-    set(handles.pm_channels_name,'string',[{'select'};Channels.Data.Names(~ismember(Channels.Data.Names,Channels.Time.Name))],...
-        'value',Channels.Data.No-Channels.Time.No+1,...
-        'backgroundcolor','w','enable',cell2mat(ENABLE(Channels.Data.Enable+1)))
-   
-    if IsPlotData(hObject, [], handles)
-        PlotData(Channels,handles.axData)
-    else
-        cla(handles.axData)
-    end
-    
-    
-    % UIWAIT makes Configure_Dialog wait for user response (see UIRESUME)
-    % uiwait(handles.figure1);
-    
-    setappdata(handles.figure1,'Channels',Channels)
-    switch CheckStatus(handles.ebFs, eventdata, handles)
-        case 'on'
-            btnOK_Callback(handles.btnOK, 0, handles);
-            return
-        otherwise
-    end
+%% Set pm
+set(handles.pm_data_unit,'string',['select';Config.data_type.(Channels.Data.Type)'])
+Set_Popupmenu(handles.pm_time_unit, Channels.Time.Unit, cell2mat(ENABLE(status_enable)))
+Set_Popupmenu(handles.pm_data_unit, Channels.Data.Unit, cell2mat(ENABLE(Channels.Data.Enable+1)))
+Set_Popupmenu(handles.pm_data_type, Channels.Data.Type, cell2mat(ENABLE(Channels.Data.Enable+1)))
+[Channels,err] = UpdateDataChannel(Channels,handles);
+AlarmStatus(err,handles,'msg_2');
+Channels = UpdateTimeChannel(Channels,handles);
+
+
+set(handles.pm_channels_name,'string',[{'select'};Channels.Data.Names(~ismember(Channels.Data.Names,Channels.Time.Name))],...
+                             'value',Channels.Data.No-Channels.Time.No+1,...
+                             'backgroundcolor','w','enable',cell2mat(ENABLE(Channels.Data.Enable+1)))
+                         
+if IsPlotData(hObject, [], handles)
+    PlotData(Channels,handles.axData)
+else
+    cla(handles.axData)
+end
+
+
+% UIWAIT makes Configure_Dialog wait for user response (see UIRESUME)
+% uiwait(handles.figure1);
+
+setappdata(handles.figure1,'Channels',Channels)
+switch CheckStatus(handles.ebFs, eventdata, handles)
+    case 'on'
+        btnOK_Callback(handles.btnOK, 0, handles);
+        return
+    otherwise
+end
 % --- Outputs from this function are returned to the command line.
 function varargout = Configure_Dialog_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -560,9 +564,69 @@ function btnSaveAs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-Channels = getappdata(handles.figure1,'Channels');
-
-
+CH = getappdata(handles.figure1,'Channels');
+switch CH.Data.Type
+    case {'interval','electrography'}
+        file_type = '*.dat';
+        file_name = 'WFDB files (*.dat)';
+    case {'peak','beating_rate'}
+        file_type = '*.qrs; *.atr';
+        file_name = 'WFDB Files (*.qrs; *.atr)';
+    otherwise
+end
+cmd = FGV_CMD;
+UniqueMap = FGV_DATA(cmd.GET);
+ENABLE = [{'No'};{'Yes'}];
+[filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...
+    '*.txt','Text Files (*.txt)';...
+    '*.mat','MAT-files (*.mat)';...
+    file_type,file_name;},...
+    'Choose Analyzed Data File Name',...
+    [UniqueMap('File_path'), filesep, [UniqueMap('Name'),'_update'], '.', UniqueMap('Ext')]);
+if ~filename
+    return
+end
+[~, ~, ExtensionFileName] = fileparts(filename);
+ExtensionFileName = ExtensionFileName(2:end);
+Data = [CH.Time.Data,CH.Data.Data];
+Fs = CH.Time.Fs;
+Integration_level = CH.General.integration_level;
+Mammal = CH.General.mammal;
+Channels{1}.name = CH.Time.Name;
+Channels{1}.type = CH.Time.Type;
+Channels{1}.unit = CH.Time.Unit;
+Channels{1}.enable = ENABLE{CH.Time.Enable+1};
+Channels{2}.name = CH.Data.Name;
+Channels{2}.type = CH.Data.Type;
+Channels{2}.unit = CH.Data.Unit;
+Channels{2}.enable = ENABLE{CH.Data.Enable+1};
+switch ExtensionFileName
+    case 'mat'
+        save([results_folder_name,filename], 'Data', 'Fs', 'Integration_level', 'Mammal', 'Channels');
+    case 'txt'
+        header_fileID = fopen([results_folder_name,filename], 'wt');
+        fprintf(header_fileID, '---\n');
+        fprintf(header_fileID, 'Mammal:            %s\n', Mammal);
+        fprintf(header_fileID, 'Fs:                %d\n', Fs);
+        fprintf(header_fileID, 'Integration_level: %s\n\n', Integration_level);
+        fprintf(header_fileID, 'Channels:\n\n');
+        for i = 1 : length(Channels)
+            fprintf(header_fileID, '    - type:   %s\n', Channels{i}.type);
+            fprintf(header_fileID, '      name:   %s\n', Channels{i}.name);
+            fprintf(header_fileID, '      unit:   %s\n', Channels{i}.unit);
+            fprintf(header_fileID, '      enable: %s\n\n', Channels{i}.enable);
+        end
+        fprintf(header_fileID, '---\n');
+        dlmwrite([results_folder_name,filename], Data, 'delimiter', '\t', 'precision', '%d', 'newline', 'pc', '-append', 'roffset', 1);
+        fclose(header_fileID);
+    case {'atr','qrs'}
+        [~, filename_noExt, ~] = fileparts(filename);
+        comments = {['Mammal:' Mammal ',Integration_level:' Integration_level]};
+        
+        wrann([results_folder_name filename_noExt], ExtensionFileName, int64(cumsum(Data(:,2))*Fs), 'fs', Fs, 'comments', comments); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
+        
+    otherwise
+end
 
 
 % --- Executes on selection change in pm_time_channel.

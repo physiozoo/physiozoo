@@ -1,3 +1,4 @@
+
 function [] = PhysioZoo()
 % PhyzioZoo: Starts the physiozoo application.
 
@@ -23,19 +24,20 @@ new_version = new_version1(k : k + 16);
 
 filename = [basepath filesep 'version.txt'];
 fid = fopen(filename, 'rt');
-tmp = textscan(fid, '%s', 'Delimiter', '\n');
-fclose(fid);
-current_version = tmp{1};
-
-if ~strcmp(current_version, new_version)
-	meassage_updates = {'Good news!', 'There''s a new version of the PhysioZoo program, now available online for download.','We at the PhysioZoo community work constantly on new updates, features, and maintainance of the existing features of the program.','In order to enjoy the full extension of the tools we provide with PhysioZoo, we suggest you always to work with the latest release of the program.'};
-	answer = questdlg(meassage_updates, 'New Update', 'Go to website', 'Not now', 'Go to website');
-	if strcmp(answer, 'Go to website')	
-        web('http://physiozoo.com/');
-        return
-	end
+if fid ~= -1
+    tmp = textscan(fid, '%s', 'Delimiter', '\n');
+    fclose(fid);
+    current_version = tmp{1};
+    
+    if ~strcmp(current_version, new_version)
+        meassage_updates = {'Good news!', 'There''s a new version of the PhysioZoo program, now available online for download.','We at the PhysioZoo community work constantly on new updates, features, and maintainance of the existing features of the program.','In order to enjoy the full extension of the tools we provide with PhysioZoo, we suggest you always to work with the latest release of the program.'};
+        answer = questdlg(meassage_updates, 'New Update', 'Go to website', 'Not now', 'Go to website');
+        if strcmp(answer, 'Go to website')
+            web('http://physiozoo.com/');
+            return
+        end
+    end
 end
-
 %% Initialize mhrv toolbox
 
 mhrv_init_script = [basepath filesep 'mhrv' filesep 'mhrv_init'];
@@ -55,6 +57,6 @@ addpath(genpath([basepath filesep 'GUI' filesep 'lib']));
 % addpath(lib_path);
 % addpath(myWFDB);
 
-PhysioZooGUI();
+PhysioZooGUI_HRVAnalisis();
 
 end

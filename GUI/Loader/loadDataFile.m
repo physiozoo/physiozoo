@@ -8,11 +8,10 @@ UniqueMap('MSG') = 'msg_7';
 UniqueMap('IsHeader') = false;
 %% ----- GET Filename if w/o input --------
 if ~nargin
-    %     [f,p] = uigetfile([P,'/*.txt']);
     [f,p] = uigetfile({'*.*', 'All files';...
         '*.mat','MAT-files (*.mat)'; ...
         '*.dat',  'WFDB Files (*.dat)'; ...
-        '*.qrs',  'WFDB Files (*.qrs)'; ...
+        '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)';...
         '*.txt','Text Files (*.txt)'}, ...
         'Open Data-Quality-Annotations File',[P,'*',Ext]);
     if p
@@ -30,8 +29,8 @@ valueSet=keySet;
 waitbar_handle = waitbar(1/2, sprintf('Loading "%s" file',replace(name, '_', '\_')), 'Name', 'Working on it...');
 Ext = ext;
 UniqueMap('Name') = name;
-UniqueMap('file_path') = name;
-UniqueMap('ext') = name;
+UniqueMap('File_path') = file_path;
+UniqueMap('Ext') = ext;
 switch ext(2:end)
     case 'mat'
         header = load(FileName);

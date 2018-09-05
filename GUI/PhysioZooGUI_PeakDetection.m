@@ -67,6 +67,12 @@ end
         
         cla(GUI.ECG_Axes); % RawData_axes
         cla(GUI.RRInt_Axes); % RR_axes
+                
+        if isfield(GUI, 'quality_win')
+%             GUI.quality_win = [];  
+            delete(GUI.quality_win); 
+            GUI = rmfield(GUI, 'quality_win');
+        end        
         
         set(GUI.GUIRecord.RecordFileName_text, 'String', '');
         set(GUI.GUIRecord.PeaksFileName_text, 'String', '');
@@ -101,7 +107,7 @@ end
         GUI.LoadConfigurationFile.Enable = 'off';
         GUI.SaveConfigurationFile.Enable = 'off';
         GUI.SavePeaks.Enable = 'off';
-        GUI.LoadPeaks.Enable = 'off';
+        %GUI.LoadPeaks.Enable = 'off';
         GUI.SaveDataQuality.Enable = 'off';
         GUI.OpenDataQuality.Enable = 'off';
         
@@ -220,7 +226,7 @@ end
         uimenu( GUI.FileMenu, 'Label', 'Open data file', 'Callback', @OpenFile_Callback, 'Accelerator', 'O');
         GUI.OpenDataQuality = uimenu( GUI.FileMenu, 'Label', 'Open signal quality file', 'Callback', @OpenDataQuality_Callback, 'Accelerator', 'Q');
         GUI.SaveDataQuality = uimenu( GUI.FileMenu, 'Label', 'Save signal quality file', 'Callback', @SaveDataQuality_Callback, 'Accelerator', 'D');
-        GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load peaks', 'Callback', @LoadPeaks_Callback, 'Accelerator', 'L');
+        %GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load peaks', 'Callback', @LoadPeaks_Callback, 'Accelerator', 'L');
         GUI.SavePeaks = uimenu( GUI.FileMenu, 'Label', 'Save peaks', 'Callback', @SavePeaks_Callback, 'Accelerator', 'S');
         GUI.LoadConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Load configuration file', 'Callback', @LoadConfigurationFile_Callback, 'Accelerator', 'F');
         GUI.SaveConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Save configuration file', 'Callback', @SaveConfigurationFile_Callback, 'Accelerator', 'C');
@@ -474,7 +480,7 @@ end
         GUI.LoadConfigurationFile.Enable = 'off';
         GUI.SaveConfigurationFile.Enable = 'off';
         GUI.SavePeaks.Enable = 'off';
-        GUI.LoadPeaks.Enable = 'off';
+        %GUI.LoadPeaks.Enable = 'off';
     end
 %%
     function [GUI, TempBox, uicontrol_handle] = createGUITextLine(GUI, gui_struct, field_name, string_field_name, box_container)
@@ -638,7 +644,8 @@ end
         
         if nargin < 3
             [ECG_FileName, PathName] = uigetfile( ...
-                {'*.txt','Text Files (*.txt)'; ...
+                {'*.*', 'All files';...                
+                '*.txt','Text Files (*.txt)'; ...
                 '*.dat',  'WFDB Files (*.dat)'; ...
                 '*.mat','MAT-files (*.mat)'}, ...
                 'Open ECG File', [DIRS.dataDirectory filesep '*.' EXT]); %
@@ -674,7 +681,7 @@ end
             %                     close(waitbar_handle);
             %                 end
             
-            if strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'dat')
+            if strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'dat') || strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                                 
                 try
 %                     waitbar_handle = waitbar(1/2, 'Loading data...', 'Name', 'Loading data');
@@ -723,21 +730,33 @@ end
                             else
                                 DATA.wfdb_record_name = DATA.rec_name;
                             end 
+                            DATA.ExtensionFileName = ExtensionFileName;
                             isM2 = 0;
                         else
                             %                             errordlg(['onOpenFile error: ' 'Please, choose another file type.'], 'Input Error');
                             %                             return;
                             
-                            choice = questdlg('This recording contains peak annotations or an RR intervals time series. It will be opened in the HRV analysis module.', ...
-                                'Select module', 'OK', 'Cancel', 'OK');
+                            choice = questdlg('This recording contains peak annotations or an RR intervals time series. Do you want to open it in the Peak detection module or the HRV analysis module?', ...
+                                'Select module', 'Peak detection module', 'HRV analysis module', 'Cancel', 'Peak detection module');
+                                                                                                                
                             switch choice
-                                case 'OK'
+                                case 'HRV analysis module'
                                     
                                     fileNameFromM1.FileName = ECG_FileName;
                                     fileNameFromM1.PathName = PathName;
-                                    PhysioZooGUI(fileNameFromM1);
+                                    PhysioZooGUI_HRVAnalisis(fileNameFromM1);
                                     isM2 = 1;
                                     return;
+                                case 'Peak detection module'
+                                    if isfield(DATA, 'Mammal')
+                                    isM2 = 0;
+                                    load_peaks(ECG_FileName, PathName);
+                                    return;
+                                    else
+                                        isM2 = 0;
+                                        errordlg('Please, load ECG file first.', 'Input Error');
+                                        return;
+                                    end
                                 case 'Cancel'
                                     isM2 = 1;
                                     return;
@@ -852,14 +871,14 @@ end
             GUI.LoadConfigurationFile.Enable = 'on';
             GUI.SaveConfigurationFile.Enable = 'on';
             GUI.SavePeaks.Enable = 'on';
-            GUI.LoadPeaks.Enable = 'on';
+            %GUI.LoadPeaks.Enable = 'on';
             GUI.SaveDataQuality.Enable = 'on';
             GUI.OpenDataQuality.Enable = 'on';            
             
             DATA.zoom_rect_limits = [0 DATA.firstZoom];
 %             EnablePageUpDown();            
             end
-        end
+        end        
     end
 %%
     function header_info = set_data(time_data, ECG_data)
@@ -1270,7 +1289,7 @@ end
             
             temp_custom_conf_fileID = fopen(FullFileName, 'w');
             if temp_custom_conf_fileID ~= -1
-                fprintf(temp_custom_conf_fileID, '# gqrs temp config file for custom parameters:\r\n');
+                fprintf(temp_custom_conf_fileID, '# config file for custom parameters:\r\n');
                 for i = 1 : length(DATA.config_map)
                     fprintf(temp_custom_conf_fileID, '%s\t%s\r\n', config_param_names{i}, config_param_values{i});
                 end
@@ -1394,25 +1413,16 @@ end
         end
     end
 %%
-    function LoadPeaks_Callback(~, ~)
+    function load_peaks(Peaks_FileName, PathName)
+        
         persistent DIRS;
-        persistent EXT;
         
         % Add third-party dependencies to path
         gui_basepath = fileparts(mfilename('fullpath'));
         basepath = fileparts(gui_basepath);
-        
         if ~isfield(DIRS, 'analyzedDataDirectory')
             DIRS.analyzedDataDirectory = [basepath filesep 'ExamplesTXT'];
         end
-        if isempty(EXT)
-            EXT = 'txt';
-        end
-        [Peaks_FileName, PathName] = uigetfile( ...
-            {'*.txt','Text Files (*.txt)'; ...
-            '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'; ...
-            '*.mat','MAT-files (*.mat)'}, ...
-            'Open ECG File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
         
         if ~isequal(Peaks_FileName, 0)
             
@@ -1551,6 +1561,30 @@ end
         end
     end
 %%
+    function LoadPeaks_Callback(~, ~)
+        persistent DIRS;
+        persistent EXT;
+        
+        % Add third-party dependencies to path
+        gui_basepath = fileparts(mfilename('fullpath'));
+        basepath = fileparts(gui_basepath);
+        
+        if ~isfield(DIRS, 'analyzedDataDirectory')
+            DIRS.analyzedDataDirectory = [basepath filesep 'ExamplesTXT'];
+        end
+        if isempty(EXT)
+            EXT = 'txt';
+        end
+        [Peaks_FileName, PathName] = uigetfile( ...
+            {'*.txt','Text Files (*.txt)'; ...
+            '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'; ...
+            '*.mat','MAT-files (*.mat)'}, ...
+            'Open ECG File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
+        
+        load_peaks(Peaks_FileName, PathName);
+        
+    end
+%%
     function SavePeaks_Callback(~, ~)
         
         persistent DIRS;
@@ -1663,7 +1697,7 @@ end
                 catch e
                     disp(e);
                 end
-                                cd(saved_path);
+%                                 cd(saved_path);
             else
                 errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
                 return;
@@ -1710,9 +1744,11 @@ end
         
         if isfield(DATA, 'sig') && ~isempty(DATA.sig)
             
-            if isfield(GUI, 'quality_win')                
-                delete(GUI.quality_win);
-                GUI.quality_win = [];
+            if isfield(GUI, 'quality_win')                               
+                delete(GUI.quality_win);                
+                
+                GUI = rmfield(GUI, 'quality_win');                
+%                 GUI.quality_win = [];                                
                 DATA.quality_win_num = 0;
                 DATA.peaks_total = 0;
                 DATA.peaks_bad_quality = 0;
@@ -1721,12 +1757,12 @@ end
             GUI.AutoCalc_checkbox.Value = 1;
             GUI.RR_or_HR_plot_button.String = 'Plot HR';
             DATA.PlotHR = 0;
-            DATA.quality_win_num = 0;
+%             DATA.quality_win_num = 0;
             
             GUI.GUIRecord.Annotation_popupmenu.Value = 1;
             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
             GUI.Class_Text.Visible = 'off';
-            GUI.GUIRecord.Class_popupmenu.Value = 1;
+            GUI.GUIRecord.Class_popupmenu.Value = 3;
             GUI.GUIRecord.PeakDetector_popupmenu.Value = 1;
             DATA.peakDetection_index = 1;
             
@@ -2486,20 +2522,31 @@ end
                 
                 for i = 1 : length(GUI.quality_win)
                     
-                    quality_range{i} = get(GUI.quality_win(i), 'XData');
-                    class_number = get(GUI.quality_win(i), 'UserData');
-                    class{i, 1} = DATA.GUI_Class{class_number};
-                    signal_quality(i, :) = [min(quality_range{i}) max(quality_range{i})];
+                    if isvalid(GUI.quality_win(i))
+                        quality_range{i} = get(GUI.quality_win(i), 'XData');
+                        class_number = get(GUI.quality_win(i), 'UserData');
+                        class{i, 1} = DATA.GUI_Class{class_number};
+                        signal_quality(i, :) = [min(quality_range{i}) max(quality_range{i})];
+                    end
                 end
             else
                 class{1, 1} = DATA.GUI_Class{3};
                 signal_quality = [0, 0];
             end
             
+            type = 'quality annotation';
+            source_file_name = [DATA.DataFileName '.' DATA.ExtensionFileName];
+            
             if strcmpi(ExtensionFileName, 'mat')
-                save(full_file_name, 'signal_quality', 'class');
+                save(full_file_name, 'signal_quality', 'class', 'type', 'source_file_name');
             elseif strcmpi(ExtensionFileName, 'txt')
                 header_fileID = fopen(full_file_name, 'wt');
+                
+                fprintf(header_fileID, '---\n');                
+                fprintf(header_fileID, 'type: %s\n', type);
+                fprintf(header_fileID, 'source file: %s\n\n', source_file_name);                                
+                fprintf(header_fileID, '---\n\n');
+                
                 fprintf(header_fileID, 'Beginning\tEnd\t\tClass\n');
                 for i = 1 : length(class)
                     fprintf(header_fileID, '%.6f\t%.6f\t%s\n', signal_quality(i, 1), signal_quality(i, 2), class{i, 1});
@@ -2555,17 +2602,28 @@ end
                 QualityAnnotations = load([PathName Quality_FileName]);
                 QualityAnnotations_field_names = fieldnames(QualityAnnotations);
                 
-                QualityAnnotations_Data = [];
+                QualityAnnotations_Data = [];                                        
+                type = []; 
+%                 source_file_name = '';
                 
                 for i = 1 : length(QualityAnnotations_field_names)
                     if ~isempty(regexpi(QualityAnnotations_field_names{i}, 'signal_quality')) % Quality_anns|quality_anno
                         QualityAnnotations_Data = QualityAnnotations.(QualityAnnotations_field_names{i});
                     elseif ~isempty(regexpi(QualityAnnotations_field_names{i}, 'class'))
                         Class = QualityAnnotations.(QualityAnnotations_field_names{i});
+                    elseif ~isempty(regexpi(QualityAnnotations_field_names{i}, 'type'))
+                        type = QualityAnnotations.(QualityAnnotations_field_names{i});
+%                     elseif ~isempty(regexpi(QualityAnnotations_field_names{i}, 'source_file_name'))
+%                         source_file_name = QualityAnnotations.(QualityAnnotations_field_names{i});
                     end
                 end
                 
-                if ~isempty(QualityAnnotations_Data)
+%                 if ~strcmp(source_file_name, [DATA.DataFileName '.' DATA.ExtensionFileName])
+%                     errordlg('Please, choose appropriate Signal Quality Annotations File.', 'Input Error');
+%                     return;
+%                 end
+                
+                if ~isempty(QualityAnnotations_Data) && strcmpi(type, 'quality annotation')
                     DATA_QualityAnnotations_Data = QualityAnnotations_Data;
                 else
                     errordlg('Please, choose the Signal Quality Annotations File.', 'Input Error');
@@ -2579,13 +2637,26 @@ end
                 file_name = [PathName Quality_FileName];
                 fileID = fopen(file_name);
                 if fileID ~= -1
-                    quality_data = textscan(fileID, '%f %f %s', 'Delimiter', '\t', 'HeaderLines', 1);
-                    if ~isempty(quality_data{1}) && ~isempty(quality_data{2}) && ~isempty(quality_data{3})
-                        DATA_QualityAnnotations_Data = [cell2mat(quality_data(1)) cell2mat(quality_data(2))];
-                        class = quality_data(3);
-                        DATA_Class = class{1};
+                    
+                    quality_data = textscan(fileID, '%f %f %s', 'Delimiter', '\t', 'HeaderLines', 7);
+                    
+                    frewind(fileID);
+                    
+                    tline1 = fgetl(fileID);
+                    tline2 = fgetl(fileID);
+                    type_line = strsplit(tline2, ': ');
+                    
+                    if strcmp(tline1, '---') && strcmp(type_line{1}, 'type') && strcmp(type_line{2}, 'quality annotation')
+                        if ~isempty(quality_data{1}) && ~isempty(quality_data{2}) && ~isempty(quality_data{3})
+                            DATA_QualityAnnotations_Data = [cell2mat(quality_data(1)) cell2mat(quality_data(2))];
+                            class = quality_data(3);
+                            DATA_Class = class{1};
+                        else
+                            errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
+                            return;
+                        end
                     else
-                        errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
+                        errordlg('Please, choose the right format for Data Quality Annotations File.', 'Input Error');
                         return;
                     end
                     fclose(fileID);
@@ -2601,7 +2672,7 @@ end
                 %                 DATA_QualityAnnotations_Data = [quality_data(1:2:end), quality_data(2:2:end)];
                 %                 DATA_Class = class(1:2:end);
             else
-                errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
+                errordlg('Please, choose only *.mat or *.txt file.', 'Input Error');
                 return;
             end
             

@@ -45,13 +45,6 @@ mhrv toolbox documentation
    mhrv/sections/mhrv.rri.rst
    mhrv/sections/mhrv.wfdb.rst
 
-.. toctree::
-   :glob:
-   :maxdepth: 2
-   :caption: changelog   
-   
-   sections/tutorials/changelog.rst
-
 Indices and tables
 ==================
 

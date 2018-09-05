@@ -6,3 +6,5 @@ dependencies:
     - sphinx-autobuild
     - sphinx_rtd_theme
     - recommonmark
+    - sphinxcontrib-matlabdomain
+    - m2r

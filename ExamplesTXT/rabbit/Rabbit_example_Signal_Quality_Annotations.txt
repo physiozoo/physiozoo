@@ -1,3 +1,9 @@
+---
+type: quality annotation
+source file: Rabbit_example_Signal_Quality_Annotations.txt
+
+---
+
 Beginning	End		Class
 307.345000	310.152000	C
 619.961000	621.570000	C

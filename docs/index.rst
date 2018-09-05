@@ -22,7 +22,29 @@ PhysioZoo documentation
    sections/tutorials/pzloader.rst
    sections/tutorials/pzformats.rst
    sections/tutorials/configfiles.rst
+
+mhrv toolbox documentation
+==============================
+
+.. mdinclude:: mhrv/sections/intro.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Working with the toolbox
+
+   mhrv/sections/getting_started.md
    
+.. toctree::
+   :maxdepth: 2
+   :caption: Package API Reference
+
+   mhrv/sections/mhrv.rst
+   mhrv/sections/mhrv.defaults.rst
+   mhrv/sections/mhrv.ecg.rst
+   mhrv/sections/mhrv.hrv.rst
+   mhrv/sections/mhrv.rri.rst
+   mhrv/sections/mhrv.wfdb.rst
+
 .. toctree::
    :glob:
    :maxdepth: 2

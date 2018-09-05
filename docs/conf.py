@@ -12,7 +12,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
@@ -42,15 +42,24 @@ release = ''
 extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.githubpages',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.viewcode',
+    'm2r',
+    'sphinxcontrib.matlab',
 ]
+
+matlab_src_dir = os.path.abspath('../mhrv')
+primary_domain = 'mat'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # Configure parser for .md files
-source_parsers = {
-    '.md': CommonMarkParser,
-}
+# source_parsers = {
+#     '.md': CommonMarkParser,
+# }
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:

@@ -744,7 +744,7 @@ end
                                     
                                     fileNameFromM1.FileName = ECG_FileName;
                                     fileNameFromM1.PathName = PathName;
-                                    PhysioZooGUI_HRVAnalisis(fileNameFromM1);
+                                    PhysioZooGUI_HRVAnalysis(fileNameFromM1);
                                     isM2 = 1;
                                     return;
                                 case 'Peak detection module'

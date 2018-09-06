@@ -57,6 +57,6 @@ addpath(genpath([basepath filesep 'GUI' filesep 'lib']));
 % addpath(lib_path);
 % addpath(myWFDB);
 
-PhysioZooGUI_HRVAnalisis();
+PhysioZooGUI_HRVAnalysis();
 
 end

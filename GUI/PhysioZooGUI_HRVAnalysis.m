@@ -1,4 +1,4 @@
-function PhysioZooGUI_HRVAnalisis(fileNameFromM1)
+function PhysioZooGUI_HRVAnalysis(fileNameFromM1)
 
 % Add third-party dependencies to path
 gui_basepath = fileparts(mfilename('fullpath'));

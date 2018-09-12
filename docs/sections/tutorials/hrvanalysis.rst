@@ -6,12 +6,12 @@ In this tutorial you will learn how to compute the Heart Rate Variability (HRV) 
 **Introduction**
 ----------------------
 
-HRV analysis is particularly interesting because it provides a non-invasive way to monitor cardiac function and the autonomic system activity. In particular, in the context of animal studies, HRV tools can be used to study the effects of mutations and pharmacological treatments. **PhysioZoo** provides the framework and tools for performing HRV analysis from Humans and animal models data.
+HRV analysis is particularly interesting because it provides a non-invasive way to monitor cardiac function and the autonomic system activity. In particular, in the context of animal studies, HRV tools can be used to study the effects of mutations and pharmacological treatments. **PhysioZoo** provides the framework and tools for performing HRV analysis from human and animal model data.
 
 
 **Why mammal specific HRV?**
 ----------------------
-Because the heart rate range, dynamics and autonomic control can vary significantly between mammals, some HRV measures need to be adapted to the mammal which data are analyses. As an example, the following figure illustrates the important differences in the location of the characteristic power spectral peaks in analysing RR time series from different mammals using power spectral analysis. This highlghts the need to re-define the spectral bands (VLF, LF and HF) for each mammal. 
+Because the heart rate range, dynamics and autonomic control can vary significantly between mammals, some HRV measures need to be adapted to the mammal whose data are being analysed. As an example, the following figure illustrates the important differences in the location of the characteristic power spectral peaks in analysing RR time series from different mammals using power spectral analysis. This highlights the need to re-define the spectral bands (VLF, LF and HF) for each mammal. 
 
 .. image:: ../../_static/Figure_2.png
    :align: center
@@ -24,13 +24,13 @@ Start by loading some example data by clicking File -> Open data file -> mouse/M
 .. image:: ../../_static/hrvanalysis_mainui.png
    :align: center
 
-On the upper figure (A) the selected window (colored in blue) defines the time interval for which the HRV measures are computed. On the lower pannel (B), the RR time series is plotted. Two windows are drawn on it: one window with a red frame and one with a blue frame (and alpha color from within.) The red window defines the part of the RR time series which is plotted on the larger upper figure (A). The blue frame defined the part of the RR time series for which the HRV measures will be computed. The window can be modified (extended/shrank/moved) using the mouse. Pannel (C) shows all the HRV measures that have been computed.
+In the upper figure (A) the selected window (colored in blue) defines the time interval for which the HRV measures are computed. In the lower panel (B), the RR time series is plotted. Two windows are drawn on it: one window with a red frame and one with a blue frame (and alpha color from within.) The red window defines the part of the RR time series plotted in the larger upper figure (A). The blue frame defines the part of the RR time series for which the HRV measures will be computed. The window can be modified (extended/shrunk/moved) using the mouse. Pannel (C) shows all the HRV measures that have been computed.
 
 Congrats! You have made your first HRV analysis with **PhysioZoo**!
 
 .. note:: Every time you move the analysis window to another location the newly selected segment will be automatically analyzed. You can disable this by deselecting the checkbox “Auto Compute” located under the “Compute” button.
 
-.. note:: The length of the selected window is important. A number of HRV measures assumes that the RR time series is stationary over the selected window. In our context stationary means that the statistical properties of the RR time series (such as mean and standard deviation) are about constant. Other measures such as the detrended fluctuation analysis ones do not assume stationarity and thus a long window may be used.
+.. note:: The length of the selected window is important. Some HRV measures assume that the RR time series is stationary over the selected window. In our context stationary means that the statistical properties of the RR time series (such as mean and standard deviation) are about constant. Other measures such as the detrended fluctuation analysis ones do not assume stationarity and thus a long window may be used.
 
 **Exporting HRV measures**
 --------------------------------------------
@@ -67,11 +67,11 @@ Figures can be exported in high quality format and thus easily included in your 
 **Consecutive windows analysis**
 --------------------------------------------
 
-You might want to track the evolution of the HRV measures over time. For example if you are injecting some drug to the mammal and want to observe the resulting changes on the HRV measures over time. For that purpose **PhysioZoo** enables to perform the analysis on consecutive segments.
+You might want to track the evolution of the HRV measures over time: for example, if you are injecting some drug to the mammal and want to observe the resulting changes on the HRV measures over time. For that purpose **PhysioZoo** enables the analysis to be performed on consecutive segments.
 
 Let’s use a long RR time series: File -> Open data file -> Mouse_example_qrs
 
-Click the “Single” Submenu in the left panel and click on the "Use full length" button. Then press the “Compute” button located on the top right of the interface. You will see the following screen which contains all the HRV measures for each consecutive window over the whole recording.
+Click the “Single” Submenu in the left panel and click on the "Use full length" button. Then press the “Compute” button located on the top right of the interface. You will see the following screen, which contains all the HRV measures for each consecutive window over the whole recording.
 
 .. image:: ../../_static/hrvanalysis_multiple.png
    :align: center
@@ -84,12 +84,13 @@ If you want to export figures, then select with the mouse the window you want to
 
 .. note:: While using the successive segment analysis feature, it is possible to export the HRV measures and PSD from all the analyzed consecutive windows together. However, you can only export the figures from one single window at the time i.e. from the window that you select with the mouse (i.e. the ‘selected window’).
 
+**Adapting HRV measures to alternative mammals**
+--------------------------------------------
+
+If you want to adapt the HRV measures to other mammals you can create a new 'Configuration file' (see `here <../tutorials/configfiles.html>`_) with parameters suitable to the specie you are studying. For some of the HRV measures (power frequency bands and pNNxx) you will find a button 'E' next to their parameters value under Options->Time/Frequency. You can use click on this button to adapt the HRV measure to the alternative mammalian model you are using.
 
 
-
-
-
-
-
+.. image:: ../../_static/hrvanalysis_adapt.png
+   :align: center
 
 

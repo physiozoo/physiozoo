@@ -1,6 +1,12 @@
 Installing PhysioZoo
 ====================
 
+The PhysioZoo user interface (``PZ-UI``) can be run from Matlab or be installed as a 
+standalone application. If you do not need the graphic user interface then you can 
+directly download the HRV source code (``mhrv`` library). ``PZ-UI`` and ``mhrv`` 
+were tested for Matlab 2016a and above running on Windows. 
+
+
 PhysioZoo ``mhrv`` matlab toolbox
 -------------------------------------
 

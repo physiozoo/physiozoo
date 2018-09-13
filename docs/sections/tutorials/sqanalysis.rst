@@ -7,18 +7,18 @@ In this tutorial you will learn how to perform signal quality annotations within
 **Introduction**
 ----------------------
 
-**PhysioZoo** allows you to annotate and load signal quality annotations which contains time intervals with quality annotations made on the original electrophysiological signal time series. The annotations highlight parts of the RR time series which are not to be trusted because the underlying ECG was of bad quality and the peak detector might have failed in estimating the heart rate within these intervals or just because you want to exclude these segments because they correspond to some transition period during drug injection and so you decide to label these time periods as ‘bad quality’.
+**PhysioZoo** allows you to annotate and load signal quality annotations, which contain time intervals with quality annotations made on the original electrophysiological signal time series. The annotations highlight parts of the RR time series which are not to be trusted because the underlying ECG was of bad quality and the peak detector might have failed in estimating the heart rate within these intervals or just because you want to exclude these segments because they correspond to some transition period during drug injection and so you decide to label these time periods as ‘bad quality’.
 
 
 **Annotating signal quality**
 ----------------------------
-To annotate the quality of an electrophysiological signal time series, follow the following steps:
+To annotate the quality of an electrophysiological signal time series, follow these steps:
 
 	1. Select the rabbit ECG example: File-> Open data file-> Rabbit_example.txt
 
-	2. Under the record pannel, select Annotation -> Signal quality. See the red rectangle on the figure below.
+	2. Under the record panel, select Annotation -> Signal quality. See the red rectangle on the figure below.
 
-	3. Look for a segment with some bad quality data and draw a rectangle around it with the mouse. The background of the area you have selected became red.
+	3. Look for a segment with some bad quality data and draw a rectangle around it with the mouse. The background of the area you have selected will become red.
 
 .. image:: ../../_static/sqanalysis_interface.png
    :align: center
@@ -34,7 +34,7 @@ In **PhysioZoo** we define three levels of signal quality:
 
 When using a recording for which you have performed signal quality annotations, you can load the signal quality annotations: Open -> Open signal quality file. 
 
-After the quality annotations are loaded, you will see green and red bar appearing on the top of the RR interval time series figure. The part in green correspond to good quality data (i.e. data which analysis can be trusted) and the part in red correspond to bad quality data (i.e. data which should not be trusted.) In addition, the RR time series is highlighted in red for the intervals which are indicated as bad quality.
+After the quality annotations are loaded, you will see a bar with green and red parts appearing on the top of the RR interval time series figure. The part in green corresponds to good quality data (i.e. data which analysis can be trusted) and the part in red corresponds to bad quality data (i.e. data which should not be trusted.) In addition, the RR time series is highlighted in red for the intervals which are indicated as bad quality.
 
 .. image:: ../../_static/sqanalysis_usage.png
    :align: center
@@ -45,7 +45,7 @@ After the quality annotations are loaded, you will see green and red bar appeari
 **When do we need to make signal quality annotations?**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Small bad quality segments (couple of beats) will be 'cleaned up' by the `prefiltering step <../tutorials/preprocessing.html>`_ and so one should not worry too much about it. The signal quality annotations are more useful when a 'large' section of the recording is of bad quality in which case the prefiltering step will be useless or even misleading. Analysing such sections with large segments of bad quality data will provide meaningless results - the signal quality annotations are useful to prevent that.
+Small bad quality segments (few of beats) will be 'cleaned up' by the `prefiltering step <../tutorials/preprocessing.html>`_ and so one should not worry too much about it. The signal quality annotations are more useful when a 'large' section of the recording is of bad quality in which case the prefiltering step will be useless or even misleading. Analysing such sections with large segments of bad quality data will provide meaningless results - the signal quality annotations are useful to prevent that.
 
 
 

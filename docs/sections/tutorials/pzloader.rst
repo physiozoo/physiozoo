@@ -16,7 +16,7 @@ Data loading in **PhysioZoo** is centralized and done through the ``PZ Loader`` 
 
 See `here <../tutorials/pzformats.html>`_ for the formats supported and how to create **PhysioZoo** headers.
 
-The figure bellow illustrates the pathway for loading a recording: the ``PZ Loader`` is used to load a recording from one of the supported formats. If no header is available, then the ``PZ Loader`` user interface is opened and the user is prompted to enter the necessary information. If the header is available, then the record is directly loaded in **PhysioZoo**.
+The figure below illustrates the pathway for loading a recording: the ``PZ Loader`` is used to load a recording from one of the supported formats. If no header is available, then the ``PZ Loader`` user interface is opened and the user is prompted to enter the necessary information. If the header is available, then the record is directly loaded in **PhysioZoo**.
 
 .. image:: ../../_static/PZ_formats.png
    :align: center
@@ -30,7 +30,7 @@ Open an example annotation file:
 
 Download the following `example <../../_static/Dog_05_eg_no_header.txt>`_ file and load it in **PhysioZoo**.
 
-In case some information are missing from the file (e.g. mammal type is not available in the header) then the ``PZ Loader`` will request the corresponding fields to be filled by the user. 
+In case some information is missing from the file (e.g. mammal type is not available in the header) then the ``PZ Loader`` will request the corresponding fields to be filled by the user. 
 When all the fields have been filled then click OK and the data will be opened in **PhysioZoo**.
 
 For the example provided, fill the fields as in the screenshot below and click OK:
@@ -42,11 +42,11 @@ For the example provided, fill the fields as in the screenshot below and click O
 .. **Saving a file with a header**
 .. ---------------------
 
-.. In the case where you will need to re-load the same file later on then after filling the fields of the ``PZ Loader`` you can click 'Save As'. This will save your file with a header which will contain all the information you filled in the ``PZ Loader``. When you will load this file again then you will not need to fill the fields again. 
+.. In the case where you will need to re-load the same file later on, then after filling the fields of the ``PZ Loader`` you can click 'Save As'. This will save your file with a header which will contain all the information you filled in the ``PZ Loader``. When you load this file again, you will not need to fill the fields again. 
 
-.. Here is an example to illustrate that. First using a text editor open the following `example <../../_static/Dog_example_ecg_no_header.txt>`_ file.
+.. Here is an example to illustrate that. First use a text editor to open the following `example <../../_static/Dog_example_ecg_no_header.txt>`_ file.
 
-.. You will see the following file which consists of a time series. There is no information on what this time series is and neither its units, sampling frequency etc. 
+.. You will see the following file, which consists of a time series. There is no information about what this time series, its units, sampling frequency etc. 
 
 .. .. image:: ../../_static/PZ_Loader_eg.PNG
    :align: center

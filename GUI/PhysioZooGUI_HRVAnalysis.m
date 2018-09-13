@@ -1,4 +1,4 @@
-function PhysioZooGUI_HRVAnalysis(fileNameFromM1)
+function PhysioZooGUI_HRVAnalysis(fileNameFromM1, DataFileMapFromM1)
 
 % Add third-party dependencies to path
 gui_basepath = fileparts(mfilename('fullpath'));
@@ -39,7 +39,7 @@ clearData();
 GUI = createInterface();
 
 if nargin >= 1
-    onOpenFile([], [], fileNameFromM1);
+    onOpenFile([], [], fileNameFromM1, DataFileMapFromM1);
 end
 
 displayEndOfDemoMessage('');
@@ -1708,7 +1708,7 @@ displayEndOfDemoMessage('');
         %         end
     end
 %%
-    function [mammal, mammal_index, integration, isM1] = Load_Data_from_SingleFile(QRS_FileName, PathName, waitbar_handle)
+    function [mammal, mammal_index, integration, isM1] = Load_Data_from_SingleFile(QRS_FileName, PathName, DataFileMap, waitbar_handle)
         if QRS_FileName
             [files_num, ~] = size(QRS_FileName);
             if files_num == 1
@@ -1723,48 +1723,15 @@ displayEndOfDemoMessage('');
                 integration = '';
                 mammal = '';
                 mammal_index = '';
-                
-                %                 if strcmpi(ExtensionFileName, 'mat')
-                %                     QRS = load([PathName QRS_FileName]);
-                %                     QRS_field_names = fieldnames(QRS);
-                %                     QRS_data = [];
-                %                     for i = 1 :  length(QRS_field_names)
-                %                         curr_field = QRS.(QRS_field_names{i});
-                %                         if ~isempty(regexpi(QRS_field_names{i}, 'qrs|data'))
-                %                             QRS_data = curr_field;
-                %                         elseif strcmpi(QRS_field_names{i}, 'mammal')  % ~isempty(regexpi(QRS_field_names{i}, 'mammal'))
-                %                             mammal = curr_field;
-                %                             [mammal, mammal_index] = set_mammal(mammal);
-                %                         elseif strcmpi(QRS_field_names{i}, 'Fs')   %~isempty(regexpi(QRS_field_names{i}, 'Fs'))
-                %                             DATA.SamplingFrequency = curr_field;
-                %                         elseif strcmpi(QRS_field_names{i}, 'Integration')  %~isempty(regexpi(QRS_field_names{i}, 'Integration'))
-                %                             %                             DATA.Integration = curr_field;
-                %                             integration = curr_field;
-                %                         end
-                %                     end
-                %                     time_data = 0;
-                %                 if strcmpi(ExtensionFileName, 'qrs') % || strcmpi(ExtensionFileName, 'atr') atr - for quality; qrs - for annotations (peaks)
-                %
-                %                         [ ~, Fs, ~ ] = get_signal_channel( [PathName DATA.DataFileName] );
-                %                         DATA.SamplingFrequency = Fs;
-                %                         [mammal, integration] = get_description_from_wfdb_header([PathName DATA.DataFileName]);
-                %                         [mammal, mammal_index] = set_mammal(mammal);
-                %                         %                         if ~isempty(integration)
-                %                         %                             DATA.Integration = integration;
-                %                         %                         end
-                %                     try
-                %                         QRS_data = rdann([PathName DATA.DataFileName], ExtensionFileName); % atr qrs
-                %                     catch
-                %                         close(waitbar_handle);
-                %                         throw(MException('LoadFile:text', 'Cann''t read file.'));
-                %                     end
-                %                     time_data = 0;
-                if strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr') || strcmpi(ExtensionFileName, 'dat')
-                    
+                                
+                if strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr') || strcmpi(ExtensionFileName, 'dat')                    
                     
                     Config = ReadYaml('Loader Config.yml');
                     
-                    DataFileMap = loadDataFile([PathName QRS_FileName]);
+                    if isempty(fields(DataFileMap))
+                        DataFileMap = loadDataFile([PathName QRS_FileName]);
+                    end
+                    
                     MSG = DataFileMap('MSG');
                     if strcmp(Config.alarm.(MSG), 'OK')
                         data = DataFileMap('DATA');
@@ -1792,11 +1759,10 @@ displayEndOfDemoMessage('');
                                 'Select module', 'OK', 'Cancel', 'OK');
                             
                             switch choice
-                                case 'OK'
-                                    %throw(MException('LoadFile:text', 'Please, choose another file type.'));
+                                case 'OK'                                    
                                     fileNameFromM2.FileName = QRS_FileName;
                                     fileNameFromM2.PathName = PathName;
-                                    PhysioZooGUI_PeakDetection(fileNameFromM2);
+                                    PhysioZooGUI_PeakDetection(fileNameFromM2, DataFileMap);
                                     isM1 = 1;
                                     return;
                                 case 'Cancel'
@@ -1806,55 +1772,12 @@ displayEndOfDemoMessage('');
                         end
                     else
                         throw(MException('LoadFile:text', Config.alarm.(MSG)));
-                    end
-                    %                     file_name = [PathName DATA.DataFileName '.txt'];
-                    %                     fileID = fopen(file_name, 'r');
-                    %                     if fileID ~= -1
-                    %                         %                         mammal = fscanf(fileID, '%*s %s', 1);
-                    %                         Mammal = fscanf(fileID, '%s', 1);
-                    %                         if ~isempty(regexpi(Mammal, 'mammal'))
-                    %                             mammal = fscanf(fileID, '%s', 1);
-                    %                             [mammal, mammal_index] = set_mammal(mammal);
-                    %                             DATA.SamplingFrequency = fscanf(fileID, '%*s %d', 1);
-                    %                             %                         DATA.Integration = fscanf(fileID, '%*s %s', 1);
-                    %                             integration = fscanf(fileID, '%*s %s', 1);
-                    %                             if strcmpi(integration, 'AP') || strcmpi(integration, 'Action') % strcmpi(DATA.Integration, 'AP') || strcmpi(DATA.Integration, 'Action')
-                    %                                 %                             DATA.Integration = 'Action Potential';
-                    %                                 integration = 'Action Potential';
-                    %                             end
-                    %                             QRS_data = dlmread(file_name,' ', 4, 0);
-                    %                         else
-                    %                             QRS_data = dlmread(file_name,' ', 0, 0);
-                    %                         end
-                    %                         fclose(fileID);
-                    %                     end
+                    end                    
                 else
                     close(waitbar_handle);
                     throw(MException('LoadFile:text', 'Please, choose another file type.'));
-                end
-                
-                %                 if isempty(DATA.SamplingFrequency)
-                %                     prompt = {'Please, enter Sampling Frequency:'};
-                %                     dlg_title = 'Input';
-                %                     num_lines = 1;
-                %                     defaultans = {''};
-                %                     answer = inputdlg(prompt, dlg_title, num_lines, defaultans);
-                %
-                %                     if ~isempty(answer)
-                %                         DATA.SamplingFrequency = str2double(answer{1});
-                %                         if ~isnan(DATA.SamplingFrequency)
-                %                             set_qrs_data(QRS_data, time_data);
-                %                         else
-                %                             close(waitbar_handle);
-                %                             throw(MException('LoadFile:SamplingFrequency', 'Please, enter valid SamplingFrequency!'));
-                %                         end
-                %                     else
-                %                         close(waitbar_handle);
-                %                         throw(MException('LoadFile:SamplingFrequency', 'Please, enter SamplingFrequency!'));
-                %                     end
-                %                 else
-                set_qrs_data(QRS_data, time_data);
-                %                 end
+                end                                
+                set_qrs_data(QRS_data, time_data);                
             end
         end
     end
@@ -1881,7 +1804,7 @@ displayEndOfDemoMessage('');
 %         GUI.Integration_popupmenu.Value = DATA.integration_index;
 %     end
 %%
-    function onOpenFile(~, ~, fileNameFromM1)
+    function onOpenFile(~, ~, fileNameFromM1, DataFileMapFromM1)
         if nargin < 3
             set_defaults_path();
             
@@ -1890,28 +1813,27 @@ displayEndOfDemoMessage('');
                 '*.mat','MAT-files (*.mat)'; ...
                 '*.qrs; *.atr', 'WFDB Files (*.qrs; *.atr)'}, ...
                 'Open QRS File', [DIRS.dataDirectory filesep '*.' DIRS.Ext_open]);
+            DataFileMap = struct();
         else
             QRS_FileName = fileNameFromM1.FileName;
             PathName = fileNameFromM1.PathName;
+            DataFileMap = DataFileMapFromM1;
         end
         try
-            Load_Single_File(QRS_FileName, PathName);
+            Load_Single_File(QRS_FileName, PathName, DataFileMap);
         catch e
             errordlg(['onOpenFile: ' e.message], 'Input Error');
         end
     end
 %%
-    function Load_Single_File(QRS_FileName, PathName)
+    function Load_Single_File(QRS_FileName, PathName, DataFileMap)
         if QRS_FileName
             [files_num, ~] = size(QRS_FileName);
             if files_num == 1
-                %                 clearData();
-                %                 clear_statistics_plots();
-                %                 clearStatTables();
-                %                 clean_gui();
+                
                 try
                     waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Working on it...');
-                    [mammal, mammal_index, integration, whichModule] = Load_Data_from_SingleFile(QRS_FileName, PathName, waitbar_handle);
+                    [mammal, mammal_index, integration, whichModule] = Load_Data_from_SingleFile(QRS_FileName, PathName, DataFileMap, waitbar_handle);
                     if whichModule == 1
                         if isvalid(waitbar_handle)
                             close(waitbar_handle);

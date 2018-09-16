@@ -1,4 +1,4 @@
-function PhysioZooGUI_PeakDetection(fileNameFromM2)
+function PhysioZooGUI_PeakDetection(fileNameFromM2, DataFileMapFromM2)
 
 myUpBackgroundColor = [205 237 240]/255; % Blue %[0.863 0.941 0.906]; % [219 237 240]/255
 myLowBackgroundColor = [205 237 240]/255; %[219 237 240]/255
@@ -10,7 +10,7 @@ clearData();
 DATA = createData();
 GUI = createInterface();
 if nargin >= 1
-    OpenFile_Callback([], [], fileNameFromM2);
+    OpenFile_Callback([], [], fileNameFromM2, DataFileMapFromM2);
 end
 %%
     function clearHandles()
@@ -626,7 +626,7 @@ end
         end
     end
 %%
-    function OpenFile_Callback(~, ~, fileNameFromM2)
+    function OpenFile_Callback(~, ~, fileNameFromM2, DataFileMapFromM2)
         
         persistent DIRS;
         persistent EXT;
@@ -652,291 +652,211 @@ end
         else
             ECG_FileName = fileNameFromM2.FileName;
             PathName = fileNameFromM2.PathName;
+            DataFileMap = DataFileMapFromM2;
         end
         
-        if ~isequal(ECG_FileName, 0)                        
+        if isequal(ECG_FileName, 0)  
+            return;
+        else
                         
             DIRS.dataDirectory = PathName;
             
             [~, DataFileName, ExtensionFileName] = fileparts(ECG_FileName);
             ExtensionFileName = ExtensionFileName(2:end);
-            EXT = ExtensionFileName;
-            
-            %             if strcmpi(ExtensionFileName, 'dat')
-            %                 header_info = wfdb_header(DATA.rec_name);
-            %                 DATA.ecg_channel = get_signal_channel(DATA.rec_name, 'header_info', header_info);
-            %                 if (isempty(DATA.ecg_channel))
-            %                     error('Failed to find an ECG channel in the record %s', DATA.rec_name);
-            %                 end
-            %
-            %                 waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Loading data...');
-            %
-            %                 [DATA.Mammal, DATA.Integration] = get_description_from_wfdb_header(DATA.rec_name);
-            %
-            %                 % Read Signal
-            %                 [DATA.tm, DATA.sig, DATA.Fs] = rdsamp(DATA.rec_name, DATA.ecg_channel, 'header_info', header_info);
-            %
-            %
-            %                 if isvalid(waitbar_handle)
-            %                     close(waitbar_handle);
-            %                 end
+            EXT = ExtensionFileName;                        
             
             if strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'dat') || strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
-                                
-                try
-%                     waitbar_handle = waitbar(1/2, 'Loading data...', 'Name', 'Loading data');
-                    Config = ReadYaml('Loader Config.yml');    
-                    DataFileMap = loadDataFile([PathName DataFileName '.' EXT]);
-%                     if isvalid(waitbar_handle)
-%                         close(waitbar_handle);
-%                     end
-                    MSG = DataFileMap('MSG');
-                    if strcmp(Config.alarm.(MSG), 'OK')
-                        data = DataFileMap('DATA');
-                        if strcmp(data.Data.Type, 'electrography')
-                            
-                            clearData();
-                            clean_gui();
-                            %             clearHandles();
-                            clean_config_param_fields();
-                            delete_temp_wfdb_files();
-                            
-                            DATA.DataFileName = DataFileName;
-                            DATA.rec_name = [PathName, DATA.DataFileName];
-                            
-                            DATA.Mammal = data.General.mammal;
-                            DATA.mammal_index = find(strcmp(DATA.mammals, DATA.Mammal));
-                            DATA.Integration = data.General.integration_level;
-                            DATA.integration_index = find(strcmp(DATA.Integration_From_Files, DATA.Integration));
-                            set(GUI.GUIRecord.Integration_popupmenu, 'Value', DATA.integration_index);
-                            DATA.Fs = double(data.Time.Fs);
-                            DATA.sig = data.Data.Data;
-                            time_data = data.Time.Data;
-                            DATA.tm = time_data - time_data(1);
-                            
-                            [t_max, h, m, s ,ms] = signal_duration(length(DATA.tm), DATA.Fs);
-                            header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
-
-                            DATA.ecg_channel = 1;
-        
-                            if strcmpi(EXT, 'txt') || strcmpi(EXT, 'mat')                                
-
-                                DATA.wfdb_record_name = [tempdir DATA.temp_rec_name4wfdb];
-                                mat2wfdb(DATA.sig, DATA.wfdb_record_name, DATA.Fs, [], ' ' ,{} ,[]);                                                                                                
-                                
-                                if ~exist([DATA.wfdb_record_name '.dat'], 'file') && ~exist([DATA.wfdb_record_name '.hea'], 'file')   % && ~exist(fullfile(tempdir, [DATA.temp_rec_name4wfdb '.hea']), 'file')
-                                    throw(MException('set_data:text', 'Wfdb file cannot be created.'));
-                                end
-                            else
-                                DATA.wfdb_record_name = DATA.rec_name;
-                            end 
-                            DATA.ExtensionFileName = ExtensionFileName;
-                            isM2 = 0;
-                        else
-                            %                             errordlg(['onOpenFile error: ' 'Please, choose another file type.'], 'Input Error');
-                            %                             return;
-                            
-                            choice = questdlg('This recording contains peak annotations or an RR intervals time series. Do you want to open it in the Peak detection module or the HRV analysis module?', ...
-                                'Select module', 'Peak detection module', 'HRV analysis module', 'Cancel', 'Peak detection module');
-                                                                                                                
-                            switch choice
-                                case 'HRV analysis module'
-                                    
-                                    fileNameFromM1.FileName = ECG_FileName;
-                                    fileNameFromM1.PathName = PathName;
-                                    PhysioZooGUI_HRVAnalysis(fileNameFromM1);
-                                    isM2 = 1;
-                                    return;
-                                case 'Peak detection module'
-                                    if isfield(DATA, 'Mammal')
-                                    isM2 = 0;
-                                    load_peaks(ECG_FileName, PathName);
-                                    return;
-                                    else
-                                        isM2 = 0;
-                                        errordlg('Please, load ECG file first.', 'Input Error');
-                                        return;
-                                    end
-                                case 'Cancel'
-                                    isM2 = 1;
-                                    return;
-                            end
-                            %                             [DATA_M2, GUI_M2] = Load_Single_File(DATA_M2, GUI_M2, myDirs, myColors, ECG_FileName, PathName);
-                        end
-                    elseif strcmp(Config.alarm.(MSG), 'Canceled')
-                        return;
-                    else
-                        errordlg(['onOpenFile error: ' Config.alarm.(MSG)], 'Input Error');
+                  
+                Config = ReadYaml('Loader Config.yml');
+                if nargin < 3
+                    try                        
+                        DataFileMap = loadDataFile([PathName DataFileName '.' EXT]);
+                    catch e
+                        errordlg(['onOpenFile error: ' e.message], 'Input Error');
                         return;
                     end
-                catch e
-                    errordlg(['onOpenFile error: ' e.message], 'Input Error');
+                end
+                MSG = DataFileMap('MSG');
+                if strcmp(Config.alarm.(MSG), 'OK')
+                    data = DataFileMap('DATA');
+                    if strcmp(data.Data.Type, 'electrography')
+                        
+                        clearData();
+                        clean_gui();
+                        clean_config_param_fields();
+                        delete_temp_wfdb_files();
+                        
+                        DATA.DataFileName = DataFileName;
+                        DATA.rec_name = [PathName, DATA.DataFileName];
+                        
+                        DATA.Mammal = data.General.mammal;
+                        DATA.mammal_index = find(strcmp(DATA.mammals, DATA.Mammal));
+                        DATA.Integration = data.General.integration_level;
+                        DATA.integration_index = find(strcmp(DATA.Integration_From_Files, DATA.Integration));
+                        set(GUI.GUIRecord.Integration_popupmenu, 'Value', DATA.integration_index);
+                        DATA.Fs = double(data.Time.Fs);
+                        DATA.sig = data.Data.Data;
+                        time_data = data.Time.Data;
+                        DATA.tm = time_data - time_data(1);
+                        
+                        [t_max, h, m, s ,ms] = signal_duration(length(DATA.tm), DATA.Fs);
+                        header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
+                        
+                        DATA.ecg_channel = 1;
+                        
+                        if strcmpi(EXT, 'txt') || strcmpi(EXT, 'mat')
+                            
+                            DATA.wfdb_record_name = [tempdir DATA.temp_rec_name4wfdb];
+                            mat2wfdb(DATA.sig, DATA.wfdb_record_name, DATA.Fs, [], ' ' ,{} ,[]);
+                            
+                            if ~exist([DATA.wfdb_record_name '.dat'], 'file') && ~exist([DATA.wfdb_record_name '.hea'], 'file')   % && ~exist(fullfile(tempdir, [DATA.temp_rec_name4wfdb '.hea']), 'file')
+                                throw(MException('set_data:text', 'Wfdb file cannot be created.'));
+                            end
+                        else
+                            DATA.wfdb_record_name = DATA.rec_name;
+                        end
+                        DATA.ExtensionFileName = ExtensionFileName;
+                        isM2 = 0;
+                    else
+                        
+                        choice = questdlg('This recording contains peak annotations or an RR intervals time series. Do you want to open it in the Peak detection module or the HRV analysis module?', ...
+                            'Select module', 'Peak detection module', 'HRV analysis module', 'Cancel', 'Peak detection module');
+                        
+                        switch choice
+                            case 'HRV analysis module'
+                                
+                                fileNameFromM1.FileName = ECG_FileName;
+                                fileNameFromM1.PathName = PathName;
+                                PhysioZooGUI_HRVAnalysis(fileNameFromM1, DataFileMap);
+                                isM2 = 1;
+                                return;
+                            case 'Peak detection module'
+                                if isfield(DATA, 'Mammal')
+                                    isM2 = 0;
+                                    load_peaks(ECG_FileName, PathName, DataFileMap);
+                                    return;
+                                else
+                                    isM2 = 0;
+                                    errordlg('Please, load ECG file first.', 'Input Error');
+                                    return;
+                                end
+                            case 'Cancel'
+                                isM2 = 1;
+                                return;
+                        end
+                    end
+                elseif strcmp(Config.alarm.(MSG), 'Canceled')
+                    return;
+                else
+                    errordlg(['onOpenFile error: ' Config.alarm.(MSG)], 'Input Error');
                     return;
                 end
                 
-                %                 ECG = load(DATA.rec_name);
-                %                 ECG_field_names = fieldnames(ECG);
-                %                 for i = 1 : length(ECG_field_names)
-                %                     if ~isempty(regexpi(ECG_field_names{i}, 'ecg')) % |data
-                %                         ECG_data = ECG.(ECG_field_names{i});
-                %                         if ~isempty(ECG_data)
-                %                             header_info = set_data(ECG_data);
-                %                         end
-                %                     elseif ~isempty(regexpi(ECG_field_names{i}, 'mammal'))
-                %                         DATA.Mammal = ECG.(ECG_field_names{i});
-                %                         DATA.mammal_index = find(strcmp(DATA.mammals, DATA.Mammal));
-                %                     else
-                %                         errordlg('Please, choose the file with the ECG data.', 'Input Error');
-                %                         return;
-                %                     end
-                %                 end
                 
                 if ~isM2
-                GUI.GUIRecord.Mammal_popupmenu.Value = DATA.mammal_index;
-                try
-                    set_mammal(DATA.mammal_index);
-                catch
-                    return; % Canceled by user
+                    GUI.GUIRecord.Mammal_popupmenu.Value = DATA.mammal_index;
+                    try
+                        set_mammal(DATA.mammal_index);
+                    catch
+                        return; % Canceled by user
+                    end
                 end
                 
-                %             elseif strcmpi(ExtensionFileName, 'txt')
+                set(GUI.GUIRecord.RecordFileName_text, 'String', ECG_FileName);
                 
-                %                 %               txt_data = dlmread([DATA.rec_name '.' EXT], '\t');
-                %
-                %                 DataFileMap = loadDataFile([DATA.rec_name '.' EXT]);
-                %                 MSG = DataFileMap('MSG');
-                %                 if strcmp(MSG, 'OK')
-                %                     data = DataFileMap('DATA');
-                %                     if strcmp(data.Data.Type, 'electrography')
-                %                         DATA.mammal = data.General.mammal;
-                %                         DATA.integration = data.General.integration_level;
-                %                         DATA.Fs = data.Time.Fs;
-                %                         ECG_data = data.Data.Data;
-                %                         time_data = data.Time.Data;
-                %                     else
-                % %                         throw(MException('LoadFile:text', 'Please, choose right file format for this module.'));
-                %                         errordlg(['onOpenFile error: ' 'Please, choose right file format for this module.'], 'Input Error');
-                %                         return;
-                %                     end
-                %                 elseif strcmp(MSG, 'Canceled')
-                %                     return;
-                %                 else
-                % %                     throw(MException('LoadFile:text', MSG));
-                %                     errordlg(['onOpenFile error: ' MSG], 'Input Error');
-                %                     return;
-                %                 end
-                %
-                %
-                % %                 if ~isempty(txt_data)
-                % %                     header_info = set_data(txt_data);
-                %                     header_info = set_data([time_data' ECG_data]);
-                % %                 end
-            end                        
-            
-            set(GUI.GUIRecord.RecordFileName_text, 'String', ECG_FileName);                        
-            
-            GUI.RawData_handle = line(DATA.tm, DATA.sig, 'Parent', GUI.ECG_Axes);
-            
-            PathName = strrep(PathName, '\', '\\');
-            PathName = strrep(PathName, '_', '\_');
-            ECG_FileName_title = strrep(ECG_FileName, '_', '\_');
-            
-            TitleName = [PathName ECG_FileName_title] ;
-            title(GUI.ECG_Axes, TitleName, 'FontWeight', 'normal', 'FontSize', 11);
-            
-            right_limit2plot = min(DATA.firstZoom, max(DATA.tm));
-            setECGXLim(0, right_limit2plot);
-            setECGYLim(0, right_limit2plot);
-            
-            xlabel(GUI.ECG_Axes, 'Time (sec)');
-            ylabel(GUI.ECG_Axes, 'ECG (mV)');
-            hold(GUI.ECG_Axes, 'on');
-            
-            set(GUI.GUIRecord.TimeSeriesLength_text, 'String', [[num2str(header_info.duration.h) ':' num2str(header_info.duration.m) ':' ...
-                num2str(header_info.duration.s) '.' num2str(header_info.duration.ms)] '    h:min:sec.msec']);
-                        
-             if GUI.AutoCalc_checkbox.Value
-                 try
-                     RunAndPlotPeakDetector();
-%                      set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
-%                      set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
-%                      
-%                      setAxesXTicks(GUI.RRInt_Axes);
-                 catch e
-                     errordlg(['OpenFile error: ' e.message], 'Input Error');
-                     return;
+                GUI.RawData_handle = line(DATA.tm, DATA.sig, 'Parent', GUI.ECG_Axes);
+                
+                PathName = strrep(PathName, '\', '\\');
+                PathName = strrep(PathName, '_', '\_');
+                ECG_FileName_title = strrep(ECG_FileName, '_', '\_');
+                
+                TitleName = [PathName ECG_FileName_title] ;
+                title(GUI.ECG_Axes, TitleName, 'FontWeight', 'normal', 'FontSize', 11);
+                
+                right_limit2plot = min(DATA.firstZoom, max(DATA.tm));
+                setECGXLim(0, right_limit2plot);
+                setECGYLim(0, right_limit2plot);
+                
+                xlabel(GUI.ECG_Axes, 'Time (sec)');
+                ylabel(GUI.ECG_Axes, 'ECG (mV)');
+                hold(GUI.ECG_Axes, 'on');
+                
+                set(GUI.GUIRecord.TimeSeriesLength_text, 'String', [[num2str(header_info.duration.h) ':' num2str(header_info.duration.m) ':' ...
+                    num2str(header_info.duration.s) '.' num2str(header_info.duration.ms)] '    h:min:sec.msec']);
+                
+                if GUI.AutoCalc_checkbox.Value
+                    try
+                        RunAndPlotPeakDetector();
+                    catch e
+                        errordlg(['OpenFile error: ' e.message], 'Input Error');
+                        return;
                  end
              end
                           
             GUI.LoadConfigurationFile.Enable = 'on';
             GUI.SaveConfigurationFile.Enable = 'on';
-            GUI.SavePeaks.Enable = 'on';
-            %GUI.LoadPeaks.Enable = 'on';
+            GUI.SavePeaks.Enable = 'on';            
             GUI.SaveDataQuality.Enable = 'on';
             GUI.OpenDataQuality.Enable = 'on';            
             
             DATA.zoom_rect_limits = [0 DATA.firstZoom];
-%             EnablePageUpDown();            
             end
         end        
     end
 %%
-    function header_info = set_data(time_data, ECG_data)
-        
-        DATA.tm = time_data;
-        DATA.sig = ECG_data;
-        
-        if ~DATA.Fs
-            DATA.Fs = 1/median(diff(DATA.tm));
-        end
-        
-        [t_max, h, m, s ,ms] = signal_duration(length(DATA.tm), DATA.Fs);
-        header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
-        
-        DATA.ecg_channel = 1;
-        DATA.rec_name = DATA.temp_rec_name4wfdb;                
-                
-%         waitbar_handle = waitbar(1/2, 'Loading...', 'Name', 'Loading data');
-        
-        curr_dir = pwd;
-        cd(tempdir);
-
-        mat2wfdb(DATA.sig, DATA.rec_name, DATA.Fs, [], ' ' ,{} ,[]);    
-    
-        cd(curr_dir);
-        
-%         [a, b, c] = fileparts(mfilename('fullpath'))
+%     function header_info = set_data(time_data, ECG_data)
 %         
-%         mfilename('fullpath')
+%         DATA.tm = time_data;
+%         DATA.sig = ECG_data;
 %         
-%         disp(['exist(fullfile(pwd, [DATA.rec_name .dat])) = ' num2str(exist(fullfile(pwd, [DATA.rec_name '.dat']), 'file'))]);
-%         disp(['exist(fullfile(pwd, [DATA.rec_name .hea])) = ' num2str(exist(fullfile(pwd, [DATA.rec_name '.hea']), 'file'))]);
-        
-%         curr_path_dat = which([pwd filesep DATA.rec_name '.dat'])
-%         curr_path_hea = which([pwd filesep DATA.rec_name '.hea'])
-        
-        if ~exist(fullfile(tempdir, [DATA.rec_name '.dat']), 'file') && ~exist(fullfile(tempdir, [DATA.rec_name '.hea']), 'file')
-            throw(MException('set_data:text', 'Wfdb file cannot be created.'));
-        end
-        
-        
-        
-                
-        
-%         if exist([DATA.rec_name '.dat'], 'file') && exist([DATA.rec_name '.hea'], 'file')
-% %             [DATA.tm, DATA.sig, DATA.Fs] = rdsamp(DATA.rec_name, DATA.ecg_channel);
-%             [DATA.tm, DATA.sig, ~] = rdsamp(DATA.rec_name, DATA.ecg_channel);
+%         if ~DATA.Fs
+%             DATA.Fs = 1/median(diff(DATA.tm));
 %         end
-%         if isvalid(waitbar_handle)
-%              close(waitbar_handle); 
+%         
+%         [t_max, h, m, s ,ms] = signal_duration(length(DATA.tm), DATA.Fs);
+%         header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
+%         
+%         DATA.ecg_channel = 1;
+%         DATA.rec_name = DATA.temp_rec_name4wfdb;                
+%                 
+% %         waitbar_handle = waitbar(1/2, 'Loading...', 'Name', 'Loading data');
+%         
+%         curr_dir = pwd;
+%         cd(tempdir);
+% 
+%         mat2wfdb(DATA.sig, DATA.rec_name, DATA.Fs, [], ' ' ,{} ,[]);    
+%     
+%         cd(curr_dir);
+%         
+% %         [a, b, c] = fileparts(mfilename('fullpath'))
+% %         
+% %         mfilename('fullpath')
+% %         
+% %         disp(['exist(fullfile(pwd, [DATA.rec_name .dat])) = ' num2str(exist(fullfile(pwd, [DATA.rec_name '.dat']), 'file'))]);
+% %         disp(['exist(fullfile(pwd, [DATA.rec_name .hea])) = ' num2str(exist(fullfile(pwd, [DATA.rec_name '.hea']), 'file'))]);
+%         
+% %         curr_path_dat = which([pwd filesep DATA.rec_name '.dat'])
+% %         curr_path_hea = which([pwd filesep DATA.rec_name '.hea'])
+%         
+%         if ~exist(fullfile(tempdir, [DATA.rec_name '.dat']), 'file') && ~exist(fullfile(tempdir, [DATA.rec_name '.hea']), 'file')
+%             throw(MException('set_data:text', 'Wfdb file cannot be created.'));
 %         end
-    end
+%         
+%         
+%         
+%                 
+%         
+% %         if exist([DATA.rec_name '.dat'], 'file') && exist([DATA.rec_name '.hea'], 'file')
+% % %             [DATA.tm, DATA.sig, DATA.Fs] = rdsamp(DATA.rec_name, DATA.ecg_channel);
+% %             [DATA.tm, DATA.sig, ~] = rdsamp(DATA.rec_name, DATA.ecg_channel);
+% %         end
+% %         if isvalid(waitbar_handle)
+% %              close(waitbar_handle); 
+% %         end
+%     end
 %%
-    function setECGXLim(minLimit, maxLimit)
-        
-        %         setECGYLim(minLimit, maxLimit);
-        set(GUI.ECG_Axes, 'XLim', [minLimit maxLimit]);
-        
+    function setECGXLim(minLimit, maxLimit)                
+        set(GUI.ECG_Axes, 'XLim', [minLimit maxLimit]);        
         setAxesXTicks(GUI.ECG_Axes);
     end
 %%
@@ -1413,7 +1333,7 @@ end
         end
     end
 %%
-    function load_peaks(Peaks_FileName, PathName)
+    function load_peaks(Peaks_FileName, PathName, DataFileMap)
         
         persistent DIRS;
         
@@ -1436,18 +1356,15 @@ end
             
             set(GUI.GUIRecord.PeaksFileName_text, 'String', Peaks_FileName);
             
-            if strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
-                %                 QRS = load(DATA.peaks_file_name);
-                %                 DATA.qrs = QRS.Data;
-                %                 DATA.Fs = QRS.Fs;
-                %                 DATA.Mammal = QRS.Mammal;
-                %                 DATA.Integration = QRS.Integration_level;
-                
+            if strcmpi(ExtensionFileName, 'mat') || strcmpi(ExtensionFileName, 'txt') || strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')                
                 
                 try
                     Config = ReadYaml('Loader Config.yml');
                     
-                    DataFileMap = loadDataFile([DATA.peaks_file_name '.' EXT]);
+                    if isempty(fields(DataFileMap))
+                        DataFileMap = loadDataFile([DATA.peaks_file_name '.' EXT]);
+                    end
+                    
                     MSG = DataFileMap('MSG');
                     if strcmp(Config.alarm.(MSG), 'OK')
                         data = DataFileMap('DATA');
@@ -1581,7 +1498,8 @@ end
             '*.mat','MAT-files (*.mat)'}, ...
             'Open ECG File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
         
-        load_peaks(Peaks_FileName, PathName);
+        DataFileMap = struct();
+        load_peaks(Peaks_FileName, PathName, DataFileMap);
         
     end
 %%

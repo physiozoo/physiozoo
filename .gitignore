@@ -1,8 +1,9 @@
 ### Physionet ###
 # Physionet data files
-*.dat
-*.hea
-*.atr
+
+#*.dat
+#*.hea
+#*.atr
 *.qrs*
 
 # Default local physionet install directory

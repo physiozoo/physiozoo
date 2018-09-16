@@ -186,10 +186,11 @@ end
         
         set(GUI.Window, 'CloseRequestFcn', {@Exit_Callback});
         
-        warning('off');
-        javaFrame = get(GUI.Window,'JavaFrame');
-        javaFrame.setFigureIcon(javax.swing.ImageIcon([fileparts(fileparts(mfilename('fullpath'))) filesep 'GUI' filesep 'Logo' filesep 'logoBlue.png']));
-        warning('on');
+        setLogo(GUI.Window, 'M1');
+%         warning('off');
+%         javaFrame = get(GUI.Window,'JavaFrame');
+%         javaFrame.setFigureIcon(javax.swing.ImageIcon([fileparts(fileparts(mfilename('fullpath'))) filesep 'GUI' filesep 'Logo' filesep 'logoBlue.png']));
+%         warning('on');
         
         %         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
         %         set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
@@ -597,7 +598,8 @@ end
                 try
                     RunAndPlotPeakDetector();
                 catch e
-                    errordlg(['mammal set error: ' e.message], 'Input Error');
+                    h_e = errordlg(['mammal set error: ' e.message], 'Input Error');
+                    setLogo(h_e, 'M1');
                     src.Value = DATA.mammal_index;
                     return;
                 end
@@ -620,7 +622,8 @@ end
                 RunAndPlotPeakDetector();
                 DATA.peakDetection_index = src.Value;
             catch e
-                errordlg(['PeakDetector error: ' e.message], 'Input Error');                
+                h_e = errordlg(['PeakDetector error: ' e.message], 'Input Error'); 
+                setLogo(h_e, 'M1');
                 return;
             end
         end
@@ -672,7 +675,8 @@ end
                     try                        
                         DataFileMap = loadDataFile([PathName DataFileName '.' EXT]);
                     catch e
-                        errordlg(['onOpenFile error: ' e.message], 'Input Error');
+                        h_e = errordlg(['onOpenFile error: ' e.message], 'Input Error');
+                        setLogo(h_e, 'M1');
                         return;
                     end
                 end
@@ -737,7 +741,8 @@ end
                                     return;
                                 else
                                     isM2 = 0;
-                                    errordlg('Please, load ECG file first.', 'Input Error');
+                                    h_e = errordlg('Please, load ECG file first.', 'Input Error');
+                                    setLogo(h_e, 'M1');
                                     return;
                                 end
                             case 'Cancel'
@@ -748,7 +753,8 @@ end
                 elseif strcmp(Config.alarm.(MSG), 'Canceled')
                     return;
                 else
-                    errordlg(['onOpenFile error: ' Config.alarm.(MSG)], 'Input Error');
+                    h_e = errordlg(['onOpenFile error: ' Config.alarm.(MSG)], 'Input Error');
+                    setLogo(h_e, 'M1');
                     return;
                 end
                 
@@ -788,10 +794,11 @@ end
                     try
                         RunAndPlotPeakDetector();
                     catch e
-                        errordlg(['OpenFile error: ' e.message], 'Input Error');
+                        h_e = errordlg(['OpenFile error: ' e.message], 'Input Error');
+                        setLogo(h_e, 'M1');
                         return;
-                 end
-             end
+                    end
+                end
                           
             GUI.LoadConfigurationFile.Enable = 'on';
             GUI.SaveConfigurationFile.Enable = 'on';
@@ -936,7 +943,8 @@ end
             DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
             temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
             if temp_custom_conf_fileID == -1
-                errordlg('Problems with creation of custom config file.', 'Input Error');
+                h_e = errordlg('Problems with creation of custom config file.', 'Input Error');
+                setLogo(h_e, 'M1');
                 return;
             end            
         end        
@@ -953,6 +961,7 @@ end
                 if isfield(DATA, 'customConfigFile') && ~strcmp(DATA.customConfigFile, '')
                     
                     waitbar_handle = waitbar(1/2, 'Loading configuration...', 'Name', 'Loading data');
+                    setLogo(waitbar_handle, 'M1');
                     
                     load_updateGUI_config_param();
                     
@@ -971,6 +980,7 @@ end
                     peak_detector = pd_items{pd_index_selected};
                     
                     waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
+                    setLogo(waitbar_handle, 'M1');
                     
                     if ~strcmpi(peak_detector, 'rgrs')
                         
@@ -1048,7 +1058,8 @@ end
                         DATA.peaks_deleted = 0;
                         DATA.peaks_total = length(DATA.qrs);
                         GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
-                        errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
+                        h_e = errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
+                        setLogo(h_e, 'M1');
                     end
                 end
             catch e
@@ -1114,7 +1125,7 @@ end
                 
                 ylabel(GUI.RRInt_Axes, yString);
             else
-%                 errordlg('plot_rr_data: Not enough peaks!', 'Input Error');
+%                 h_e = errordlg('plot_rr_data: Not enough peaks!', 'Input Error');
                 throw(MException('plot_rr_data:text', 'Not enough peaks!'));
             end
         end
@@ -1153,7 +1164,8 @@ end
                 try
                     RunAndPlotPeakDetector();
                 catch e
-                    errordlg(['LoadConfigurationFile error: ' e.message], 'Input Error');
+                    h_e = errordlg(['LoadConfigurationFile error: ' e.message], 'Input Error');
+                    setLogo(h_e, 'M1');
                     return;
                 end
             end
@@ -1244,20 +1256,24 @@ end
         numeric_field_value = str2double(field_value);
         
         if isnan(numeric_field_value)
-            errordlg('Please, enter numeric value.', 'Input Error');
+            h_e = errordlg('Please, enter numeric value.', 'Input Error');
+            setLogo(h_e, 'M1');
             set(src, 'String', DATA.config_map(get(src, 'UserData')));
             return;
         elseif strcmp(get(src, 'UserData'), 'rp') && ~(numeric_field_value >= 0)
-            errordlg('The refractory period must be greater or equal to 0.', 'Input Error');
+            h_e = errordlg('The refractory period must be greater or equal to 0.', 'Input Error');
+            setLogo(h_e, 'M1');
             set(src, 'String', DATA.config_map(get(src, 'UserData')));
             return;
         elseif (numeric_field_value <= 0) && ~(strcmp(get(src, 'UserData'), 'rp'))
-            errordlg('The value must be greater then 0.', 'Input Error');
+            h_e = errordlg('The value must be greater then 0.', 'Input Error');
+            setLogo(h_e, 'M1');
             set(src, 'String', DATA.config_map(get(src, 'UserData')));
             return;
         end        
         if strcmp(get(src, 'UserData'), 'hcf') && (numeric_field_value > DATA.Fs/2)
-            errordlg('The upper cutoff frequency must be inferior to half of the sampling frequency.', 'Input Error');
+            h_e = errordlg('The upper cutoff frequency must be inferior to half of the sampling frequency.', 'Input Error');
+            setLogo(h_e, 'M1');
             set(src, 'String', DATA.config_map(get(src, 'UserData')));
             return;
         end
@@ -1267,14 +1283,16 @@ end
             DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
             temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
             if temp_custom_conf_fileID == -1
-                errordlg('Problems with creation of custom config file.', 'Input Error');
+                h_e = errordlg('Problems with creation of custom config file.', 'Input Error');
+                setLogo(h_e, 'M1');
                 return;
             end
             if get(GUI.AutoCalc_checkbox, 'Value')
                 try
                     RunAndPlotPeakDetector();
                 catch e
-                    errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
+                    h_e = errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
+                    setLogo(h_e, 'M1');
                     return;
                 end
             end
@@ -1288,7 +1306,7 @@ end
 %                 try
 %                     RunAndPlotPeakDetector();
 %                 catch e
-%                     errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
+%                     h_e = errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
 %                     return;
 %                 end
 %             end
@@ -1301,7 +1319,8 @@ end
             DATA.peak_search_win = field_value;
         else
             set(src, 'String', num2str(DATA.peak_search_win));
-            errordlg('The window length for peak detection must be greater than 0 and less than 1 sec.', 'Input Error');
+            h_e = errordlg('The window length for peak detection must be greater than 0 and less than 1 sec.', 'Input Error');
+            setLogo(h_e, 'M1');
         end
     end
 %%
@@ -1376,22 +1395,26 @@ end
                             time_data = data.Time.Data;
                             DATA.qrs = int64(time_data * DATA.Fs);
                             if ~strcmp(Mammal, DATA.Mammal) || ~strcmp(integration, DATA.Integration)
-                                errordlg(['on Load Peaks error: ' 'Please, choose same mammal and integration level.'], 'Input Error');
+                                h_e = errordlg(['on Load Peaks error: ' 'Please, choose same mammal and integration level.'], 'Input Error');
+                                setLogo(h_e, 'M1');
                                 return;
                             end
                         else
-                            errordlg(['on Load Peaks error: ' 'Please, choose another file type.'], 'Input Error');
+                            h_e = errordlg(['on Load Peaks error: ' 'Please, choose another file type.'], 'Input Error');
+                            setLogo(h_e, 'M1');
                             return;
                         end
                     elseif strcmp(Config.alarm.(MSG), 'Canceled')
                         return;
                     else
-                        errordlg(['on Load Peaks error: ' Config.alarm.(MSG)], 'Input Error');
+                        h_e = errordlg(['on Load Peaks error: ' Config.alarm.(MSG)], 'Input Error');
+                        setLogo(h_e, 'M1');
                         return;
                     end
                     
                 catch e
-                    errordlg(['onOpenFile error: ' e.message], 'Input Error');
+                    h_e = errordlg(['onOpenFile error: ' e.message], 'Input Error');
+                    setLogo(h_e, 'M1');
                     return;
                 end
                 
@@ -1410,18 +1433,19 @@ end
                 %
                 %                         DATA.qrs = data.Data.Data;
                 %                     else
-                %                         errordlg(['on Load Peaks error: ' 'Please, choose right file format for this module.'], 'Input Error');
+                %                         h_e = errordlg(['on Load Peaks error: ' 'Please, choose right file format for this module.'], 'Input Error');
                 %                         return;
                 %                     end
                 %                 else
-                %                     errordlg(['on Load Peaks error: ' MSG], 'Input Error');
+                %                     h_e = errordlg(['on Load Peaks error: ' MSG], 'Input Error');
                 %                     return;
                 %                 end
                 
                 %             elseif strcmpi(ExtensionFileName, 'qrs') % || strcmpi(ExtensionFileName, 'atr')
                 %                 DATA.qrs = rdann(DATA.peaks_file_name, EXT);
             else
-                errordlg(['on Load Peaks error: ' 'Please, choose another file type.'], 'Input Error');
+                h_e = errordlg(['on Load Peaks error: ' 'Please, choose another file type.'], 'Input Error');
+                setLogo(h_e, 'M1');
                 return;
             end
             
@@ -1473,7 +1497,8 @@ end
                 set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
                 set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
             else
-                errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
+                h_e = errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
+                setLogo(h_e, 'M1');
             end
         end
     end
@@ -1617,7 +1642,8 @@ end
                 end
 %                                 cd(saved_path);
             else
-                errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
+                h_e = errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
+                setLogo(h_e, 'M1');
                 return;
             end
         end
@@ -1627,7 +1653,8 @@ end
         try
             RunAndPlotPeakDetector();
         catch e
-            errordlg(['AutoCompute_pushbutton_Callback error: ' e.message], 'Input Error');
+            h_e = errordlg(['AutoCompute_pushbutton_Callback error: ' e.message], 'Input Error');
+            setLogo(h_e, 'M1');
             return;
         end
     end
@@ -1696,7 +1723,8 @@ end
             try
                 RunAndPlotPeakDetector();
             catch e
-                errordlg(['AutoCompute_pushbutton_Callback error: ' e.message], 'Input Error');
+                h_e = errordlg(['AutoCompute_pushbutton_Callback error: ' e.message], 'Input Error');
+                setLogo(h_e, 'M1');
                 return;
             end
 %             set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
@@ -2243,13 +2271,15 @@ end
             if RRIntPage_Length <= 1 || RRIntPage_Length > DATA.maxRRTime
                 set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
                 if isInputNumeric ~= 2
-                    errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error');
+                    h_e = errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error');
+                    setLogo(h_e, 'M1');
                 end
                 return;
             elseif RRIntPage_Length < red_rect_length
                 set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
                 if isInputNumeric ~= 2
-                    errordlg('The window size must be greater than zoom window length!', 'Input Error');
+                    h_e = errordlg('The window size must be greater than zoom window length!', 'Input Error');
+                    setLogo(h_e, 'M1');
                 end
                 return;
             end
@@ -2479,7 +2509,8 @@ end
                 %
                 %                 wrann([results_folder_name filename_noExt], 'sqi', int64(Quality_annotations_for_wfdb*DATA.Fs), 'fs', DATA.Fs, 'type', Class_for_wfdb);
             else
-                errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
+                h_e = errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
+                setLogo(h_e, 'M1');
                 return;
             end
         end
@@ -2537,14 +2568,15 @@ end
                 end
                 
 %                 if ~strcmp(source_file_name, [DATA.DataFileName '.' DATA.ExtensionFileName])
-%                     errordlg('Please, choose appropriate Signal Quality Annotations File.', 'Input Error');
+%                     h_e = errordlg('Please, choose appropriate Signal Quality Annotations File.', 'Input Error');
 %                     return;
 %                 end
                 
                 if ~isempty(QualityAnnotations_Data) && strcmpi(type, 'quality annotation')
                     DATA_QualityAnnotations_Data = QualityAnnotations_Data;
                 else
-                    errordlg('Please, choose the Signal Quality Annotations File.', 'Input Error');
+                    h_e = errordlg('Please, choose the Signal Quality Annotations File.', 'Input Error');
+                    setLogo(h_e, 'M1');
                     return;
                 end
                 if ~isempty(Class)
@@ -2570,11 +2602,13 @@ end
                             class = quality_data(3);
                             DATA_Class = class{1};
                         else
-                            errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
+                            h_e = errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
+                            setLogo(h_e, 'M1');
                             return;
                         end
                     else
-                        errordlg('Please, choose the right format for Data Quality Annotations File.', 'Input Error');
+                        h_e = errordlg('Please, choose the right format for Data Quality Annotations File.', 'Input Error');
+                        setLogo(h_e, 'M1');
                         return;
                     end
                     fclose(fileID);
@@ -2590,7 +2624,8 @@ end
                 %                 DATA_QualityAnnotations_Data = [quality_data(1:2:end), quality_data(2:2:end)];
                 %                 DATA_Class = class(1:2:end);
             else
-                errordlg('Please, choose only *.mat or *.txt file.', 'Input Error');
+                h_e = errordlg('Please, choose only *.mat or *.txt file.', 'Input Error');
+                setLogo(h_e, 'M1');
                 return;
             end
             

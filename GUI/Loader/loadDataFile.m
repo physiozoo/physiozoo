@@ -27,6 +27,13 @@ valueSet=keySet;
 %% ------ Check File extantion and load file --------
 [file_path,name,ext] = fileparts(FileName);
 waitbar_handle = waitbar(1/2, sprintf('Loading "%s" file',replace(name, '_', '\_')), 'Name', 'Working on it...');
+
+%% ------------- Put Logo --------------------
+warning('off');
+javaFrame = get(waitbar_handle, 'JavaFrame');
+javaFrame.setFigureIcon(javax.swing.ImageIcon([fileparts(fileparts(mfilename('fullpath'))) filesep 'Logo' filesep 'logoRed.png']));
+warning('on');
+
 Ext = ext;
 UniqueMap('Name') = name;
 UniqueMap('File_path') = file_path;

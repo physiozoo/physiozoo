@@ -13,7 +13,8 @@ elseif length(duration) == 4 && duration(1) >= 0 && duration(2) >= 0 && duration
     signalDurationInSec = duration(1)*3600 + duration(2)*60 + duration(3)+ duration(4)/1000;
 else
     set(GUIFiled, 'String', calcDuration(OldFieldValue, 0));
-    warndlg('Please, check your input');
+    h_w = warndlg('Please, check your input');
+    setLogo(h_w, 'M2');
     isInputNumeric = false;
     signalDurationInSec = [];
 end

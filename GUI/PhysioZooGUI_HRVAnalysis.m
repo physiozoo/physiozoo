@@ -328,7 +328,7 @@ displayEndOfDemoMessage('');
         %         javaFrame = get(GUI.Window,'JavaFrame');
         %         javaFrame.setFigureIcon(javax.swing.ImageIcon([basepath filesep 'GUI' filesep 'Logo' filesep 'logoRed.png']));
         
-        setLogo(GUI.Window);
+        setLogo(GUI.Window, 'M2');
         
         
         DATA.zoom_handle = zoom(GUI.Window);
@@ -1609,7 +1609,8 @@ displayEndOfDemoMessage('');
                 if ~isempty(QualityAnnotations_Data) && strcmpi(type, 'quality annotation')
                     DATA.QualityAnnotations_Data = QualityAnnotations_Data;
                 else
-                    errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
+                    h_e = errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
+                    setLogo(h_e, 'M2');
                     return;
                 end
                 if ~isempty(Class)
@@ -1642,11 +1643,13 @@ displayEndOfDemoMessage('');
                             class = quality_data(3);
                             DATA_Class = class{1};
                         else
-                            errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
+                            h_e = errordlg('Please, choose the Data Quality Annotations File.', 'Input Error');
+                            setLogo(h_e, 'M2');
                             return;
                         end
                     else
-                        errordlg('Please, choose the right format for Data Quality Annotations File.', 'Input Error');
+                        h_e = errordlg('Please, choose the right format for Data Quality Annotations File.', 'Input Error');
+                        setLogo(h_e, 'M2');
                         return;
                     end
                     fclose(fileID);
@@ -1654,7 +1657,8 @@ displayEndOfDemoMessage('');
                     return;
                 end
             else
-                errordlg('Please, choose only *.mat or *.txt file.', 'Input Error');
+                h_e = errordlg('Please, choose only *.mat or *.txt file.', 'Input Error');
+                setLogo(h_e, 'M2');
                 return;
             end
             set(GUI.DataQuality_text, 'String', DataQuality_FileName);
@@ -1686,26 +1690,15 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function [mammal, mammal_index] = set_mammal(mammal)
-        %         DATA.mammal = mammal;
-        if strcmpi(mammal, 'rabbit')
-            %             DATA.mammal = 'rabbit';
+    function [mammal, mammal_index] = set_mammal(mammal)        
+        if strcmpi(mammal, 'rabbit')        
             mammal = 'rabbit';
-        elseif ~isempty(regexpi(mammal, 'mice|mouse'))
-            %             DATA.mammal = 'mouse';
+        elseif ~isempty(regexpi(mammal, 'mice|mouse'))        
             mammal = 'mouse';
-        elseif ~isempty(regexpi(mammal, 'dog|dogs|canine'))
-            %             DATA.mammal = 'dog';
+        elseif ~isempty(regexpi(mammal, 'dog|dogs|canine'))        
             mammal = 'dog';
-        end
-        %         DATA.mammal_index = find(strcmp(DATA.mammals, DATA.mammal));
-        mammal_index = find(strcmp(DATA.mammals, mammal));
-        %         if mammal_index == 0 % DATA.mammal_index == 0
-        % %             DATA.mammal_index = 1;
-        %             mammal_index = 1;
-        % %             DATA.mammal = 'human';
-        %             mammal = 'human';
-        %         end
+        end        
+        mammal_index = find(strcmp(DATA.mammals, mammal));        
     end
 %%
     function [mammal, mammal_index, integration, isM1] = Load_Data_from_SingleFile(QRS_FileName, PathName, DataFileMap, waitbar_handle)
@@ -1822,7 +1815,8 @@ displayEndOfDemoMessage('');
         try
             Load_Single_File(QRS_FileName, PathName, DataFileMap);
         catch e
-            errordlg(['onOpenFile: ' e.message], 'Input Error');
+            h_e = errordlg(['onOpenFile: ' e.message], 'Input Error');
+            setLogo(h_e, 'M2');
         end
     end
 %%
@@ -1833,6 +1827,7 @@ displayEndOfDemoMessage('');
                 
                 try
                     waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Working on it...');
+                    setLogo(waitbar_handle, 'M2');
                     [mammal, mammal_index, integration, whichModule] = Load_Data_from_SingleFile(QRS_FileName, PathName, DataFileMap, waitbar_handle);
                     if whichModule == 1
                         if isvalid(waitbar_handle)
@@ -1844,7 +1839,8 @@ displayEndOfDemoMessage('');
                     if isvalid(waitbar_handle)
                         close(waitbar_handle);
                     end
-                    errordlg(['Load Single File error: ' e.message], 'Input Error');
+                    h_e = errordlg(['Load Single File error: ' e.message], 'Input Error');
+                    setLogo(h_e, 'M2');
                     clean_gui();
                     cla(GUI.RRDataAxes);
                     cla(GUI.AllDataAxes);
@@ -1867,17 +1863,42 @@ displayEndOfDemoMessage('');
                     DATA.Integration = integration;
                     DATA.integration_index = find(strcmpi(DATA.GUI_Integration, DATA.Integration));
                     GUI.Integration_popupmenu.Value = DATA.integration_index;
-                    
-                    try
-                        mhrv_load_defaults(DATA.mammals{DATA.mammal_index});
-                    catch e
-                        errordlg(['mhrv_load_defaults: ' e.message], 'Input Error');
-                        if isvalid(waitbar_handle)
-                            close(waitbar_handle);
-                        end
-                        return;
+                                                            
+                    if mammal_index == length(DATA.mammals) % Custom mammal
+                        set_defaults_path();
+                        [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
+                        if ~isequal(Config_FileName, 0)
+                            params_filename = fullfile(PathName, Config_FileName);
+                            [pathstr, name, ~] = fileparts(params_filename);
+                            mhrv_load_defaults([pathstr filesep name]);
+                            DIRS.configDirectory = PathName;
+                        else % Cancel by user                            
+                            clearData();
+                            clean_gui();
+                            cla(GUI.RRDataAxes);
+                            cla(GUI.AllDataAxes);
+                            clear_statistics_plots();
+                            clearStatTables();
+                            if isvalid(waitbar_handle)
+                                close(waitbar_handle);
+                            end
+                            return;
+                        end                                                
+                    else                                                
+                        try
+                            mhrv_load_defaults(DATA.mammals{DATA.mammal_index});
+                        catch e
+                            h_e = errordlg(['mhrv_load_defaults: ' e.message], 'Input Error');
+                            setLogo(h_e, 'M2');
+                            if isvalid(waitbar_handle)
+                                close(waitbar_handle);
+                            end
+                            return;
+                        end                        
                     end
+                    
                     waitbar(2 / 2, waitbar_handle, 'Create Config Parameters Windows');
+                    setLogo(waitbar_handle, 'M2');
                     createConfigParametersInterface();
                     close(waitbar_handle);
                 else
@@ -1906,7 +1927,7 @@ displayEndOfDemoMessage('');
             end
         end
     end
-% %%
+%%
 %     function [mammal, intg] = get_description_integration(rec_name)
 %         fheader = fopen([rec_name, '.hea']);
 %         fgetl(fheader);
@@ -2126,7 +2147,8 @@ displayEndOfDemoMessage('');
                 
                 calcStatistics();
             catch e
-                errordlg(['Reset Plot: ' e.message], 'Input Error');
+                h_e = errordlg(['Reset Plot: ' e.message], 'Input Error');
+                setLogo(h_e, 'M2');
             end
         end
     end % reset Data
@@ -2225,7 +2247,8 @@ displayEndOfDemoMessage('');
                     GUI.SpectralWindowLengthHandle.Enable = 'off';
                 end
             catch e
-                errordlg(['Reset Plot: ' e.message], 'Input Error');
+                h_e = errordlg(['Reset Plot: ' e.message], 'Input Error');
+                setLogo(h_e, 'M2');
             end
         end
     end % reset GUI
@@ -2242,7 +2265,8 @@ displayEndOfDemoMessage('');
         if isnan(NewFieldValue)
             set(GUIFiled,'String', OldFieldValue);
             isInputNumeric = false;
-            warndlg('Input must be numerical');
+            h_w = warndlg('Input must be numerical');
+            setLogo(h_w, 'M2');
         else
             isInputNumeric = true;
         end
@@ -2257,13 +2281,15 @@ displayEndOfDemoMessage('');
             if RRIntPage_Length <= 1 || RRIntPage_Length > DATA.maxSignalLength
                 set(GUI.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
                 if isInputNumeric ~= 2
-                    errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error');
+                    h_e = errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error');
+                    setLogo(h_e, 'M2');
                 end
                 return;
             elseif RRIntPage_Length < red_rect_length
                 set(GUI.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
                 if isInputNumeric ~= 2
-                    errordlg('The window size must be greater than zoom window length!', 'Input Error');
+                    h_e = errordlg('The window size must be greater than zoom window length!', 'Input Error');
+                    setLogo(h_e, 'M2');
                 end
                 return;
             end
@@ -2374,11 +2400,13 @@ displayEndOfDemoMessage('');
             if isInputNumeric
                 if MyWindowSize <= 1 || (MyWindowSize + DATA.firstSecond2Show) > DATA.maxSignalLength % || MyWindowSize > DATA.maxSignalLength
                     set(GUI.WindowSize,'String', calcDuration(DATA.MyWindowSize, 0));
-                    errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error');
+                    h_e = errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error');
+                    setLogo(h_e, 'M2');
                     return;
                 elseif MyWindowSize > DATA.RRIntPage_Length
                     set(GUI.WindowSize,'String', calcDuration(DATA.MyWindowSize, 0));
-                    errordlg('The zoom window length must be smaller than display duration length!', 'Input Error');
+                    h_e = errordlg('The zoom window length must be smaller than display duration length!', 'Input Error');
+                    setLogo(h_e, 'M2');
                     return;
                 end
                 if abs(DATA.maxSignalLength - MyWindowSize ) <=  1 %0.0005
@@ -2459,7 +2487,8 @@ displayEndOfDemoMessage('');
                 Spectral_Window_Length(GUI.Active_Window_Length, Active_Window_Length);
                 %                 set(GUI.SpectralWindowLengthHandle, 'String', calcDuration(DATA.AnalysisParams.activeWin_length, 0));
             catch e
-                errordlg(e.message, 'Input Error');
+                h_e = errordlg(e.message, 'Input Error');
+                setLogo(h_e, 'M2');
             end
         end
     end
@@ -2501,7 +2530,8 @@ displayEndOfDemoMessage('');
                 plotDataQuality();
                 plotMultipleWindows();
             else
-                errordlg('Please, enter correct values!', 'Input Error');
+                h_e = errordlg('Please, enter correct values!', 'Input Error');
+                setLogo(h_e, 'M2');
             end
         end
     end
@@ -2516,7 +2546,8 @@ displayEndOfDemoMessage('');
                 DATA.YLimLowAxes.MaxYLimit = MaxYLimit;
                 set_rectangles_YData();
             else
-                errordlg('Please, enter correct values!', 'Input Error');
+                h_e = errordlg('Please, enter correct values!', 'Input Error');
+                setLogo(h_e, 'M2');
             end
         end
     end
@@ -2685,6 +2716,9 @@ displayEndOfDemoMessage('');
                 DATA.nni = nni;
                 DATA.tnn = tnn;
             end
+        else
+            ME = MException('FiltCalcPlotSignalStat:NoData', 'No data');
+            throw(ME);
         end
     end
 %%
@@ -2830,7 +2864,8 @@ displayEndOfDemoMessage('');
         catch e
             set(src, 'Value', DATA.filter_level_index);
             set_filtering_level_param(filteringLevel_items{DATA.filter_level_index}, Filter)
-            errordlg(['FilteringLevel_popupmenu_Callback Error: ' e.message], 'Input Error');
+            h_e = errordlg(['FilteringLevel_popupmenu_Callback Error: ' e.message], 'Input Error');
+            setLogo(h_e, 'M2');
             return;
         end
     end
@@ -2887,7 +2922,8 @@ displayEndOfDemoMessage('');
         try
             set_filters(Filter);
         catch e
-            errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
+            h_e = errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
+            setLogo(h_e, 'M2');
             GUI.Filtering_popupmenu.Value = DATA.filter_index;
             set_filters(items{DATA.filter_index});
             return;
@@ -2903,7 +2939,8 @@ displayEndOfDemoMessage('');
             end
             
         catch e
-            errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
+            h_e = errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
+            setLogo(h_e, 'M2');
             GUI.Filtering_popupmenu.Value = DATA.filter_index;
             set_filters(items{DATA.filter_index});
             return;
@@ -2979,7 +3016,8 @@ displayEndOfDemoMessage('');
             if isInputNumeric
                 if firstSecond2Show < 0 || firstSecond2Show > DATA.maxSignalLength - DATA.MyWindowSize  % + 1
                     set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
-                    errordlg('The first second value must be grater than 0 and less than signal length!', 'Input Error');
+                    h_e = errordlg('The first second value must be grater than 0 and less than signal length!', 'Input Error');
+                    setLogo(h_e, 'M2');
                     return;
                 end
                 
@@ -3006,7 +3044,8 @@ displayEndOfDemoMessage('');
             if isInputNumeric
                 if active_window_start < 0 || active_window_start > DATA.Filt_MaxSignalLength - DATA.AnalysisParams.activeWin_length % + 1
                     set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
-                    errordlg('The filt first second value must be grater than 0 and less than signal length!', 'Input Error');
+                    h_e = errordlg('The filt first second value must be grater than 0 and less than signal length!', 'Input Error');
+                    setLogo(h_e, 'M2');
                 else
                     set(GUI.Filt_RawDataSlider, 'Value', active_window_start);
                     
@@ -3131,7 +3170,7 @@ displayEndOfDemoMessage('');
             'Position', [(main_screensize(3)-400)/2, (main_screensize(4)-300)/2, 400, 300]); %[700, 300, 800, 400]
         
         
-        setLogo(GUI.SaveFiguresWindow);
+        setLogo(GUI.SaveFiguresWindow, 'M2');
         
         mainSaveFigurestLayout = uix.VBox('Parent',GUI.SaveFiguresWindow, 'Spacing', DATA.Spacing);
         figures_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', DATA.Padding+2, 'Title', 'Select figures to save:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
@@ -3193,7 +3232,7 @@ displayEndOfDemoMessage('');
                 if ~strcmpi(ext, 'fig')
                     if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1) && yes_no(1)
                         af = figure;
-                        setLogo(af);
+                        setLogo(af, 'M2');
                         set(af, 'Visible', 'off')
                         plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
                         fig_print( af, [export_path_name, DATA.FiguresNames{1}], 'output_format', ext, 'title', figure_title(fig_name, 1));
@@ -3203,7 +3242,7 @@ displayEndOfDemoMessage('');
                     if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
                         if DATA_Fig.export_figures(2) && yes_no(2)
                             af = figure;
-                            setLogo(af);
+                            setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
                             plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
                             fig_print( af, [export_path_name, DATA.FiguresNames{2}], 'output_format', ext, 'title', figure_title(fig_name, 2));
@@ -3211,7 +3250,7 @@ displayEndOfDemoMessage('');
                         end
                         if DATA_Fig.export_figures(3) && yes_no(3)
                             af = figure;
-                            setLogo(af);
+                            setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
                             plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
                             fig_print( af, [export_path_name, DATA.FiguresNames{3}], 'output_format', ext, 'title', figure_title(fig_name, 3));
@@ -3222,7 +3261,7 @@ displayEndOfDemoMessage('');
                     if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
                         if DATA_Fig.export_figures(4) && yes_no(4)
                             af = figure;
-                            setLogo(af);
+                            setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
                             plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
                             fig_print( af, [export_path_name, DATA.FiguresNames{4}], 'output_format', ext, 'title', figure_title(fig_name, 4));
@@ -3230,7 +3269,7 @@ displayEndOfDemoMessage('');
                         end
                         if DATA_Fig.export_figures(5) && yes_no(5)
                             af = figure;
-                            setLogo(af);
+                            setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
                             plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
                             fig_print( af, [export_path_name, DATA.FiguresNames{5}], 'output_format', ext, 'title', figure_title(fig_name, 5));
@@ -3238,7 +3277,7 @@ displayEndOfDemoMessage('');
                         end
                         if DATA_Fig.export_figures(6) && yes_no(6)
                             af = figure;
-                            setLogo(af);
+                            setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
                             plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
                             fig_print( af, [export_path_name, DATA.FiguresNames{6}], 'output_format', ext, 'title', figure_title(fig_name, 6));
@@ -3247,7 +3286,7 @@ displayEndOfDemoMessage('');
                     end
                     if DATA_Fig.export_figures(7) && yes_no(7)
                         af = figure;
-                        setLogo(af);
+                        setLogo(af, 'M2');
                         set(af, 'Visible', 'off')
                         plot_rr_time_series(gca);
                         fig_print( af, [export_path_name, DATA.FiguresNames{7}], 'output_format', ext, 'title', figure_title(fig_name, 7));
@@ -3256,7 +3295,7 @@ displayEndOfDemoMessage('');
                 elseif strcmpi(ext, 'fig')
                     if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1) && yes_no(1)
                         af = figure;
-                        setLogo(af);
+                        setLogo(af, 'M2');
                         set(af, 'Name', [fig_name, DATA.FiguresNames{1}], 'NumberTitle', 'off');
                         plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
                         title(gca, figure_title(fig_name, 1));
@@ -3266,7 +3305,7 @@ displayEndOfDemoMessage('');
                     if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
                         if DATA_Fig.export_figures(2) && yes_no(2)
                             af = figure;
-                            setLogo(af);
+                            setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{2}], 'NumberTitle', 'off');
                             plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
                             title(gca, figure_title(fig_name, 2));
@@ -3275,7 +3314,7 @@ displayEndOfDemoMessage('');
                         end
                         if DATA_Fig.export_figures(3) && yes_no(3)
                             af = figure;
-                            setLogo(af);
+                            setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{3}], 'NumberTitle', 'off');
                             plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
                             title(gca, figure_title(fig_name, 3));
@@ -3286,7 +3325,7 @@ displayEndOfDemoMessage('');
                     if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
                         if DATA_Fig.export_figures(4) && yes_no(4)
                             af = figure;
-                            setLogo(af);
+                            setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{4}], 'NumberTitle', 'off');
                             plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
                             title(gca, figure_title(fig_name, 4));
@@ -3295,7 +3334,7 @@ displayEndOfDemoMessage('');
                         end
                         if DATA_Fig.export_figures(5) && yes_no(5)
                             af = figure;
-                            setLogo(af);
+                            setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{5}], 'NumberTitle', 'off');
                             plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
                             title(gca, figure_title(fig_name, 5));
@@ -3304,7 +3343,7 @@ displayEndOfDemoMessage('');
                         end
                         if DATA_Fig.export_figures(6) && yes_no(6)
                             af = figure;
-                            setLogo(af);
+                            setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{6}], 'NumberTitle', 'off');
                             plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
                             title(gca, figure_title(fig_name, 6));
@@ -3314,7 +3353,7 @@ displayEndOfDemoMessage('');
                     end
                     if DATA_Fig.export_figures(7) && yes_no(7)
                         af = figure;
-                        setLogo(af);
+                        setLogo(af, 'M2');
                         set(af, 'Name', [fig_name, DATA.FiguresNames{7}], 'NumberTitle', 'off');
                         plot_rr_time_series(gca);
                         title(gca, figure_title(fig_name, 7));
@@ -3323,11 +3362,13 @@ displayEndOfDemoMessage('');
                     end
                 end
             else
-                errordlg('Please, press Compute before saving!', 'Input Error');
+                h_e = errordlg('Please, press Compute before saving!', 'Input Error');
+                setLogo(h_e, 'M2');
             end
             delete( GUI.SaveFiguresWindow );
         else
-            errordlg('Please enter valid path to save figures', 'Input Error');
+            h_e = errordlg('Please enter valid path to save figures', 'Input Error');
+            setLogo(h_e, 'M2');
         end
     end
 %%
@@ -3398,7 +3439,8 @@ displayEndOfDemoMessage('');
                 end
             end
         else
-            errordlg('Please, press Compute before saving!', 'Input Error');
+            h_e = errordlg('Please, press Compute before saving!', 'Input Error');
+            setLogo(h_e, 'M2');
         end
     end
 %%
@@ -3448,7 +3490,7 @@ displayEndOfDemoMessage('');
             'HandleVisibility', 'off', ...
             'Position', [(main_screensize(3)-400)/2, (main_screensize(4)-300)/2, 400, 300]); %[700, 300, 800, 400]
         
-        setLogo(GUI.SaveMeasuresWindow);
+        setLogo(GUI.SaveMeasuresWindow, 'M2');
         
         mainSaveMeasuresLayout = uix.VBox('Parent',GUI.SaveMeasuresWindow, 'Spacing', DATA.Spacing);
         measures_panel = uix.Panel( 'Parent', mainSaveMeasuresLayout, 'Padding', DATA.Padding+2, 'Title', 'Select measures to save:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
@@ -3574,7 +3616,8 @@ displayEndOfDemoMessage('');
                             'hrv_metrics_table');
                     end
                 else
-                    errordlg('Please, press Compute before saving!', 'Input Error');
+                    h_e = errordlg('Please, press Compute before saving!', 'Input Error');
+                    setLogo(h_e, 'M2');
                 end
             end
         end
@@ -3596,7 +3639,7 @@ displayEndOfDemoMessage('');
             'HandleVisibility', 'off', ...
             'Position', [700, 300, 400, 400]);
         
-        setLogo(GUI.AboutWindow);
+        setLogo(GUI.AboutWindow, 'M2');
         
         GUI.mainAboutLayout = uix.VBox('Parent', GUI.AboutWindow, 'Spacing', DATA.Spacing);
         GUI.ImageAxes = axes('Parent', GUI.mainAboutLayout, 'ActivePositionProperty', 'Position');
@@ -3623,6 +3666,7 @@ displayEndOfDemoMessage('');
             
             if strcmp(param_category, 'filtrr') || isempty(DATA.TimeStat) || isempty(DATA.FrStat) || isempty(DATA.NonLinStat)
                 waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                setLogo(waitbar_handle, 'M2');
                 try
                     FiltSignal();
                     clear_statistics_plots();
@@ -3636,14 +3680,17 @@ displayEndOfDemoMessage('');
                 end
             elseif strcmp(param_category, 'hrv_time')
                 waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                setLogo(waitbar_handle, 'M2');
                 calcTimeStatistics(waitbar_handle);
                 close(waitbar_handle);
             elseif strcmp(param_category, 'hrv_freq')
                 waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                setLogo(waitbar_handle, 'M2');
                 calcFrequencyStatistics(waitbar_handle);
                 close(waitbar_handle);
             elseif strcmp(param_category, 'dfa') || strcmp(param_category, 'mse')
                 waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                setLogo(waitbar_handle, 'M2');
                 calcNonlinearStatistics(waitbar_handle);
                 close(waitbar_handle);
             end
@@ -3652,203 +3699,218 @@ displayEndOfDemoMessage('');
 %%
     function set_config_Callback(src, ~, param_name)
         
-        doCalc = true;
-        cp_param_array = [];
-        do_couple = false;
-        param_category = strsplit(param_name, '.');
-        
-        min_suffix_ind = strfind(param_name, '.min');
-        max_suffix_ind = strfind(param_name, '.max');
-        
-        screen_value = str2double(get(src, 'String'));
-        prev_screen_value = get(src, 'UserData');
-        
-        string_screen_value = get(src, 'String');
-        
-        if regexpi(param_name, 'filtrr')
-            custom_level = length(get(GUI.FilteringLevel_popupmenu, 'String'));
-            items = get(GUI.Filtering_popupmenu, 'String');
-            index_selected = get(GUI.Filtering_popupmenu, 'Value');
-            Filter = items{index_selected};
-        end
-        
-        if strcmp(param_name, 'hrv_freq.welch_overlap')
-            if isnan(screen_value) || screen_value < 0 || screen_value >= 100
-                errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
-                set(src, 'String', prev_screen_value);
-                return;
-            end
-        elseif strcmp(param_name, 'filtrr.quotient.rr_max_change')
-            if isnan(screen_value) || screen_value <= 0 || screen_value > 100
-                errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
-                set(src, 'String', prev_screen_value);
-                return;
-            elseif strcmp(Filter, 'Quotient') || strcmp(Filter, 'Combined filters')
-                set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
-            end
-        elseif regexp(param_name, 'filtrr.moving_average')
-            if strcmp(param_name, 'filtrr.moving_average.win_threshold') && (isnan(screen_value) || screen_value < 0 || screen_value > 100)
-                errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
-                set(src, 'String', prev_screen_value);
-                return;
-            end
-            if strcmp(param_name, 'filtrr.moving_average.win_length') && (isnan(screen_value) || screen_value < 1 || screen_value > length(DATA.rri))
-                errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than ' num2str(DATA.maxSignalLength/60) 'sec!'], 'Input Error');
-                set(src, 'String', prev_screen_value);
-                return;
-            end
-            if strcmp(Filter, 'Moving average') || strcmp(Filter, 'Combined filters')
-                set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
-            end
-        elseif regexp(param_name, 'filtrr.range')
-            if isnan(screen_value) || ~(screen_value > 0)
-                errordlg(['set_config_Callback error: ' 'This parameter must be numeric positive single value!'], 'Input Error');
-                set(src, 'String', prev_screen_value);
-                return;
-            elseif strcmp(Filter, 'Range') || strcmp(Filter, 'Combined filters')
-                set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
-            end
-        elseif strcmp(param_name, 'hrv_freq.window_minutes')
-            %             try
-            %                 Spectral_Window_Length(GUI.SpectralWindowLengthHandle, string_screen_value);
-            %                 set(GUI.Active_Window_Length, 'String', string_screen_value);
+        if ~isempty(DATA.nni)
             
-            [screen_value, isInputNumeric] = calcDurationInSeconds(GUI.SpectralWindowLengthHandle, string_screen_value, prev_screen_value*60);
+            doCalc = true;
+            cp_param_array = [];
+            do_couple = false;
+            param_category = strsplit(param_name, '.');
             
-            if isInputNumeric && screen_value <= 0
-                errordlg('The spectral window length must be greater than 0 sec!', 'Input Error');
-                return;
-            elseif ~isInputNumeric
-                return;
+            min_suffix_ind = strfind(param_name, '.min');
+            max_suffix_ind = strfind(param_name, '.max');
+            
+            screen_value = str2double(get(src, 'String'));
+            prev_screen_value = get(src, 'UserData');
+            
+            string_screen_value = get(src, 'String');
+            
+            if regexpi(param_name, 'filtrr')
+                custom_level = length(get(GUI.FilteringLevel_popupmenu, 'String'));
+                items = get(GUI.Filtering_popupmenu, 'String');
+                index_selected = get(GUI.Filtering_popupmenu, 'Value');
+                Filter = items{index_selected};
             end
             
-            screen_value = screen_value / 60; % to minutes
-            %                 doCalc = false;
-            %             catch e
-            %                 errordlg(e.message, 'Input Error');
-            %                 return;
-            %             end
-        elseif  isnan(screen_value) || ~(screen_value > 0)
-            errordlg(['set_config_Callback error: ' 'This parameter must be numeric positive single value!'], 'Input Error');
-            set(src, 'String', prev_screen_value);
-            return;
-        end
-        
-        if ~isempty(min_suffix_ind)
-            param_name = param_name(1 : min_suffix_ind - 1);
-            min_param_value = screen_value;
-            prev_param_array = mhrv_get_default(param_name);
-            max_param_value = prev_param_array.value(2);
-            
-            if min_param_value > max_param_value
-                errordlg(['set_config_Callback error: ' 'The min value must be less than max value!'], 'Input Error');
-                set(src, 'String', prev_screen_value);
-                return;
-            end
-            
-            param_value = [min_param_value max_param_value];
-            
-            prev_param_value = prev_param_array.value(1);
-            
-            if strcmp(param_name, 'hrv_freq.lf_band')
-                couple_name = 'hrv_freq.vlf_band';
-                do_couple = true;
-            elseif strcmp(param_name, 'hrv_freq.hf_band')
-                couple_name = 'hrv_freq.lf_band';
-                do_couple = true;
-            end
-            
-            if do_couple
-                cp_param_array = mhrv_get_default(couple_name);
-                mhrv_set_default( couple_name, [cp_param_array.value(1) screen_value] );
-                couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
-                set(findobj(couple_handle, 'Tag', [couple_name '.max']), 'String', num2str(screen_value));
-            end
-            
-        elseif ~isempty(max_suffix_ind)
-            param_name = param_name(1 : max_suffix_ind - 1);
-            max_param_value = screen_value;
-            prev_param_array = mhrv_get_default(param_name);
-            min_param_value = prev_param_array.value(1);
-            
-            if max_param_value < min_param_value
-                errordlg(['set_config_Callback error: ' 'The max value must be greater than min value!'], 'Input Error');
-                set(src, 'String', prev_screen_value);
-                return;
-            end
-            
-            param_value = [min_param_value max_param_value];
-            
-            prev_param_value = prev_param_array.value(2);
-            
-            if strcmp(param_name, 'hrv_freq.vlf_band')
-                couple_name = 'hrv_freq.lf_band';
-                do_couple = true;
-            elseif strcmp(param_name, 'hrv_freq.lf_band')
-                couple_name = 'hrv_freq.hf_band';
-                do_couple = true;
-            end
-            if do_couple
-                cp_param_array = mhrv_get_default(couple_name);
-                mhrv_set_default( couple_name, [screen_value cp_param_array.value(2)] );
-                couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
-                set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(screen_value));
-            end
-        else
-            param_value = screen_value;
-            prev_param_array = mhrv_get_default(param_name);
-            prev_param_value = prev_param_array.value;
-        end
-        
-        mhrv_set_default( param_name, param_value );
-        
-        %         if ~get(GUI.AutoCalc_checkbox, 'Value')
-        %             DATA.custom_config_params(param_name) = param_value;
-        %         end
-        
-        doFilt = 0;
-        if regexpi(param_name, 'filtrr')
-            DATA.custom_filters_thresholds.(param_category{2}).(param_category{3}) = param_value;
-            if strcmp(Filter, 'Combined filters') && (strcmp(param_category{2}, 'moving_average') || strcmp(param_category{2}, 'range'))
-                doFilt = 1;
-            elseif strcmp(Filter, 'Moving average') && strcmp(param_category{2}, 'moving_average')
-                doFilt = 1;
-            elseif strcmp(Filter, 'Range') && strcmp(param_category{2}, 'range')
-                doFilt = 1;
-            elseif strcmp(Filter, 'Quotient') && strcmp(param_category{2}, 'quotient')
-                doFilt = 1;
-            end
-        else
-            doFilt = 1;
-        end
-        
-        if get(GUI.AutoCalc_checkbox, 'Value')
-            try
-                if doCalc && doFilt
-                    update_statistics(param_category(1));
+            if strcmp(param_name, 'hrv_freq.welch_overlap')
+                if isnan(screen_value) || screen_value < 0 || screen_value >= 100
+                    h_e = errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
+                    setLogo(h_e, 'M2');
+                    set(src, 'String', prev_screen_value);
+                    return;
                 end
-                set(src, 'UserData', screen_value);
-            catch e
-                errordlg(['set_config_Callback error: ' e.message], 'Input Error');
+            elseif strcmp(param_name, 'filtrr.quotient.rr_max_change')
+                if isnan(screen_value) || screen_value <= 0 || screen_value > 100
+                    h_e = errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
+                    setLogo(h_e, 'M2');
+                    set(src, 'String', prev_screen_value);
+                    return;
+                elseif strcmp(Filter, 'Quotient') || strcmp(Filter, 'Combined filters')
+                    set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
+                end
+            elseif regexp(param_name, 'filtrr.moving_average')
+                if strcmp(param_name, 'filtrr.moving_average.win_threshold') && (isnan(screen_value) || screen_value < 0 || screen_value > 100)
+                    h_e = errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
+                    setLogo(h_e, 'M2');
+                    set(src, 'String', prev_screen_value);
+                    return;
+                end
+                if strcmp(param_name, 'filtrr.moving_average.win_length') && (isnan(screen_value) || screen_value < 1 || screen_value > length(DATA.rri))
+                    h_e = errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than ' num2str(DATA.maxSignalLength/60) 'sec!'], 'Input Error');
+                    setLogo(h_e, 'M2');
+                    set(src, 'String', prev_screen_value);
+                    return;
+                end
+                if strcmp(Filter, 'Moving average') || strcmp(Filter, 'Combined filters')
+                    set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
+                end
+            elseif regexp(param_name, 'filtrr.range')
+                if isnan(screen_value) || ~(screen_value > 0)
+                    h_e = errordlg(['set_config_Callback error: ' 'This parameter must be numeric positive single value!'], 'Input Error');
+                    setLogo(h_e, 'M2');
+                    set(src, 'String', prev_screen_value);
+                    return;
+                elseif strcmp(Filter, 'Range') || strcmp(Filter, 'Combined filters')
+                    set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
+                end
+            elseif strcmp(param_name, 'hrv_freq.window_minutes')
+                %             try
+                %                 Spectral_Window_Length(GUI.SpectralWindowLengthHandle, string_screen_value);
+                %                 set(GUI.Active_Window_Length, 'String', string_screen_value);
                 
-                mhrv_set_default( param_name, prev_param_array );
+                [screen_value, isInputNumeric] = calcDurationInSeconds(GUI.SpectralWindowLengthHandle, string_screen_value, prev_screen_value*60);
                 
-                if strcmp(param_name, 'hrv_freq.window_minutes')
-                    set(src, 'String', calcDuration(prev_param_value*60, 0));
-                else
-                    set(src, 'String', num2str(prev_param_value));
+                if isInputNumeric && screen_value <= 0
+                    h_e = errordlg('The spectral window length must be greater than 0 sec!', 'Input Error');
+                    setLogo(h_e, 'M2');
+                    return;
+                elseif ~isInputNumeric
+                    return;
                 end
                 
-                if ~isempty(cp_param_array)
-                    mhrv_set_default( couple_name, cp_param_array );
+                screen_value = screen_value / 60; % to minutes
+                %                 doCalc = false;
+                %             catch e
+                %                 h_e = errordlg(e.message, 'Input Error');
+                %                 return;
+                %             end
+            elseif  isnan(screen_value) || ~(screen_value > 0)
+                h_e = errordlg(['set_config_Callback error: ' 'This parameter must be numeric positive single value!'], 'Input Error');
+                setLogo(h_e, 'M2');
+                set(src, 'String', prev_screen_value);
+                return;
+            end
+            
+            if ~isempty(min_suffix_ind)
+                param_name = param_name(1 : min_suffix_ind - 1);
+                min_param_value = screen_value;
+                prev_param_array = mhrv_get_default(param_name);
+                max_param_value = prev_param_array.value(2);
+                
+                if min_param_value > max_param_value
+                    h_e = errordlg(['set_config_Callback error: ' 'The min value must be less than max value!'], 'Input Error');
+                    setLogo(h_e, 'M2');
+                    set(src, 'String', prev_screen_value);
+                    return;
+                end
+                
+                param_value = [min_param_value max_param_value];
+                
+                prev_param_value = prev_param_array.value(1);
+                
+                if strcmp(param_name, 'hrv_freq.lf_band')
+                    couple_name = 'hrv_freq.vlf_band';
+                    do_couple = true;
+                elseif strcmp(param_name, 'hrv_freq.hf_band')
+                    couple_name = 'hrv_freq.lf_band';
+                    do_couple = true;
+                end
+                
+                if do_couple
+                    cp_param_array = mhrv_get_default(couple_name);
+                    mhrv_set_default( couple_name, [cp_param_array.value(1) screen_value] );
                     couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
-                    if ~isempty(min_suffix_ind)
-                        set(findobj(couple_handle, 'Tag', [couple_name '.max']), 'String', num2str(prev_param_value))
-                    elseif ~isempty(max_suffix_ind)
-                        set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(prev_param_value))
+                    set(findobj(couple_handle, 'Tag', [couple_name '.max']), 'String', num2str(screen_value));
+                end
+                
+            elseif ~isempty(max_suffix_ind)
+                param_name = param_name(1 : max_suffix_ind - 1);
+                max_param_value = screen_value;
+                prev_param_array = mhrv_get_default(param_name);
+                min_param_value = prev_param_array.value(1);
+                
+                if max_param_value < min_param_value
+                    h_e = errordlg(['set_config_Callback error: ' 'The max value must be greater than min value!'], 'Input Error');
+                    setLogo(h_e, 'M2');
+                    set(src, 'String', prev_screen_value);
+                    return;
+                end
+                
+                param_value = [min_param_value max_param_value];
+                
+                prev_param_value = prev_param_array.value(2);
+                
+                if strcmp(param_name, 'hrv_freq.vlf_band')
+                    couple_name = 'hrv_freq.lf_band';
+                    do_couple = true;
+                elseif strcmp(param_name, 'hrv_freq.lf_band')
+                    couple_name = 'hrv_freq.hf_band';
+                    do_couple = true;
+                end
+                if do_couple
+                    cp_param_array = mhrv_get_default(couple_name);
+                    mhrv_set_default( couple_name, [screen_value cp_param_array.value(2)] );
+                    couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
+                    set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(screen_value));
+                end
+            else
+                param_value = screen_value;
+                prev_param_array = mhrv_get_default(param_name);
+                prev_param_value = prev_param_array.value;
+            end
+            
+            mhrv_set_default( param_name, param_value );
+            
+            %         if ~get(GUI.AutoCalc_checkbox, 'Value')
+            %             DATA.custom_config_params(param_name) = param_value;
+            %         end
+            
+            doFilt = 0;
+            if regexpi(param_name, 'filtrr')
+                DATA.custom_filters_thresholds.(param_category{2}).(param_category{3}) = param_value;
+                if strcmp(Filter, 'Combined filters') && (strcmp(param_category{2}, 'moving_average') || strcmp(param_category{2}, 'range'))
+                    doFilt = 1;
+                elseif strcmp(Filter, 'Moving average') && strcmp(param_category{2}, 'moving_average')
+                    doFilt = 1;
+                elseif strcmp(Filter, 'Range') && strcmp(param_category{2}, 'range')
+                    doFilt = 1;
+                elseif strcmp(Filter, 'Quotient') && strcmp(param_category{2}, 'quotient')
+                    doFilt = 1;
+                end
+            else
+                doFilt = 1;
+            end
+            
+            if get(GUI.AutoCalc_checkbox, 'Value')
+                try
+                    if doCalc && doFilt
+                        update_statistics(param_category(1));
+                    end
+                    set(src, 'UserData', screen_value);
+                catch e
+                    h_e = errordlg(['set_config_Callback error: ' e.message], 'Input Error');
+                    setLogo(h_e, 'M2');
+                    
+                    mhrv_set_default( param_name, prev_param_array );
+                    
+                    if strcmp(param_name, 'hrv_freq.window_minutes')
+                        set(src, 'String', calcDuration(prev_param_value*60, 0));
+                    else
+                        set(src, 'String', num2str(prev_param_value));
+                    end
+                    
+                    if ~isempty(cp_param_array)
+                        mhrv_set_default( couple_name, cp_param_array );
+                        couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
+                        if ~isempty(min_suffix_ind)
+                            set(findobj(couple_handle, 'Tag', [couple_name '.max']), 'String', num2str(prev_param_value))
+                        elseif ~isempty(max_suffix_ind)
+                            set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(prev_param_value))
+                        end
                     end
                 end
             end
+        else            
+%             throw(MException('set_config_Callback:NoData', 'No data'));
         end
     end
 %%
@@ -3946,85 +4008,93 @@ displayEndOfDemoMessage('');
     end
 %%
     function batch_Edit_Callback( src, ~ )
-        
-        src_tag = get(src, 'Tag');
-        
-        if strcmp(src_tag, 'segment_overlap')
-            param_value = str2double(get(src, 'String'));
-            if param_value >= 0 && param_value < 100
-                isInputNumeric = 1;
+        if ~isempty(DATA.nni)
+            src_tag = get(src, 'Tag');
+            
+            if strcmp(src_tag, 'segment_overlap')
+                param_value = str2double(get(src, 'String'));
+                if param_value >= 0 && param_value < 100
+                    isInputNumeric = 1;
+                else
+                    old_param_val = DATA.AnalysisParams.(src_tag);
+                    set(src, 'String', num2str(old_param_val));
+                    h_w = warndlg('Please, check your input.');
+                    setLogo(h_w, 'M2');
+                    return;
+                end
             else
+                gui_value = get(src, 'String');
+                [param_value, isInputNumeric] = calcDurationInSeconds(src, gui_value, DATA.AnalysisParams.(src_tag));
+            end
+            if isInputNumeric
+                if strcmp(src_tag, 'segment_startTime')
+                    if param_value < 0 || param_value > DATA.AnalysisParams.segment_endTime || param_value > DATA.Filt_MaxSignalLength
+                        set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
+                        h_e = errordlg('Selected segment start time must be grater than 0 and less than segment end!', 'Input Error');
+                        setLogo(h_e, 'M2');
+                        return;
+                    end
+                elseif strcmp(src_tag, 'segment_endTime')
+                    if param_value < DATA.AnalysisParams.segment_startTime || param_value > DATA.Filt_MaxSignalLength
+                        set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));                        
+                        h_e = errordlg('Segment end time must be more than zero and less than the segment total length!', 'Input Error');
+                        setLogo(h_e, 'M2');
+                        return;
+                    end
+                elseif strcmp(src_tag, 'activeWin_length')
+                    if  param_value > DATA.Filt_MaxSignalLength
+                        set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
+                        h_e = errordlg('Selected window length must be less than total signal length!', 'Input Error');
+                        setLogo(h_e, 'M2');
+                        return;
+                    elseif param_value > DATA.AnalysisParams.segment_endTime - DATA.AnalysisParams.segment_startTime
+                        set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
+                        h_e = errordlg('Selected window length must be less than or equal to the segment length!', 'Input Error');
+                        setLogo(h_e, 'M2');
+                        return;
+                    elseif param_value <= 10
+                        set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
+                        h_e = errordlg('Selected window size must be greater than 10 sec!', 'Input Error');
+                        setLogo(h_e, 'M2');
+                        return;
+                    end
+                end
+                
                 old_param_val = DATA.AnalysisParams.(src_tag);
-                set(src, 'String', num2str(old_param_val));
-                warndlg('Please, check your input.');
-                return;
+                old_winNum = DATA.AnalysisParams.winNum;
+                
+                DATA.AnalysisParams.(src_tag) = param_value;
+                calcBatchWinNum();
+                
+                if DATA.AnalysisParams.winNum < 1
+                    DATA.AnalysisParams.(src_tag) = old_param_val;
+                    set(src, 'String', calcDuration(old_param_val, 0));
+                    DATA.AnalysisParams.winNum = old_winNum;
+                    set(GUI.segment_winNum, 'String', num2str(DATA.AnalysisParams.winNum));
+                    return;
+                else
+                    DATA.active_window = 1;
+                    clear_statistics_plots();
+                    clearStatTables();
+                    plotFilteredData();
+                    plotMultipleWindows();
+                    
+                    XData_active_window = get(GUI.rect_handle(1), 'XData');
+                    window_length = calcDuration(DATA.AnalysisParams.activeWin_length, 0);
+                    
+                    set(GUI.active_winNum, 'String', DATA.active_window);
+                    DATA.AnalysisParams.activeWin_startTime = XData_active_window(1);
+                    
+                    set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
+                    set(GUI.Active_Window_Length, 'String', window_length);
+                    %                 set(GUI.SpectralWindowLengthHandle, 'String', window_length);
+                    setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);
+                    set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
+                    set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
+                end
             end
         else
-            gui_value = get(src, 'String');
-            [param_value, isInputNumeric] = calcDurationInSeconds(src, gui_value, DATA.AnalysisParams.(src_tag));
-        end
-        if isInputNumeric
-            if strcmp(src_tag, 'segment_startTime')
-                if param_value < 0 || param_value > DATA.AnalysisParams.segment_endTime || param_value > DATA.Filt_MaxSignalLength
-                    set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
-                    errordlg('Selected segment start time must be grater than 0 and less than segment end!', 'Input Error');
-                    return;
-                end
-            elseif strcmp(src_tag, 'segment_endTime')
-                if param_value < DATA.AnalysisParams.segment_startTime || param_value > DATA.Filt_MaxSignalLength
-                    set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
-                    %                     errordlg('Selected segment end time must be grater than 0 and less than segment length!', 'Input Error');
-                    errordlg('Segment end time must be more than zero and less than the segment total length!', 'Input Error');
-                    return;
-                end
-            elseif strcmp(src_tag, 'activeWin_length')
-                if  param_value > DATA.Filt_MaxSignalLength
-                    set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
-                    errordlg('Selected window length must be less than total signal length!', 'Input Error');
-                    return;
-                elseif param_value > DATA.AnalysisParams.segment_endTime - DATA.AnalysisParams.segment_startTime
-                    set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
-                    errordlg('Selected window length must be less than or equal to the segment length!', 'Input Error');
-                    return;
-                elseif param_value <= 10
-                    set(src, 'String', calcDuration(DATA.AnalysisParams.(src_tag), 0));
-                    errordlg('Selected window size must be greater than 10 sec!', 'Input Error');
-                    return;
-                end
-            end
-            
-            old_param_val = DATA.AnalysisParams.(src_tag);
-            old_winNum = DATA.AnalysisParams.winNum;
-            
-            DATA.AnalysisParams.(src_tag) = param_value;
-            calcBatchWinNum();
-            
-            if DATA.AnalysisParams.winNum < 1
-                DATA.AnalysisParams.(src_tag) = old_param_val;
-                set(src, 'String', calcDuration(old_param_val, 0));
-                DATA.AnalysisParams.winNum = old_winNum;
-                set(GUI.segment_winNum, 'String', num2str(DATA.AnalysisParams.winNum));
-                return;
-            else
-                DATA.active_window = 1;
-                clear_statistics_plots();
-                clearStatTables();
-                plotFilteredData();
-                plotMultipleWindows();
-                
-                XData_active_window = get(GUI.rect_handle(1), 'XData');
-                window_length = calcDuration(DATA.AnalysisParams.activeWin_length, 0);
-                
-                set(GUI.active_winNum, 'String', DATA.active_window);
-                DATA.AnalysisParams.activeWin_startTime = XData_active_window(1);
-                
-                set(GUI.Active_Window_Start, 'String', calcDuration(DATA.AnalysisParams.activeWin_startTime, 0));
-                set(GUI.Active_Window_Length, 'String', window_length);
-                %                 set(GUI.SpectralWindowLengthHandle, 'String', window_length);
-                setSliderProperties(GUI.Filt_RawDataSlider, DATA.Filt_MaxSignalLength, DATA.AnalysisParams.activeWin_length, DATA.AnalysisParams.activeWin_length/DATA.Filt_MaxSignalLength);
-                set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
-                set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
-            end
+%             throw(MException('batch_Edit_Callback:NoData', 'No data'));
         end
     end
 %%
@@ -4053,7 +4123,8 @@ displayEndOfDemoMessage('');
             
             set(GUI.segment_winNum, 'String', num2str(DATA.AnalysisParams.winNum));
             if DATA.AnalysisParams.winNum <= 0
-                errordlg('Please, check your input! Windows number must be greater than 0!', 'Input Error');
+                h_e = errordlg('Please, check your input! Windows number must be greater than 0!', 'Input Error');
+                setLogo(h_e, 'M2');
             elseif DATA.AnalysisParams.winNum == 1
                 GUI.Filt_RawDataSlider.Enable = 'on';
                 GUI.Active_Window_Start.Enable = 'on';
@@ -4134,6 +4205,7 @@ displayEndOfDemoMessage('');
                     nni_window = DATA.nni(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
                     
                     waitbar(1 / 3, waitbar_handle, ['Calculating time measures for window ' num2str(i)]);
+                    setLogo(waitbar_handle, 'M2');
                     % Time Domain metrics
                     fprintf('[win % d: %.3f] >> mhrv: Calculating time-domain metrics...\n', i, cputime-t0);
                     [hrv_td, pd_time] = hrv_time(nni_window);
@@ -4164,7 +4236,8 @@ displayEndOfDemoMessage('');
                 catch e
                     DATA.timeStatPartRowNumber = 0;
                     close(waitbar_handle);
-                    errordlg(['hrv_time: ' e.message], 'Input Error');
+                    h_e = errordlg(['hrv_time: ' e.message], 'Input Error');
+                    setLogo(h_e, 'M2');
                     rethrow(e);
                 end
                 
@@ -4218,6 +4291,7 @@ displayEndOfDemoMessage('');
                     nni_window = DATA.nni(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
                     
                     waitbar(2 / 3, waitbar_handle, ['Calculating frequency measures for window ' num2str(i)]);
+                    setLogo(waitbar_handle, 'M2');
                     % Freq domain metrics
                     fprintf('[win % d: %.3f] >> mhrv: Calculating frequency-domain metrics...\n', i, cputime-t0);
                     
@@ -4253,7 +4327,8 @@ displayEndOfDemoMessage('');
                 catch e
                     DATA.frequencyStatPartRowNumber = 0;
                     close(waitbar_handle);
-                    errordlg(['hrv_freq: ' e.message], 'Input Error');
+                    h_e = errordlg(['hrv_freq: ' e.message], 'Input Error');
+                    setLogo(h_e, 'M2');
                     rethrow(e);
                 end
                 
@@ -4307,6 +4382,7 @@ displayEndOfDemoMessage('');
                 nni_window = DATA.nni(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
                 
                 waitbar(3 / 3, waitbar_handle, ['Calculating nolinear measures for window ' num2str(i)]);
+                setLogo(waitbar_handle, 'M2');
                 fprintf('[win % d: %.3f] >> mhrv: Calculating nonlinear metrics...\n', i, cputime-t0);
                 [hrv_nl, pd_nl] = hrv_nonlinear(nni_window);
                 
@@ -4331,7 +4407,8 @@ displayEndOfDemoMessage('');
                 end
             catch e
                 close(waitbar_handle);
-                errordlg(['hrv_nonlinear: ' e.message], 'Input Error');
+                h_e = errordlg(['hrv_nonlinear: ' e.message], 'Input Error');
+                setLogo(h_e, 'M2');
                 rethrow(e);
             end
             
@@ -4372,16 +4449,19 @@ displayEndOfDemoMessage('');
             end
             
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+            setLogo(waitbar_handle, 'M2');
             
             try
                 calcTimeStatistics(waitbar_handle);
             catch
                 waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                setLogo(waitbar_handle, 'M2');
             end
             try
                 calcFrequencyStatistics(waitbar_handle);
             catch
                 waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                setLogo(waitbar_handle, 'M2');
             end
             try
                 calcNonlinearStatistics(waitbar_handle);
@@ -4442,7 +4522,8 @@ displayEndOfDemoMessage('');
             set_active_window(GUI.rect_handle(value));
         else
             set(src, 'String', num2str(DATA.active_window));
-            errordlg(['Selected window number must be greater than 0 and less than ', num2str(DATA.AnalysisParams.winNum), '!'], 'Input Error');
+            h_e = errordlg(['Selected window number must be greater than 0 and less than ', num2str(DATA.AnalysisParams.winNum), '!'], 'Input Error');
+            setLogo(h_e, 'M2');
         end
     end
 %%
@@ -5105,6 +5186,7 @@ displayEndOfDemoMessage('');
         
         if get(GUI.AutoCalc_checkbox, 'Value')
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+            setLogo(waitbar_handle, 'M2');
             calcNonlinearStatistics(waitbar_handle);
             close(waitbar_handle);
         end
@@ -5123,6 +5205,7 @@ displayEndOfDemoMessage('');
         if get(GUI.AutoCalc_checkbox, 'Value')
             %             DATA.WinAverage = 1;
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+            setLogo(waitbar_handle, 'M2');
             calcFrequencyStatistics(waitbar_handle);
             close(waitbar_handle);
             %         else
@@ -5142,7 +5225,7 @@ displayEndOfDemoMessage('');
             'HandleVisibility', 'off', ...
             'Position', [(main_screensize(3)-350)/2, (main_screensize(4)-150)/2, 350, 150]); %[700, 300, 800, 400]
         
-        setLogo(GUI.EstimateLFBandWindow);
+        setLogo(GUI.EstimateLFBandWindow, 'M2');
         
         EstimateLayout = uix.VBox('Parent', GUI.EstimateLFBandWindow, 'Spacing', DATA.Spacing);
         
@@ -5205,7 +5288,8 @@ displayEndOfDemoMessage('');
             rate = 'Breathing';
         end
         if isnan(value) || value < min_val || value > max_val
-            errordlg(['Typical ' rate ' Rate must be greater than '  num2str(min_val) ' BPM and less than ' num2str(max_val) ' BPM!'], 'Input Error');
+            h_e = errordlg(['Typical ' rate ' Rate must be greater than '  num2str(min_val) ' BPM and less than ' num2str(max_val) ' BPM!'], 'Input Error');
+            setLogo(h_e, 'M2');
             HR = 0;
             return;
         else
@@ -5243,7 +5327,8 @@ displayEndOfDemoMessage('');
                     try
                         update_statistics('hrv_freq');
                     catch e
-                        errordlg(['ok_estimate_button_Callback error: ' e.message], 'Input Error');
+                        h_e = errordlg(['ok_estimate_button_Callback error: ' e.message], 'Input Error');
+                        setLogo(h_e, 'M2');
                         
                         mhrv_set_default('hrv_freq.hf_band', prev_hf);
                         mhrv_set_default('hrv_freq.lf_band', prev_lf);
@@ -5272,7 +5357,8 @@ displayEndOfDemoMessage('');
                     try
                         update_statistics('hrv_time');
                     catch e
-                        errordlg(['ok_estimate_button_Callback error: ' e.message], 'Input Error');
+                        h_e = errordlg(['ok_estimate_button_Callback error: ' e.message], 'Input Error');
+                        setLogo(h_e, 'M2');
                         mhrv_set_default(param_name, prev_pnn_thresh);
                         delete(GUI.EstimateLFBandWindow);
                         return;
@@ -5368,7 +5454,8 @@ displayEndOfDemoMessage('');
         persistent color_index;
         
         if isfield(DATA.Group, 'AllNames') && ~isempty(find(cellfun(@(x) strcmp(x, DATA.Group.CurrentName), DATA.Group.AllNames), 1))
-            errordlg('Please, choose unique group name.', 'Input Error');
+            h_e = errordlg('Please, choose unique group name.', 'Input Error');
+            setLogo(h_e, 'M2');
             return;
         end
         
@@ -5507,6 +5594,7 @@ displayEndOfDemoMessage('');
 %%
     function Load_Calc(curr_file_name, curr_path)
         waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Working on it...');
+        setLogo(waitbar_handle, 'M2');
         [mammal, mammal_index] = Load_Data_from_SingleFile(curr_file_name, curr_path, waitbar_handle);
         
         if ~isfield(GUI, 'ConfigParamHandlesMap')

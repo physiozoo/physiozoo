@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Fixing loading bugs
-
 ### Added
 
 ### Changed
 
 ### Removed
+
+## [1.0.1] - 2018-09-17
+
+### Changed
+- Bug fixes in the Loader
+- Updates to documentation and tutorials.
 
 ## [1.0.0] - 2018-09-06
 

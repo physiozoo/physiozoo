@@ -54,18 +54,19 @@ displayEndOfDemoMessage('');
         DATA.PlotHR = 0;
         
         DATA.rec_name = [];
-        
-        DATA.mammal = [];
-        
+                        
         DATA.file_types = {'mat'; 'txt'; 'qrs'};
         DATA.file_types_index = 1;
         
+        DATA.mammal = [];
         DATA.mammals = {'human (task force)', 'human', 'dog', 'rabbit', 'mouse', 'custom'};
         DATA.GUI_mammals = {'Human (Task Force)'; 'Human'; 'Dog'; 'Rabbit'; 'Mouse'; 'Custom'};
         DATA.mammal_index = 1;
         
+        DATA.Integration = [];
+        DATA.integration_level = {'ecg'; 'electrogram'; 'ap'};
         DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};
-        DATA.Integration = 'ECG';
+%         DATA.Integration = 'ECG';
         DATA.integration_index = 1;
         
         DATA.Filters = {'Moving average', 'Range', 'Quotient', 'Combined filters', 'No filtering'};
@@ -129,6 +130,9 @@ displayEndOfDemoMessage('');
         % All Filtered Signal (Intervals)
         DATA.tnn = [];
         DATA.nni = [];
+        
+        DATA.mammal = [];
+        DATA.Integration = [];
         
         DATA.firstSecond2Show = 0;
         DATA.MyWindowSize = [];
@@ -227,6 +231,8 @@ displayEndOfDemoMessage('');
         set(GUI.RecordName_text, 'String', '');
         set(GUI.RecordLength_text, 'String', '');
         set(GUI.DataQuality_text, 'String', '');
+        set(GUI.Config_text, 'String', '');
+        set(GUI.Mammal_popupmenu, 'String', '');
         
         set(GUI.freq_yscale_Button, 'String', 'Log');
         set(GUI.freq_yscale_Button, 'Value', 1);
@@ -513,37 +519,42 @@ displayEndOfDemoMessage('');
         GUI.DataQuality_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', GUI.DataQualityBox );
         
+        GUI.ConfigFileNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
+        a{3} = uicontrol( 'Style', 'text', 'Parent', GUI.ConfigFileNameBox, 'String', 'Config file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.Config_text = uicontrol( 'Style', 'text', 'Parent', GUI.ConfigFileNameBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        uix.Empty( 'Parent', GUI.ConfigFileNameBox );
+        
         GUI.DataLengthBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
-        a{3} = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'String', 'Time series length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        a{4} = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'String', 'Time series length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.RecordLength_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         uix.Empty( 'Parent', GUI.DataLengthBox );
         
         GUI.MammalBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
-        a{4} = uicontrol( 'Style', 'text', 'Parent', GUI.MammalBox, 'String', 'Mammal', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.Mammal_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.MammalBox, 'Callback', @Mammal_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', DATA.GUI_mammals, 'Value', 1);
+        a{5} = uicontrol( 'Style', 'text', 'Parent', GUI.MammalBox, 'String', 'Mammal', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.Mammal_popupmenu = uicontrol( 'Style', 'edit', 'Parent', GUI.MammalBox, 'Callback', @Mammal_popupmenu_Callback, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left'); % , 'String', DATA.GUI_mammals, 'Value', 1
         uix.Empty( 'Parent', GUI.MammalBox );
         
         GUI.IntegrationBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
-        a{5} = uicontrol( 'Style', 'text', 'Parent', GUI.IntegrationBox, 'String', 'Integration level', 'FontSize', SmallFontSize, 'Enable', 'on', 'HorizontalAlignment', 'left');
+        a{6} = uicontrol( 'Style', 'text', 'Parent', GUI.IntegrationBox, 'String', 'Integration level', 'FontSize', SmallFontSize, 'Enable', 'on', 'HorizontalAlignment', 'left');
         GUI.Integration_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.IntegrationBox, 'Callback', @Integration_popupmenu_Callback, 'FontSize', SmallFontSize, 'Enable', 'on', 'Value', 1);
         GUI.Integration_popupmenu.String = DATA.GUI_Integration;
         uix.Empty( 'Parent', GUI.IntegrationBox );
         
         GUI.FilteringBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
-        a{6} = uicontrol( 'Style', 'text', 'Parent', GUI.FilteringBox, 'String', 'Preprocessing', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        a{7} = uicontrol( 'Style', 'text', 'Parent', GUI.FilteringBox, 'String', 'Preprocessing', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Filtering_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.FilteringBox, 'Callback', @Filtering_popupmenu_Callback, 'FontSize', SmallFontSize);
         GUI.Filtering_popupmenu.String = DATA.Filters;
         uix.Empty( 'Parent', GUI.FilteringBox );
         
         GUI.FilteringLevelBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
-        a{7} = uicontrol( 'Style', 'text', 'Parent', GUI.FilteringLevelBox, 'String', 'Preprocessing level', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        a{8} = uicontrol( 'Style', 'text', 'Parent', GUI.FilteringLevelBox, 'String', 'Preprocessing level', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.FilteringLevel_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.FilteringLevelBox, 'Callback', @FilteringLevel_popupmenu_Callback, 'FontSize', SmallFontSize);
         GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
         GUI.FilteringLevel_popupmenu.Value = DATA.default_filter_level_index;
         uix.Empty( 'Parent', GUI.FilteringLevelBox );
         
         DefaultMethodBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
-        a{8} = uicontrol( 'Style', 'text', 'Parent', DefaultMethodBox, 'String', 'Default frequency method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        a{9} = uicontrol( 'Style', 'text', 'Parent', DefaultMethodBox, 'String', 'Default frequency method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.DefaultMethod_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DefaultMethodBox, 'Callback', @DefaultMethod_popupmenu_Callback, 'FontSize', SmallFontSize, 'TooltipString', 'Default frequency method to use to display under statistics');
         GUI.DefaultMethod_popupmenu.String = DATA.frequency_methods;
         GUI.DefaultMethod_popupmenu.Value = 1;
@@ -559,6 +570,7 @@ displayEndOfDemoMessage('');
         
         set( GUI.RecordNameBox, 'Widths', field_size  );
         set( GUI.DataQualityBox, 'Widths', field_size );
+        set( GUI.ConfigFileNameBox, 'Widths', field_size );
         set( GUI.DataLengthBox, 'Widths', field_size );
         
         if DATA.SmallScreen
@@ -575,7 +587,7 @@ displayEndOfDemoMessage('');
         %         set( AutoCalcBox, 'Widths', field_size );
         
         uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -15] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -15] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
         %---------------------------
         
         uicontrol( 'Style', 'text', 'Parent', GUI.BatchBox, 'String', 'Batch analysis', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold', ...
@@ -1858,7 +1870,8 @@ displayEndOfDemoMessage('');
                     end
                     DATA.mammal = mammal;
                     DATA.mammal_index = mammal_index;
-                    GUI.Mammal_popupmenu.Value = DATA.mammal_index;
+%                     GUI.Mammal_popupmenu.Value = DATA.mammal_index;
+                    GUI.Mammal_popupmenu.String = mammal;
                     
                     DATA.Integration = integration;
                     DATA.integration_index = find(strcmpi(DATA.GUI_Integration, DATA.Integration));
@@ -1886,7 +1899,9 @@ displayEndOfDemoMessage('');
                         end                                                
                     else                                                
                         try
-                            mhrv_load_defaults(DATA.mammals{DATA.mammal_index});
+                            config_file_name = [DATA.mammals{DATA.mammal_index} '_' DATA.integration_level{DATA.integration_index}];
+                            mhrv_load_defaults(config_file_name);
+                            set(GUI.Config_text, 'String', [config_file_name '.yml']);
                         catch e
                             h_e = errordlg(['mhrv_load_defaults: ' e.message], 'Input Error');
                             setLogo(h_e, 'M2');
@@ -2667,17 +2682,23 @@ displayEndOfDemoMessage('');
         set_filters(DATA.Filters{DATA.filter_index});
         
         if isempty(DATA.mammal)
-            mammal_index = 1;
+            mammal_index = 1;            
         else
             mammal_index = find(strcmp(DATA.mammals, DATA.mammal));
         end
         DATA.mammal_index = mammal_index;
-        
+        mammal = DATA.mammals{DATA.mammal_index};
+                        
+        DATA.integration_index = find(strcmpi(DATA.GUI_Integration, DATA.Integration));
+        integration = DATA.integration_level{DATA.integration_index};
+        GUI.Integration_popupmenu.Value = DATA.integration_index;
+                        
         % Load user-specified default parameters
-        mhrv_load_defaults(DATA.mammals{ DATA.mammal_index} );
+        mhrv_load_defaults([DATA.mammals{ DATA.mammal_index} '_' integration]);
         createConfigParametersInterface();
         
-        GUI.Mammal_popupmenu.Value = mammal_index;
+%         GUI.Mammal_popupmenu.Value = mammal_index;
+        GUI.Mammal_popupmenu.String = mammal;
         GUI.Filtering_popupmenu.Value = DATA.filter_index;
         
         EnablePageUpDown();
@@ -2739,70 +2760,73 @@ displayEndOfDemoMessage('');
             % Load user-specified default parameters
             mhrv_load_defaults(DATA.mammals{index_selected});
         end
-        createConfigParametersInterface();
-        %         reset_plot();
+        createConfigParametersInterface();        
         reset_plot_Data();
         reset_plot_GUI();
         DATA.mammal_index = index_selected;
     end
 %%
-    function Mammal_popupmenu_Callback( ~, ~ )
-        index_selected = get(GUI.Mammal_popupmenu, 'Value');
-        choose_new_mammal(index_selected);
+    function Mammal_popupmenu_Callback( src, ~ )
+        %         index_selected = get(GUI.Mammal_popupmenu, 'Value');
+        %         choose_new_mammal(index_selected);        
+        mhrv_set_default('parameters_type.mammal', get(src, 'String'));        
     end
 %%
     function Integration_popupmenu_Callback( ~, ~ )
         items = get(GUI.Integration_popupmenu, 'String');
         index_selected = get(GUI.Integration_popupmenu, 'Value');
-        set_defaults_path();
         
-        if index_selected == 1 % ECG
-            [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
-            if ~isequal(Config_FileName, 0)
-                params_filename = fullfile(PathName, Config_FileName);
-                [pathstr, name, ~] = fileparts(params_filename);
-                mhrv_load_defaults([pathstr filesep name]);
-                DIRS.configDirectory = PathName;
-                createConfigParametersInterface();
-                reset_plot_Data();
-                reset_plot_GUI();
-                
-                preset_mammals = DATA.mammals(1:end-1);
-                mammal_ind = find(cellfun(@(x) strcmp(x, name), preset_mammals));
-                if ~isempty(mammal_ind)
-                    set(GUI.Mammal_popupmenu, 'Value', mammal_ind);
-                    DATA.mammal_index = mammal_ind;
-                else
-                    set(GUI.Mammal_popupmenu, 'Value', length(DATA.mammals)); % Custom
-                    DATA.mammal_index = length(DATA.mammals);
-                end
-                
-            else
-                GUI.Mammal_popupmenu.Value = DATA.mammal_index;
-                GUI.Integration_popupmenu.Value = DATA.integration_index;
-                return;
-            end
-        else % NO ECG
-            set(GUI.Mammal_popupmenu, 'Value', length(DATA.mammals)); % Custom
-            
-            [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
-            if ~isequal(Config_FileName, 0)
-                params_filename = fullfile(PathName, Config_FileName);
-                [pathstr, name, ~] = fileparts(params_filename);
-                mhrv_load_defaults([pathstr filesep name]);
-                DIRS.configDirectory = PathName;
-                DATA.mammal_index = length(DATA.mammals);
-                createConfigParametersInterface();
-                reset_plot_Data();
-                reset_plot_GUI();
-            else % Cancel by user
-                GUI.Mammal_popupmenu.Value = DATA.mammal_index;
-                GUI.Integration_popupmenu.Value = DATA.integration_index;
-                return;
-            end
-        end
-        DATA.Integration = items{index_selected};
-        DATA.integration_index = index_selected;
+%         set_defaults_path();        
+%         if index_selected == 1 % ECG
+%             [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
+%             if ~isequal(Config_FileName, 0)
+%                 params_filename = fullfile(PathName, Config_FileName);
+%                 [pathstr, name, ~] = fileparts(params_filename);
+%                 mhrv_load_defaults([pathstr filesep name]);
+%                 DIRS.configDirectory = PathName;
+%                 createConfigParametersInterface();
+%                 reset_plot_Data();
+%                 reset_plot_GUI();
+%                 
+%                 preset_mammals = DATA.mammals(1:end-1);
+%                 mammal_ind = find(cellfun(@(x) strcmp(x, name), preset_mammals));
+%                 if ~isempty(mammal_ind)
+%                     set(GUI.Mammal_popupmenu, 'Value', mammal_ind);
+%                     DATA.mammal_index = mammal_ind;
+%                 else
+%                     set(GUI.Mammal_popupmenu, 'Value', length(DATA.mammals)); % Custom
+%                     DATA.mammal_index = length(DATA.mammals);
+%                 end
+%                 
+%             else
+%                 GUI.Mammal_popupmenu.Value = DATA.mammal_index;
+%                 GUI.Integration_popupmenu.Value = DATA.integration_index;
+%                 return;
+%             end
+%         else % NO ECG
+%             set(GUI.Mammal_popupmenu, 'Value', length(DATA.mammals)); % Custom
+%             
+%             [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
+%             if ~isequal(Config_FileName, 0)
+%                 params_filename = fullfile(PathName, Config_FileName);
+%                 [pathstr, name, ~] = fileparts(params_filename);
+%                 mhrv_load_defaults([pathstr filesep name]);
+%                 DIRS.configDirectory = PathName;
+%                 DATA.mammal_index = length(DATA.mammals);
+%                 createConfigParametersInterface();
+%                 reset_plot_Data();
+%                 reset_plot_GUI();
+%             else % Cancel by user
+%                 GUI.Mammal_popupmenu.Value = DATA.mammal_index;
+%                 GUI.Integration_popupmenu.Value = DATA.integration_index;
+%                 return;
+%             end
+%         end
+
+%         DATA.Integration = items{index_selected};
+
+        DATA.integration_index = index_selected;        
+        mhrv_set_default('parameters_type.integration_level', items{index_selected});
     end
 %%
     function set_default_filters_threshoulds(param_field, param_value)
@@ -3578,8 +3602,9 @@ displayEndOfDemoMessage('');
                         header_fileID = fopen(full_file_name_hea, 'w');
                         fprintf(header_fileID, '#header\r\n');
                         fprintf(header_fileID, 'Record name: %s\r\n\r\n', DATA.DataFileName);
-                        fprintf(header_fileID, 'Mammal: %s\r\n', DATA.mammals{ DATA.mammal_index});
-                        fprintf(header_fileID, 'Integration level: %s\r\n', DATA.Integration);
+%                         fprintf(header_fileID, 'Mammal: %s\r\n', DATA.mammals{DATA.mammal_index});
+                        fprintf(header_fileID, 'Mammal: %s\r\n', get(GUI.Mammal_popupmenu, 'String'));
+                        fprintf(header_fileID, 'Integration level: %s\r\n', DATA.GUI_Integration{DATA.integration_index});
                         fprintf(header_fileID, 'Preprocessing: %s\r\n', DATA.Filters{DATA.filter_index});
                         fprintf(header_fileID, 'Preprocessing level: %s\r\n', DATA.FilterLevel{DATA.filter_level_index});
                         fprintf(header_fileID, 'Window start: %s\r\n', calcDuration(DATA.AnalysisParams.segment_startTime));
@@ -3601,8 +3626,9 @@ displayEndOfDemoMessage('');
                         writetable(statisticsTable, full_file_name_hrv, 'Delimiter', '\t', 'WriteRowNames', true, 'WriteVariableNames', false);
                     elseif strcmp(ext, '.mat')
                         RecordName = DATA.DataFileName;
-                        Mammal = DATA.mammals{ DATA.mammal_index};
-                        IntegrationLevel = DATA.Integration;
+%                         Mammal = DATA.mammals{ DATA.mammal_index};
+                        Mammal = get(GUI.Mammal_popupmenu, 'String');                        
+                        IntegrationLevel = DATA.GUI_Integration{DATA.integration_index};
                         Preprocessing = DATA.Filters{DATA.filter_index};
                         PreprocessingLevel = DATA.FilterLevel{DATA.filter_level_index};
                         WindowStart = calcDuration(DATA.AnalysisParams.segment_startTime);
@@ -3920,15 +3946,37 @@ displayEndOfDemoMessage('');
         [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
         if ~isequal(Config_FileName, 0)
             params_filename = fullfile(PathName, Config_FileName);
+            DIRS.configDirectory = PathName;            
             [pathstr, name, ~] = fileparts(params_filename);
-            mhrv_load_defaults([pathstr filesep name]);
-            DIRS.configDirectory = PathName;
-            GUI.Mammal_popupmenu.Value = length(DATA.mammals);
             
+            set(GUI.Config_text, 'String', [name '.yml']);
+                        
+            mhrv_set_default('parameters_type.mammal', '');
+            mhrv_set_default('parameters_type.integration_level', '');
+            
+            mhrv_load_defaults([pathstr filesep name]);
+                                    
+            mammal = mhrv_get_default('parameters_type.mammal');
+            mammal = mammal.value;
+            integration = mhrv_get_default('parameters_type.integration_level');
+            integration = integration.value;
+           
+            if isempty(mammal) || isempty(integration)
+                mammal = 'custom';
+                integration = 'ECG';
+                mhrv_set_default('parameters_type.mammal', mammal);
+                mhrv_set_default('parameters_type.integration_level', integration);
+            end
+            
+%             GUI.Mammal_popupmenu.Value = length(DATA.mammals);
+            GUI.Mammal_popupmenu.String = mammal;            
+                        
             createConfigParametersInterface();
             reset_plot_Data();
             reset_plot_GUI();
             DATA.mammal_index = length(DATA.mammals);
+            DATA.integration_index = find(strcmpi(DATA.GUI_Integration, integration));
+            GUI.Integration_popupmenu.Value = DATA.integration_index;
         end
     end
 %%
@@ -3970,7 +4018,10 @@ displayEndOfDemoMessage('');
         
         set_defaults_path();
         
-        [filename, results_folder_name] = uiputfile({'*.yml','Yaml Files (*.yml)'},'Choose Parameters File Name', [DIRS.configDirectory, filesep, [DATA.DataFileName '_' DATA.mammal] ]);
+        mammal = get(GUI.Mammal_popupmenu, 'String');
+        integration = DATA.integration_level{DATA.integration_index};
+        
+        [filename, results_folder_name] = uiputfile({'*.yml','Yaml Files (*.yml)'},'Choose Parameters File Name', [DIRS.configDirectory, filesep, [DATA.DataFileName '_' mammal '_' integration] ]);
         
         if ~isequal(results_folder_name, 0)
             DIRS.configDirectory = results_folder_name;
@@ -3984,7 +4035,7 @@ displayEndOfDemoMessage('');
             
             temp_mhrv_default_values = rmfield(temp_mhrv_default_values, {'hrv_freq'; 'rqrs'; 'mhrv'});
             
-            temp_hrv_freq = rmfield(temp_hrv_freq, {'methods'; 'power_methods'; 'extra_bands'});
+            temp_hrv_freq = rmfield(temp_hrv_freq, {'methods'; 'power_methods'; 'norm_method'; 'extra_bands'; 'osf'; 'resample_factor'; 'win_func'});
             temp_mse = rmfield(temp_mse, {'mse_metrics'});
             
             temp_mhrv_default_values.hrv_freq = temp_hrv_freq;

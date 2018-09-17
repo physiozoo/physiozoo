@@ -1,6 +1,9 @@
-# Canine parameter values of the mhrv toolbox
+# Human parameter values of the mhrv toolbox
 ---
-   
+parameters_type:
+    mammal: human (task force)
+    integration_level: ECG
+      
 # RR Interval filtering
 filtrr:
     range:
@@ -10,12 +13,12 @@ filtrr:
             name: Enable range filter
             units: boolean
         rr_min:
-            value: 0.05
+            value: 0.28
             description: Minimal allowed RR interval duration
             name: RR min
             units: sec
         rr_max:
-            value: 0.24
+            value: 2.4
             description: Maximal allowed RR interval duration
             name: RR max
             units: sec
@@ -50,7 +53,7 @@ filtrr:
 # Time-domain HRV parameters
 hrv_time:
     pnn_thresh_ms:
-        value: 5
+        value: 50
         description: Threshold value for PNNx
         name: PNN Threshold
         units: ms
@@ -58,22 +61,22 @@ hrv_time:
 # Frequency-domain HRV parameters
 hrv_freq:    
     vlf_band:
-        value: [0.0056, 0.152]
+        value: [0.003, 0.04]
         description: VLF frequency band range
         name: VLF Band
         units: Hz
     lf_band:
-        value: [0.152,  1.240]
+        value: [0.04,  0.15]
         description: LF frequency band range
         name: LF Band
         units: Hz
     hf_band:
-        value: [1.240,   5]
+        value: [0.15,   0.4]
         description: HF frequency band range
         name: HF Band
         units: Hz    
     window_minutes:
-        value: 3
+        value: 5
         description: Duration of winodow for spectral averaging
         name: Spectral window length
         units: min
@@ -83,15 +86,15 @@ hrv_freq:
         name: Welch overlap
         units: '%'
     ar_order:
-        value: 30
+        value: 20
         description: Order of AR model to fit
         name: AR order
         units: n.u.
     beta_band:
-        value: [0.0056, 0.152]
+        value: [0.003, 0.04]
         description: Frequency range for log-log slope calculation (beta)
         name: Beta band
-        units: Hz    
+        units: Hz 
     
 # DFA Parameters
 dfa:
@@ -124,7 +127,7 @@ dfa:
 # MSE Parameters
 mse:
     mse_max_scale:
-        value: 20
+        value: 15
         description: Maximal scale value for MSE calculation
         name: MSE max scale
         units: n.u.

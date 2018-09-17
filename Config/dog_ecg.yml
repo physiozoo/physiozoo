@@ -1,5 +1,8 @@
 # Dog parameter values of the mhrv toolbox
 ---
+parameters_type:
+    mammal: dog
+    integration_level: ECG
    
 # RR Interval filtering
 filtrr:

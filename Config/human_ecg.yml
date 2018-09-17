@@ -1,5 +1,8 @@
-# Rabbit parameter values of the mhrv toolbox
+# Human parameter values of the mhrv toolbox
 ---
+parameters_type:
+    mammal: human
+    integration_level: ECG
    
 # RR Interval filtering
 filtrr:
@@ -10,12 +13,12 @@ filtrr:
             name: Enable range filter
             units: boolean
         rr_min:
-            value: 0.14
+            value: 0.28
             description: Minimal allowed RR interval duration
             name: RR min
             units: sec
         rr_max:
-            value: 0.58
+            value: 2.4
             description: Maximal allowed RR interval duration
             name: RR max
             units: sec
@@ -50,7 +53,7 @@ filtrr:
 # Time-domain HRV parameters
 hrv_time:
     pnn_thresh_ms:
-        value: 17
+        value: 50
         description: Threshold value for PNNx
         name: PNN Threshold
         units: ms
@@ -58,17 +61,17 @@ hrv_time:
 # Frequency-domain HRV parameters
 hrv_freq:    
     vlf_band:
-        value: [0.0033, 0.088]
+        value: [0.0033, 0.046]
         description: VLF frequency band range
         name: VLF Band
         units: Hz
     lf_band:
-        value: [0.088,  0.341]
+        value: [0.046,  0.158]
         description: LF frequency band range
         name: LF Band
         units: Hz
     hf_band:
-        value: [0.341,   1.155]
+        value: [0.158,   0.588]
         description: HF frequency band range
         name: HF Band
         units: Hz    
@@ -88,11 +91,11 @@ hrv_freq:
         name: AR order
         units: n.u.
     beta_band:
-        value: [0.0033, 0.088]
+        value: [0.0033, 0.046]
         description: Frequency range for log-log slope calculation (beta)
         name: Beta band
-        units: Hz       
-
+        units: Hz 
+    
 # DFA Parameters
 dfa:
     n_min:
@@ -124,7 +127,7 @@ dfa:
 # MSE Parameters
 mse:
     mse_max_scale:
-        value: 20
+        value: 15
         description: Maximal scale value for MSE calculation
         name: MSE max scale
         units: n.u.

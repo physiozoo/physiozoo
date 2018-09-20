@@ -213,6 +213,7 @@ displayEndOfDemoMessage('');
         set(GUI.SaveFiguresAsMenu,'Enable', 'off');
         set(GUI.SaveParamFileMenu,'Enable', 'off');
         set(GUI.LoadConfigFile, 'Enable', 'off');
+        set(GUI.open_config_pushbutton_handle, 'Enable', 'off');                                
         
         GUI.Filt_RawDataSlider.Enable = 'off';
         
@@ -522,8 +523,11 @@ displayEndOfDemoMessage('');
         GUI.ConfigFileNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         a{3} = uicontrol( 'Style', 'text', 'Parent', GUI.ConfigFileNameBox, 'String', 'Config file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Config_text = uicontrol( 'Style', 'text', 'Parent', GUI.ConfigFileNameBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        uix.Empty( 'Parent', GUI.ConfigFileNameBox );
-        
+%         uix.Empty( 'Parent', GUI.ConfigFileNameBox );                
+%         GUI.open_config_button_Box = uix.HButtonBox('Parent', GUI.ConfigFileNameBox, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding); % , 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom'
+%         set( GUI.open_config_button_Box, 'ButtonSize', [25, 17] );
+        GUI.open_config_pushbutton_handle = uicontrol( 'Style', 'PushButton', 'Parent', GUI.ConfigFileNameBox, 'Callback', @onLoadCustomConfigFile, 'FontSize', SmallFontSize, 'String', '...', 'Enable', 'off');                
+                
         GUI.DataLengthBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         a{4} = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'String', 'Time series length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.RecordLength_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
@@ -558,19 +562,15 @@ displayEndOfDemoMessage('');
         GUI.DefaultMethod_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DefaultMethodBox, 'Callback', @DefaultMethod_popupmenu_Callback, 'FontSize', SmallFontSize, 'TooltipString', 'Default frequency method to use to display under statistics');
         GUI.DefaultMethod_popupmenu.String = DATA.frequency_methods;
         GUI.DefaultMethod_popupmenu.Value = 1;
-        uix.Empty( 'Parent', DefaultMethodBox );
-        
-        %         AutoCalcBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
-        %         GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', AutoCalcBox, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', BigFontSize, 'String', 'Auto Compute', 'Value', 1);
-        %         GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', AutoCalcBox, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'inactive');
-        %         uix.Empty( 'Parent', AutoCalcBox );
+        uix.Empty( 'Parent', DefaultMethodBox );                
         
         max_extent_control = calc_max_control_x_extend(a);
         field_size = [max_extent_control + 5, -1, 1];
         
         set( GUI.RecordNameBox, 'Widths', field_size  );
         set( GUI.DataQualityBox, 'Widths', field_size );
-        set( GUI.ConfigFileNameBox, 'Widths', field_size );
+%         set( GUI.ConfigFileNameBox, 'Widths', field_size );                
+        
         set( GUI.DataLengthBox, 'Widths', field_size );
         
         if DATA.SmallScreen
@@ -583,11 +583,19 @@ displayEndOfDemoMessage('');
         set( GUI.IntegrationBox, 'Widths', field_size );
         set( GUI.FilteringBox, 'Widths', field_size );
         set( GUI.FilteringLevelBox, 'Widths', field_size );
-        set( DefaultMethodBox, 'Widths', field_size );
-        %         set( AutoCalcBox, 'Widths', field_size );
+        set( DefaultMethodBox, 'Widths', field_size );        
         
         uix.Empty( 'Parent', GUI.OptionsBox );
         set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -15] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+                        
+        popupmenu_position = get(GUI.Mammal_popupmenu, 'Position');        
+        set( GUI.ConfigFileNameBox, 'Widths', [max_extent_control + 5, popupmenu_position(3) + 15, 25] );    
+        
+        config_file_name_extent = get(GUI.Config_text, 'Extent');
+        config_file_name_position = get(GUI.Config_text, 'Position');
+        load_config_name_button_position = get(GUI.open_config_pushbutton_handle, 'Position');
+        set(GUI.open_config_pushbutton_handle, 'Position', [config_file_name_position(1)+config_file_name_extent(3) load_config_name_button_position(2)+7 load_config_name_button_position(3) load_config_name_button_position(4)-7])
+        
         %---------------------------
         
         uicontrol( 'Style', 'text', 'Parent', GUI.BatchBox, 'String', 'Batch analysis', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold', ...
@@ -1902,6 +1910,10 @@ displayEndOfDemoMessage('');
                             config_file_name = [DATA.mammals{DATA.mammal_index} '_' DATA.integration_level{DATA.integration_index}];
                             mhrv_load_defaults(config_file_name);
                             set(GUI.Config_text, 'String', [config_file_name '.yml']);
+                            config_file_name_extent = get(GUI.Config_text, 'Extent');
+                            config_file_name_position = get(GUI.Config_text, 'Position');
+                            load_config_name_button_position = get(GUI.open_config_pushbutton_handle, 'Position');
+                            set(GUI.open_config_pushbutton_handle, 'Position', [config_file_name_position(1)+config_file_name_extent(3)+10 load_config_name_button_position(2) load_config_name_button_position(3) load_config_name_button_position(4)])
                         catch e
                             h_e = errordlg(['mhrv_load_defaults: ' e.message], 'Input Error');
                             setLogo(h_e, 'M2');
@@ -1939,6 +1951,7 @@ displayEndOfDemoMessage('');
                 set(GUI.SaveFiguresAsMenu, 'Enable', 'on');
                 set(GUI.SaveParamFileMenu, 'Enable', 'on');
                 set(GUI.LoadConfigFile, 'Enable', 'on');
+                set(GUI.open_config_pushbutton_handle, 'Enable', 'on');                                
             end
         end
     end
@@ -3950,6 +3963,10 @@ displayEndOfDemoMessage('');
             [pathstr, name, ~] = fileparts(params_filename);
             
             set(GUI.Config_text, 'String', [name '.yml']);
+            config_file_name_extent = get(GUI.Config_text, 'Extent');
+            config_file_name_position = get(GUI.Config_text, 'Position');
+            load_config_name_button_position = get(GUI.open_config_pushbutton_handle, 'Position');
+            set(GUI.open_config_pushbutton_handle, 'Position', [config_file_name_position(1)+config_file_name_extent(3)+10 load_config_name_button_position(2) load_config_name_button_position(3) load_config_name_button_position(4)]);
                         
             mhrv_set_default('parameters_type.mammal', '');
             mhrv_set_default('parameters_type.integration_level', '');

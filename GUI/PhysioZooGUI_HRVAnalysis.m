@@ -29,7 +29,6 @@ persistent DATA_Fig;
 persistent DATA_Measure;
 persistent defaultRate;
 
-%mhrv_init();
 %% Load default toolbox parameters
 %mhrv_load_defaults --clear;
 
@@ -84,7 +83,7 @@ displayEndOfDemoMessage('');
         DATA.filter_range = false;
         
         %         DEBUGGING MODE - Small Screen
-        %         DATA.screensize = [0 0 1250 800];
+        % DATA.screensize = [0 0 1250 800];
         
         DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
         
@@ -202,7 +201,7 @@ displayEndOfDemoMessage('');
         DATA.Action = 'move';
         
         DATA.quality_class_ind = [];
-        %         DATA.custom_config_params = containers.Map;
+        DATA.config_file_name = '';        
     end
 %%
     function clean_gui()
@@ -213,6 +212,8 @@ displayEndOfDemoMessage('');
         set(GUI.SaveFiguresAsMenu,'Enable', 'off');
         set(GUI.SaveParamFileMenu,'Enable', 'off');
         set(GUI.LoadConfigFile, 'Enable', 'off');
+%         set(GUI.open_record_pushbutton_handle, 'Enable', 'off');                                
+        set(GUI.open_quality_pushbutton_handle, 'Enable', 'off');                                
         set(GUI.open_config_pushbutton_handle, 'Enable', 'off');                                
         
         GUI.Filt_RawDataSlider.Enable = 'off';
@@ -513,12 +514,14 @@ displayEndOfDemoMessage('');
         GUI.RecordNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         a{1} = uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'String', 'File name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.RecordName_text = uicontrol( 'Style', 'text', 'Parent', GUI.RecordNameBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        uix.Empty( 'Parent', GUI.RecordNameBox );
+%         uix.Empty( 'Parent', GUI.RecordNameBox );
+        GUI.open_record_pushbutton_handle = uicontrol( 'Style', 'PushButton', 'Parent', GUI.RecordNameBox, 'Callback', @onOpenFile, 'FontSize', SmallFontSize, 'String', '...', 'Enable', 'on');                
         
         GUI.DataQualityBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         a{2} = uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'String', 'Signal quality file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.DataQuality_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataQualityBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        uix.Empty( 'Parent', GUI.DataQualityBox );
+%         uix.Empty( 'Parent', GUI.DataQualityBox );
+        GUI.open_quality_pushbutton_handle = uicontrol( 'Style', 'PushButton', 'Parent', GUI.DataQualityBox, 'Callback', @onOpenDataQualityFile, 'FontSize', SmallFontSize, 'String', '...', 'Enable', 'off');                
         
         GUI.ConfigFileNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         a{3} = uicontrol( 'Style', 'text', 'Parent', GUI.ConfigFileNameBox, 'String', 'Config file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
@@ -567,8 +570,8 @@ displayEndOfDemoMessage('');
         max_extent_control = calc_max_control_x_extend(a);
         field_size = [max_extent_control + 5, -1, 1];
         
-        set( GUI.RecordNameBox, 'Widths', field_size  );
-        set( GUI.DataQualityBox, 'Widths', field_size );
+%         set( GUI.RecordNameBox, 'Widths', field_size  );
+%         set( GUI.DataQualityBox, 'Widths', field_size );
 %         set( GUI.ConfigFileNameBox, 'Widths', field_size );                
         
         set( GUI.DataLengthBox, 'Widths', field_size );
@@ -585,17 +588,27 @@ displayEndOfDemoMessage('');
         set( GUI.FilteringLevelBox, 'Widths', field_size );
         set( DefaultMethodBox, 'Widths', field_size );        
         
-        uix.Empty( 'Parent', GUI.OptionsBox );
-        set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -15] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+        if DATA.SmallScreen
+            uix.Empty( 'Parent', GUI.OptionsBox );
+            set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -6 -7 -7 -7 -7 -5] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+        else
+            set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -6 -7 -7 -7 -7] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+        end
                         
-        popupmenu_position = get(GUI.Mammal_popupmenu, 'Position');        
-        set( GUI.ConfigFileNameBox, 'Widths', [max_extent_control + 5, popupmenu_position(3) + 15, 25] );    
+        popupmenu_position = get(GUI.Mammal_popupmenu, 'Position');     
+        field_size = [max_extent_control + 5, popupmenu_position(3)+ 15, 25];
+        set( GUI.ConfigFileNameBox, 'Widths', field_size );     
+        set( GUI.RecordNameBox, 'Widths',     field_size );
+        set( GUI.DataQualityBox, 'Widths',    field_size );
         
-        config_file_name_extent = get(GUI.Config_text, 'Extent');
-        config_file_name_position = get(GUI.Config_text, 'Position');
+%         config_file_name_extent = get(GUI.Config_text, 'Extent');
+%         config_file_name_position = get(GUI.Config_text, 'Position');
         load_config_name_button_position = get(GUI.open_config_pushbutton_handle, 'Position');
-        set(GUI.open_config_pushbutton_handle, 'Position', [config_file_name_position(1)+config_file_name_extent(3) load_config_name_button_position(2)+7 load_config_name_button_position(3) load_config_name_button_position(4)-7])
-        
+        updated_position = [load_config_name_button_position(1) load_config_name_button_position(2)+12 load_config_name_button_position(3) load_config_name_button_position(4)-12];
+%         set(GUI.open_config_pushbutton_handle, 'Position', [config_file_name_position(1)+config_file_name_extent(3) load_config_name_button_position(2)+7 load_config_name_button_position(3) load_config_name_button_position(4)-7])
+        set(GUI.open_record_pushbutton_handle, 'Position', updated_position);        
+        set(GUI.open_quality_pushbutton_handle, 'Position', updated_position);        
+        set(GUI.open_config_pushbutton_handle, 'Position', updated_position);        
         %---------------------------
         
         uicontrol( 'Style', 'text', 'Parent', GUI.BatchBox, 'String', 'Batch analysis', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold', ...
@@ -1885,45 +1898,26 @@ displayEndOfDemoMessage('');
                     DATA.integration_index = find(strcmpi(DATA.GUI_Integration, DATA.Integration));
                     GUI.Integration_popupmenu.Value = DATA.integration_index;
                                                             
-                    if mammal_index == length(DATA.mammals) % Custom mammal
-                        set_defaults_path();
-                        [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
-                        if ~isequal(Config_FileName, 0)
-                            params_filename = fullfile(PathName, Config_FileName);
-                            [pathstr, name, ~] = fileparts(params_filename);
-                            mhrv_load_defaults([pathstr filesep name]);
-                            DIRS.configDirectory = PathName;
-                        else % Cancel by user                            
-                            clearData();
-                            clean_gui();
-                            cla(GUI.RRDataAxes);
-                            cla(GUI.AllDataAxes);
-                            clear_statistics_plots();
-                            clearStatTables();
-                            if isvalid(waitbar_handle)
-                                close(waitbar_handle);
-                            end
-                            return;
-                        end                                                
+                    if mammal_index == length(DATA.mammals) % Custom mammal                                        
+                        config_file_name = 'default_ecg';                                                
+                        GUI.Mammal_popupmenu.String = 'default';                                                
                     else                                                
-                        try
-                            config_file_name = [DATA.mammals{DATA.mammal_index} '_' DATA.integration_level{DATA.integration_index}];
-                            mhrv_load_defaults(config_file_name);
-                            set(GUI.Config_text, 'String', [config_file_name '.yml']);
-                            config_file_name_extent = get(GUI.Config_text, 'Extent');
-                            config_file_name_position = get(GUI.Config_text, 'Position');
-                            load_config_name_button_position = get(GUI.open_config_pushbutton_handle, 'Position');
-                            set(GUI.open_config_pushbutton_handle, 'Position', [config_file_name_position(1)+config_file_name_extent(3)+10 load_config_name_button_position(2) load_config_name_button_position(3) load_config_name_button_position(4)])
-                        catch e
-                            h_e = errordlg(['mhrv_load_defaults: ' e.message], 'Input Error');
-                            setLogo(h_e, 'M2');
-                            if isvalid(waitbar_handle)
-                                close(waitbar_handle);
-                            end
-                            return;
-                        end                        
+                        config_file_name = [DATA.mammals{DATA.mammal_index} '_' DATA.integration_level{DATA.integration_index}];                      
                     end
-                    
+                                        
+                    try                        
+                        mhrv_load_defaults(config_file_name);     
+                        set(GUI.Config_text, 'String', [config_file_name '.yml']);
+%                         set_text_position(GUI.Config_text, GUI.open_config_pushbutton_handle, [config_file_name '.yml']);                                                
+                        DATA.config_file_name = config_file_name;
+                    catch e
+                        h_e = errordlg(['mhrv_load_defaults: ' e.message], 'Input Error');
+                        setLogo(h_e, 'M2');
+                        if isvalid(waitbar_handle)
+                            close(waitbar_handle);
+                        end
+                        return;
+                    end                    
                     waitbar(2 / 2, waitbar_handle, 'Create Config Parameters Windows');
                     setLogo(waitbar_handle, 'M2');
                     createConfigParametersInterface();
@@ -1951,6 +1945,8 @@ displayEndOfDemoMessage('');
                 set(GUI.SaveFiguresAsMenu, 'Enable', 'on');
                 set(GUI.SaveParamFileMenu, 'Enable', 'on');
                 set(GUI.LoadConfigFile, 'Enable', 'on');
+%                 set(GUI.open_record_pushbutton_handle, 'Enable', 'on');                                
+                set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');                                
                 set(GUI.open_config_pushbutton_handle, 'Enable', 'on');                                
             end
         end
@@ -2706,11 +2702,27 @@ displayEndOfDemoMessage('');
         integration = DATA.integration_level{DATA.integration_index};
         GUI.Integration_popupmenu.Value = DATA.integration_index;
                         
-        % Load user-specified default parameters
-        mhrv_load_defaults([DATA.mammals{ DATA.mammal_index} '_' integration]);
-        createConfigParametersInterface();
+        try
+            % Load user-specified default parameters
+            config_file_name = DATA.config_file_name;
+            %mhrv_load_defaults([DATA.mammals{DATA.mammal_index} '_' integration]);
+            mhrv_load_defaults(config_file_name);
+            set(GUI.Config_text, 'String', [config_file_name '.yml']);
+%             set_text_position(GUI.Config_text, GUI.open_config_pushbutton_handle, [config_file_name '.yml']);
+            createConfigParametersInterface();
+        catch e
+            h_e = errordlg(['Reset_pushbutton_Callback: ' e.message], 'Input Error');
+            setLogo(h_e, 'M2');
+            if isvalid(waitbar_handle)
+                close(waitbar_handle);
+            end
+            return;
+        end
         
-%         GUI.Mammal_popupmenu.Value = mammal_index;
+        if strcmp(config_file_name, 'default_ecg')        
+            mammal = 'default';  
+        end
+        %         GUI.Mammal_popupmenu.Value = mammal_index;
         GUI.Mammal_popupmenu.String = mammal;
         GUI.Filtering_popupmenu.Value = DATA.filter_index;
         
@@ -2718,7 +2730,6 @@ displayEndOfDemoMessage('');
         reset_plot_Data();
         reset_plot_GUI();
     end
-
 %%
     function FiltSignal(varargin)
         
@@ -3953,47 +3964,66 @@ displayEndOfDemoMessage('');
         end
     end
 %%
+    function set_text_position(text_hndle, pushbutton_handle, text)
+        set(text_hndle, 'String', text);
+        config_file_name_extent = get(text_hndle, 'Extent');
+        config_file_name_position = get(text_hndle, 'Position');
+        load_config_name_button_position = get(pushbutton_handle, 'Position');
+        set(pushbutton_handle, 'Position', [config_file_name_position(1)+config_file_name_extent(3)+10 load_config_name_button_position(2) load_config_name_button_position(3) load_config_name_button_position(4)]);        
+    end
+%%
     function onLoadCustomConfigFile( ~, ~)
         set_defaults_path();
         
-        [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);
-        if ~isequal(Config_FileName, 0)
+        [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);                
+        
+        if ~isequal(Config_FileName, 0) && ~strcmpi(Config_FileName, 'gui_params.yml')
             params_filename = fullfile(PathName, Config_FileName);
-            DIRS.configDirectory = PathName;            
-            [pathstr, name, ~] = fileparts(params_filename);
+            DIRS.configDirectory = PathName;
+            [pathstr, name, conf_ext] = fileparts(params_filename);
             
-            set(GUI.Config_text, 'String', [name '.yml']);
-            config_file_name_extent = get(GUI.Config_text, 'Extent');
-            config_file_name_position = get(GUI.Config_text, 'Position');
-            load_config_name_button_position = get(GUI.open_config_pushbutton_handle, 'Position');
-            set(GUI.open_config_pushbutton_handle, 'Position', [config_file_name_position(1)+config_file_name_extent(3)+10 load_config_name_button_position(2) load_config_name_button_position(3) load_config_name_button_position(4)]);
-                        
-            mhrv_set_default('parameters_type.mammal', '');
-            mhrv_set_default('parameters_type.integration_level', '');
-            
-            mhrv_load_defaults([pathstr filesep name]);
-                                    
-            mammal = mhrv_get_default('parameters_type.mammal');
-            mammal = mammal.value;
-            integration = mhrv_get_default('parameters_type.integration_level');
-            integration = integration.value;
-           
-            if isempty(mammal) || isempty(integration)
-                mammal = 'custom';
-                integration = 'ECG';
-                mhrv_set_default('parameters_type.mammal', mammal);
-                mhrv_set_default('parameters_type.integration_level', integration);
+            if ~strcmp(conf_ext, '.yml')                                                
+                h_e = errordlg('Only .yml files are supported as configuration parameters files', 'Input Error');
+                setLogo(h_e, 'M2');                
+                return;
+            else
+                
+                set(GUI.Config_text, 'String', [name conf_ext]);
+%                 set_text_position(GUI.Config_text, GUI.open_config_pushbutton_handle, [name conf_ext]);
+                
+%                 set(GUI.Config_text, 'String', [name conf_ext]);
+%                 config_file_name_extent = get(GUI.Config_text, 'Extent');
+%                 config_file_name_position = get(GUI.Config_text, 'Position');
+%                 load_config_name_button_position = get(GUI.open_config_pushbutton_handle, 'Position');
+%                 set(GUI.open_config_pushbutton_handle, 'Position', [config_file_name_position(1)+config_file_name_extent(3)+10 load_config_name_button_position(2) load_config_name_button_position(3) load_config_name_button_position(4)]);
+                
+                mhrv_set_default('parameters_type.mammal', '');
+                mhrv_set_default('parameters_type.integration_level', '');
+                
+                mhrv_load_defaults([pathstr filesep name]);
+                
+                mammal = mhrv_get_default('parameters_type.mammal');
+                mammal = mammal.value;
+                integration = mhrv_get_default('parameters_type.integration_level');
+                integration = integration.value;
+                
+                if isempty(mammal) || isempty(integration)
+                    mammal = 'custom';
+                    integration = 'ECG';
+                    mhrv_set_default('parameters_type.mammal', mammal);
+                    mhrv_set_default('parameters_type.integration_level', integration);
+                end
+                
+                %             GUI.Mammal_popupmenu.Value = length(DATA.mammals);
+                GUI.Mammal_popupmenu.String = mammal;
+                
+                createConfigParametersInterface();
+                reset_plot_Data();
+                reset_plot_GUI();
+                DATA.mammal_index = length(DATA.mammals);
+                DATA.integration_index = find(strcmpi(DATA.GUI_Integration, integration));
+                GUI.Integration_popupmenu.Value = DATA.integration_index;
             end
-            
-%             GUI.Mammal_popupmenu.Value = length(DATA.mammals);
-            GUI.Mammal_popupmenu.String = mammal;            
-                        
-            createConfigParametersInterface();
-            reset_plot_Data();
-            reset_plot_GUI();
-            DATA.mammal_index = length(DATA.mammals);
-            DATA.integration_index = find(strcmpi(DATA.GUI_Integration, integration));
-            GUI.Integration_popupmenu.Value = DATA.integration_index;
         end
     end
 %%

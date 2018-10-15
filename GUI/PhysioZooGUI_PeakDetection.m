@@ -38,14 +38,16 @@ end
         DATA.qrs = [];
         
         DATA.Mammal = '';
-        DATA.mammal_index = 1;
+%         DATA.mammal_index = 1;
         
-        DATA.Integration = 'ECG';
+        DATA.Integration = '';
         DATA.integration_index = 1;
         
-        DATA.peakDetection_index = 1;
+        DATA.peakDetector = '';
+        DATA.peakDetector_index = 1;
         
-        DATA.config_map = [];
+        DATA.config_map = containers.Map;
+        DATA.config_struct = struct;
         DATA.customConfigFile = '';
         DATA.wfdb_record_name = '';
         
@@ -98,18 +100,13 @@ end
         
         
         title(GUI.ECG_Axes, '');
-        
-        %         GUI.AutoCalc_checkbox.Value = 1;
-        %         GUI.AutoCompute_pushbutton.Enable = 'inactive';
-        
-        %         set(GUI.GUIRecord.Mammal_popupmenu, 'Value', 1);
+                
         set(GUI.GUIRecord.Mammal_popupmenu, 'String', '');
         set(GUI.GUIRecord.PeakDetector_popupmenu, 'Value', 1);
         
         GUI.LoadConfigurationFile.Enable = 'off';
         GUI.SaveConfigurationFile.Enable = 'off';
-        GUI.SavePeaks.Enable = 'off';
-        %GUI.LoadPeaks.Enable = 'off';
+        GUI.SavePeaks.Enable = 'off';       
         GUI.SaveDataQuality.Enable = 'off';
         GUI.OpenDataQuality.Enable = 'off';
         GUI.GUIRecord.PeaksFileName_text_pushbutton_handle.Enable = 'off';
@@ -147,20 +144,17 @@ end
             DATA.SmallScreen = 0;
         end
         
-        DATA.mammals = {'', 'human', 'dog', 'rabbit', 'mouse', 'custom'};
-        DATA.GUI_mammals = {'Please, choose mammal'; 'Human'; 'Dog'; 'Rabbit'; 'Mouse'; 'Custom'};
-        DATA.mammal_index = 1;
-        
-        %         DATA.Integration_From_Files = {'electrocardiogram'; 'ECG'; 'Electrogram'; 'Action Potential'};
+        DATA.mammals = {'human', 'dog', 'rabbit', 'mouse', 'default'};
+%         DATA.mammals = {'', 'human', 'dog', 'rabbit', 'mouse', 'custom'};
+%         DATA.GUI_mammals = {'Please, choose mammal'; 'Human'; 'Dog'; 'Rabbit'; 'Mouse'; 'Custom'};
+%         DATA.mammal_index = 1;
+                
         DATA.Integration_From_Files = {'electrocardiogram'; 'electrogram'; 'action potential'};
         DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};
-        DATA.integration_level = {'ecg'; 'electrogram'; 'ap'};
-        %         DATA.Integration = 'ECG';
-        %         DATA.integration_index = 1;
-        
+        DATA.integration_level = {'ecg'; 'electrogram'; 'ap'};        
         
         DATA.GUI_PeakDetector = {'rgrs'; 'jqrs'; 'wjqrs'};
-        DATA.peakDetection_index = 1;
+        DATA.peakDetector_index = 1;
         
         DATA.GUI_Annotation = {'Peak'; 'Signal quality'};
         DATA.GUI_Class = {'A'; 'B'; 'C'};
@@ -575,36 +569,70 @@ end
         end
     end
 %%
-    function set_mammal(index_selected)
-        DATA.customConfigFile = [];
+    function set_new_mammal(Config_FileName)
+
+        [~, config_name, config_ext] = fileparts(Config_FileName);
+        DATA.customConfigFile = [config_name config_ext];
         
-        if index_selected == length(DATA.mammals) % Custom mammal
-            
-            %             [Config_FileName, PathName] = uigetfile({'*.conf','Configuration files (*.conf)'}, 'Open Configuration File', []);
-            %             if ~isequal(Config_FileName, 0)
-            %                 params_filename = fullfile(PathName, Config_FileName);
-            %                 DATA.customConfigFile = params_filename;
-            %                 mammal = 'custom';
-            %             else % Cancel by user
-            %                 %                 GUI.GUIRecord.Mammal_popupmenu.Value = DATA.mammal_index;
-            %                 GUI.GUIRecord.Mammal_popupmenu.String = DATA.mammals{DATA.mammal_index};
-            %                 throw(MException('set_mammal:text', 'Custom mammal: Cancel by user.'));
-            %                 %                 return;
-            %             end
-            
+        if ~exist(Config_FileName, 'file')
             mammal = 'default';
-            integration = 'ecg';
-            DATA.customConfigFile = ['gqrs.' mammal '-' integration '.conf'];            
-            GUI.GUIRecord.Mammal_popupmenu.String = mammal;
+            integration = 'ecg';            
+            h_e = warndlg(['The config file ''' DATA.customConfigFile ''' doesn''t exist. The default config file will be loaded.'], 'Warning');
+            setLogo(h_e, 'M1');
+            uiwait(h_e);
+%             DATA.customConfigFile = ['gqrs.' mammal '-' integration '.conf'];
+            DATA.customConfigFile = ['qrs.' mammal '-' integration '.yml'];
+            basepath = fileparts(mfilename('fullpath'));
+%             config_file_name = [fileparts(basepath) filesep 'Config' filesep 'gqrs.' mammal '-' integration '.conf'];
+            config_file_name = [fileparts(basepath) filesep 'Config' filesep 'qrs.' mammal '-' integration '.yml'];
         else
-            mammal = DATA.mammals{index_selected};
-            integration = DATA.integration_level{DATA.integration_index};
-            DATA.customConfigFile = ['gqrs.' mammal '-' integration '.conf'];
+            config_file_name = Config_FileName;
+        end
+        set(GUI.GUIRecord.Config_text, 'String', DATA.customConfigFile);               
+        
+        try
+            waitbar_handle = waitbar(1/2, 'Loading configuration...', 'Name', 'Loading data');
+%             DATA.config_map = parse_gqrs_config_file(config_file_name);
+                        
+            DATA.config_struct = ReadYaml(config_file_name);
+            DATA.config_map = containers.Map;
+            config_fields = fieldnames(DATA.config_struct); 
+            for i = 1 : length(config_fields)
+                curr_field = config_fields{i};
+                if isstruct(DATA.config_struct.(curr_field))
+                    DATA.config_map(curr_field) = DATA.config_struct.(curr_field).value;
+                else
+                    DATA.config_map(curr_field) = DATA.config_struct.(curr_field);
+                end
+            end
+            
+            load_updateGUI_config_param();
+            if isvalid(waitbar_handle)
+                close(waitbar_handle);
+            end
+                   
+            mammal = DATA.config_map('mammal');
+            integration = DATA.config_map('integration_level');
+            
+            if ~strcmp(DATA.Mammal, mammal) || ~strcmp(DATA.Integration, integration)
+                h_e = warndlg('Mammal and/or integration level of data file does not match the one of the configuration file.', 'Warning');
+                setLogo(h_e, 'M1');
+                uiwait(h_e);
+            end
+                       
+            GUI.GUIRecord.Mammal_popupmenu.String = mammal;            
+             
+%             DATA.Integration = integration;
+            DATA.integration_index = find(strcmpi(DATA.GUI_Integration, integration));
+            set(GUI.GUIRecord.Integration_popupmenu, 'Value', DATA.integration_index);
+            
+            DATA.peakDetector = DATA.config_map('peak_detector');
+            DATA.peakDetector_index = find(strcmpi(DATA.GUI_PeakDetector, DATA.peakDetector));
+            set(GUI.GUIRecord.PeakDetector_popupmenu, 'Value', DATA.peakDetector_index);
+        catch e
+            rethrow(e);
         end
         
-        set(GUI.GUIRecord.Config_text, 'String', DATA.customConfigFile);
-        
-        DATA.mammal_index = index_selected;
         DATA.zoom_rect_limits = [0 DATA.firstZoom];
         right_limit2plot = min(DATA.firstZoom, max(DATA.tm));
         setECGXLim(0, right_limit2plot);
@@ -622,57 +650,28 @@ end
             DATA.peak_search_win = 100;
         end
         set(GUI.GUIConfig.PeaksWindow, 'String', DATA.peak_search_win);
-        
-%         try
-%             load_updateGUI_config_param();
-%         catch e
-%             rethrow(e);
-%         end
     end
 %%
-    function Mammal_popupmenu_Callback(src, ~)
-        
-        
-        DATA.config_map('mammal') = src.String;
-        
-        
-        %         index_selected = get(src, 'Value');
-        %         if index_selected ~= 1
-        %             try
-        %                 set_mammal(index_selected);
-        %             catch
-        %                 return; % Canceled by user
-        %             end
-        %             if get(GUI.AutoCalc_checkbox, 'Value')
-        %                 try
-        %                     RunAndPlotPeakDetector();
-        %                 catch e
-        %                     h_e = errordlg(['mammal set error: ' e.message], 'Input Error');
-        %                     setLogo(h_e, 'M1');
-        %                     src.Value = DATA.mammal_index;
-        %                     return;
-        %                 end
-        %             end
-        %         else
-        %             src.Value = DATA.mammal_index;
-        %             return;
-        %         end
+    function Mammal_popupmenu_Callback(src, ~)                
+        DATA.config_map('mammal') = src.String;        
     end
 %%
     function Integration_popupmenu_Callback(src, ~)
         items = get(src, 'String');
-        index_selected = get(src, 'Value');
-        %         DATA.Integration = items{index_selected};
-        DATA.integration_index = index_selected;
-        
+        index_selected = get(src, 'Value');        
+        DATA.integration_index = index_selected;        
         DATA.config_map('integration_level') = items{index_selected};
     end
 %%
     function PeakDetector_popupmenu_Callback(src, ~)
+        items = get(src, 'String');
+        index_selected = get(src, 'Value');
+        DATA.config_map('peak_detector') = items{index_selected};
+        DATA.peakDetector_index = index_selected;
+        
         if get(GUI.AutoCalc_checkbox, 'Value')
             try
-                RunAndPlotPeakDetector();
-                DATA.peakDetection_index = src.Value;
+                RunAndPlotPeakDetector();                
             catch e
                 h_e = errordlg(['PeakDetector error: ' e.message], 'Input Error');
                 setLogo(h_e, 'M1');
@@ -729,11 +728,15 @@ end
                         setLogo(waitbar_handle, 'M1');
                         
                         DataFileMap = loadDataFile([PathName DataFileName '.' EXT]);
+                        close(waitbar_handle);
                     catch e
+                        if isvalid(waitbar_handle)
+                            close(waitbar_handle);
+                        end
                         h_e = errordlg(['onOpenFile error: ' e.message], 'Input Error');
                         setLogo(h_e, 'M1');
                         return;
-                    end
+                    end                    
                 end
                 MSG = DataFileMap('MSG');
                 if strcmp(Config.alarm.(MSG), 'OK')
@@ -748,11 +751,18 @@ end
                         DATA.DataFileName = DataFileName;
                         DATA.rec_name = [PathName, DATA.DataFileName];
                         
-                        DATA.Mammal = data.General.mammal;
-                        DATA.mammal_index = find(strcmp(DATA.mammals, DATA.Mammal));
-                        DATA.Integration = data.General.integration_level;
-                        DATA.integration_index = find(strcmpi(DATA.Integration_From_Files, DATA.Integration));
-                        set(GUI.GUIRecord.Integration_popupmenu, 'Value', DATA.integration_index);
+                        mammal = data.General.mammal;                        
+                        if strcmpi(mammal, 'custom')
+                            DATA.Mammal = 'default';
+                        else
+                            DATA.Mammal = mammal;
+                        end                                                                        
+%                         DATA.mammal_index = find(strcmp(DATA.mammals, DATA.Mammal));
+                        
+                        integration = data.General.integration_level;                        
+                        DATA.integration_index = find(strcmpi(DATA.Integration_From_Files, integration));
+                        DATA.Integration = DATA.GUI_Integration{DATA.integration_index};
+                        
                         DATA.Fs = double(data.Time.Fs);
                         DATA.sig = data.Data.Data;
                         time_data = data.Time.Data;
@@ -807,6 +817,7 @@ end
                                         end
                                         h_e = errordlg(['load_peaks error: ' e.message], 'Input Error');
                                         setLogo(h_e, 'M1');
+                                        return;
                                     end
                                 else
                                     isM2 = 0;
@@ -833,30 +844,20 @@ end
                     return;
                 end
                 
-                if ~isM2
-                    %                     GUI.GUIRecord.Mammal_popupmenu.Value = DATA.mammal_index;
-                    GUI.GUIRecord.Mammal_popupmenu.String = DATA.mammals{DATA.mammal_index};
-                                        
-                    try
-                        waitbar(2 / 2, waitbar_handle, 'Loading configuration...');
-                        setLogo(waitbar_handle, 'M1');
-                    catch
-                        waitbar_handle = waitbar(1/2, 'Loading configuration...', 'Name', 'Working on it...');
-                    end
-                    try                        
-                        set_mammal(DATA.mammal_index);
-                        try
-                            load_updateGUI_config_param();
-                        catch e
-                            rethrow(e);
-                        end                        
-                        close(waitbar_handle);
-                    catch
+                if ~isM2                    
+                    try 
+                        basepath = fileparts(mfilename('fullpath'));
+%                         DATA.init_config_file_name = [fileparts(basepath) filesep 'Config' filesep 'gqrs.' DATA.Mammal '-' DATA.integration_level{DATA.integration_index} '.conf'];
+                        DATA.init_config_file_name = [fileparts(basepath) filesep 'Config' filesep 'qrs.' DATA.Mammal '-' DATA.integration_level{DATA.integration_index} '.yml'];
+                        set_new_mammal(DATA.init_config_file_name);                                                
+                    catch e                        
                         if isvalid(waitbar_handle)
                             close(waitbar_handle);
                         end
-                        return; % Canceled by user
-                    end
+                        h_e = errordlg(['onOpenFile error: ' e.message], 'Input Error');
+                        setLogo(h_e, 'M1');
+                        return;
+                    end                                            
                 end
                 
                 set(GUI.GUIRecord.RecordFileName_text, 'String', ECG_FileName);
@@ -887,7 +888,7 @@ end
                     catch e
                         h_e = errordlg(['OpenFile error: ' e.message], 'Input Error');
                         setLogo(h_e, 'M1');
-                        return;
+%                         return;
                     end
                 end
                 
@@ -904,57 +905,6 @@ end
             end
         end
     end
-%%
-%     function header_info = set_data(time_data, ECG_data)
-%
-%         DATA.tm = time_data;
-%         DATA.sig = ECG_data;
-%
-%         if ~DATA.Fs
-%             DATA.Fs = 1/median(diff(DATA.tm));
-%         end
-%
-%         [t_max, h, m, s ,ms] = signal_duration(length(DATA.tm), DATA.Fs);
-%         header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
-%
-%         DATA.ecg_channel = 1;
-%         DATA.rec_name = DATA.temp_rec_name4wfdb;
-%
-% %         waitbar_handle = waitbar(1/2, 'Loading...', 'Name', 'Loading data');
-%
-%         curr_dir = pwd;
-%         cd(tempdir);
-%
-%         mat2wfdb(DATA.sig, DATA.rec_name, DATA.Fs, [], ' ' ,{} ,[]);
-%
-%         cd(curr_dir);
-%
-% %         [a, b, c] = fileparts(mfilename('fullpath'))
-% %
-% %         mfilename('fullpath')
-% %
-% %         disp(['exist(fullfile(pwd, [DATA.rec_name .dat])) = ' num2str(exist(fullfile(pwd, [DATA.rec_name '.dat']), 'file'))]);
-% %         disp(['exist(fullfile(pwd, [DATA.rec_name .hea])) = ' num2str(exist(fullfile(pwd, [DATA.rec_name '.hea']), 'file'))]);
-%
-% %         curr_path_dat = which([pwd filesep DATA.rec_name '.dat'])
-% %         curr_path_hea = which([pwd filesep DATA.rec_name '.hea'])
-%
-%         if ~exist(fullfile(tempdir, [DATA.rec_name '.dat']), 'file') && ~exist(fullfile(tempdir, [DATA.rec_name '.hea']), 'file')
-%             throw(MException('set_data:text', 'Wfdb file cannot be created.'));
-%         end
-%
-%
-%
-%
-%
-% %         if exist([DATA.rec_name '.dat'], 'file') && exist([DATA.rec_name '.hea'], 'file')
-% % %             [DATA.tm, DATA.sig, DATA.Fs] = rdsamp(DATA.rec_name, DATA.ecg_channel);
-% %             [DATA.tm, DATA.sig, ~] = rdsamp(DATA.rec_name, DATA.ecg_channel);
-% %         end
-% %         if isvalid(waitbar_handle)
-% %              close(waitbar_handle);
-% %         end
-%     end
 %%
     function setECGXLim(minLimit, maxLimit)
         set(GUI.ECG_Axes, 'XLim', [minLimit maxLimit]);
@@ -1016,15 +966,15 @@ end
 %%
     function load_updateGUI_config_param()
         
-        DATA.config_map = parse_gqrs_config_file(DATA.customConfigFile);
-        if ~isempty(DATA.config_map)
+        if isfield(DATA, 'config_map') && ~isempty(DATA.config_map)
             params_GUI_edit_values = findobj(GUI.ConfigBox, 'Style', 'edit');
             fields_names = get(params_GUI_edit_values, 'UserData');
             
             for i = 1 : length(params_GUI_edit_values)
                 if ~isempty(fields_names{i})
                     param_value = DATA.config_map(fields_names{i});
-                    set(params_GUI_edit_values(i), 'String', param_value);
+                    tooltip = DATA.config_struct.(fields_names{i}).description;
+                    set(params_GUI_edit_values(i), 'String', param_value, 'Tooltip', tooltip);                    
                 end
             end
             
@@ -1033,19 +983,30 @@ end
                 set(GUI.GUIConfig.hcf, 'String', floor(DATA.Fs/2) - 2);
             end
             
-            if isfield(DATA, 'config_map') && ~isempty(DATA.config_map)
-                DATA.config_map(get(GUI.GUIConfig.hcf, 'UserData')) = get(GUI.GUIConfig.hcf, 'String');
-                DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
-                temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
-                if temp_custom_conf_fileID == -1
-                    h_e = errordlg('Problems with creation of custom config file.', 'Input Error');
-                    setLogo(h_e, 'M1');
-                    return;
-                end
+            DATA.config_map(get(GUI.GUIConfig.hcf, 'UserData')) = str2double(get(GUI.GUIConfig.hcf, 'String'));
+            
+            %                 curr_key = get(GUI.GUIConfig.hcf, 'UserData');
+            %                 curr_structure = DATA.config_map(curr_key);
+            %                 curr_structure = setfield(curr_structure, 'value', get(GUI.GUIConfig.hcf, 'String'));
+            %                 DATA.config_map(curr_key) = curr_structure;
+            
+            
+            
+            DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
+            temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
+            
+            
+            %                 temp_custom_conf_fileID = saveCustomParameters2ConfFile(DATA.customConfigFile);
+            
+            
+            
+            if temp_custom_conf_fileID == -1
+                h_e = errordlg('Problems with creation of custom config file.', 'Input Error');
+                setLogo(h_e, 'M1');
+                return;
             end
+            
         else
-%             h_e = errordlg(['Config file ''' DATA.customConfigFile ''' does''t exist.'], 'Input Error');
-%             setLogo(h_e, 'M1');
             throw(MException('LoadConfig:text', 'Config file does''t exist.'));
         end
     end
@@ -1059,25 +1020,7 @@ end
             end
             try
                 if isfield(DATA, 'customConfigFile') && ~strcmp(DATA.customConfigFile, '')
-                    
-%                     waitbar_handle = waitbar(1/2, 'Loading configuration...', 'Name', 'Loading data');
-%                     setLogo(waitbar_handle, 'M1');
-%                     
-%                     try
-%                         load_updateGUI_config_param();
-%                     catch e
-%                         rethrow(e);
-%                     end
-%                     
-%                     if isvalid(waitbar_handle)
-%                         close(waitbar_handle);
-%                     end
-                    
-                    %                 curr_path_dat = which([pwd filesep DATA.rec_name '.dat']);
-                    %                 curr_path_hea = which([pwd filesep DATA.rec_name '.hea']);
-                    
-                    %                 if ~isempty(curr_path_dat) && ~isempty(curr_path_hea)
-                    
+                                        
                     pd_items = get(GUI.GUIRecord.PeakDetector_popupmenu, 'String');
                     pd_index_selected = get(GUI.GUIRecord.PeakDetector_popupmenu, 'Value');
                     
@@ -1088,11 +1031,11 @@ end
                     
                     if ~strcmpi(peak_detector, 'rgrs')
                         
-                        lcf = str2double(DATA.config_map('lcf'));
-                        hcf = str2double(DATA.config_map('hcf'));
-                        thr = str2double(DATA.config_map('thr'));
-                        rp = str2double(DATA.config_map('rp'));
-                        ws = str2double(DATA.config_map('ws'));
+                        lcf = DATA.config_map('lcf');
+                        hcf = DATA.config_map('hcf');
+                        thr = DATA.config_map('thr');
+                        rp =  DATA.config_map('rp');
+                        ws =  DATA.config_map('ws');
                         
                         bpecg = bpfilt(DATA.sig, DATA.Fs, lcf, hcf, [], 0);  % bpecg = prefilter2(ecg,fs,lcf,hcf,0);
                     end
@@ -1103,39 +1046,19 @@ end
                     elseif strcmp(peak_detector, 'wjqrs')
                         qrs_pos = wjqrs(bpecg, DATA.Fs, thr, rp, ws);
                         DATA.qrs = qrs_pos';
-                    else
-                        
-                        %                     if exist(fullfile([tempdir DATA.rec_name '.dat']), 'file') && exist(fullfile([tempdir DATA.rec_name '.hea']), 'file')
-                        
-                        
+                    else                        
                         if exist(fullfile([DATA.wfdb_record_name '.dat']), 'file') && exist(fullfile([DATA.wfdb_record_name '.hea']), 'file')
                             
                             mhrv_set_default('rqrs.window_size_sec', 0.8 * str2double(get(GUI.GUIConfig.QS, 'String')));
-                            
-                            %                         [DATA.qrs, tm, sig, Fs] = rqrs([tempdir DATA.rec_name], 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
-                            [DATA.qrs, tm, sig, Fs] = rqrs(DATA.wfdb_record_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);
-                            
-                            %                         if isvalid(waitbar_handle)
-                            %                             close(waitbar_handle);
-                            %                         end
+                                                    
+                            [DATA.qrs, tm, sig, Fs] = rqrs(DATA.wfdb_record_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);                                                        
                         else
                             throw(MException('calc_peaks:text', 'Problems with peaks calculation. Wfdb file not exists.'));
                         end
-                    end
-                    
+                    end                    
                     if isvalid(waitbar_handle)
                         close(waitbar_handle);
-                    end
-                    
-                    %                     if length(DATA.qrs) == 1
-                    %                         GUI.PeaksTable.Data(:, 2) = {0};
-                    %                         DATA.peaks_added = 0;
-                    %                         DATA.peaks_deleted = 0;
-                    %                         DATA.peaks_total = length(DATA.qrs);
-                    %                         GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
-                    %                         throw(MException('peaks_detection_algorithm:text', 'Not enough peaks!'));
-                    %                     end
-                    
+                    end                                                            
                     if ~isempty(DATA.qrs)
                         DATA.qrs = double(DATA.qrs);
                         GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
@@ -1259,27 +1182,13 @@ end
             DIRS.analyzedDataDirectory = res_parh;
         end
         
-        [Config_FileName, PathName] = uigetfile({'*.conf','Conf files (*.conf)'}, 'Open Configuration File', [DIRS.analyzedDataDirectory filesep 'gqrs.custom.conf']);
-        if ~isequal(Config_FileName, 0)
-            mammal_index = length(DATA.mammals);
+%         [Config_FileName, PathName] = uigetfile({'*.conf','Conf files (*.conf)'}, 'Open Configuration File', [DIRS.analyzedDataDirectory filesep 'gqrs.custom.conf']);
+        [Config_FileName, PathName] = uigetfile({'*.yml','Conf files (*.yml)'}, 'Open Configuration File', [DIRS.analyzedDataDirectory filesep 'qrs.custom.yml']);
+        if ~isequal(Config_FileName, 0)            
             DATA.customConfigFile = fullfile(PathName, Config_FileName);
-            set(GUI.GUIRecord.Config_text, 'String', Config_FileName);
-            
-            try
-                waitbar_handle = waitbar(1/2, 'Loading configuration...', 'Name', 'Loading data');
-                load_updateGUI_config_param();
-                if isvalid(waitbar_handle)
-                    close(waitbar_handle);
-                end
-            catch e
-                rethrow(e);
-            end            
-            
-            DATA.zoom_rect_limits = [0 DATA.firstZoom];
-            right_limit2plot = min(DATA.firstZoom, max(DATA.tm));
-            setECGXLim(0, right_limit2plot);
-            setECGYLim(0, right_limit2plot);
-            
+                        
+            set_new_mammal(DATA.customConfigFile);
+                        
             if get(GUI.AutoCalc_checkbox, 'Value')
                 try
                     RunAndPlotPeakDetector();
@@ -1288,16 +1197,6 @@ end
                     setLogo(h_e, 'M1');
                     return;
                 end
-            end
-            %             GUI.GUIRecord.Mammal_popupmenu.Value = mammal_index;
-            %             GUI.GUIRecord.Mammal_popupmenu.String = DATA.mammals{mammal_index};
-            GUI.GUIRecord.Mammal_popupmenu.String = DATA.config_map('mammal');
-            DATA.mammal_index = mammal_index;
-            
-            try
-                DATA.integration_index = find(strcmpi(DATA.GUI_Integration, DATA.config_map('integration_level')));
-                set(GUI.GUIRecord.Integration_popupmenu, 'Value', DATA.integration_index);
-            catch
             end
         end
     end
@@ -1326,26 +1225,58 @@ end
             DIRS.analyzedDataDirectory = res_parh;
         end
         
-        [filename, results_folder_name, ~] = uiputfile({'*.','Conf Files (*.conf)'},'Choose Config File Name', [DIRS.analyzedDataDirectory filesep 'gqrs.custom.conf']);
+%         [filename, results_folder_name, ~] = uiputfile({'*.','Conf Files (*.conf)'},'Choose Config File Name', [DIRS.analyzedDataDirectory filesep 'gqrs.custom.conf']);
+        [filename, results_folder_name, ~] = uiputfile({'*.yml','Conf Files (*.yml)'},'Choose Config File Name', [DIRS.analyzedDataDirectory filesep 'qrs.custom.yml']);
         
         if ~isequal(results_folder_name, 0)
             full_file_name_conf = fullfile(results_folder_name, filename);
             button = 'Yes';
             if exist(full_file_name_conf, 'file')
                 button = questdlg([full_file_name_conf ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
+            end            
+
+            config_keys = keys(DATA.config_map);            
+%             config_fields = fieldnames(config_keys); 
+            
+            for i = 1 : length(config_keys)
+                curr_field = config_keys{i};                
+                if isstruct(DATA.config_struct.(curr_field))                    
+                    DATA.config_struct.(curr_field).value = DATA.config_map(curr_field);                                        
+                else
+                    DATA.config_struct.(curr_field) = DATA.config_map(curr_field);
+                end
             end
+            
             if strcmp(button, 'Yes')
-                saveCustomParameters(full_file_name_conf);
+%                 saveCustomParameters(full_file_name_conf);
+                WriteYaml(full_file_name_conf, DATA.config_struct);
             end
+                        
+        end
+    end
+%%
+    function temp_custom_conf_fileID = saveCustomParameters2ConfFile(FullFileName)
+        
+        if isfield(DATA, 'config_map')                        
+            
+            config_param_names = DATA.config_map.keys();
+%             config_param_values = values(DATA.config_map);
+            
+            temp_custom_conf_fileID = fopen(FullFileName, 'w');
+            if temp_custom_conf_fileID ~= -1
+                fprintf(temp_custom_conf_fileID, '# config file for custom parameters:\r\n');
+                for i = 1 : length(DATA.config_map)
+                    curr_key = config_param_names{i};                    
+                    fprintf(temp_custom_conf_fileID, '%s\t%s\r\n', curr_key, DATA.config_map(curr_key).value);
+                end
+            end
+            fclose(temp_custom_conf_fileID);
         end
     end
 %%
     function temp_custom_conf_fileID = saveCustomParameters(FullFileName)
         
-        if isfield(DATA, 'config_map')
-            
-            %             DATA.config_map('mammal') = GUI.GUIRecord.Mammal_popupmenu.String;
-            %             DATA.config_map('integration_level') = get(GUI.GUIRecord.Integration_popupmenu, 'Value');
+        if isfield(DATA, 'config_map')                        
             
             config_param_names = keys(DATA.config_map);
             config_param_values = values(DATA.config_map);
@@ -1354,7 +1285,7 @@ end
             if temp_custom_conf_fileID ~= -1
                 fprintf(temp_custom_conf_fileID, '# config file for custom parameters:\r\n');
                 for i = 1 : length(DATA.config_map)
-                    fprintf(temp_custom_conf_fileID, '%s\t%s\r\n', config_param_names{i}, config_param_values{i});
+                    fprintf(temp_custom_conf_fileID, '%s\t%s\r\n', config_param_names{i}, num2str(config_param_values{i}));
                 end
             end
             fclose(temp_custom_conf_fileID);
@@ -1375,8 +1306,7 @@ end
                     if ~isempty(comments_index)
                         tline = tline(1 : comments_index - 1);
                     end
-                    
-                    
+                                        
                     if ~isempty(tline)
                         parameters_cell = strsplit(tline);
                         if ~isempty(parameters_cell{1})
@@ -1390,31 +1320,6 @@ end
                         end
                     end
                 end
-%                 if ~isempty(tline) && ~strcmp(tline(1), '#')
-%                     parameters_cell = strsplit(tline);
-%                     
-%                     if ~isempty(parameters_cell{1})
-%                         
-%                         parameters_cell = strsplit(tline, '#');
-%                         
-%                         
-%                         
-%                         
-%                         if length(parameters_cell) > 2
-%                             str = parameters_cell{3};
-%                             if ~strcmp(str, '#')
-%                                 value = '';
-%                                 for i = 2 : length(parameters_cell)                                
-%                                     value = [value parameters_cell{i} ' ']; 
-%                                 end
-% %                               config_map(parameters_cell{1}) = parameters_cell{2};
-%                                 config_map(parameters_cell{1}) = value(1 : end - 1);
-%                             end
-%                         else
-%                             config_map(parameters_cell{1}) = parameters_cell{2};
-%                         end
-%                     end
-%                 end
             end
             fclose(f_h);
         end
@@ -1469,20 +1374,6 @@ end
         end
     end
 %%
-%     function ptqrs_config_edit_Callback(src, ~)
-%         field_value = get(src, 'String');
-%         if ~strcmp(field_value, '')
-%             if get(GUI.AutoCalc_checkbox, 'Value')
-%                 try
-%                     RunAndPlotPeakDetector();
-%                 catch e
-%                     h_e = errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
-%                     return;
-%                 end
-%             end
-%         end
-%     end
-%%
     function Peaks_Window_edit_Callback(src, ~)
         field_value = str2double(get(src, 'String'));
         if field_value > 0 && field_value < 1000
@@ -1494,31 +1385,15 @@ end
         end
     end
 %%
-%     function CalcWithNewValues_pushbutton_Callback(~, ~)
-%
-%         Config_FileName = 'gqrs.temp_custom.conf';
-%
-%         if isfield(DATA, 'config_map')
-%             temp_custom_conf_fileID = saveCustomParameters(Config_FileName);
-%             if temp_custom_conf_fileID ~= -1
-%                 RunAndPlotPeakDetector(length(DATA.mammals), fullfile(pwd, Config_FileName));
-%                 delete(Config_FileName);
-%             end
-%         end
-%     end
-%%
     function delete_temp_wfdb_files()
         if exist([tempdir DATA.temp_rec_name4wfdb '.hea'], 'file')
-            delete([tempdir DATA.temp_rec_name4wfdb '.hea']);
-            %             disp('Deleting .hea');
+            delete([tempdir DATA.temp_rec_name4wfdb '.hea']);            
         end
         if exist([tempdir DATA.temp_rec_name4wfdb '.dat'], 'file')
-            delete([tempdir DATA.temp_rec_name4wfdb '.dat']);
-            %             disp('Deleting .dat');
+            delete([tempdir DATA.temp_rec_name4wfdb '.dat']);            
         end
         if exist([tempdir 'tempYAML.yml'], 'file')
-            delete([tempdir 'tempYAML.yml']);
-            %             disp('Deleting .yml');
+            delete([tempdir 'tempYAML.yml']);            
         end
     end
 %%
@@ -1561,14 +1436,15 @@ end
                             Mammal = data.General.mammal;
                             integration = data.General.integration_level;
                             DATA.Fs = data.Time.Fs;
-                            %                         DATA.qrs = data.Data.Data;
+                            
                             time_data = data.Time.Data;
                             DATA.qrs = int64(time_data * DATA.Fs);
-%                             if ~strcmp(Mammal, DATA.Mammal) || ~strcmp(integration, DATA.Integration)
-%                                 h_e = errordlg(['on Load Peaks error: ' 'Please, choose same mammal and integration level.'], 'Input Error');
-%                                 setLogo(h_e, 'M1');
-%                                 return;
-%                             end
+                            
+                            if ~strcmp(Mammal, DATA.config_map('mammal')) || ~strcmp(integration, DATA.Integration_From_Files{DATA.integration_index})
+                                h_e = warndlg('Mammal and/or integration level of data file does not match the one of the peaks file.', 'Warning');
+                                setLogo(h_e, 'M1');
+                                uiwait(h_e);
+                            end
                         else
                             h_e = errordlg(['on Load Peaks error: ' 'Please, choose another file type.'], 'Input Error');
                             setLogo(h_e, 'M1');
@@ -1580,39 +1456,12 @@ end
                         h_e = errordlg(['on Load Peaks error: ' Config.alarm.(MSG)], 'Input Error');
                         setLogo(h_e, 'M1');
                         return;
-                    end
-                    
+                    end                    
                 catch e
                     h_e = errordlg(['onOpenFile error: ' e.message], 'Input Error');
                     setLogo(h_e, 'M1');
                     return;
                 end
-                
-                
-                
-                %             elseif strcmpi(ExtensionFileName, 'txt')
-                %
-                %                 DataFileMap = loadDataFile(DATA.peaks_file_name);
-                %                 MSG = DataFileMap('MSG');
-                %                 if strcmp(MSG, 'OK')
-                %                     data = DataFileMap('DATA');
-                %                     if strcmp(data.General.file_type, 'beating_rate')
-                %
-                %                         DATA.Mammal = data.General.mammal;
-                %                         DATA.Integration = data.General.integration_level;
-                %
-                %                         DATA.qrs = data.Data.Data;
-                %                     else
-                %                         h_e = errordlg(['on Load Peaks error: ' 'Please, choose right file format for this module.'], 'Input Error');
-                %                         return;
-                %                     end
-                %                 else
-                %                     h_e = errordlg(['on Load Peaks error: ' MSG], 'Input Error');
-                %                     return;
-                %                 end
-                
-                %             elseif strcmpi(ExtensionFileName, 'qrs') % || strcmpi(ExtensionFileName, 'atr')
-                %                 DATA.qrs = rdann(DATA.peaks_file_name, EXT);
             else
                 h_e = errordlg(['on Load Peaks error: ' 'Please, choose another file type.'], 'Input Error');
                 setLogo(h_e, 'M1');
@@ -1624,29 +1473,12 @@ end
             DATA.peaks_deleted = 0;
             GUI.PeaksTable.Data(:, 2) = {0};
             GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
-            
-           
+                       
             DATA.zoom_rect_limits = [0 DATA.firstZoom];
             right_limit2plot = min(DATA.firstZoom, max(DATA.tm));
             setECGXLim(0, right_limit2plot);
             setECGYLim(0, right_limit2plot);
-           
-            
-%             DATA.mammal_index = find(strcmp(DATA.mammals, DATA.Mammal));
-%             try
-%                 set_mammal(DATA.mammal_index);
-%             catch e
-%                 rethrow(e);
-%             end
-%             %             GUI.GUIRecord.Mammal_popupmenu.Value = DATA.mammal_index;
-%             GUI.GUIRecord.Mammal_popupmenu.String = DATA.mammals{DATA.mammal_index};
-            
-            %                 DATA.integration_index = find(strcmp(DATA.GUI_Integration, DATA.Integration));
-            
-            
-            %                 DATA.integration_index = find(strcmp(DATA.Integration_From_Files, DATA.Integration));
-            %                 set(GUI.GUIRecord.Integration_popupmenu, 'Value', DATA.integration_index);
-            
+                                   
             if ~isempty(DATA.qrs)
                 if isfield(GUI, 'red_peaks_handle') && ishandle(GUI.red_peaks_handle) && isvalid(GUI.red_peaks_handle)
                     delete(GUI.red_peaks_handle);
@@ -1683,30 +1515,6 @@ end
                 setLogo(h_e, 'M1');
             end
         end
-    end
-%%
-    function LoadPeaks_Callback(~, ~)
-        persistent DIRS;
-        persistent EXT;
-        
-        % Add third-party dependencies to path
-        gui_basepath = fileparts(mfilename('fullpath'));
-        basepath = fileparts(gui_basepath);
-        
-        if ~isfield(DIRS, 'analyzedDataDirectory')
-            DIRS.analyzedDataDirectory = [basepath filesep 'ExamplesTXT'];
-        end
-        if isempty(EXT)
-            EXT = 'txt';
-        end
-        [Peaks_FileName, PathName] = uigetfile( ...
-            {'*.txt','Text Files (*.txt)'; ...
-            '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)'; ...
-            '*.mat','MAT-files (*.mat)'}, ...
-            'Open ECG File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
-        
-        DataFileMap = struct();
-        load_peaks(Peaks_FileName, PathName, DataFileMap);        
     end
 %%
     function SavePeaks_Callback(~, ~)
@@ -1756,14 +1564,9 @@ end
             EXT = ExtensionFileName;
             
             Data = DATA.qrs;
-            Fs = DATA.Fs;
-            %             Integration_level = DATA.Integration;
-            
-            Integration_level = DATA.Integration_From_Files{DATA.integration_index};
-            
-            %             Mammal = DATA.mammals{DATA.mammal_index};
-            Mammal = get(GUI.GUIRecord.Mammal_popupmenu, 'String');
-            %             File_type = 'beating rate';
+            Fs = DATA.Fs;                        
+            Integration_level = DATA.Integration_From_Files{DATA.integration_index};                        
+            Mammal = get(GUI.GUIRecord.Mammal_popupmenu, 'String');            
             
             Channels{1}.name = 'interval';
             Channels{1}.enable = 'yes';
@@ -1778,8 +1581,7 @@ end
                 header_fileID = fopen(full_file_name, 'wt');
                 
                 fprintf(header_fileID, '---\n');
-                
-                %                 fprintf(header_fileID, 'File_type:         %s\n', File_type);
+                                
                 fprintf(header_fileID, 'Mammal:            %s\n', Mammal);
                 fprintf(header_fileID, 'Fs:                %d\n', Fs);
                 fprintf(header_fileID, 'Integration_level: %s\n\n', Integration_level);
@@ -1797,8 +1599,7 @@ end
                 fclose(header_fileID);
             elseif strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                 [~, filename_noExt, ~] = fileparts(filename);
-                %                 saved_path = pwd;
-                %                 cd(results_folder_name);
+                
                 try
                     %                                         wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
                     %                                         addpath(wfdb_path);
@@ -1824,8 +1625,7 @@ end
                     
                 catch e
                     disp(e);
-                end
-                %                                 cd(saved_path);
+                end                
             else
                 h_e = errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
                 setLogo(h_e, 'M1');
@@ -1878,7 +1678,7 @@ end
                 delete(GUI.quality_win);
                 
                 GUI = rmfield(GUI, 'quality_win');
-                %                 GUI.quality_win = [];
+                
                 DATA.quality_win_num = 0;
                 DATA.peaks_total = 0;
                 DATA.peaks_bad_quality = 0;
@@ -1886,42 +1686,16 @@ end
             
             GUI.AutoCalc_checkbox.Value = 1;
             GUI.RR_or_HR_plot_button.String = 'Plot HR';
-            DATA.PlotHR = 0;
-            %             DATA.quality_win_num = 0;
+            DATA.PlotHR = 0;            
+            set(GUI.GUIRecord.PeaksFileName_text, 'String', '');
             
             GUI.GUIRecord.Annotation_popupmenu.Value = 1;
             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
             GUI.Class_Text.Visible = 'off';
             GUI.GUIRecord.Class_popupmenu.Value = 3;
-            GUI.GUIRecord.PeakDetector_popupmenu.Value = 1;
-            DATA.peakDetection_index = 1;
             
-            if isempty(DATA.Mammal)
-                mammal_index = 1; % ?????
-            else
-                mammal_index = find(strcmp(DATA.mammals, DATA.Mammal));
-            end
-            DATA.mammal_index = mammal_index;
-            %             GUI.GUIRecord.Mammal_popupmenu.Value = mammal_index;
-            GUI.GUIRecord.Mammal_popupmenu.String = DATA.mammals{mammal_index};
-                                                
-            DATA.integration_index = find(strcmpi(DATA.Integration_From_Files, DATA.Integration));
-            set(GUI.GUIRecord.Integration_popupmenu, 'Value', DATA.integration_index);
-            
-            set_mammal(mammal_index);
-            
-            try
-                waitbar_handle = waitbar(1/2, 'Loading configuration...', 'Name', 'Loading data');
-                
-                load_updateGUI_config_param();
-                
-                if isvalid(waitbar_handle)
-                    close(waitbar_handle);
-                end
-            catch e
-                rethrow(e);
-            end
-            
+            set_new_mammal(DATA.init_config_file_name);
+
             try
                 RunAndPlotPeakDetector();
             catch e
@@ -1929,10 +1703,6 @@ end
                 setLogo(h_e, 'M1');
                 return;
             end
-            %             set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
-            %             set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
-            %             setAxesXTicks(GUI.RRInt_Axes);
-            %             EnablePageUpDown();
         end
     end
 %%
@@ -2046,8 +1816,8 @@ end
         refresh(GUI.Window);
         switch DATA.hObject
             case 'del_win_peaks'
-                Del_win(get(GUI.del_rect_handle, 'XData'));
                 try
+                    Del_win(get(GUI.del_rect_handle, 'XData'));
                     delete(GUI.del_rect_handle);
                 catch
                 end
@@ -2219,10 +1989,7 @@ end
         set(GUI.red_rect_handle, 'XData', xdata);
         DATA.zoom_rect_limits = [xdata(1) xdata(2)];
         EnablePageUpDown();
-        redraw_quality_rect();
-        %         GUI.GUIDisplay.FirstSecond.String = calcDuration(xdata(1), 0);
-        %         GUI.GUIDisplay.WindowSize.String = calcDuration(xdata(2) - xdata(1), 0);
-        
+        redraw_quality_rect();        
     end
 %%
     function Window_Move(type)
@@ -2243,9 +2010,7 @@ end
         switch type
             case 'normal'
                 xdata = xdata + xofs;
-            case 'open'
-                %                 xdata([1, 4, 5]) = 0;
-                %                 xdata([2, 3]) = DATA.maxRRTime;
+            case 'open'                
                 xdata([1, 4, 5]) = prev_minLim;
                 xdata([2, 3]) = prev_maxLim;
         end
@@ -2294,40 +2059,13 @@ end
         set(rect_handle, 'XData', x_box, 'YData', y_box);
     end
 %%
-    function ChangePlot(xdata)
-        
-        %         linkaxes([GUI.ECG_Axes, GUI.RRInt_Axes], 'off');
-        
-        
-        %         set(GUI.ECG_Axes, 'XLim', [xdata(1) xdata(2)]);
+    function ChangePlot(xdata)                
         
         setECGXLim(xdata(1), xdata(2));
         setECGYLim(xdata(1), xdata(2));
         
         GUI.GUIDisplay.FirstSecond.String = calcDuration(xdata(1), 0);
-        GUI.GUIDisplay.WindowSize.String = calcDuration(xdata(2) - xdata(1), 0);
-        
-        %         linkaxes([GUI.ECG_Axes, GUI.RRInt_Axes], 'on');
-        
-        %         if abs(DATA.maxSignalLength - DATA.MyWindowSize ) <=  1 %0.0005
-        %             set(GUI.RawDataSlider, 'Enable', 'off');
-        %             set(GUI.FirstSecond, 'Enable', 'off');
-        %         else
-        %             set(GUI.RawDataSlider, 'Enable', 'on');
-        %             set(GUI.FirstSecond, 'Enable', 'on');
-        %             setSliderProperties(GUI.RawDataSlider, DATA.maxSignalLength, DATA.MyWindowSize, DATA.MyWindowSize/DATA.maxSignalLength);
-        %
-        %             if DATA.firstSecond2Show > get(GUI.RawDataSlider, 'Max')
-        %                 set(GUI.RawDataSlider, 'Value', get(GUI.RawDataSlider, 'Max'));
-        %             else
-        %                 set(GUI.RawDataSlider, 'Value', DATA.firstSecond2Show);
-        %             end
-        %         end
-        %         setXAxesLim();
-        %         setAutoYAxisLim(DATA.firstSecond2Show, DATA.MyWindowSize);
-        %         setYAxesLim();
-        %         plotDataQuality();
-        %         plotMultipleWindows();
+        GUI.GUIDisplay.WindowSize.String = calcDuration(xdata(2) - xdata(1), 0);                
     end
 %%
     function Remove_Peak()
@@ -2408,7 +2146,7 @@ end
             GUI.red_peaks_handle.XData(peak_ind) = [];
             GUI.red_peaks_handle.YData(peak_ind) = [];
             DATA.qrs(peak_ind) = [];
-            %             DATA.qrs(peak_ind) = NaN;
+            
             DATA.peaks_deleted = DATA.peaks_deleted + length(peak_ind);
             GUI.PeaksTable.Data(3, 2) = {DATA.peaks_deleted};
             
@@ -2433,7 +2171,7 @@ end
                 GUI.red_peaks_handle.XData(peak_ind) = [];
                 GUI.red_peaks_handle.YData(peak_ind) = [];
                 DATA.qrs(peak_ind) = [];
-                %             DATA.qrs(peak_ind) = NaN;
+                
                 DATA.peaks_deleted = DATA.peaks_deleted + length(peak_ind);
                 GUI.PeaksTable.Data(3, 2) = {DATA.peaks_deleted};
                 
@@ -2754,8 +2492,7 @@ end
                 QualityAnnotations_field_names = fieldnames(QualityAnnotations);
                 
                 QualityAnnotations_Data = [];
-                type = [];
-                %                 source_file_name = '';
+                type = [];                
                 
                 for i = 1 : length(QualityAnnotations_field_names)
                     if ~isempty(regexpi(QualityAnnotations_field_names{i}, 'signal_quality')) % Quality_anns|quality_anno

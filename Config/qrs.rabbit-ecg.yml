@@ -1,0 +1,69 @@
+mammal:             rabbit
+integration_level:  ECG
+peak_detector:      rgrs
+
+# rqrs config file for rabbit:
+
+HR:
+    value: 264
+    units: bpm
+    description:  Typical heart rate
+    name: HR
+QS:
+    value: 0.02
+    units: sec
+    description: Typical QRS duration
+    name: QS
+QT:
+    value: 0.12
+    units: sec
+    description: Typical QT duration
+    name: QT
+QRSa:
+    value: 294
+    units: microvolts
+    description: Typical QRS peak-to-peak amplitude
+    name: QRSa
+QRSamin:
+    value: 114
+    units: microvolts
+    description: Minimum QRS peak-to-peak amplitude
+    name: QRSamin
+RRmin:
+    value: 0.14
+    units: sec
+    description: Minimum RR interval ("refractory period")
+    name: RRmin
+RRmax:
+    value: 0.58
+    units: sec
+    description: Maximum RR interval; thresholds will be adjusted if no peaks are detected within this interval
+    name: RRmax
+
+# jqrs/wjqrs
+
+lcf:
+    value: 3
+    units: Hz
+    description: Low cutoff frequency
+    name: lcf
+hcf:
+    value: 150
+    units: Hz
+    description: High cutoff frequency
+    name: hcf
+thr:
+    value: 0.5
+    units: n.u.
+    description: Energy threshold
+    name: thr
+rp:
+    value: 0.088
+    units: sec
+    description: Refractory period
+    name: rp
+ws:
+    value: 10
+    units: sec
+    description: Window size
+    name: ws

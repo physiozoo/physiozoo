@@ -1,0 +1,69 @@
+mammal:             mouse
+integration_level:  ECG
+peak_detector:      rgrs
+
+# rqrs config file for mouse
+
+HR:
+    value: 608
+    units: bpm
+    description:  Typical heart rate
+    name: HR
+QS:
+    value: 0.00718
+    units: sec
+    description: Typical QRS duration
+    name: QS
+QT:
+    value: 0.03
+    units: sec
+    description: Typical QT duration
+    name: QT
+QRSa:
+    value: 1090
+    units: microvolts
+    description: Typical QRS peak-to-peak amplitude
+    name: QRSa
+QRSamin:
+    value: 370
+    units: microvolts
+    description: Minimum QRS peak-to-peak amplitude
+    name: QRSamin
+RRmin:
+    value: 0.05
+    units: sec
+    description: Minimum RR interval ("refractory period")
+    name: RRmin
+RRmax:
+    value: 0.24
+    units: sec
+    description: Maximum RR interval; thresholds will be adjusted if no peaks are detected within this interval
+    name: RRmax
+
+# jqrs/wjqrs
+
+lcf:
+    value: 3
+    units: Hz
+    description: Low cutoff frequency
+    name: lcf
+hcf:
+    value: 300
+    units: Hz
+    description: High cutoff frequency
+    name: hcf
+thr:
+    value: 0.5
+    units: n.u.
+    description: Energy threshold
+    name: thr
+rp:
+    value: 0.030
+    units: sec
+    description: Refractory period
+    name: rp
+ws:
+    value: 10
+    units: sec
+    description: Window size
+    name: ws

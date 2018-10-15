@@ -1,0 +1,69 @@
+mammal:             dog
+integration_level:  ECG
+peak_detector:      rgrs
+
+# rqrs config file for Canines:
+
+HR:
+    value: 109.5
+    units: bpm
+    description:  Typical heart rate
+    name: HR
+QS:
+    value: 0.04
+    units: sec
+    description: Typical QRS duration
+    name: QS
+QT:
+    value: 0.19
+    units: sec
+    description: Typical QT duration
+    name: QT
+QRSa:
+    value: 1120
+    units: microvolts
+    description: Typical QRS peak-to-peak amplitude
+    name: QRSa
+QRSamin:
+    value: 100
+    units: microvolts
+    description: Minimum QRS peak-to-peak amplitude
+    name: QRSamin
+RRmin:
+    value: 0.25
+    units: sec
+    description: Minimum RR interval ("refractory period")
+    name: RRmin
+RRmax:
+    value: 1.2
+    units: sec
+    description: Maximum RR interval; thresholds will be adjusted if no peaks are detected within this interval
+    name: RRmax
+
+# jqrs/wjqrs
+
+lcf:
+    value: 3
+    units: Hz
+    description: Low cutoff frequency
+    name: lcf
+hcf:
+    value: 125
+    units: Hz
+    description: High cutoff frequency
+    name: hcf
+thr:
+    value: 0.5
+    units: n.u.
+    description: Energy threshold
+    name: thr
+rp:
+    value: 0.170
+    units: sec
+    description: Refractory period
+    name: rp
+ws:
+    value: 10
+    units: sec
+    description: Window size
+    name: ws

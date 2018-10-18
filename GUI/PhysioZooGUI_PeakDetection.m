@@ -1124,36 +1124,49 @@ end
             rr_time = qrs(1:end-1)/DATA.Fs;
             rr_data = diff(qrs)/DATA.Fs;
             
-            if (DATA.PlotHR == 1)
-                rr_data = 60 ./ rr_data;
-                yString = 'HR (BPM)';
+            if isempty(rr_data)
+                throw(MException('plot_rr_data:text', 'Not enough datapoints!'));
             else
-                yString = 'RR (sec)';
-            end
-            if ~isempty(rr_data)
-                GUI.RRInt_handle = line(rr_time, rr_data, 'Parent', GUI.RRInt_Axes);
-                
-                DATA.maxRRTime = max(rr_time);
-                DATA.RRIntPage_Length = DATA.maxRRTime;
-                
-                min_sig = min(rr_data);
-                max_sig = max(rr_data);
-                delta = (max_sig - min_sig)*0.1;
-                
-                RRMinYLimit = min(min_sig, max_sig) - delta;
-                RRMaxYLimit = max(min_sig, max_sig) + delta;
-                
-                set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', num2str(RRMinYLimit));
-                set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', num2str(RRMaxYLimit));
-                
-                if RRMaxYLimit > RRMinYLimit
-                    set(GUI.RRInt_Axes, 'YLim', [RRMinYLimit RRMaxYLimit]);
+                try
+                    [rr_data_filtered, rr_time_filterd, ~] = filtrr(rr_data, rr_time, 'filter_quotient', false, 'filter_ma', true, 'filter_range', false);
+                catch e
+                    rethrow(e);
                 end
                 
-                ylabel(GUI.RRInt_Axes, yString);
-            else
-                %                 h_e = errordlg('plot_rr_data: Not enough peaks!', 'Input Error');
-                throw(MException('plot_rr_data:text', 'Not enough peaks!'));
+                if isempty(rr_data_filtered)
+                    throw(MException('filtrr:text', 'Not enough datapoints!'));
+                elseif length(rr_data) * 0.1 > length(rr_data_filtered)
+                    throw(MException('filtrr:text', 'Not enough datapoints!'));
+                else
+                    
+                    if (DATA.PlotHR == 1)
+                        rr_data_filtered = 60 ./ rr_data_filtered;
+                        yString = 'HR (BPM)';
+                    else
+                        yString = 'RR (sec)';
+                    end
+                    
+                    GUI.RRInt_handle = line(rr_time_filterd, rr_data_filtered, 'Parent', GUI.RRInt_Axes);
+                    
+                    DATA.maxRRTime = max(rr_time_filterd);
+                    DATA.RRIntPage_Length = DATA.maxRRTime;
+                    
+                    min_sig = min(rr_data_filtered);
+                    max_sig = max(rr_data_filtered);
+                    delta = (max_sig - min_sig)*0.1;
+                    
+                    RRMinYLimit = min(min_sig, max_sig) - delta;
+                    RRMaxYLimit = max(min_sig, max_sig) + delta;
+                    
+                    set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', num2str(RRMinYLimit));
+                    set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', num2str(RRMaxYLimit));
+                    
+                    if RRMaxYLimit > RRMinYLimit
+                        set(GUI.RRInt_Axes, 'YLim', [RRMinYLimit RRMaxYLimit]);
+                    end
+                    
+                    ylabel(GUI.RRInt_Axes, yString);
+                end
             end
         end
     end
@@ -1490,26 +1503,29 @@ end
                 if isfield(GUI, 'RRInt_handle') && ishandle(GUI.RRInt_handle) && isvalid(GUI.RRInt_handle)
                     delete(GUI.RRInt_handle);
                 end
-                plot_rr_data();
-                
-                if isfield(GUI, 'red_rect_handle') && ishandle(GUI.red_rect_handle) && isvalid(GUI.red_rect_handle)
-                    delete(GUI.red_rect_handle);
+                try
+                    plot_rr_data();
+                    
+                    if isfield(GUI, 'red_rect_handle') && ishandle(GUI.red_rect_handle) && isvalid(GUI.red_rect_handle)
+                        delete(GUI.red_rect_handle);
+                    end
+                    
+                    plot_red_rectangle(DATA.zoom_rect_limits);
+                    
+                    set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
+                    setAxesXTicks(GUI.RRInt_Axes);
+                    setRRIntYLim();
+                    
+                    set(GUI.GUIDisplay.FirstSecond, 'String', calcDuration(min(DATA.zoom_rect_limits), 0));
+                    set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(max(DATA.zoom_rect_limits)-min(DATA.zoom_rect_limits), 0));
+                    
+                    set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+                    
+                    set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
+                    set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
+                    set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
+                catch
                 end
-                
-                plot_red_rectangle(DATA.zoom_rect_limits);
-                
-                set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
-                setAxesXTicks(GUI.RRInt_Axes);
-                setRRIntYLim();
-                
-                set(GUI.GUIDisplay.FirstSecond, 'String', calcDuration(min(DATA.zoom_rect_limits), 0));
-                set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(max(DATA.zoom_rect_limits)-min(DATA.zoom_rect_limits), 0));
-                
-                set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
-                
-                set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
-                set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
-                set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
             else
                 h_e = errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
                 setLogo(h_e, 'M1');
@@ -1663,10 +1679,12 @@ end
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot RR');
                 DATA.PlotHR = 1;
             end
-            plot_rr_data();
-            plot_red_rectangle(DATA.zoom_rect_limits);
-            
-            setRRIntYLim();
+            try
+                plot_rr_data();
+                plot_red_rectangle(DATA.zoom_rect_limits);                
+                setRRIntYLim();
+            catch
+            end
         end
     end
 %%
@@ -2155,9 +2173,12 @@ end
             
         end
         cla(GUI.RRInt_Axes);
-        plot_rr_data();
-        plot_red_rectangle(DATA.zoom_rect_limits);
-        setRRIntYLim();
+        try
+            plot_rr_data();
+            plot_red_rectangle(DATA.zoom_rect_limits);
+            setRRIntYLim();
+        catch
+        end
     end
 %%
     function Del_win(range2del)
@@ -2179,10 +2200,12 @@ end
                 GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
                 
                 cla(GUI.RRInt_Axes);
-                plot_rr_data();
-                plot_red_rectangle(DATA.zoom_rect_limits);
-                
-                setRRIntYLim();
+                try
+                    plot_rr_data();
+                    plot_red_rectangle(DATA.zoom_rect_limits);
+                    setRRIntYLim();
+                catch
+                end
             else
                 disp('Not in range!');
             end

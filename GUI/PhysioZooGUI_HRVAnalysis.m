@@ -1574,10 +1574,14 @@ displayEndOfDemoMessage('');
                         
                         if ~isempty(low_quality_indexes)
                             %                             GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
-                            GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', DATA.quality_color{DATA.quality_class_ind(i)}, 'LineWidth', 2.5, 'Parent', ha);
+                            GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', DATA.quality_color{DATA.quality_class_ind(i)}, ...
+                                                    'LineWidth', 2.5, 'Parent', ha);
                             if isvalid(DATA.legend_handle) && length(DATA.legend_handle.String) < 3 %
                                 legend([GUI.raw_data_handle, GUI.filtered_handle GUI.PinkLineHandle(1)], [DATA.legend_handle.String 'Bad quality']);
                             end
+                            
+                            GUI.PinkLineHandle_AllDataAxes(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', DATA.quality_color{DATA.quality_class_ind(i)},...
+                                                    'LineWidth', 1.5, 'Parent', GUI.AllDataAxes);                                                                                    
                         end
                     end
                 end
@@ -1708,6 +1712,11 @@ displayEndOfDemoMessage('');
                 delete(GUI.PinkLineHandle);
                 GUI = rmfield(GUI, 'PinkLineHandle');
             end
+            
+            if isfield(GUI, 'PinkLineHandle_AllDataAxes')
+                delete(GUI.PinkLineHandle_AllDataAxes);
+                GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
+            end                        
             
             total_class_ind = ones(1, length(DATA_Class)) * 3;
             for i = 1 : length(DATA_Class)

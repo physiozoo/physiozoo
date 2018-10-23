@@ -70,10 +70,14 @@ end
         cla(GUI.ECG_Axes); % RawData_axes
         cla(GUI.RRInt_Axes); % RR_axes
         
-        if isfield(GUI, 'quality_win')
-            %             GUI.quality_win = [];
+        if isfield(GUI, 'quality_win')            
             delete(GUI.quality_win);
             GUI = rmfield(GUI, 'quality_win');
+        end
+        
+        if isfield(GUI, 'PinkLineHandle_AllDataAxes')            
+            delete(GUI.PinkLineHandle_AllDataAxes);
+            GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
         end
         
         set(GUI.GUIRecord.RecordFileName_text, 'String', '');
@@ -159,8 +163,10 @@ end
         DATA.GUI_Annotation = {'Peak'; 'Signal quality'};
         DATA.GUI_Class = {'A'; 'B'; 'C'};
         
-        rec_colors = lines(5);
-        DATA.quality_color = {rec_colors(5, :); rec_colors(3, :); rec_colors(2, :)};
+%         rec_colors = lines(5);
+%         DATA.quality_color = {rec_colors(5, :); rec_colors(3, :); rec_colors(2, :)};
+        
+        DATA.quality_color = {[140 228 140]/255; [255 220 169]/255; [255 200 200]/255};
         
         DATA.temp_rec_name4wfdb = 'temp_ecg_wfdb';
         
@@ -921,7 +927,10 @@ end
         min_y_lim = min(min_sig, max_sig) - delta;
         max_y_lim = max(min_sig, max_sig) + delta;
         
-        set(GUI.ECG_Axes, 'YLim', [min_y_lim max_y_lim]);
+        try
+            set(GUI.ECG_Axes, 'YLim', [min_y_lim max_y_lim]);
+        catch
+        end
         
         set(GUI.GUIDisplay.MinYLimit_Edit, 'String', num2str(min_y_lim));
         set(GUI.GUIDisplay.MaxYLimit_Edit, 'String', num2str(max_y_lim));
@@ -1702,10 +1711,16 @@ end
                 DATA.peaks_bad_quality = 0;
             end
             
+            if isfield(GUI, 'PinkLineHandle_AllDataAxes')
+                delete(GUI.PinkLineHandle_AllDataAxes);
+                GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
+            end
+            
             GUI.AutoCalc_checkbox.Value = 1;
             GUI.RR_or_HR_plot_button.String = 'Plot HR';
             DATA.PlotHR = 0;            
             set(GUI.GUIRecord.PeaksFileName_text, 'String', '');
+            set(GUI.GUIRecord.DataQualityFileName_text, 'String', '');
             
             GUI.GUIRecord.Annotation_popupmenu.Value = 1;
             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
@@ -1808,9 +1823,53 @@ end
         ylim = get(GUI.ECG_Axes, 'YLim');
         
         if isfield(GUI, 'quality_win')
-            for i = 1 : DATA.quality_win_num
-                
+            for i = 1 : DATA.quality_win_num                
                 set(GUI.quality_win(i), 'YData', [min(ylim) min(ylim) max(ylim) max(ylim)]);
+            end
+        end
+    end
+%%
+    function plot_quality_line(DATA_QualityAnnotations_Data, DATA_Class)
+        if ~isempty(DATA_QualityAnnotations_Data)                        
+            
+            if isfield(GUI, 'PinkLineHandle_AllDataAxes')  % && isvalid(GUI.PinkLineHandle_AllDataAxes)
+                prev_quality_win_num = length(GUI.PinkLineHandle_AllDataAxes);
+            else
+                prev_quality_win_num = 0;
+            end
+            
+            rr_time_filterd = get(GUI.RRInt_handle, 'XData');
+            rr_data_filtered = get(GUI.RRInt_handle, 'YData');
+            
+            qd_size = size(DATA_QualityAnnotations_Data);
+            intervals_num = qd_size(1);
+            
+            for i = 1 : intervals_num
+                a1 = find(rr_time_filterd >= DATA_QualityAnnotations_Data(i,1));
+                a2 = find(rr_time_filterd <= DATA_QualityAnnotations_Data(i,2));
+                
+                if isempty(a2); a2 = 1; end % case where the bad quality starts before the first annotated peak
+                if isempty(a1); a1 = length(rr_time_filterd); end
+                if length(a1)<2
+                    low_quality_indexes = [a2(end) : a1(1)];
+                elseif a2(end) == 1
+                    low_quality_indexes = [1 : a1(1)];
+                elseif a2(end) < a1(1)
+                    low_quality_indexes = [a2(end)-1 : a1(1)];
+                else
+                    low_quality_indexes = [a1(1)-1 : a2(end)+1];
+                end
+                
+                if ~isempty(low_quality_indexes)                                                                                                                        
+                    
+                    [is_member, class_ind] = ismember(DATA_Class{i}, DATA.GUI_Class);
+                    if ~is_member
+                        class_ind = 3;
+                    end
+                    
+                    GUI.PinkLineHandle_AllDataAxes(prev_quality_win_num + i) = line(rr_time_filterd(low_quality_indexes), rr_data_filtered(low_quality_indexes), 'LineStyle', '-', 'Color', DATA.quality_color{class_ind},...
+                        'LineWidth', 1.5, 'Parent', GUI.RRInt_Axes);
+                end
             end
         end
     end
@@ -1823,7 +1882,7 @@ end
         f = [1 2 3 4];
         
         GUI.quality_win(quality_win_num) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{quality_class}, 'EdgeColor', DATA.quality_color{quality_class}, ...
-            'LineWidth', 1, 'FaceAlpha', 0.1, 'EdgeAlpha', 0.3, 'UserData', quality_class, 'Parent', GUI.ECG_Axes);
+            'LineWidth', 1, 'FaceAlpha', 0.25, 'EdgeAlpha', 0.3, 'UserData', quality_class, 'Parent', GUI.ECG_Axes); % 'FaceAlpha', 0.1
         
         uistack(GUI.quality_win(quality_win_num), 'down');
         
@@ -1849,8 +1908,10 @@ end
                     
                     if min(quality_range) ~= max(quality_range)
                         DATA.quality_win_num = DATA.quality_win_num + 1;
+                        classes = get(GUI.GUIRecord.Class_popupmenu, 'String');
                         quality_class = GUI.GUIRecord.Class_popupmenu.Value;
                         plot_quality_rect(quality_range, DATA.quality_win_num, quality_class);
+                        plot_quality_line([min(quality_range) max(quality_range)], {classes{quality_class}});
                     end
                     set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
                 catch
@@ -1951,6 +2012,9 @@ end
                         delete(GUI.quality_win(win_ind));
                         GUI.quality_win(win_ind) = [];
                         DATA.quality_win_num = DATA.quality_win_num - 1;
+                        
+                        delete(GUI.PinkLineHandle_AllDataAxes(win_ind));
+                        GUI.PinkLineHandle_AllDataAxes(win_ind) = [];                                                
                     end
                 end
             case 'select_quality_win'
@@ -2082,8 +2146,14 @@ end
         setECGXLim(xdata(1), xdata(2));
         setECGYLim(xdata(1), xdata(2));
         
-        GUI.GUIDisplay.FirstSecond.String = calcDuration(xdata(1), 0);
-        GUI.GUIDisplay.WindowSize.String = calcDuration(xdata(2) - xdata(1), 0);                
+        if xdata(2) - xdata(1) < 1        
+            display_msec = 1;
+        else
+            display_msec = 0;
+        end
+        
+        GUI.GUIDisplay.FirstSecond.String = calcDuration(xdata(1), display_msec);
+        GUI.GUIDisplay.WindowSize.String = calcDuration(xdata(2) - xdata(1), display_msec);                
     end
 %%
     function Remove_Peak()
@@ -2231,15 +2301,22 @@ end
         max_red_rect_xdata = max(red_rect_xdata);
         red_rect_length = max_red_rect_xdata - min_red_rect_xdata;
         if isInputNumeric
+            
+            if RRIntPage_Length <= 1.5
+                display_msec = 1;
+            else
+                display_msec = 0;
+            end
+            
             if RRIntPage_Length <= 1 || RRIntPage_Length > DATA.maxRRTime
-                set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+                set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, display_msec));
                 if isInputNumeric ~= 2
                     h_e = errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error');
                     setLogo(h_e, 'M1');
                 end
                 return;
             elseif RRIntPage_Length < red_rect_length
-                set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+                set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, display_msec));
                 if isInputNumeric ~= 2
                     h_e = errordlg('The window size must be greater than zoom window length!', 'Input Error');
                     setLogo(h_e, 'M1');
@@ -2263,8 +2340,16 @@ end
             
             AllDataAxes_XLim = get(GUI.RRInt_Axes, 'XLim');
             RRIntPage_Length = max(AllDataAxes_XLim) - min(AllDataAxes_XLim);
-            DATA.RRIntPage_Length = RRIntPage_Length;
-            set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+            DATA.RRIntPage_Length = RRIntPage_Length;                        
+            
+            
+            if RRIntPage_Length <= 1.5
+                display_msec = 1;
+            else
+                display_msec = 0;
+            end
+            
+            set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, display_msec));
             setRRIntYLim();
             redraw_quality_rect();
         end
@@ -2608,8 +2693,10 @@ end
                     plot_quality_rect(DATA_QualityAnnotations_Data(i, :), quality_win_ind, class_ind);
                     DATA.quality_win_num = DATA.quality_win_num + 1;
                     quality_win_ind = quality_win_ind + 1;
+                    Select_Quality_Win(DATA_QualityAnnotations_Data(i, :));
                 end
             end
+            plot_quality_line(DATA_QualityAnnotations_Data, DATA_Class);
         end
     end
 %%

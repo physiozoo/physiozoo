@@ -898,6 +898,8 @@ end
                     end
                 end
                 
+%                 set(GUI.RRInt_Axes, 'XLim', [0 max(DATA.tm)]);
+                
                 GUI.LoadConfigurationFile.Enable = 'on';
                 GUI.SaveConfigurationFile.Enable = 'on';
                 GUI.SavePeaks.Enable = 'on';
@@ -939,17 +941,25 @@ end
     function setRRIntYLim()
         
         xlim = get(GUI.RRInt_Axes, 'XLim');
+        ylim = get(GUI.RRInt_Axes, 'YLim');
         xdata = get(GUI.RRInt_handle, 'XData');
         ydata = get(GUI.RRInt_handle, 'YData');
         
         current_y_data = ydata(xdata >= xlim(1) & xdata <= xlim(2));
         
-        min_sig = min(current_y_data);
-        max_sig = max(current_y_data);
-        delta = (max_sig - min_sig)*0.1;
-        
-        min_y_lim = min(min_sig, max_sig) - delta;
-        max_y_lim = max(min_sig, max_sig) + delta;
+        if length(current_y_data) < 2
+            min_y_lim = min(ylim);
+            max_y_lim = max(ylim);
+        else
+            
+            min_sig = min(current_y_data);
+            max_sig = max(current_y_data);
+            delta = (max_sig - min_sig)*0.1;
+            
+            min_y_lim = min(min_sig, max_sig) - delta;
+            max_y_lim = max(min_sig, max_sig) + delta;
+            
+        end
         
         if max_y_lim > min_y_lim
             set(GUI.RRInt_Axes, 'YLim', [min_y_lim max_y_lim]);
@@ -1155,9 +1165,14 @@ end
                         yString = 'RR (sec)';
                     end
                     
-                    GUI.RRInt_handle = line(rr_time_filterd, rr_data_filtered, 'Parent', GUI.RRInt_Axes);
+                    GUI.RRInt_handle = line(rr_time_filterd, rr_data_filtered, 'Parent', GUI.RRInt_Axes, 'Marker', '*', 'MarkerSize', 2);
                     
-                    DATA.maxRRTime = max(rr_time_filterd);
+%                     DATA.maxRRTime = max(rr_time_filterd);
+                    
+                    DATA.maxRRTime = max(DATA.tm);
+                    
+                    
+                    
                     DATA.RRIntPage_Length = DATA.maxRRTime;
                     
                     min_sig = min(rr_data_filtered);
@@ -1751,9 +1766,9 @@ end
         
         hObj = hittest(GUI.Window);
         if callbackdata.VerticalScrollCount > 0
-            direction = 1;
-        elseif callbackdata.VerticalScrollCount < 0
             direction = -1;
+        elseif callbackdata.VerticalScrollCount < 0
+            direction = 1;
         end
         
         % ECG Axes (up axes)
@@ -1774,6 +1789,9 @@ end
                     max_XLim = max(RR_XLim);
                     
                     if xdata(2) <= xdata(1)
+                        return;
+                    end
+                    if xdata(2) - xdata(1) < 0.01
                         return;
                     end
                     
@@ -1797,8 +1815,12 @@ end
         if (isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)) && (any(ismember([hObj, hObj.Parent], GUI.RRInt_Axes)))
             switch DATA.Action
                 case 'zoom'
-                    RRIntPage_Length = get(GUI.GUIDisplay.RRIntPage_Length, 'String');
-                    [RRIntPage_Length, isInputNumeric] = calcDurationInSeconds(GUI.GUIDisplay.RRIntPage_Length, RRIntPage_Length, DATA.RRIntPage_Length);
+                    
+                    RRInt_Axes_XLim = get(GUI.RRInt_Axes, 'XLim');                    
+                    RRIntPage_Length = max(RRInt_Axes_XLim) - min(RRInt_Axes_XLim);
+                                        
+%                     RRIntPage_Length = get(GUI.GUIDisplay.RRIntPage_Length, 'String');                    
+%                     [RRIntPage_Length, isInputNumeric] = calcDurationInSeconds(GUI.GUIDisplay.RRIntPage_Length, RRIntPage_Length, DATA.RRIntPage_Length);
                     
                     if direction > 0
                         RRIntPage_Length = RRIntPage_Length * 0.9;
@@ -1814,8 +1836,7 @@ end
                     end
                 otherwise
             end
-        end
-        
+        end        
     end
 %%
     function redraw_quality_rect()
@@ -2060,6 +2081,9 @@ end
         if xdata(2) <= xdata(1)
             return;
         end
+        if xdata(2) - xdata(1) < 0.01
+            return;
+        end
         if min(xdata) < min_XLim
             xofs_updated = min_XLim - min(xdata_saved);
             xdata([1, 4, 5]) = xdata_saved([1, 4, 5]) + xofs_updated;
@@ -2146,7 +2170,7 @@ end
         setECGXLim(xdata(1), xdata(2));
         setECGYLim(xdata(1), xdata(2));
         
-        if xdata(2) - xdata(1) < 1        
+        if xdata(2) - xdata(1) < 2        
             display_msec = 1;
         else
             display_msec = 0;
@@ -2302,7 +2326,7 @@ end
         red_rect_length = max_red_rect_xdata - min_red_rect_xdata;
         if isInputNumeric
             
-            if RRIntPage_Length <= 1.5
+            if RRIntPage_Length <= 2
                 display_msec = 1;
             else
                 display_msec = 0;
@@ -2343,7 +2367,7 @@ end
             DATA.RRIntPage_Length = RRIntPage_Length;                        
             
             
-            if RRIntPage_Length <= 1.5
+            if RRIntPage_Length <= 2
                 display_msec = 1;
             else
                 display_msec = 0;

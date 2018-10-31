@@ -1393,6 +1393,7 @@ displayEndOfDemoMessage('');
         try
             set(axes_handle, 'YLim', [MinYLimit MaxYLimit]);
         catch
+%             disp('temp');
         end
     end
 %%
@@ -1402,10 +1403,12 @@ displayEndOfDemoMessage('');
         set(ha, 'XLim', [DATA.firstSecond2Show DATA.firstSecond2Show + DATA.MyWindowSize]);
         setAxesXTicks(ha);
         
-        blue_line_handle = get(GUI.all_data_handle);
-        all_x = blue_line_handle.XData;
-        
-        window_size_in_data_points = size(find(all_x > DATA.firstSecond2Show & all_x < DATA.firstSecond2Show + DATA.MyWindowSize));
+%         blue_line_handle = get(GUI.all_data_handle);
+%         all_x = blue_line_handle.XData;
+%         
+%         window_size_in_data_points = size(find(all_x > DATA.firstSecond2Show & all_x < DATA.firstSecond2Show + DATA.MyWindowSize));
+                
+        window_size_in_data_points = data_points_number();
         
         if window_size_in_data_points < 350
             set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 4, 'MarkerEdgeColor', [180 74 255]/255, 'MarkerFaceColor', [1, 1, 1]);
@@ -2310,16 +2313,23 @@ displayEndOfDemoMessage('');
         min_red_rect_xdata = min(red_rect_xdata);
         max_red_rect_xdata = max(red_rect_xdata);
         red_rect_length = max_red_rect_xdata - min_red_rect_xdata;
-        if isInputNumeric
+        if isInputNumeric            
+            
+            if RRIntPage_Length <= 2
+                display_msec = 1;
+            else
+                display_msec = 0;
+            end
+            
             if RRIntPage_Length <= 1 || RRIntPage_Length > DATA.maxSignalLength
-                set(GUI.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+                set(GUI.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, display_msec));
                 if isInputNumeric ~= 2
                     h_e = errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error');
                     setLogo(h_e, 'M2');
                 end
                 return;
             elseif RRIntPage_Length < red_rect_length
-                set(GUI.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+                set(GUI.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, display_msec));
                 if isInputNumeric ~= 2
                     h_e = errordlg('The window size must be greater than zoom window length!', 'Input Error');
                     setLogo(h_e, 'M2');
@@ -2346,7 +2356,15 @@ displayEndOfDemoMessage('');
             AllDataAxes_XLim = get(GUI.AllDataAxes, 'XLim');
             RRIntPage_Length = max(AllDataAxes_XLim) - min(AllDataAxes_XLim);
             DATA.RRIntPage_Length = RRIntPage_Length;
-            set(GUI.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
+            
+            
+            if RRIntPage_Length <= 2
+                display_msec = 1;
+            else
+                display_msec = 0;
+            end
+            
+            set(GUI.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, display_msec));
         end
     end
 %%
@@ -4712,6 +4730,13 @@ displayEndOfDemoMessage('');
         end
     end
 %%
+    function window_size_in_data_points = data_points_number()
+        blue_line_handle = get(GUI.all_data_handle);
+        all_x = blue_line_handle.XData;
+        
+        window_size_in_data_points = length(find(all_x > DATA.firstSecond2Show & all_x < DATA.firstSecond2Show + DATA.MyWindowSize));        
+    end
+%%
     function my_WindowKeyPressFcn(~, ~, ~)
         DATA.Action = 'zoom';
     end
@@ -4730,9 +4755,9 @@ displayEndOfDemoMessage('');
         end
         
         if callbackdata.VerticalScrollCount > 0
-            direction = 1;
-        elseif callbackdata.VerticalScrollCount < 0
             direction = -1;
+        elseif callbackdata.VerticalScrollCount < 0
+            direction = 1;
         end
         
         % Up axes
@@ -4755,8 +4780,15 @@ displayEndOfDemoMessage('');
                     if xdata(2) <= xdata(1)
                         return;
                     end
-                    
-                    if min(xdata) < min_XLim
+                                        
+                    if direction > 0                        
+                        window_size_in_data_points = data_points_number();                                                                        
+                        if window_size_in_data_points < 6
+                            return;
+                        end
+                    end
+                                        
+                   if min(xdata) < min_XLim
                         xdata([1, 4, 5]) = min_XLim;
                     end
                     if max(xdata) > max_XLim
@@ -5019,6 +5051,12 @@ displayEndOfDemoMessage('');
         end
         if xdata(2) <= xdata(1)
             return;
+        end        
+        if max(xdata) - min(xdata) < max(xdata_saved) - min(xdata_saved)            
+            window_size_in_data_points = data_points_number();
+            if window_size_in_data_points < 5
+                return;
+            end
         end
         if min(xdata) < min_XLim
             xofs_updated = min_XLim - min(xdata_saved);
@@ -5212,9 +5250,15 @@ displayEndOfDemoMessage('');
         
         DATA.firstSecond2Show = xdata(1);
         DATA.MyWindowSize = xdata(2) - xdata(1);
+                
+        if xdata(2) - xdata(1) < 2        
+            display_msec = 1;
+        else
+            display_msec = 0;
+        end
         
-        set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));
-        set(GUI.WindowSize,'String', calcDuration(DATA.MyWindowSize, 0));
+        set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, display_msec));
+        set(GUI.WindowSize,'String', calcDuration(DATA.MyWindowSize, display_msec));
         
         if abs(DATA.maxSignalLength - DATA.MyWindowSize ) <=  1 %0.0005
             set(GUI.RawDataSlider, 'Enable', 'off');

@@ -232,10 +232,10 @@ end
         % + File menu
         GUI.FileMenu = uimenu( GUI.Window, 'Label', 'File' );
         uimenu( GUI.FileMenu, 'Label', 'Open data file', 'Callback', @OpenFile_Callback, 'Accelerator', 'O');
-        GUI.OpenDataQuality = uimenu( GUI.FileMenu, 'Label', 'Open signal quality file', 'Callback', @OpenDataQuality_Callback, 'Accelerator', 'Q');
-        GUI.SaveDataQuality = uimenu( GUI.FileMenu, 'Label', 'Save signal quality file', 'Callback', @SaveDataQuality_Callback, 'Accelerator', 'D');
-        %GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load peaks', 'Callback', @LoadPeaks_Callback, 'Accelerator', 'L');
+        GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load peaks', 'Callback', @OpenFile_Callback, 'Accelerator', 'P');
         GUI.SavePeaks = uimenu( GUI.FileMenu, 'Label', 'Save peaks', 'Callback', @SavePeaks_Callback, 'Accelerator', 'S');
+        GUI.OpenDataQuality = uimenu( GUI.FileMenu, 'Label', 'Open signal quality file', 'Callback', @OpenDataQuality_Callback, 'Accelerator', 'Q');
+        GUI.SaveDataQuality = uimenu( GUI.FileMenu, 'Label', 'Save signal quality file', 'Callback', @SaveDataQuality_Callback, 'Accelerator', 'D');        
         GUI.LoadConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Load configuration file', 'Callback', @LoadConfigurationFile_Callback, 'Accelerator', 'F');
         GUI.SaveConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Save configuration file', 'Callback', @SaveConfigurationFile_Callback, 'Accelerator', 'C');
         
@@ -706,9 +706,11 @@ end
             [ECG_FileName, PathName] = uigetfile( ...
                 {'*.*', 'All files';...
                 '*.txt','Text Files (*.txt)'; ...
+                '*.dat',  'WFDB Files (*.mat)'; ...
                 '*.dat',  'WFDB Files (*.dat)'; ...
-                '*.mat','MAT-files (*.mat)'}, ...
-                'Open ECG File', [DIRS.dataDirectory filesep '*.' EXT]); %
+                '*.dat',  'WFDB Files (*.qrs)'; ...
+                '*.mat','MAT-files (*.atr)'}, ...
+                'Open Data File', [DIRS.dataDirectory filesep '*.' EXT]); %
         else
             ECG_FileName = fileNameFromM2.FileName;
             PathName = fileNameFromM2.PathName;
@@ -772,10 +774,10 @@ end
                         DATA.Fs = double(data.Time.Fs);
                         DATA.sig = data.Data.Data;
                         time_data = data.Time.Data;
-                        DATA.tm = time_data - time_data(1);
+                        DATA.tm = time_data - time_data(1);                                                
                         
-                        [t_max, h, m, s ,ms] = signal_duration(length(DATA.tm), DATA.Fs);
-                        header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
+%                         [t_max, h, m, s ,ms] = signal_duration(length(DATA.tm), DATA.Fs);
+%                         header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
                         
                         DATA.ecg_channel = 1;
                         
@@ -883,11 +885,13 @@ end
                 
                 xlabel(GUI.ECG_Axes, 'Time (sec)');
                 ylabel(GUI.ECG_Axes, 'ECG (mV)');
-                hold(GUI.ECG_Axes, 'on');
+                hold(GUI.ECG_Axes, 'on');                                
                 
-                set(GUI.GUIRecord.TimeSeriesLength_text, 'String', [[num2str(header_info.duration.h) ':' num2str(header_info.duration.m) ':' ...
-                    num2str(header_info.duration.s) '.' num2str(header_info.duration.ms)] '    h:min:sec.msec']);
+                %                 set(GUI.GUIRecord.TimeSeriesLength_text, 'String', [[num2str(header_info.duration.h) ':' num2str(header_info.duration.m) ':' ...
+                %                     num2str(header_info.duration.s) '.' num2str(header_info.duration.ms)] '    h:min:sec.msec']);
                 
+                set(GUI.GUIRecord.TimeSeriesLength_text, 'String', [calcDuration(DATA.tm(end), 1) '    h:min:sec.msec']);
+
                 if GUI.AutoCalc_checkbox.Value
                     try
                         RunAndPlotPeakDetector();

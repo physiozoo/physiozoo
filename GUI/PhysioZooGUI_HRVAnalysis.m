@@ -1425,7 +1425,8 @@ displayEndOfDemoMessage('');
             data =  60 ./ DATA.rri;
         end
         
-        GUI.all_data_handle = line(DATA.trr, data, 'Color', 'b', 'LineWidth', 1.5, 'Parent', ha, 'DisplayName', 'Hole time series'); % , 'Tag', 'DoNotIgnore', 'ButtonDownFcn', {@my_clickOnAllData, 'aa'}
+        GUI.all_data_handle = line(DATA.trr, data, 'Color', 'b',  'Parent', ha, 'Marker', '*', 'MarkerSize', 2, 'DisplayName', 'Hole time series'); % 'LineWidth', 1.5       
+        
         
         set(ha, 'XLim', [0 DATA.RRIntPage_Length]);
         
@@ -2319,6 +2320,10 @@ displayEndOfDemoMessage('');
                 display_msec = 1;
             else
                 display_msec = 0;
+            end
+                                    
+            if RRIntPage_Length > DATA.maxSignalLength
+                RRIntPage_Length = DATA.maxSignalLength;
             end
             
             if RRIntPage_Length <= 1 || RRIntPage_Length > DATA.maxSignalLength
@@ -4805,8 +4810,10 @@ displayEndOfDemoMessage('');
         elseif (isfield(GUI, 'red_rect') && isvalid(GUI.red_rect)) % && (any(ismember([hObj, hObj.Parent], GUI.AllDataAxes)))
             switch DATA.Action
                 case 'zoom'
-                    RRIntPage_Length = get(GUI.RRIntPage_Length, 'String');
-                    [RRIntPage_Length, isInputNumeric] = calcDurationInSeconds(GUI.RRIntPage_Length, RRIntPage_Length, DATA.RRIntPage_Length);
+                    
+                    AllDataAxes_XLim = get(GUI.AllDataAxes, 'XLim');
+                    RRIntPage_Length = max(AllDataAxes_XLim) - min(AllDataAxes_XLim);
+
                     if direction > 0
                         RRIntPage_Length = RRIntPage_Length * 0.9;
                     else

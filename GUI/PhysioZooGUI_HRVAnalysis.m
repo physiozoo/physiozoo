@@ -1308,11 +1308,20 @@ displayEndOfDemoMessage('');
             min_nni_60 = min(60 ./ filt_signal_data);
             delta_60 = (max_nni_60 - min_nni_60) * 0.1;
             
-            DATA.AutoYLimitLowAxes.RRMinYLimit = min(min_nni, max_nni) - delta;
-            DATA.AutoYLimitLowAxes.RRMaxYLimit = max(min_nni, max_nni) + delta;
+            min_nni_delta = min(min_nni, max_nni) - delta;
+            max_nni_delta = max(min_nni, max_nni) + delta;
+            min_nni_delta_60 = min(min_nni_60, max_nni_60) - delta_60;
+            max_nni_delta_60 = max(min_nni_60, max_nni_60) + delta_60;
             
-            DATA.AutoYLimitLowAxes.HRMinYLimit = min(min_nni_60, max_nni_60) - delta_60;
-            DATA.AutoYLimitLowAxes.HRMaxYLimit = max(min_nni_60, max_nni_60) + delta_60;
+            if min_nni_delta ~= max_nni_delta
+                DATA.AutoYLimitLowAxes.RRMinYLimit = min_nni_delta;
+                DATA.AutoYLimitLowAxes.RRMaxYLimit = max_nni_delta;
+            end
+            
+            if min_nni_delta_60 ~= max_nni_delta_60
+                DATA.AutoYLimitLowAxes.HRMinYLimit = min_nni_delta_60;
+                DATA.AutoYLimitLowAxes.HRMaxYLimit = max_nni_delta_60;
+            end
             
             if ~DATA.PlotHR %== 0
                 DATA.AutoYLimitLowAxes.MinYLimit = DATA.AutoYLimitLowAxes.RRMinYLimit;
@@ -1332,27 +1341,43 @@ displayEndOfDemoMessage('');
         if ~isempty(signal_data) && ~isempty(filt_signal_data)
             
             if length(signal_data) == length(filt_signal_data)
-                DATA.AutoYLimitUpperAxes.RRMinYLimit = min(min(signal_data), max(signal_data));
-                DATA.AutoYLimitUpperAxes.RRMaxYLimit = max(min(signal_data), max(signal_data));
+                
+                min_signal_data = min(signal_data);
+                max_signal_data = max(signal_data);                
+                if min_signal_data ~= max_signal_data
+                    DATA.AutoYLimitUpperAxes.RRMinYLimit = min(min_signal_data, max_signal_data);
+                    DATA.AutoYLimitUpperAxes.RRMaxYLimit = max(min_signal_data, max_signal_data);
+                end
                 
                 max_rri_60 = max(60 ./ signal_data);
-                min_rri_60 = min(60 ./ signal_data);
-                DATA.AutoYLimitUpperAxes.HRMinYLimit = min(min_rri_60, max_rri_60);
-                DATA.AutoYLimitUpperAxes.HRMaxYLimit = max(min_rri_60, max_rri_60);
+                min_rri_60 = min(60 ./ signal_data);                
+                if min_rri_60 ~= max_rri_60
+                    DATA.AutoYLimitUpperAxes.HRMinYLimit = min(min_rri_60, max_rri_60);
+                    DATA.AutoYLimitUpperAxes.HRMaxYLimit = max(min_rri_60, max_rri_60);
+                end
             else
                 max_nni = max(filt_signal_data);
                 min_nni = min(filt_signal_data);
                 delta = (max_nni - min_nni)*1;
                 
-                DATA.AutoYLimitUpperAxes.RRMinYLimit = min(min_nni, max_nni) - delta;
-                DATA.AutoYLimitUpperAxes.RRMaxYLimit = max(min_nni, max_nni) + delta;
+                
+                min_nni_delta = min(min_nni, max_nni) - delta;
+                max_nni_delta = max(min_nni, max_nni) + delta;
+                if min_nni_delta ~= max_nni_delta
+                    DATA.AutoYLimitUpperAxes.RRMinYLimit = min_nni_delta;
+                    DATA.AutoYLimitUpperAxes.RRMaxYLimit = max_nni_delta;
+                end
                 
                 max_nni_60 = max(60 ./ filt_signal_data);
                 min_nni_60 = min(60 ./ filt_signal_data);
                 delta_60 = (max_nni_60 - min_nni_60)*1;
                 
-                DATA.AutoYLimitUpperAxes.HRMinYLimit = min(min_nni_60, max_nni_60) - delta_60;
-                DATA.AutoYLimitUpperAxes.HRMaxYLimit = max(min_nni_60, max_nni_60) + delta_60;
+                min_nni_delta_60 = min(min_nni_60, max_nni_60) - delta_60;
+                max_nni_delta_60 = max(min_nni_60, max_nni_60) + delta_60;                
+                if min_nni_delta_60 ~= max_nni_delta_60
+                    DATA.AutoYLimitUpperAxes.HRMinYLimit = min_nni_delta_60;
+                    DATA.AutoYLimitUpperAxes.HRMaxYLimit = max_nni_delta_60;
+                end
             end
             
             if ~DATA.PlotHR % == 0
@@ -1393,7 +1418,7 @@ displayEndOfDemoMessage('');
         try
             set(axes_handle, 'YLim', [MinYLimit MaxYLimit]);
         catch
-%             disp('temp');
+            disp('temp');
         end
     end
 %%
@@ -1528,16 +1553,17 @@ displayEndOfDemoMessage('');
             if ~isempty(DATA.rri)
                 ha = GUI.RRDataAxes;
                 MaxYLimit = DATA.YLimUpperAxes.MaxYLimit;
-                time_data = DATA.trr;
-                data = DATA.rri;
+                MinYLimit = DATA.YLimUpperAxes.MinYLimit;
+%                 time_data = DATA.trr;
+%                 data = DATA.rri;
                 
                 qd_size = size(DATA.QualityAnnotations_Data);
                 intervals_num = qd_size(1);
                 
-                if (DATA.PlotHR == 1)
-                    data = 60 ./ data;
-                end
-                
+%                 if (DATA.PlotHR == 1)
+%                     data = 60 ./ data;
+%                 end
+%                 
                 if ~isfield(GUI, 'GreenLineHandle') || ~isvalid(GUI.GreenLineHandle)
                     GUI.GreenLineHandle = line([DATA.firstSecond2Show DATA.firstSecond2Show + DATA.MyWindowSize], [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3, 'Parent', ha);
                 else
@@ -1560,33 +1586,59 @@ displayEndOfDemoMessage('');
                         end
                     end
                     
+                    if isfield(GUI, 'PinkLineHandle')
+                        delete(GUI.PinkLineHandle);
+                    end
+                    
+                    if isfield(GUI, 'PinkLineHandle_AllDataAxes')
+                        delete(GUI.PinkLineHandle_AllDataAxes);
+                    end
+                    
                     for i = 1 : intervals_num
-                        a1=find(time_data >= DATA.QualityAnnotations_Data(i,1));
-                        a2=find(time_data <= DATA.QualityAnnotations_Data(i,2));
+%                         a1=find(time_data >= DATA.QualityAnnotations_Data(i,1));
+%                         a2=find(time_data <= DATA.QualityAnnotations_Data(i,2));
+%                         
+%                         if isempty(a2); a2 = 1; end % case where the bad quality starts before the first annotated peak
+%                         if isempty(a1); a1 = length(time_data); end
+%                         if length(a1)<2
+%                             low_quality_indexes = [a2(end) : a1(1)];
+%                         elseif a2(end) == 1
+%                             low_quality_indexes = [1 : a1(1)];
+%                         elseif a2(end) < a1(1)
+%                             low_quality_indexes = [a2(end)-1 : a1(1)];
+%                         else
+%                             low_quality_indexes = [a1(1)-1 : a2(end)+1];
+%                         end
                         
-                        if isempty(a2); a2 = 1; end % case where the bad quality starts before the first annotated peak
-                        if isempty(a1); a1 = length(time_data); end
-                        if length(a1)<2
-                            low_quality_indexes = [a2(end) : a1(1)];
-                        elseif a2(end) == 1
-                            low_quality_indexes = [1 : a1(1)];
-                        elseif a2(end) < a1(1)
-                            low_quality_indexes = [a2(end)-1 : a1(1)];
-                        else
-                            low_quality_indexes = [a1(1)-1 : a2(end)+1];
-                        end
-                        
-                        if ~isempty(low_quality_indexes)
-                            %                             GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', [255 157 189]/255, 'LineWidth', 2.5, 'Parent', ha);
-                            GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', DATA.quality_color{DATA.quality_class_ind(i)}, ...
-                                                    'LineWidth', 2.5, 'Parent', ha);
+%                         if ~isempty(low_quality_indexes)
+
+                            
+%                             ylim = get(GUI.RRDataAxes, 'YLim');
+                            f = [1 2 3 4];                    
+                            v = [DATA.QualityAnnotations_Data(i,1) MinYLimit; DATA.QualityAnnotations_Data(i,2) MinYLimit; DATA.QualityAnnotations_Data(i,2) MaxYLimit; DATA.QualityAnnotations_Data(i,1) MaxYLimit];                                                
+                          
+                            GUI.PinkLineHandle(i) =  patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{DATA.quality_class_ind(i)}, 'EdgeColor', DATA.quality_color{DATA.quality_class_ind(i)}, ...
+                                                                                'LineWidth', 1, 'FaceAlpha', 0.27, 'EdgeAlpha', 0.5, 'UserData', DATA.quality_class_ind(i), 'Parent', GUI.RRDataAxes);                    
+                            
+                            uistack(GUI.PinkLineHandle(i), 'bottom');
+                            
+%                             GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', DATA.quality_color{DATA.quality_class_ind(i)}, ...
+%                                                     'LineWidth', 2.5, 'Parent', ha);
                             if isvalid(DATA.legend_handle) && length(DATA.legend_handle.String) < 3 %
                                 legend([GUI.raw_data_handle, GUI.filtered_handle GUI.PinkLineHandle(1)], [DATA.legend_handle.String 'Bad quality']);
                             end
                             
-                            GUI.PinkLineHandle_AllDataAxes(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', DATA.quality_color{DATA.quality_class_ind(i)},...
-                                                    'LineWidth', 1.5, 'Parent', GUI.AllDataAxes);                                                                                    
-                        end
+%                             GUI.PinkLineHandle_AllDataAxes(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', DATA.quality_color{DATA.quality_class_ind(i)},...
+%                                                     'LineWidth', 1.5, 'Parent', GUI.AllDataAxes);    
+                                                
+                                                
+                            ylim = get(GUI.AllDataAxes, 'YLim');
+                            f = [1 2 3 4];                    
+                            v = [DATA.QualityAnnotations_Data(i,1) min(ylim); DATA.QualityAnnotations_Data(i,2) min(ylim); DATA.QualityAnnotations_Data(i,2) max(ylim); DATA.QualityAnnotations_Data(i,1) max(ylim)];                    
+                            GUI.PinkLineHandle_AllDataAxes(i) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{DATA.quality_class_ind(i)}, 'EdgeColor', DATA.quality_color{DATA.quality_class_ind(i)}, ...
+                                                                                'LineWidth', 1, 'FaceAlpha', 0.7, 'EdgeAlpha', 0.8, 'UserData', DATA.quality_class_ind(i), 'Parent', GUI.AllDataAxes);                    
+                            uistack(GUI.PinkLineHandle_AllDataAxes(i), 'bottom');                    
+%                         end
                     end
                 end
             end

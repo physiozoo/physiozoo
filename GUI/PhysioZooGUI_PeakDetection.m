@@ -63,6 +63,9 @@ end
         DATA.RRIntPage_Length = 0;
         
         DATA.quality_win_num = 0;
+        
+        DATA.rr_data_filtered = [];
+        DATA.rr_time_filtered = [];
     end
 %%
     function clean_gui()
@@ -706,10 +709,8 @@ end
             [ECG_FileName, PathName] = uigetfile( ...
                 {'*.*', 'All files';...
                 '*.txt','Text Files (*.txt)'; ...
-                '*.dat',  'WFDB Files (*.mat)'; ...
-                '*.dat',  'WFDB Files (*.dat)'; ...
-                '*.dat',  'WFDB Files (*.qrs)'; ...
-                '*.mat','MAT-files (*.atr)'}, ...
+                '*.mat',  'MAT-files (*.mat)'; ...
+                '*.dat; *.qrs; *.atr',  'WFDB Files (*.dat; *.qrs; *.atr)'}, ...
                 'Open Data File', [DIRS.dataDirectory filesep '*.' EXT]); %
         else
             ECG_FileName = fileNameFromM2.FileName;
@@ -946,33 +947,50 @@ end
         
         xlim = get(GUI.RRInt_Axes, 'XLim');
         ylim = get(GUI.RRInt_Axes, 'YLim');
-        xdata = get(GUI.RRInt_handle, 'XData');
-        ydata = get(GUI.RRInt_handle, 'YData');
+%         xdata = get(GUI.RRInt_handle, 'XData');
+%         ydata = get(GUI.RRInt_handle, 'YData');
         
-        current_y_data = ydata(xdata >= xlim(1) & xdata <= xlim(2));
+        %         current_y_data = ydata(xdata >= xlim(1) & xdata <= xlim(2));
         
-        if length(current_y_data) < 2
-            min_y_lim = min(ylim);
-            max_y_lim = max(ylim);
-        else
+        if isfield(DATA, 'rr_data_filtered') && ~isempty(DATA.rr_data_filtered)
             
-            min_sig = min(current_y_data);
-            max_sig = max(current_y_data);
-            delta = (max_sig - min_sig)*0.1;
+            current_y_data = DATA.rr_data_filtered(DATA.rr_time_filtered >= xlim(1) & DATA.rr_time_filtered <= xlim(2));                        
             
-            min_y_lim = min(min_sig, max_sig) - delta;
-            max_y_lim = max(min_sig, max_sig) + delta;
+            if length(current_y_data) < 2
+                min_y_lim = min(ylim);
+                max_y_lim = max(ylim);
+            else
+                min_sig = min(current_y_data);
+                max_sig = max(current_y_data);
+                delta = (max_sig - min_sig)*0.1;
+                
+                min_y_lim = min(min_sig, max_sig) - delta;
+                max_y_lim = max(min_sig, max_sig) + delta;
+            end
             
+            if (DATA.PlotHR == 1)
+                max_y_lim = 60 ./ max_y_lim;
+                min_y_lim = 60 ./ min_y_lim;            
+            end
+            
+            low_y_lim = min(min_y_lim, max_y_lim);
+            hight_y_lim = max(min_y_lim, max_y_lim);
+                        
+            set(GUI.RRInt_Axes, 'YLim', [low_y_lim hight_y_lim]);
+            
+            set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', num2str(low_y_lim));
+            set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', num2str(hight_y_lim));
+            
+            if isfield(GUI, 'red_rect_handle') && any(isvalid(GUI.red_rect_handle))
+                set(GUI.red_rect_handle, 'YData', [low_y_lim low_y_lim hight_y_lim hight_y_lim low_y_lim]);
+            end
+            
+            if isfield(GUI, 'PinkLineHandle_AllDataAxes') && any(isvalid(GUI.PinkLineHandle_AllDataAxes))
+                for i = 1 : length(GUI.PinkLineHandle_AllDataAxes)
+                    set(GUI.PinkLineHandle_AllDataAxes(i), 'YData', [low_y_lim low_y_lim hight_y_lim hight_y_lim]);
+                end
+            end
         end
-        
-        if max_y_lim > min_y_lim
-            set(GUI.RRInt_Axes, 'YLim', [min_y_lim max_y_lim]);
-        end
-        
-        set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', num2str(min_y_lim));
-        set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', num2str(max_y_lim));
-        
-        set(GUI.red_rect_handle, 'YData', [min_y_lim min_y_lim max_y_lim max_y_lim min_y_lim]);
     end
 %%
     function clean_config_param_fields()
@@ -1101,6 +1119,7 @@ end
                         set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
                         set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
                         setAxesXTicks(GUI.RRInt_Axes);
+                        setRRIntYLim();
                         EnablePageUpDown();
                     else
                         GUI.PeaksTable.Data(:, 2) = {0};
@@ -1151,7 +1170,7 @@ end
                 throw(MException('plot_rr_data:text', 'Not enough datapoints!'));
             else
                 try
-                    [rr_data_filtered, rr_time_filterd, ~] = filtrr(rr_data, rr_time, 'filter_quotient', false, 'filter_ma', true, 'filter_range', false);
+                    [rr_data_filtered, rr_time_filtered, ~] = filtrr(rr_data, rr_time, 'filter_quotient', false, 'filter_ma', true, 'filter_range', false);
                 catch e
                     rethrow(e);
                 end
@@ -1163,37 +1182,41 @@ end
                 else
                     
                     if (DATA.PlotHR == 1)
-                        rr_data_filtered = 60 ./ rr_data_filtered;
+                        rr_data = 60 ./ rr_data;
                         yString = 'HR (BPM)';
                     else
                         yString = 'RR (sec)';
                     end
                     
-                    GUI.RRInt_handle = line(rr_time_filterd, rr_data_filtered, 'Parent', GUI.RRInt_Axes, 'Marker', '*', 'MarkerSize', 2);
+                    GUI.RRInt_handle = line(rr_time, rr_data, 'Parent', GUI.RRInt_Axes, 'Marker', '*', 'MarkerSize', 2);
                     
 %                     DATA.maxRRTime = max(rr_time_filterd);
                     
                     DATA.maxRRTime = max(DATA.tm);
-                    
-                    
-                    
+                                                            
                     DATA.RRIntPage_Length = DATA.maxRRTime;
                     
-                    min_sig = min(rr_data_filtered);
-                    max_sig = max(rr_data_filtered);
-                    delta = (max_sig - min_sig)*0.1;
-                    
-                    RRMinYLimit = min(min_sig, max_sig) - delta;
-                    RRMaxYLimit = max(min_sig, max_sig) + delta;
-                    
-                    set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', num2str(RRMinYLimit));
-                    set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', num2str(RRMaxYLimit));
-                    
-                    if RRMaxYLimit > RRMinYLimit
-                        set(GUI.RRInt_Axes, 'YLim', [RRMinYLimit RRMaxYLimit]);
-                    end
+%                     min_sig = min(rr_data_filtered);
+%                     max_sig = max(rr_data_filtered);
+%                     delta = (max_sig - min_sig)*0.1;
+%                     
+%                     RRMinYLimit = min(min_sig, max_sig) - delta;
+%                     RRMaxYLimit = max(min_sig, max_sig) + delta;
+%                     
+%                     set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', num2str(RRMinYLimit));
+%                     set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', num2str(RRMaxYLimit));
+%                     
+%                     if RRMaxYLimit > RRMinYLimit
+%                         set(GUI.RRInt_Axes, 'YLim', [RRMinYLimit RRMaxYLimit]);
+%                     end
                     
                     ylabel(GUI.RRInt_Axes, yString);
+                    
+                                        
+                    DATA.rr_data_filtered = rr_data_filtered;
+                    DATA.rr_time_filtered = rr_time_filtered;
+                    
+%                     setRRIntYLim();
                 end
             end
         end
@@ -1457,7 +1480,7 @@ end
             DIRS.analyzedDataDirectory = PathName;
             
             DATA.peaks_file_name = [PathName, PeaksFileName];
-            cla(GUI.RRInt_Axes);
+%             cla(GUI.RRInt_Axes);
             
             set(GUI.GUIRecord.PeaksFileName_text, 'String', Peaks_FileName);
             
@@ -1532,6 +1555,9 @@ end
                     delete(GUI.RRInt_handle);
                 end
                 try
+                    delete(GUI.red_rect_handle);
+                    delete(GUI.RRInt_handle);
+                    
                     plot_rr_data();
                     
                     if isfield(GUI, 'red_rect_handle') && ishandle(GUI.red_rect_handle) && isvalid(GUI.red_rect_handle)
@@ -1699,7 +1725,7 @@ end
     function RR_or_HR_plot_button_Callback(~, ~)
         
         if isfield(DATA, 'sig') && ~isempty(DATA.sig)
-            cla(GUI.RRInt_Axes); % RR_axes
+%             cla(GUI.RRInt_Axes); % RR_axes
             if(DATA.PlotHR == 1)
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot HR');
                 DATA.PlotHR = 0;
@@ -1707,7 +1733,10 @@ end
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot RR');
                 DATA.PlotHR = 1;
             end
-            try
+            try                                
+                delete(GUI.red_rect_handle);
+                delete(GUI.RRInt_handle);
+                
                 plot_rr_data();
                 plot_red_rectangle(DATA.zoom_rect_limits);                
                 setRRIntYLim();
@@ -1843,8 +1872,7 @@ end
         end        
     end
 %%
-    function redraw_quality_rect()
-        
+    function redraw_quality_rect()        
         ylim = get(GUI.ECG_Axes, 'YLim');
         
         if isfield(GUI, 'quality_win')
@@ -1857,44 +1885,27 @@ end
     function plot_quality_line(DATA_QualityAnnotations_Data, DATA_Class)
         if ~isempty(DATA_QualityAnnotations_Data)                        
             
-            if isfield(GUI, 'PinkLineHandle_AllDataAxes')  % && isvalid(GUI.PinkLineHandle_AllDataAxes)
+            if isfield(GUI, 'PinkLineHandle_AllDataAxes')  && any(isvalid(GUI.PinkLineHandle_AllDataAxes))
                 prev_quality_win_num = length(GUI.PinkLineHandle_AllDataAxes);
             else
                 prev_quality_win_num = 0;
             end
-            
-            rr_time_filterd = get(GUI.RRInt_handle, 'XData');
-            rr_data_filtered = get(GUI.RRInt_handle, 'YData');
-            
+                       
             qd_size = size(DATA_QualityAnnotations_Data);
             intervals_num = qd_size(1);
             
-            for i = 1 : intervals_num
-                a1 = find(rr_time_filterd >= DATA_QualityAnnotations_Data(i,1));
-                a2 = find(rr_time_filterd <= DATA_QualityAnnotations_Data(i,2));
-                
-                if isempty(a2); a2 = 1; end % case where the bad quality starts before the first annotated peak
-                if isempty(a1); a1 = length(rr_time_filterd); end
-                if length(a1)<2
-                    low_quality_indexes = [a2(end) : a1(1)];
-                elseif a2(end) == 1
-                    low_quality_indexes = [1 : a1(1)];
-                elseif a2(end) < a1(1)
-                    low_quality_indexes = [a2(end)-1 : a1(1)];
-                else
-                    low_quality_indexes = [a1(1)-1 : a2(end)+1];
-                end
-                
-                if ~isempty(low_quality_indexes)                                                                                                                        
-                    
+            for i = 1 : intervals_num                    
                     [is_member, class_ind] = ismember(DATA_Class{i}, DATA.GUI_Class);
                     if ~is_member
                         class_ind = 3;
-                    end
+                    end                                       
+                    ylim = get(GUI.RRInt_Axes, 'YLim');
+                    f = [1 2 3 4];
+                    v = [DATA_QualityAnnotations_Data(i,1) min(ylim); DATA_QualityAnnotations_Data(i,2) min(ylim); DATA_QualityAnnotations_Data(i,2) max(ylim); DATA_QualityAnnotations_Data(i,1) max(ylim)];
                     
-                    GUI.PinkLineHandle_AllDataAxes(prev_quality_win_num + i) = line(rr_time_filterd(low_quality_indexes), rr_data_filtered(low_quality_indexes), 'LineStyle', '-', 'Color', DATA.quality_color{class_ind},...
-                        'LineWidth', 1.5, 'Parent', GUI.RRInt_Axes);
-                end
+                    GUI.PinkLineHandle_AllDataAxes(prev_quality_win_num + i) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{class_ind}, 'EdgeColor', DATA.quality_color{class_ind}, ...
+                                                                               'LineWidth', 1, 'FaceAlpha', 0.75, 'EdgeAlpha', 0.85, 'UserData', class_ind, 'Parent', GUI.RRInt_Axes);           
+                   uistack(GUI.PinkLineHandle_AllDataAxes(prev_quality_win_num + i), 'bottom');
             end
         end
     end
@@ -1907,10 +1918,9 @@ end
         f = [1 2 3 4];
         
         GUI.quality_win(quality_win_num) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{quality_class}, 'EdgeColor', DATA.quality_color{quality_class}, ...
-            'LineWidth', 1, 'FaceAlpha', 0.25, 'EdgeAlpha', 0.3, 'UserData', quality_class, 'Parent', GUI.ECG_Axes); % 'FaceAlpha', 0.1
+            'LineWidth', 1, 'FaceAlpha', 0.45, 'EdgeAlpha', 0.5, 'UserData', quality_class, 'Parent', GUI.ECG_Axes); % 'FaceAlpha', 0.1
         
-        uistack(GUI.quality_win(quality_win_num), 'down');
-        
+        uistack(GUI.quality_win(quality_win_num), 'bottom');        
     end
 %%
     function my_WindowButtonUpFcn (src, callbackdata, handles)
@@ -2269,9 +2279,12 @@ end
             DATA.peaks_total = DATA.peaks_total - length(peak_ind);
             GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
             
-        end
-        cla(GUI.RRInt_Axes);
+        end           
         try
+%           cla(GUI.RRInt_Axes);            
+            delete(GUI.red_rect_handle);
+            delete(GUI.RRInt_handle);
+            
             plot_rr_data();
             plot_red_rectangle(DATA.zoom_rect_limits);
             setRRIntYLim();
@@ -2296,9 +2309,11 @@ end
                 
                 DATA.peaks_total = DATA.peaks_total - length(peak_ind);
                 GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
-                
-                cla(GUI.RRInt_Axes);
+                                                
                 try
+%                   cla(GUI.RRInt_Axes);
+                    delete(GUI.red_rect_handle);
+                    delete(GUI.RRInt_handle);
                     plot_rr_data();
                     plot_red_rectangle(DATA.zoom_rect_limits);
                     setRRIntYLim();
@@ -2609,7 +2624,7 @@ end
         [Quality_FileName, PathName] = uigetfile( ...
             {'*.txt','Text Files (*.txt)'; ...
             '*.mat','MAT-files (*.mat)'}, ...
-            'Open ECG File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
+            'Open Data Quality File', [DIRS.analyzedDataDirectory filesep '*.' EXT]); %
         
         %         '*.sqi',  'WFDB Files (*.sqi)'; ...
         

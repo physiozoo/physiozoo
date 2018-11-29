@@ -39,6 +39,12 @@ RRmax:
     units: sec
     description: Maximum RR interval; thresholds will be adjusted if no peaks are detected within this interval
     name: RRmax
+window_size_sec:
+               # 0.8*QS
+        value: 0.016 
+        description: Size of rqrs forward-search window
+        name: rqrs Window Size
+        units: Seconds    
 
 # jqrs/wjqrs
 

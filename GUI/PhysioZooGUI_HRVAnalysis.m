@@ -129,6 +129,8 @@ displayEndOfDemoMessage('');
         % All Filtered Signal (Intervals)
         DATA.tnn = [];
         DATA.nni = [];
+        DATA.nni_saved = [];
+        DATA.nni4calc = [];
         
         DATA.mammal = [];
         DATA.Integration = [];
@@ -567,6 +569,10 @@ displayEndOfDemoMessage('');
         GUI.DefaultMethod_popupmenu.Value = 1;
         uix.Empty( 'Parent', DefaultMethodBox );                
         
+        
+        GUI.Detrending_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.OptionsBox, 'Callback', @Detrending_checkbox_Callback, 'FontSize', DATA.BigFontSize, ...
+            'String', 'Detrend NN time series', 'TooltipString', 'Enable or disable the detrending of the time series');
+        
         max_extent_control = calc_max_control_x_extend(a);
         field_size = [max_extent_control + 5, -1, 1];
         
@@ -590,9 +596,9 @@ displayEndOfDemoMessage('');
         
         if DATA.SmallScreen
             uix.Empty( 'Parent', GUI.OptionsBox );
-            set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -6 -7 -7 -7 -7 -5] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+            set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -6 -7 -7 -7 -7 -5 -4] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
         else
-            set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -6 -7 -7 -7 -7] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
+            set( GUI.OptionsBox, 'Heights', [-7 -7 -7 -7 -6 -7 -7 -7 -7 -4] ); %  [-7 -7 -7 -7 -7 -7 -7 24 -7]
         end
                         
         popupmenu_position = get(GUI.Mammal_popupmenu, 'Position');     
@@ -1085,10 +1091,12 @@ displayEndOfDemoMessage('');
         filt_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.range')), filtrr_keys)));
         ma_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.moving_average')), filtrr_keys)));
         quotient_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.quotient')), filtrr_keys)));
+        detrending_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.detrending')), filtrr_keys)));
         
         filt_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), filt_range_keys))) = [];
         ma_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), ma_range_keys))) = [];
         quotient_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), quotient_range_keys))) = [];
+        detrending_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), detrending_range_keys))) = [];
         
         DATA.filter_quotient = mhrv_get_default('filtrr.quotient.enable', 'value');
         DATA.filter_ma = mhrv_get_default('filtrr.moving_average.enable', 'value');
@@ -1145,16 +1153,33 @@ displayEndOfDemoMessage('');
         [filt_quotient_keys_length, max_extent_control(3), handles_boxes_3] = FillParamFields(GUI.FilteringParamBox, containers.Map(quotient_range_keys, values(defaults_map, quotient_range_keys)));
         uix.Empty( 'Parent', GUI.FilteringParamBox );
         
+        
+        
+        uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Detrending', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
+        [filt_deternding_keys_length, max_extent_control(4), handles_boxes_4] = FillParamFields(GUI.FilteringParamBox, containers.Map(detrending_range_keys, values(defaults_map, detrending_range_keys)));
+        uix.Empty( 'Parent', GUI.FilteringParamBox );
+        
+%         GUI.Detrending_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.FilteringParamBox, 'Callback', @Detrending_checkbox_Callback, 'FontSize', DATA.BigFontSize, ...
+%             'String', defaults_map('filtrr.detrending.enable').name, 'Value', defaults_map('filtrr.detrending.enable').value, 'TooltipString', defaults_map('filtrr.detrending.enable').description);
+%            
+        GUI.Detrending_checkbox.Value = defaults_map('filtrr.detrending.enable').value;
+        
+        uix.Empty( 'Parent', GUI.FilteringParamBox );
+                        
         max_extent = max(max_extent_control);
         
         setWidthsConfigParams(max_extent, handles_boxes_1);
         setWidthsConfigParams(max_extent, handles_boxes_2);
         setWidthsConfigParams(max_extent, handles_boxes_3);
+        setWidthsConfigParams(max_extent, handles_boxes_4);
         
         rs = 19; %-22;
         ts = 19; % -18
         es = 2;
-        set( GUI.FilteringParamBox, 'Height', [ts, rs * ones(1, filt_range_keys_length), es, ts,  rs * ones(1, filt_ma_keys_length), es, ts,  rs * ones(1, filt_quotient_keys_length), -20]  );
+        set(GUI.FilteringParamBox, 'Height', [ts, rs * ones(1, filt_range_keys_length), es,...
+                                              ts, rs * ones(1, filt_ma_keys_length), es,...
+                                              ts, rs * ones(1, filt_quotient_keys_length), es, ...
+                                              ts, rs * ones(1, filt_deternding_keys_length), es, -20]);
         
         % Time Parameters
         clearParametersBox(GUI.TimeParamBox);
@@ -1217,6 +1242,7 @@ displayEndOfDemoMessage('');
         
         set(findobj(GUI.FilteringParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
         set(findobj(GUI.FilteringParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
+        set(findobj(GUI.FilteringParamBox,'Style', 'Checkbox'), 'BackgroundColor', myUpBackgroundColor);
         
         set(findobj(GUI.TimeParamBox,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
         set(findobj(GUI.TimeParamBox,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
@@ -1275,6 +1301,7 @@ displayEndOfDemoMessage('');
         clear_statistics_plots();
         clearStatTables();
         calcBatchWinNum();
+        DetrendIfNeed_data_chunk();
         plotFilteredData();
         plotMultipleWindows();
         if get(GUI.AutoCalc_checkbox, 'Value')
@@ -1290,6 +1317,7 @@ displayEndOfDemoMessage('');
         set(GUI.Active_Window_Start, 'String', str);
         set(GUI.segment_startTime, 'String', str);
         
+        DetrendIfNeed_data_chunk();
         plotFilteredData();
         plotMultipleWindows();
         
@@ -1506,15 +1534,19 @@ displayEndOfDemoMessage('');
         
         GUI.filtered_handle = line(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected filtered time series', 'Parent', ha);
         
+        GUI.only_filtered_handle = line(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected only filtered time series', 'Parent', ha);
+                
         xlabel(ha, 'Time (h:min:sec)');
         ylabel(ha, yString);
         
-        DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal');
+        DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal');                
         if sum(ismember(properties(DATA.legend_handle), 'AutoUpdate'))
             DATA.legend_handle.AutoUpdate = 'off';
             DATA.legend_handle.Box = 'off';
         end
-        
+                        
+        legend([GUI.raw_data_handle, GUI.filtered_handle], DATA.legend_handle.String(1 : end - 1));
+                        
         set(ha, 'XLim', [DATA.firstSecond2Show, DATA.firstSecond2Show + DATA.MyWindowSize]);
         
         setAllowAxesZoom(DATA.zoom_handle, GUI.RRDataAxes, false);
@@ -1524,26 +1556,33 @@ displayEndOfDemoMessage('');
         if isfield(DATA.AnalysisParams, 'segment_startTime')
             Filt_time_data = DATA.tnn;
             Filt_data = DATA.nni;
+            Filt_data_saved = DATA.nni_saved;
             
-            filt_win_indexes = find(Filt_time_data >= DATA.AnalysisParams.segment_startTime & Filt_time_data <= DATA.AnalysisParams.segment_effectiveEndTime);
+            filt_win_indexes = find(Filt_time_data >= DATA.AnalysisParams.segment_startTime & Filt_time_data <= DATA.AnalysisParams.segment_effectiveEndTime);            
             
             if ~isempty(filt_win_indexes)
                 
                 filt_signal_time = Filt_time_data(filt_win_indexes(1) : filt_win_indexes(end));
-                filt_signal_data = Filt_data(filt_win_indexes(1) : filt_win_indexes(end));
+                filt_signal_data = Filt_data(filt_win_indexes(1) : filt_win_indexes(end));                                
+                filt_signal_data_saved = Filt_data_saved(filt_win_indexes);                                
                 
-                if (DATA.PlotHR == 0)
+                if DATA.PlotHR == 0
                     filt_data =  filt_signal_data;
+                    filt_data_saved =  filt_signal_data_saved;
                 else
                     filt_data =  60 ./ filt_signal_data;
+                    filt_data_saved =  60 ./ filt_signal_data_saved;
                 end
                 filt_data_time = ones(1, length(DATA.tnn))*NaN;
                 filt_data_vector = ones(1, length(DATA.nni))*NaN;
+                filt_data_vector_saved = ones(1, length(DATA.nni))*NaN;
                 
                 filt_data_time(filt_win_indexes) = filt_signal_time;
                 filt_data_vector(filt_win_indexes) = filt_data;
+                filt_data_vector_saved(filt_win_indexes) = filt_data_saved;
                 
                 set(GUI.filtered_handle, 'XData', filt_data_time, 'YData', filt_data_vector);
+                set(GUI.only_filtered_handle, 'XData', filt_data_time, 'YData', filt_data_vector_saved);
             end
         end
     end
@@ -1554,16 +1593,10 @@ displayEndOfDemoMessage('');
                 ha = GUI.RRDataAxes;
                 MaxYLimit = DATA.YLimUpperAxes.MaxYLimit;
                 MinYLimit = DATA.YLimUpperAxes.MinYLimit;
-%                 time_data = DATA.trr;
-%                 data = DATA.rri;
                 
                 qd_size = size(DATA.QualityAnnotations_Data);
                 intervals_num = qd_size(1);
                 
-%                 if (DATA.PlotHR == 1)
-%                     data = 60 ./ data;
-%                 end
-%                 
                 if ~isfield(GUI, 'GreenLineHandle') || ~isvalid(GUI.GreenLineHandle)
                     GUI.GreenLineHandle = line([DATA.firstSecond2Show DATA.firstSecond2Show + DATA.MyWindowSize], [MaxYLimit MaxYLimit], 'Color', DATA.MyGreen, 'LineWidth', 3, 'Parent', ha);
                 else
@@ -1575,8 +1608,7 @@ displayEndOfDemoMessage('');
                 
                 if ~(DATA.QualityAnnotations_Data(1, 1) + DATA.QualityAnnotations_Data(1,2))==0
                     
-                    if ~isfield(GUI, 'RedLineHandle') || ~isvalid(GUI.RedLineHandle(1))
-                        %                         GUI.RedLineHandle = line((DATA.QualityAnnotations_Data-time_data(1))', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3, 'Parent', ha);
+                    if ~isfield(GUI, 'RedLineHandle') || ~isvalid(GUI.RedLineHandle(1))                        
                         GUI.RedLineHandle = line((DATA.QualityAnnotations_Data)', [MaxYLimit MaxYLimit]', 'Color', 'red', 'LineWidth', 3, 'Parent', ha);
                         uistack(GUI.RedLineHandle, 'top');
                     else
@@ -1595,51 +1627,34 @@ displayEndOfDemoMessage('');
                     end
                     
                     for i = 1 : intervals_num
-%                         a1=find(time_data >= DATA.QualityAnnotations_Data(i,1));
-%                         a2=find(time_data <= DATA.QualityAnnotations_Data(i,2));
-%                         
-%                         if isempty(a2); a2 = 1; end % case where the bad quality starts before the first annotated peak
-%                         if isempty(a1); a1 = length(time_data); end
-%                         if length(a1)<2
-%                             low_quality_indexes = [a2(end) : a1(1)];
-%                         elseif a2(end) == 1
-%                             low_quality_indexes = [1 : a1(1)];
-%                         elseif a2(end) < a1(1)
-%                             low_quality_indexes = [a2(end)-1 : a1(1)];
-%                         else
-%                             low_quality_indexes = [a1(1)-1 : a2(end)+1];
-%                         end
+                        f = [1 2 3 4];
+                        v = [DATA.QualityAnnotations_Data(i,1) MinYLimit; DATA.QualityAnnotations_Data(i,2) MinYLimit; DATA.QualityAnnotations_Data(i,2) MaxYLimit; DATA.QualityAnnotations_Data(i,1) MaxYLimit];
                         
-%                         if ~isempty(low_quality_indexes)
-
-                            
-%                             ylim = get(GUI.RRDataAxes, 'YLim');
-                            f = [1 2 3 4];                    
-                            v = [DATA.QualityAnnotations_Data(i,1) MinYLimit; DATA.QualityAnnotations_Data(i,2) MinYLimit; DATA.QualityAnnotations_Data(i,2) MaxYLimit; DATA.QualityAnnotations_Data(i,1) MaxYLimit];                                                
-                          
-                            GUI.PinkLineHandle(i) =  patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{DATA.quality_class_ind(i)}, 'EdgeColor', DATA.quality_color{DATA.quality_class_ind(i)}, ...
-                                                                                'LineWidth', 1, 'FaceAlpha', 0.27, 'EdgeAlpha', 0.5, 'UserData', DATA.quality_class_ind(i), 'Parent', GUI.RRDataAxes);                    
-                            
-                            uistack(GUI.PinkLineHandle(i), 'bottom');
-                            
-%                             GUI.PinkLineHandle(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', DATA.quality_color{DATA.quality_class_ind(i)}, ...
-%                                                     'LineWidth', 2.5, 'Parent', ha);
-                            if isvalid(DATA.legend_handle) && length(DATA.legend_handle.String) < 3 %
+                        GUI.PinkLineHandle(i) =  patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{DATA.quality_class_ind(i)}, 'EdgeColor', DATA.quality_color{DATA.quality_class_ind(i)}, ...
+                            'LineWidth', 1, 'FaceAlpha', 0.27, 'EdgeAlpha', 0.5, 'UserData', DATA.quality_class_ind(i), 'Parent', GUI.RRDataAxes);
+                        
+                        uistack(GUI.PinkLineHandle(i), 'bottom');
+                        
+                        ylim = get(GUI.AllDataAxes, 'YLim');
+                        f = [1 2 3 4];
+                        v = [DATA.QualityAnnotations_Data(i,1) min(ylim); DATA.QualityAnnotations_Data(i,2) min(ylim); DATA.QualityAnnotations_Data(i,2) max(ylim); DATA.QualityAnnotations_Data(i,1) max(ylim)];
+                        GUI.PinkLineHandle_AllDataAxes(i) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{DATA.quality_class_ind(i)}, 'EdgeColor', DATA.quality_color{DATA.quality_class_ind(i)}, ...
+                            'LineWidth', 1, 'FaceAlpha', 0.7, 'EdgeAlpha', 0.8, 'UserData', DATA.quality_class_ind(i), 'Parent', GUI.AllDataAxes);
+                        uistack(GUI.PinkLineHandle_AllDataAxes(i), 'bottom');
+                    end
+                    
+                    if isvalid(DATA.legend_handle)
+                        if DATA.Detrending
+                            if length(DATA.legend_handle.String) < 4 %
+                                legend([GUI.raw_data_handle, GUI.only_filtered_handle, GUI.filtered_handle GUI.PinkLineHandle(1)], [DATA.legend_handle.String 'Bad quality']);
+                            end
+                        else
+                            if length(DATA.legend_handle.String) < 3 %
                                 legend([GUI.raw_data_handle, GUI.filtered_handle GUI.PinkLineHandle(1)], [DATA.legend_handle.String 'Bad quality']);
                             end
-                            
-%                             GUI.PinkLineHandle_AllDataAxes(i) = line(time_data(low_quality_indexes), data(low_quality_indexes), 'LineStyle', '-', 'Color', DATA.quality_color{DATA.quality_class_ind(i)},...
-%                                                     'LineWidth', 1.5, 'Parent', GUI.AllDataAxes);    
-                                                
-                                                
-                            ylim = get(GUI.AllDataAxes, 'YLim');
-                            f = [1 2 3 4];                    
-                            v = [DATA.QualityAnnotations_Data(i,1) min(ylim); DATA.QualityAnnotations_Data(i,2) min(ylim); DATA.QualityAnnotations_Data(i,2) max(ylim); DATA.QualityAnnotations_Data(i,1) max(ylim)];                    
-                            GUI.PinkLineHandle_AllDataAxes(i) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{DATA.quality_class_ind(i)}, 'EdgeColor', DATA.quality_color{DATA.quality_class_ind(i)}, ...
-                                                                                'LineWidth', 1, 'FaceAlpha', 0.7, 'EdgeAlpha', 0.8, 'UserData', DATA.quality_class_ind(i), 'Parent', GUI.AllDataAxes);                    
-                            uistack(GUI.PinkLineHandle_AllDataAxes(i), 'bottom');                    
-%                         end
+                        end
                     end
+                    
                 end
             end
         end
@@ -2186,6 +2201,7 @@ displayEndOfDemoMessage('');
             DATA.filter_level_index = DATA.default_filter_level_index;
             
             DATA.WinAverage = 0;
+            DATA.Detrending = 0;
             
             DATA.freq_yscale = 'linear';
         end
@@ -2252,7 +2268,7 @@ displayEndOfDemoMessage('');
             set(GUI.ShowLegend_checkbox, 'Value', 1);
             set(GUI.AutoCalc_checkbox, 'Value', 1);
             GUI.AutoCompute_pushbutton.Enable = 'off';
-            GUI.WinAverage_checkbox.Value = 0;
+            GUI.WinAverage_checkbox.Value = 0;            
             
             GUI.DefaultMethod_popupmenu.Value = DATA.default_frequency_method_index;
             
@@ -2575,6 +2591,7 @@ displayEndOfDemoMessage('');
                     clear_statistics_plots();
                     clearStatTables();
                     calcBatchWinNum();
+                    DetrendIfNeed_data_chunk();
                     plotFilteredData();
                     plotMultipleWindows();
                     if get(GUI.AutoCalc_checkbox, 'Value')
@@ -2702,6 +2719,7 @@ displayEndOfDemoMessage('');
             cla(GUI.AllDataAxes);
             plotAllData();
             plotRawData();
+            DetrendIfNeed_data_chunk();
             setXAxesLim();
             setAutoYAxisLimLowAxes(get(GUI.AllDataAxes, 'XLim'));
             DATA.YLimUpperAxes = setYAxesLim(GUI.RRDataAxes, GUI.AutoScaleYUpperAxes_checkbox, GUI.MinYLimitUpperAxes_Edit, GUI.MaxYLimitUpperAxes_Edit, DATA.YLimUpperAxes, DATA.AutoYLimitUpperAxes);
@@ -2835,19 +2853,19 @@ displayEndOfDemoMessage('');
             
             [nni, tnn, ~] = filtrr(DATA.rri, DATA.trr, 'filter_quotient', filter_quotient, 'filter_ma', filter_ma, 'filter_range', filter_range);
             
-            if (isempty(nni))
-                ME = MException('FiltCalcPlotSignalStat:FiltrrNoNNIntervalOutputted', 'No NN interval outputted');
-                throw(ME);
-            elseif (length(DATA.rri) * 0.1 > length(nni))
-                ME = MException('FiltCalcPlotSignalStat:NotEnoughNNIntervals', 'Not enough NN intervals');
-                throw(ME);
-            else
+            if isempty(nni)                
+                throw(MException('FiltCalcPlotSignalStat:FiltrrNoNNIntervalOutputted', 'No NN interval outputted'));
+            elseif length(DATA.rri) * 0.1 > length(nni)                
+                throw(MException('FiltCalcPlotSignalStat:NotEnoughNNIntervals', 'Not enough NN intervals'));
+            else  
                 DATA.nni = nni;
-                DATA.tnn = tnn;
+                DATA.tnn = tnn;   
+                
+                DATA.nni_saved = nni;
+                DATA.nni4calc = nni;
             end
-        else
-            ME = MException('FiltCalcPlotSignalStat:NoData', 'No data');
-            throw(ME);
+        else            
+            throw(MException('FiltCalcPlotSignalStat:NoData', 'No data'));
         end
     end
 %%
@@ -3003,12 +3021,16 @@ displayEndOfDemoMessage('');
     end
 %%
     function calc_filt_signal()
-        if(isfield(DATA, 'rri') && ~isempty(DATA.rri) )
+        if isfield(DATA, 'rri') && ~isempty(DATA.rri) 
             FiltSignal();
+            DetrendIfNeed_data_chunk();
             clear_statistics_plots();
             clearStatTables();
             if isfield(GUI, 'filtered_handle')
                 set(GUI.filtered_handle, 'XData', ones(1, length(DATA.tnn))*NaN, 'YData', ones(1, length(DATA.nni))*NaN);
+            end
+            if isfield(GUI, 'only_filtered_handle')
+                set(GUI.only_filtered_handle, 'XData', ones(1, length(DATA.tnn))*NaN, 'YData', ones(1, length(DATA.nni))*NaN);
             end
             plotFilteredData();
             if get(GUI.AutoCalc_checkbox, 'Value')
@@ -3191,6 +3213,7 @@ displayEndOfDemoMessage('');
                     clear_statistics_plots();
                     clearStatTables();
                     calcBatchWinNum();
+                    DetrendIfNeed_data_chunk();
                     plotFilteredData();
                     plotMultipleWindows();
                     
@@ -3538,9 +3561,8 @@ displayEndOfDemoMessage('');
         if DATA.filter_index == length(DATA.Filters)
             legend_handle.String{2} = 'Selected time series';
         else
-            legend_handle.String{2} = 'Selected filtered time series';
-        end
-        
+            legend_handle.String{2} = 'Selected filtered time series';            
+        end        
     end
 %%
     function onSavePSDAsFile( filename )
@@ -3803,6 +3825,7 @@ displayEndOfDemoMessage('');
                 setLogo(waitbar_handle, 'M2');
                 try
                     FiltSignal();
+                    DetrendIfNeed_data_chunk();
                     clear_statistics_plots();
                     clearStatTables();
                     plotFilteredData();
@@ -4009,6 +4032,8 @@ displayEndOfDemoMessage('');
                     doFilt = 1;
                 elseif strcmp(Filter, 'Quotient') && strcmp(param_category{2}, 'quotient')
                     doFilt = 1;
+                elseif strcmp(param_category{2}, 'detrending') && strcmp(param_category{3}, 'lambda')
+                    doFilt = 2;
                 end
             else
                 doFilt = 1;
@@ -4016,7 +4041,12 @@ displayEndOfDemoMessage('');
             
             if get(GUI.AutoCalc_checkbox, 'Value')
                 try
-                    if doCalc && doFilt
+                    
+                    if doCalc && doFilt == 2 %% Change lambda
+                        Detrending_checkbox_Callback();
+                    end
+                    
+                    if doCalc && doFilt == 1
                         update_statistics(param_category(1));
                     end
                     set(src, 'UserData', screen_value);
@@ -4258,6 +4288,7 @@ displayEndOfDemoMessage('');
                     DATA.active_window = 1;
                     clear_statistics_plots();
                     clearStatTables();
+                    DetrendIfNeed_data_chunk();
                     plotFilteredData();
                     plotMultipleWindows();
                     
@@ -4384,7 +4415,7 @@ displayEndOfDemoMessage('');
                 t0 = cputime;
                 
                 try
-                    nni_window = DATA.nni(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
+                    nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
                     
                     waitbar(1 / 3, waitbar_handle, ['Calculating time measures for window ' num2str(i)]);
                     setLogo(waitbar_handle, 'M2');
@@ -4470,7 +4501,9 @@ displayEndOfDemoMessage('');
                 t0 = cputime;
                 
                 try
-                    nni_window = DATA.nni(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
+                    nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
+                    tnn_window =  DATA.tnn(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
+                    tnn_window = tnn_window - tnn_window(1);
                     
                     waitbar(2 / 3, waitbar_handle, ['Calculating frequency measures for window ' num2str(i)]);
                     setLogo(waitbar_handle, 'M2');
@@ -4479,9 +4512,9 @@ displayEndOfDemoMessage('');
                     
                     if DATA.WinAverage
                         window_minutes = mhrv_get_default('hrv_freq.window_minutes');
-                        [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', window_minutes.value);
+                        [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', window_minutes.value, 'time_intervals', tnn_window);
                     else
-                        [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', []);
+                        [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', [], 'time_intervals', tnn_window);
                     end
                     
                     DATA.FrStat.PlotData{i} = pd_freq;
@@ -4561,7 +4594,7 @@ displayEndOfDemoMessage('');
             t0 = cputime;
             
             try
-                nni_window = DATA.nni(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
+                nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
                 
                 waitbar(3 / 3, waitbar_handle, ['Calculating nolinear measures for window ' num2str(i)]);
                 setLogo(waitbar_handle, 'M2');
@@ -4724,6 +4757,7 @@ displayEndOfDemoMessage('');
             clear_statistics_plots();
             clearStatTables();
             calcBatchWinNum();
+            DetrendIfNeed_data_chunk();
             plotFilteredData();
             plotMultipleWindows();
             
@@ -4893,6 +4927,7 @@ displayEndOfDemoMessage('');
                 clear_statistics_plots();
                 clearStatTables();
                 calcBatchWinNum();
+                DetrendIfNeed_data_chunk();
                 plotFilteredData();
                 plotMultipleWindows();
                 if get(GUI.AutoCalc_checkbox, 'Value')
@@ -5382,6 +5417,7 @@ displayEndOfDemoMessage('');
             clear_statistics_plots();
             clearStatTables();
             calcBatchWinNum();
+            DetrendIfNeed_data_chunk();
             plotFilteredData();
             plotMultipleWindows();
             if get(GUI.AutoCalc_checkbox, 'Value')
@@ -5399,6 +5435,84 @@ displayEndOfDemoMessage('');
             setLogo(waitbar_handle, 'M2');
             calcNonlinearStatistics(waitbar_handle);
             close(waitbar_handle);
+        end
+    end
+%%
+    function Detrending_checkbox_Callback(~, ~)
+        detrend = get(GUI.Detrending_checkbox, 'Value');
+        mhrv_set_default('filtrr.detrending.enable', detrend);
+        DATA.Detrending = detrend;        
+        try
+            DetrendIfNeed_data_chunk();
+            clear_statistics_plots();
+            clearStatTables();
+            if isfield(GUI, 'filtered_handle')
+                set(GUI.filtered_handle, 'XData', ones(1, length(DATA.tnn))*NaN, 'YData', ones(1, length(DATA.nni))*NaN);
+            end
+            plotFilteredData();
+            if get(GUI.AutoCalc_checkbox, 'Value')
+                calcStatistics();
+            end
+        catch e
+            h_e = errordlg(['Detrending_checkbox_Callback Error: ' e.message], 'Input Error');
+            setLogo(h_e, 'M2');
+            return;
+        end
+    end
+%%
+    function [nni_detrended_trans, nni_detrended] = detrend_data(nni)
+        try
+            lambda = mhrv_get_default('filtrr.detrending.lambda');
+            nni_detrended_trans = detrendrr(nni, lambda.value, DATA.SamplingFrequency);
+            nni_detrended = nni - nni_detrended_trans;
+        catch
+            throw(MException('detrend_data:error', 'Detrending error.'));
+        end
+    end
+%%
+    function DetrendIfNeed_data_chunk()
+        if isfield(DATA.AnalysisParams, 'segment_startTime')
+            Filt_time_data = DATA.tnn;                                    
+            Filt_data = DATA.nni_saved;                        
+%           Filt_data = DATA.nni;
+            
+            filt_win_indexes = find(Filt_time_data >= DATA.AnalysisParams.segment_startTime & Filt_time_data <= DATA.AnalysisParams.segment_effectiveEndTime);
+            
+            if ~isempty(filt_win_indexes)                                
+%                 filt_signal_data = Filt_data(filt_win_indexes(1) : filt_win_indexes(end));
+                filt_signal_data = Filt_data(filt_win_indexes);
+                try
+                    if DATA.Detrending
+                        [data2calc, data2plot] = detrend_data(filt_signal_data);
+                        GUI.filtered_handle.LineWidth = 1.5;
+                        GUI.filtered_handle.Color = 'red'; 
+                        uistack(GUI.filtered_handle, 'top');
+                        DATA.legend_handle.String
+                        if isfield(GUI, 'PinkLineHandle') && isvalid(GUI.PinkLineHandle(1)) && length(DATA.legend_handle.String) == 3                            
+                            legend([GUI.raw_data_handle, GUI.only_filtered_handle, GUI.filtered_handle, GUI.PinkLineHandle(1)], [DATA.legend_handle.String(1:end-1), 'Detrended time series', DATA.legend_handle.String(end)]);
+                        elseif length(DATA.legend_handle.String) == 2
+                            legend([GUI.raw_data_handle, GUI.only_filtered_handle, GUI.filtered_handle], [DATA.legend_handle.String, 'Detrended time series']);                          
+                        end
+                    else
+                        data2plot = filt_signal_data;
+                        data2calc = filt_signal_data;
+                        GUI.filtered_handle.LineWidth = 1;
+                        GUI.filtered_handle.Color = 'green'; 
+                        DATA.legend_handle.String
+                        if isfield(GUI, 'PinkLineHandle') && isvalid(GUI.PinkLineHandle(1)) && length(DATA.legend_handle.String) == 4
+                            legend([GUI.raw_data_handle, GUI.filtered_handle, GUI.PinkLineHandle(1)], [DATA.legend_handle.String(1 : end - 2), DATA.legend_handle.String(end)]); 
+                        elseif ~isfield(GUI, 'PinkLineHandle') && length(DATA.legend_handle.String) > 2
+                            legend([GUI.raw_data_handle, GUI.filtered_handle], DATA.legend_handle.String(1 : end - 1)); 
+                        elseif  length(DATA.legend_handle.String) > 2
+                            legend([GUI.raw_data_handle, GUI.filtered_handle], DATA.legend_handle.String(1 : end - 1)); 
+                        end
+                    end                    
+                catch                    
+                    throw(MException('FiltSignal:Detrending', 'Detrending error.'));
+                end                                                                
+                DATA.nni(filt_win_indexes) = data2plot;        
+                DATA.nni4calc(filt_win_indexes) = data2calc;
+            end
         end
     end
 %%
@@ -5814,6 +5928,7 @@ displayEndOfDemoMessage('');
         set_default_values();
         
         FiltSignal();
+        DetrendIfNeed_data_chunk();
         DATA.Filt_MaxSignalLength = DATA.tnn(end);
         
         if ~isfield(DATA, 'AnalysisParams')

@@ -36,6 +36,8 @@ end
         DATA.sig = [];
         DATA.Fs = 0;
         DATA.qrs = [];
+        DATA.qrs_saved = [];
+        DATA.Adjust = 0;
         
         DATA.Mammal = '';
 %         DATA.mammal_index = 1;
@@ -105,6 +107,9 @@ end
         GUI.GUIRecord.Class_popupmenu.Visible = 'off';
         GUI.Class_Text.Visible = 'off';
         
+        GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
+        GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
+        GUI.Adjustment_Text.Visible = 'on';
         
         title(GUI.ECG_Axes, '');
                 
@@ -136,7 +141,7 @@ end
         
         DATA.screensize = get( 0, 'Screensize' );
         
-        % DEBUGGING MODE - Small Screen
+%         DEBUGGING MODE - Small Screen
 %         DATA.screensize = [0 0 1250 800];
         
         DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
@@ -165,6 +170,7 @@ end
         
         DATA.GUI_Annotation = {'Peak'; 'Signal quality'};
         DATA.GUI_Class = {'A'; 'B'; 'C'};
+        DATA.Adjustment_type = {'Default'; 'Local max'; 'Local min'};
         
 %         rec_colors = lines(5);
 %         DATA.quality_color = {rec_colors(5, :); rec_colors(3, :); rec_colors(2, :)};
@@ -256,7 +262,7 @@ end
         Upper_Part_Box = uix.HBoxFlex('Parent', mainLayout, 'Spacing', DATA.Spacing); % Upper Part
         Low_Part_BoxPanel = uix.BoxPanel( 'Parent', mainLayout, 'Title', '  ', 'Padding', DATA.Padding); %Low Part
         
-        upper_part = 0.5;
+        upper_part = 0.55;
         low_part = 1 - upper_part;
         set(mainLayout, 'Heights', [(-1)*upper_part, (-1)*low_part]  );
         
@@ -339,12 +345,19 @@ end
         [GUI, textBox{7}, text_handles{7}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Integration_popupmenu', 'Integration level', RecordBox, @Integration_popupmenu_Callback, DATA.GUI_Integration);
         [GUI, textBox{8}, text_handles{8}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'PeakDetector_popupmenu', 'Peak detector', RecordBox, @PeakDetector_popupmenu_Callback, DATA.GUI_PeakDetector);
         [GUI, textBox{9}, text_handles{9}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Annotation_popupmenu', 'Annotation', RecordBox, @Annotation_popupmenu_Callback, DATA.GUI_Annotation);
-        [GUI, textBox{10}, text_handles{10}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Class_popupmenu', 'Class', RecordBox, @Class_popupmenu_Callback, DATA.GUI_Class);
+        [GUI, textBox{10}, text_handles{10}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'PeakAdjustment_popupmenu', 'Peak adjustment', RecordBox, @PeakAdjustment_popupmenu_Callback, DATA.Adjustment_type);
+        [GUI, textBox{11}, text_handles{11}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Class_popupmenu', 'Class', RecordBox, @Class_popupmenu_Callback, DATA.GUI_Class);       
         
+        GUI.Adjust_textBox = textBox{10};
+        GUI.Class_textBox = textBox{11};
+                        
         GUI.GUIRecord.Class_popupmenu.Visible = 'off';
         GUI.GUIRecord.Class_popupmenu.Value = 3;
-        GUI.Class_Text = text_handles{10};
+        GUI.Class_Text = text_handles{11};
         GUI.Class_Text.Visible = 'off';
+        
+        GUI.Adjustment_Text = text_handles{10};
+        GUI.Adjustment_Text.Visible = 'on';
         
         max_extent_control = calc_max_control_x_extend(text_handles);
         
@@ -359,7 +372,7 @@ end
             field_size = [max_extent_control + 5, -0.45, -0.5];
         end
         
-        for i = 6 : 10
+        for i = 6 : 11
             set(textBox{i}, 'Widths', field_size);
         end
         
@@ -368,20 +381,25 @@ end
         for i = 1 : 4
             set(textBox{i}, 'Widths', field_size);
         end        
-                
+                 
         if DATA.SmallScreen
+            hf = -0.45;
             uix.Empty( 'Parent', RecordBox);
-            set(RecordBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7 -20] );
-        else            
-            set(RecordBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7] );
+            set(RecordBox, 'Heights', [hf * ones(1, 11) -1] );
+        else   
+            hf = -4;
+            set(RecordBox, 'Heights', hf * ones(1, 11)); % [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7 -7]
         end
         
         load_config_name_button_position = get(GUI.GUIRecord.Config_text_pushbutton_handle, 'Position');
-        updated_position = [load_config_name_button_position(1) load_config_name_button_position(2) + 12 load_config_name_button_position(3) load_config_name_button_position(4) - 12];
+        updated_position = [load_config_name_button_position(1) load_config_name_button_position(2) + 10 load_config_name_button_position(3) load_config_name_button_position(4) - 10];
         set(GUI.GUIRecord.RecordFileName_text_pushbutton_handle, 'Position', updated_position, 'Enable', 'on'); 
         set(GUI.GUIRecord.PeaksFileName_text_pushbutton_handle, 'Position', updated_position); 
         set(GUI.GUIRecord.Config_text_pushbutton_handle, 'Position', updated_position); 
         set(GUI.GUIRecord.DataQualityFileName_text_pushbutton_handle, 'Position', updated_position); 
+        
+        GUI.Adjust_textBox_position = get(GUI.Adjust_textBox, 'Position');
+        GUI.Class_textBox_position = get(GUI.Class_textBox, 'Position');
         
         %-------------------------------------------------------
         % Config Params Tab
@@ -414,6 +432,10 @@ end
         GUI.AutoPeakWin_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', SmallFontSize, 'String', 'Auto', 'Value', 1);
         [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', '');
         
+%         uix.Empty('Parent', GUI.ConfigBox );
+%         uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'Adjust R-peak location', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+        
+        
         %         uix.Empty('Parent', GUI.ConfigBox );
         %
         %         tempBox = uix.HBox('Parent', GUI.ConfigBox, 'Spacing', DATA.Spacing);
@@ -423,7 +445,8 @@ end
         %         uix.Empty('Parent', tempBox );
         
         %         uix.Empty('Parent', GUI.ConfigBox );
-        set(GUI.ConfigBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7   -1 -7 -7 -7 -7 -7 -7   -8 -7 -7] );
+%         set(GUI.ConfigBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7   -1 -7 -7 -7 -7 -7 -7   -8 -7 -7   -7 -7] );
+        set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)   -1 -7 * ones(1, 6)   -8 -7 -7 ] );
         %-------------------------------------------------------
         % Display Tab
         %         field_size = [110, 140, 10, -1];
@@ -1083,24 +1106,27 @@ end
                     
                     if strcmp(peak_detector, 'jqrs')
                         qrs_pos = jqrs(bpecg, DATA.Fs, thr, rp, 0); % qrs_pos = ptqrs(bpecg,fs,thr,rp,0);
-                        DATA.qrs = qrs_pos';
+                        DATA.qrs = qrs_pos';                        
                     elseif strcmp(peak_detector, 'wjqrs')
                         qrs_pos = wjqrs(bpecg, DATA.Fs, thr, rp, ws);
-                        DATA.qrs = qrs_pos';
+                        DATA.qrs = qrs_pos';                        
                     else                        
                         if exist(fullfile([DATA.wfdb_record_name '.dat']), 'file') && exist(fullfile([DATA.wfdb_record_name '.hea']), 'file')
                             
-                            mhrv_set_default('rqrs.window_size_sec', 0.8 * str2double(get(GUI.GUIConfig.QS, 'String')));
+%                             mhrv_set_default('rqrs.window_size_sec', 0.8 * str2double(get(GUI.GUIConfig.QS, 'String')));
+                            mhrv_set_default('rqrs.window_size_sec', DATA.config_map('window_size_sec'));
                                                     
-                            [DATA.qrs, tm, sig, Fs] = rqrs(DATA.wfdb_record_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);                                                        
+                            [DATA.qrs, tm, sig, Fs] = rqrs(DATA.wfdb_record_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);                              
                         else
                             throw(MException('calc_peaks:text', 'Problems with peaks calculation. Wfdb file not exists.'));
                         end
                     end                    
                     if isvalid(waitbar_handle)
                         close(waitbar_handle);
-                    end                                                            
+                    end                                        
+                    
                     if ~isempty(DATA.qrs)
+                        DATA.qrs_saved = DATA.qrs;
                         DATA.qrs = double(DATA.qrs);
                         GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
                         uistack(GUI.red_peaks_handle, 'top');  % bottom
@@ -1503,6 +1529,7 @@ end
                             
                             time_data = data.Time.Data;
                             DATA.qrs = int64(time_data * DATA.Fs);
+                            DATA.qrs_saved = DATA.qrs;
                             
                             if ~strcmp(Mammal, DATA.config_map('mammal')) || ~strcmp(integration, DATA.Integration_From_Files{DATA.integration_index})
                                 h_e = warndlg('Mammal and/or integration level of data file does not match the one of the peaks file.', 'Warning');
@@ -1707,8 +1734,9 @@ end
     function AutoCompute_pushbutton_Callback( ~, ~ )
         try
             RunAndPlotPeakDetector();
+            PeakAdjustment();
         catch e
-            h_e = errordlg(['AutoCompute_pushbutton_Callback error: ' e.message], 'Input Error');
+            h_e = errordlg(['AutoCompute pushbutton callback error: ' e.message], 'Input Error');
             setLogo(h_e, 'M1');
             return;
         end
@@ -1774,6 +1802,11 @@ end
             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
             GUI.Class_Text.Visible = 'off';
             GUI.GUIRecord.Class_popupmenu.Value = 3;
+            
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
+            GUI.Adjustment_Text.Visible = 'on';
+            DATA.Adjust = 0;
             
             set_new_mammal(DATA.init_config_file_name);
 
@@ -2255,6 +2288,7 @@ end
             global_ind = find(DATA.tm == time_new_peak);
             
             DATA.qrs = sort([DATA.qrs', global_ind])';
+            DATA.qrs_saved = DATA.qrs;
             
             DATA.peaks_added = DATA.peaks_added + length(global_ind);
             GUI.PeaksTable.Data(2, 2) = {DATA.peaks_added};
@@ -2272,6 +2306,7 @@ end
             GUI.red_peaks_handle.XData(peak_ind) = [];
             GUI.red_peaks_handle.YData(peak_ind) = [];
             DATA.qrs(peak_ind) = [];
+            DATA.qrs_saved = DATA.qrs;
             
             DATA.peaks_deleted = DATA.peaks_deleted + length(peak_ind);
             GUI.PeaksTable.Data(3, 2) = {DATA.peaks_deleted};
@@ -2303,6 +2338,7 @@ end
                 GUI.red_peaks_handle.XData(peak_ind) = [];
                 GUI.red_peaks_handle.YData(peak_ind) = [];
                 DATA.qrs(peak_ind) = [];
+                DATA.qrs_saved = DATA.qrs;
                 
                 DATA.peaks_deleted = DATA.peaks_deleted + length(peak_ind);
                 GUI.PeaksTable.Data(3, 2) = {DATA.peaks_deleted};
@@ -2502,13 +2538,79 @@ end
         if index_selected == 1
             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
             GUI.Class_Text.Visible = 'off';
+            
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
+            GUI.Adjustment_Text.Visible = 'on';
+            
+            set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
+            set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
         else
             GUI.GUIRecord.Class_popupmenu.Visible = 'on';
             GUI.Class_Text.Visible = 'on';
-        end
+            
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'off';
+            GUI.Adjustment_Text.Visible = 'off';
+            
+            set(GUI.Adjust_textBox, 'Position', GUI.Class_textBox_position);
+            set(GUI.Class_textBox, 'Position', GUI.Adjust_textBox_position);
+        end        
     end
 %%
     function Class_popupmenu_Callback( ~, ~ )
+    end
+%%
+    function PeakAdjustment_popupmenu_Callback( ~, ~ )
+        index_selected = get(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value');
+        
+        if index_selected == 1 % default
+            DATA.Adjust = 0;
+        elseif index_selected == 2 % local max
+            DATA.Adjust = 1;
+        elseif index_selected == 3 % local min
+            DATA.Adjust = -1;
+        end
+        if get(GUI.AutoCalc_checkbox, 'Value')
+            PeakAdjustment();
+        end
+    end
+%%
+%%
+    function PeakAdjustment()
+        if DATA.Adjust
+            try
+                waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
+                setLogo(waitbar_handle, 'M1');
+                
+                DATA.qrs = qrs_adjust(DATA.sig, DATA.qrs, DATA.Fs, DATA.Adjust, DATA.peak_search_win/1000, false);
+                
+                if isvalid(waitbar_handle)
+                    close(waitbar_handle);
+                end
+            catch e
+                h_e = errordlg(['qrs_adjust error: ' e.message], 'Input Error');
+                setLogo(h_e, 'M1');
+                return;
+            end
+        else % default
+            DATA.qrs = DATA.qrs_saved;
+        end
+        if ~isempty(DATA.qrs)
+            if isfield(GUI, 'red_peaks_handle') && ishandle(GUI.red_peaks_handle) && isvalid(GUI.red_peaks_handle)
+                delete(GUI.red_peaks_handle);
+            end
+            DATA.qrs = double(DATA.qrs);
+            GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
+            uistack(GUI.red_peaks_handle, 'top');
+            
+            delete(GUI.red_rect_handle);
+            delete(GUI.RRInt_handle);
+            
+            plot_rr_data();
+            plot_red_rectangle(DATA.zoom_rect_limits);
+            setRRIntYLim();
+            %                 DATA.peaks_total = length(DATA.qrs);
+            %                 GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
+        end
     end
 %%
     function SaveDataQuality_Callback( ~, ~ )

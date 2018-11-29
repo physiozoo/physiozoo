@@ -49,6 +49,18 @@ filtrr:
             description: Maximal allowed change between adjacent RR intervals
             name: RR max change
             units: '%'
+    detrending:
+        lambda:
+            value: 10
+            description: Regularization parameter
+            name: Lambda
+            units: n.u.
+        enable:
+            value: false
+            description: Enable or disable the detrending of the time series
+            name: Detrend NN time series
+            units: boolean            
+    
 
 # Time-domain HRV parameters
 hrv_time:

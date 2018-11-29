@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.1.0] - 2018-11-29
+
+### Added
+
+- Detrend the filtering
+- Adjust r-peak locations
+
+### Changed
+- Bug fixes.
+
 ## [1.0.3] - 2018-11-14
 
 ### Changed

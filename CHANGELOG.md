@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.1.3] - 2018-12-04
+
+### Changed
+
+- Fix broken download link for WFDB windows binaries.
+
 ## [1.1.1] - 2018-12-03
 
 ### Changed

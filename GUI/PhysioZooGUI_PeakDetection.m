@@ -2267,10 +2267,15 @@ end
             peak_ind = [];
         end
         
-        if isempty(peak_ind)
+        if isempty(peak_ind)                        
             
             if get(GUI.AutoPeakWin_checkbox, 'Value')
-                [new_peak, ind_new_peak] = max(DATA.sig((DATA.tm>=x_min & DATA.tm<=x_max)));
+                
+                if DATA.Adjust == -1 % local min                
+                    [new_peak, ind_new_peak] = min(DATA.sig((DATA.tm>=x_min & DATA.tm<=x_max)));
+                else
+                    [new_peak, ind_new_peak] = max(DATA.sig((DATA.tm>=x_min & DATA.tm<=x_max)));
+                end
                 time_area = DATA.tm((DATA.tm>=x_min & DATA.tm<=x_max));
                 time_new_peak = time_area(ind_new_peak);
             else

@@ -703,7 +703,8 @@ end
         
         if get(GUI.AutoCalc_checkbox, 'Value')
             try
-                RunAndPlotPeakDetector();                
+                RunAndPlotPeakDetector();        
+                set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', 1);
             catch e
                 h_e = errordlg(['PeakDetector error: ' e.message], 'Input Error');
                 setLogo(h_e, 'M1');
@@ -1455,6 +1456,7 @@ end
             if get(GUI.AutoCalc_checkbox, 'Value')
                 try
                     RunAndPlotPeakDetector();
+                    set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', 1);
                 catch e
                     h_e = errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
                     setLogo(h_e, 'M1');
@@ -2288,7 +2290,7 @@ end
             global_ind = find(DATA.tm == time_new_peak);
             
             DATA.qrs = sort([DATA.qrs', global_ind])';
-            DATA.qrs_saved = DATA.qrs;
+            DATA.qrs_saved = sort([DATA.qrs_saved', global_ind])';
             
             DATA.peaks_added = DATA.peaks_added + length(global_ind);
             GUI.PeaksTable.Data(2, 2) = {DATA.peaks_added};
@@ -2306,7 +2308,7 @@ end
             GUI.red_peaks_handle.XData(peak_ind) = [];
             GUI.red_peaks_handle.YData(peak_ind) = [];
             DATA.qrs(peak_ind) = [];
-            DATA.qrs_saved = DATA.qrs;
+            DATA.qrs_saved(peak_ind) = [];
             
             DATA.peaks_deleted = DATA.peaks_deleted + length(peak_ind);
             GUI.PeaksTable.Data(3, 2) = {DATA.peaks_deleted};
@@ -2316,7 +2318,6 @@ end
             
         end           
         try
-%           cla(GUI.RRInt_Axes);            
             delete(GUI.red_rect_handle);
             delete(GUI.RRInt_handle);
             
@@ -2338,7 +2339,7 @@ end
                 GUI.red_peaks_handle.XData(peak_ind) = [];
                 GUI.red_peaks_handle.YData(peak_ind) = [];
                 DATA.qrs(peak_ind) = [];
-                DATA.qrs_saved = DATA.qrs;
+                DATA.qrs_saved(peak_ind) = [];
                 
                 DATA.peaks_deleted = DATA.peaks_deleted + length(peak_ind);
                 GUI.PeaksTable.Data(3, 2) = {DATA.peaks_deleted};
@@ -2347,7 +2348,6 @@ end
                 GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
                                                 
                 try
-%                   cla(GUI.RRInt_Axes);
                     delete(GUI.red_rect_handle);
                     delete(GUI.RRInt_handle);
                     plot_rr_data();
@@ -2573,7 +2573,6 @@ end
             PeakAdjustment();
         end
     end
-%%
 %%
     function PeakAdjustment()
         if DATA.Adjust

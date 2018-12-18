@@ -53,7 +53,7 @@ end
         DATA.customConfigFile = '';
         DATA.wfdb_record_name = '';
         
-        DATA.peak_search_win = 100;
+%         DATA.peak_search_win = 100;
         
         DATA.PlotHR = 0;
         
@@ -430,7 +430,7 @@ end
         uix.Empty('Parent', GUI.ConfigBox );
         
         GUI.AutoPeakWin_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', SmallFontSize, 'String', 'Auto', 'Value', 1);
-        [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', '');
+        [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window');
         
 %         uix.Empty('Parent', GUI.ConfigBox );
 %         uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'Adjust R-peak location', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
@@ -638,6 +638,8 @@ end
                 end
             end
             
+            DATA.peak_search_win = str2double(DATA.config_map('peaks_window'));
+            
             load_updateGUI_config_param();
             if isvalid(waitbar_handle)
                 close(waitbar_handle);
@@ -661,6 +663,25 @@ end
             DATA.peakDetector = DATA.config_map('peak_detector');
             DATA.peakDetector_index = find(strcmpi(DATA.GUI_PeakDetector, DATA.peakDetector));
             set(GUI.GUIRecord.PeakDetector_popupmenu, 'Value', DATA.peakDetector_index);
+            
+            
+            adjust_index = find(strcmpi(DATA.Adjustment_type, DATA.config_map('peak_adjustment')));
+            set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', adjust_index);
+            
+            
+            
+            
+            if adjust_index == 1 % default
+                DATA.Adjust = 0;
+            elseif adjust_index == 2 % local max
+                DATA.Adjust = 1;
+            elseif adjust_index == 3 % local min
+                DATA.Adjust = -1;
+            end
+            
+           
+            
+            
         catch e
             rethrow(e);
         end
@@ -670,18 +691,18 @@ end
         setECGXLim(0, right_limit2plot);
         setECGYLim(0, right_limit2plot);                
         
-        if strcmp(mammal, 'dog')
-            DATA.peak_search_win = 90;
-        elseif strcmp(mammal, 'rabbit')
-            DATA.peak_search_win = 40;
-        elseif strcmp(mammal, 'mouse')
-            DATA.peak_search_win = 17;
-        elseif strcmp(mammal, 'human')
-            DATA.peak_search_win = 150;
-        else
-            DATA.peak_search_win = 100;
-        end
-        set(GUI.GUIConfig.PeaksWindow, 'String', DATA.peak_search_win);
+%         if strcmp(mammal, 'dog')
+%             DATA.peak_search_win = 90;
+%         elseif strcmp(mammal, 'rabbit')
+%             DATA.peak_search_win = 40;
+%         elseif strcmp(mammal, 'mouse')
+%             DATA.peak_search_win = 17;
+%         elseif strcmp(mammal, 'human')
+%             DATA.peak_search_win = 150;
+%         else
+%             DATA.peak_search_win = 100;
+%         end
+%         set(GUI.GUIConfig.PeaksWindow, 'String', DATA.peak_search_win);
     end
 %%
     function Mammal_popupmenu_Callback(src, ~)                
@@ -1049,21 +1070,9 @@ end
             end
             
             DATA.config_map(get(GUI.GUIConfig.hcf, 'UserData')) = str2double(get(GUI.GUIConfig.hcf, 'String'));
-            
-            %                 curr_key = get(GUI.GUIConfig.hcf, 'UserData');
-            %                 curr_structure = DATA.config_map(curr_key);
-            %                 curr_structure = setfield(curr_structure, 'value', get(GUI.GUIConfig.hcf, 'String'));
-            %                 DATA.config_map(curr_key) = curr_structure;
-            
-            
-            
+                        
             DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
-            temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
-            
-            
-            %                 temp_custom_conf_fileID = saveCustomParameters2ConfFile(DATA.customConfigFile);
-            
-            
+            temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);            
             
             if temp_custom_conf_fileID == -1
                 h_e = errordlg('Problems with creation of custom config file.', 'Input Error');
@@ -1283,6 +1292,10 @@ end
             if get(GUI.AutoCalc_checkbox, 'Value')
                 try
                     RunAndPlotPeakDetector();
+                    
+                    if DATA.Adjust % no default
+                        PeakAdjustment(DATA.qrs_saved);
+                    end
                 catch e
                     h_e = errordlg(['LoadConfigurationFile error: ' e.message], 'Input Error');
                     setLogo(h_e, 'M1');
@@ -1467,9 +1480,26 @@ end
     end
 %%
     function Peaks_Window_edit_Callback(src, ~)
-        field_value = str2double(get(src, 'String'));
+        
+        str_field_value = get(src, 'String');
+        
+        field_value = str2double(str_field_value);
         if field_value > 0 && field_value < 1000
             DATA.peak_search_win = field_value;
+            
+            if DATA.Adjust % no default
+                PeakAdjustment(DATA.qrs_saved);
+            end
+            
+            DATA.config_map(get(src, 'UserData')) = str_field_value;
+            DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
+            temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
+            if temp_custom_conf_fileID == -1
+                h_e = errordlg('Problems with creation of custom config file.', 'Input Error');
+                setLogo(h_e, 'M1');
+                return;
+            end
+            
         else
             set(src, 'String', num2str(DATA.peak_search_win));
             h_e = errordlg('The window length for peak detection must be greater than 0 and less than 1 sec.', 'Input Error');
@@ -1736,7 +1766,7 @@ end
     function AutoCompute_pushbutton_Callback( ~, ~ )
         try
             RunAndPlotPeakDetector();
-            PeakAdjustment();
+            PeakAdjustment(DATA.qrs);
         catch e
             h_e = errordlg(['AutoCompute pushbutton callback error: ' e.message], 'Input Error');
             setLogo(h_e, 'M1');
@@ -2564,8 +2594,13 @@ end
     function Class_popupmenu_Callback( ~, ~ )
     end
 %%
-    function PeakAdjustment_popupmenu_Callback( ~, ~ )
-        index_selected = get(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value');
+    function PeakAdjustment_popupmenu_Callback(src, ~ )
+        
+        items = get(src, 'String');
+        index_selected = get(src, 'Value');
+%         index_selected = get(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value');
+                
+        DATA.config_map('peak_adjustment') = items{index_selected};
         
         if index_selected == 1 % default
             DATA.Adjust = 0;
@@ -2575,22 +2610,26 @@ end
             DATA.Adjust = -1;
         end
         if get(GUI.AutoCalc_checkbox, 'Value')
-            PeakAdjustment();
+            PeakAdjustment(DATA.qrs);
         end
     end
 %%
-    function PeakAdjustment()
+    function PeakAdjustment(QRS)
         if DATA.Adjust
             try
                 waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
                 setLogo(waitbar_handle, 'M1');
                 
-                DATA.qrs = qrs_adjust(DATA.sig, DATA.qrs, DATA.Fs, DATA.Adjust, DATA.peak_search_win/1000, false);
+%                 DATA.qrs = qrs_adjust(DATA.sig, DATA.qrs, DATA.Fs, DATA.Adjust, DATA.peak_search_win/1000, false);
+                DATA.qrs = qrs_adjust(DATA.sig, double(QRS), DATA.Fs, DATA.Adjust, DATA.peak_search_win/1000, false);
                 
                 if isvalid(waitbar_handle)
                     close(waitbar_handle);
                 end
             catch e
+                if isvalid(waitbar_handle)
+                    close(waitbar_handle);
+                end
                 h_e = errordlg(['qrs_adjust error: ' e.message], 'Input Error');
                 setLogo(h_e, 'M1');
                 return;

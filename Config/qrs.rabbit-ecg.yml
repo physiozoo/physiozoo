@@ -1,6 +1,7 @@
 mammal:             rabbit
 integration_level:  ECG
 peak_detector:      rgrs
+peak_adjustment:    default
 
 # rqrs config file for rabbit:
 
@@ -73,3 +74,11 @@ ws:
     units: sec
     description: Window size
     name: ws
+    
+# adjusting peaks location
+
+peaks_window:
+    value: 40
+    units: ms
+    description: Search for a peak within a window of size peak_window. Used for manual correction of peaks location or peak_adjustment.
+    name: Peaks window        

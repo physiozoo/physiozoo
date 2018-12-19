@@ -638,7 +638,7 @@ end
                 end
             end
             
-            DATA.peak_search_win = str2double(DATA.config_map('peaks_window'));
+            DATA.peak_search_win = DATA.config_map('peaks_window');
             
             load_updateGUI_config_param();
             if isvalid(waitbar_handle)
@@ -663,13 +663,9 @@ end
             DATA.peakDetector = DATA.config_map('peak_detector');
             DATA.peakDetector_index = find(strcmpi(DATA.GUI_PeakDetector, DATA.peakDetector));
             set(GUI.GUIRecord.PeakDetector_popupmenu, 'Value', DATA.peakDetector_index);
-            
-            
+                        
             adjust_index = find(strcmpi(DATA.Adjustment_type, DATA.config_map('peak_adjustment')));
             set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', adjust_index);
-            
-            
-            
             
             if adjust_index == 1 % default
                 DATA.Adjust = 0;
@@ -679,9 +675,6 @@ end
                 DATA.Adjust = -1;
             end
             
-           
-            
-            
         catch e
             rethrow(e);
         end
@@ -689,20 +682,7 @@ end
         DATA.zoom_rect_limits = [0 DATA.firstZoom];
         right_limit2plot = min(DATA.firstZoom, max(DATA.tm));
         setECGXLim(0, right_limit2plot);
-        setECGYLim(0, right_limit2plot);                
-        
-%         if strcmp(mammal, 'dog')
-%             DATA.peak_search_win = 90;
-%         elseif strcmp(mammal, 'rabbit')
-%             DATA.peak_search_win = 40;
-%         elseif strcmp(mammal, 'mouse')
-%             DATA.peak_search_win = 17;
-%         elseif strcmp(mammal, 'human')
-%             DATA.peak_search_win = 150;
-%         else
-%             DATA.peak_search_win = 100;
-%         end
-%         set(GUI.GUIConfig.PeaksWindow, 'String', DATA.peak_search_win);
+        setECGYLim(0, right_limit2plot);                        
     end
 %%
     function Mammal_popupmenu_Callback(src, ~)                
@@ -1458,7 +1438,7 @@ end
         end
         
         if isfield(DATA, 'config_map') && ~isempty(DATA.config_map)
-            DATA.config_map(get(src, 'UserData')) = get(src, 'String');
+            DATA.config_map(get(src, 'UserData')) = numeric_field_value;
             DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
             temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
             if temp_custom_conf_fileID == -1
@@ -1481,9 +1461,9 @@ end
 %%
     function Peaks_Window_edit_Callback(src, ~)
         
-        str_field_value = get(src, 'String');
-        
+        str_field_value = get(src, 'String');        
         field_value = str2double(str_field_value);
+        
         if field_value > 0 && field_value < 1000
             DATA.peak_search_win = field_value;
             
@@ -1491,15 +1471,14 @@ end
                 PeakAdjustment(DATA.qrs_saved);
             end
             
-            DATA.config_map(get(src, 'UserData')) = str_field_value;
+            DATA.config_map(get(src, 'UserData')) = field_value;
             DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
             temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
             if temp_custom_conf_fileID == -1
                 h_e = errordlg('Problems with creation of custom config file.', 'Input Error');
                 setLogo(h_e, 'M1');
                 return;
-            end
-            
+            end            
         else
             set(src, 'String', num2str(DATA.peak_search_win));
             h_e = errordlg('The window length for peak detection must be greater than 0 and less than 1 sec.', 'Input Error');

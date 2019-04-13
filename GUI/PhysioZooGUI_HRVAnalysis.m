@@ -8,6 +8,9 @@ gui_basepath = fileparts(mfilename('fullpath'));
 % addpath(genpath([gui_basepath filesep 'mhrv']));
 basepath = fileparts(gui_basepath);
 
+
+Module3 = 0;
+
 if isdeployed
     mhrv_init;
     
@@ -54,8 +57,12 @@ displayEndOfDemoMessage('');
         
         DATA.rec_name = [];
                         
-        DATA.file_types = {'mat'; 'txt'; 'qrs'};
+%         DATA.file_types = {'txt'; 'mat'; 'qrs'};
+        DATA.file_types_groups = {'txt'; 'mat'; 'qrs'; 'dat'; 'atr'};
         DATA.file_types_index = 1;
+        
+        DATA.data_types = {'peak'; 'interval'; 'beating rate'; 'electrography'};
+        DATA.data_types_index = 1;
         
         DATA.mammal = [];
         DATA.mammals = {'human (task force)', 'human', 'dog', 'rabbit', 'mouse', 'custom'};
@@ -193,10 +200,9 @@ displayEndOfDemoMessage('');
         DATA.AutoYLimitUpperAxes = [];
         DATA.AutoYLimitLowAxes = [];
         
-        DATA.Group.Path.AllDirs = [];  %Eugene 04.05.18
-        DATA.Group.Path.AllExts = [];
+%         DATA.Group.Path.AllDirs = [];  %Eugene 04.05.18 
         
-        DATA.GroupsCalc = 0;
+%         DATA.GroupsCalc = 0;
         
         DATA.custom_filters_thresholds = [];
         
@@ -411,13 +417,16 @@ displayEndOfDemoMessage('');
         %------------------------------------
         
         GUI.OptionsTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
-        GUI.BatchTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
-        %         GUI.GroupTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.BatchTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);                
         GUI.AdvancedTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
         GUI.DisplayTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
         
-        %         GUI.UpLeft_TabPanel.TabTitles = {'Main', 'Single', 'Group', 'Options', 'Display'};
-        GUI.UpLeft_TabPanel.TabTitles = {'Main', 'Single', 'Options', 'Display'};
+        if Module3
+            GUI.GroupTab = uix.Panel( 'Parent', GUI.UpLeft_TabPanel, 'Padding', DATA.Padding+2);
+            GUI.UpLeft_TabPanel.TabTitles = {'Main', 'Single', 'Options', 'Display', 'Group'};
+        else
+            GUI.UpLeft_TabPanel.TabTitles = {'Main', 'Single', 'Options', 'Display'};
+        end
         
         %------------------------------------
         two_axes_box = uix.VBox('Parent', GUI.UpCentral_TabPanel, 'Spacing', DATA.Spacing);
@@ -426,12 +435,13 @@ displayEndOfDemoMessage('');
         set(two_axes_box, 'Heights', [-1, 100]);
         
         %------------------------------------
-        
-        %         GUI.GroupAnalysisSclPanel = uix.ScrollingPanel( 'Parent', GUI.UpCentral_TabPanel);
-        %         GUI.GroupAnalysisBox = uix.VBox( 'Parent', GUI.GroupAnalysisSclPanel, 'Spacing', DATA.Spacing);
-        %         set( GUI.GroupAnalysisSclPanel, 'Widths', Right_Part_widths_in_pixels, 'Heights', 500 );
-        %
-        %         GUI.UpCentral_TabPanel.Selection = 1;
+        if Module3
+            GUI.GroupAnalysisSclPanel = uix.ScrollingPanel( 'Parent', GUI.UpCentral_TabPanel);
+            GUI.GroupAnalysisBox = uix.VBox( 'Parent', GUI.GroupAnalysisSclPanel, 'Spacing', DATA.Spacing);
+            set( GUI.GroupAnalysisSclPanel, 'Widths', Right_Part_widths_in_pixels, 'Heights', 500 );
+            
+            GUI.UpCentral_TabPanel.Selection = 1;
+        end
         %------------------------------------
         
         GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', MainCommandsButtons_Box, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'inactive');
@@ -453,15 +463,18 @@ displayEndOfDemoMessage('');
         
         %---------------------------------
         Analysis_Box = uix.HBoxFlex('Parent', Low_Part_BoxPanel, 'Spacing', DATA.Spacing);
-        Analysis_TabPanel = uix.TabPanel('Parent', Analysis_Box, 'Padding', DATA.Padding, 'TabWidth', 90, 'FontSize', BigFontSize);
+        GUI.Analysis_TabPanel = uix.TabPanel('Parent', Analysis_Box, 'Padding', DATA.Padding, 'TabWidth', 90, 'FontSize', BigFontSize);
         
-        GUI.StatisticsTab = uix.Panel( 'Parent', Analysis_TabPanel, 'Padding', DATA.Padding+2);
-        GUI.TimeTab = uix.Panel( 'Parent', Analysis_TabPanel, 'Padding', DATA.Padding+2);
-        GUI.FrequencyTab = uix.Panel( 'Parent', Analysis_TabPanel, 'Padding', DATA.Padding+2);
-        GUI.NonLinearTab = uix.Panel( 'Parent', Analysis_TabPanel, 'Padding', DATA.Padding+2);
-        %         GUI.GroupSummaryTab = uix.Panel( 'Parent', Analysis_TabPanel, 'Padding', DATA.Padding+2);
-        %         Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', 'Group'};
-        Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear'};
+        GUI.StatisticsTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.TimeTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.FrequencyTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.NonLinearTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
+        if Module3
+            GUI.GroupSummaryTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
+            GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', 'Group'};
+        else
+            GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear'};
+        end
         
         %-----------------------------------------
         
@@ -480,10 +493,11 @@ displayEndOfDemoMessage('');
         GUI.DisplayBox = uix.VBox( 'Parent', GUI.DisplaySclPanel, 'Spacing', DATA.Spacing);
         set( GUI.DisplaySclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         
-        %         GUI.GroupSclPanel = uix.ScrollingPanel( 'Parent', GUI.GroupTab);
-        %         GUI.GroupBox = uix.VBox( 'Parent', GUI.GroupSclPanel, 'Spacing', DATA.Spacing);
-        %         set( GUI.GroupSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
-        
+        if Module3
+            GUI.GroupSclPanel = uix.ScrollingPanel( 'Parent', GUI.GroupTab);
+            GUI.GroupBox = uix.VBox( 'Parent', GUI.GroupSclPanel, 'Spacing', DATA.Spacing);
+            set( GUI.GroupSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
+        end
         %--------------------------------------------------------------------------------------------
         
         GUI.AdvancedBox = uix.VBox( 'Parent', GUI.AdvancedTab, 'Spacing', DATA.Spacing);
@@ -767,86 +781,107 @@ displayEndOfDemoMessage('');
         set( GUI.DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -10 -7 -7 -7 -7 -7 -10 -7 -7 -10] );
         
         %-----------------------------------------------------------------------------------------------
-        
-        %         uix.Empty( 'Parent', GUI.GroupBox );
-        %
-        %         DataTypeBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        %         aa{1} = uicontrol( 'Style', 'text', 'Parent', DataTypeBox, 'String', 'Data Type', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        %         GUI.DataType_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DataTypeBox, 'Callback', @DataType_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', {'QRS'; 'ECG'}, 'Enable', 'off');
-        %         uix.Empty( 'Parent', DataTypeBox );
-        %         uix.Empty( 'Parent', DataTypeBox );
-        %
-        %         FileTypeBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        %         aa{2} = uicontrol( 'Style', 'text', 'Parent', FileTypeBox, 'String', 'File Type', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        %         GUI.Group.pmFileType = uicontrol( 'Style', 'PopUpMenu', 'Parent', FileTypeBox, 'Callback', @FileType_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', DATA.file_types);
-        %         uix.Empty( 'Parent', FileTypeBox );
-        %         uix.Empty( 'Parent', FileTypeBox );
-        %
-        %         %         DataType_bg = uibuttongroup( 'Parent', DataTypeBox, 'Title', 'Data Type');
-        %         %         uix.Empty( 'Parent', DataTypeBox );
-        %         %         uix.Empty( 'Parent', DataTypeBox );
-        %         %         ECG_radiobutton = uicontrol('Parent', DataType_bg, 'Style', 'radiobutton', 'String', 'ECG');
-        %         %         QRS_radiobutton = uicontrol('Parent', DataType_bg, 'Style', 'radiobutton', 'String', 'QRS');
-        %         %         get(ECG_radiobutton, 'Units')
-        %         %         get(ECG_radiobutton, 'Position')
-        %         %         DataType_bg.Visible = 'on';
-        %
-        %         GUI.LoadBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        %         aa{3} = uicontrol( 'Style', 'text', 'Parent', GUI.LoadBox, 'String', 'Load', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        %         GUI.Group.pmWorkDir = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.LoadBox, 'Callback', @LoadGroupDir_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', '  ');
-        %         GUI.LoadButtons_Box = uix.HButtonBox('Parent', GUI.LoadBox, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'ButtonSize', [70, 30]);
-        %         GUI.Group.btnLoadDir = uicontrol( 'Style', 'PushButton', 'Parent', GUI.LoadButtons_Box, 'Callback', @LoadDir_pushbutton_Callback, 'FontSize', BigFontSize, 'String', '  ...  ');
-        %         uix.Empty( 'Parent', GUI.LoadBox );
-        %
-        %         uix.Empty( 'Parent', GUI.GroupBox );
-        %
-        %         GUI.MembersBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        %         aa{4} = uicontrol( 'Style', 'text', 'Parent', GUI.MembersBox, 'String', 'Members', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        %         GUI.Group.lbMembers = uicontrol( 'Style', 'ListBox', 'Parent', GUI.MembersBox, 'Callback', @Members_listbox_Callback, 'FontSize', SmallFontSize, 'String', {' '; ' '; ' '; ' '}, 'Max', 5);
-        %         uix.Empty( 'Parent', GUI.MembersBox );
-        %         uix.Empty( 'Parent', GUI.MembersBox );
-        %
-        %         uix.Empty( 'Parent', GUI.GroupBox );
-        %
-        %         GUI.NamesBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        %         aa{5} = uicontrol( 'Style', 'text', 'Parent', GUI.NamesBox, 'String', 'Name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        %         GUI.Group.ebName = uicontrol( 'Style', 'edit', 'Parent', GUI.NamesBox, 'Callback', @Name_edit_Callback, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        %         GUI.AddDelButtons_Box = uix.HButtonBox('Parent', GUI.NamesBox, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'ButtonSize', [70, 30]);
-        %         GUI.Group.btnAddGroup = uicontrol( 'Style', 'PushButton', 'Parent', GUI.AddDelButtons_Box, 'Callback', @Add_PushButton_Callback, 'FontSize', BigFontSize, 'String', 'Add', 'Enable', 'off');
-        %         GUI.Group.btnDelGroup = uicontrol( 'Style', 'PushButton', 'Parent', GUI.AddDelButtons_Box, 'Callback', @Del_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Del');
-        %         uix.Empty( 'Parent', GUI.NamesBox );
-        %
-        %         uix.Empty( 'Parent', GUI.GroupBox );
-        %
-        %         GUI.GroupsBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        %         aa{6} = uicontrol( 'Style', 'text', 'Parent', GUI.GroupsBox, 'String', 'Groups', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        %         GUI.Group.lbGroups = uicontrol( 'Style', 'ListBox', 'Parent', GUI.GroupsBox, 'Callback', @Groups_listbox_Callback, 'FontSize', SmallFontSize, 'String', {' '; ' '; ' '; ' '});
-        %         uix.Empty( 'Parent', GUI.GroupsBox );
-        %         uix.Empty( 'Parent', GUI.GroupsBox );
-        %
-        %         uix.Empty( 'Parent', GUI.GroupBox );
-        %
-        %         Comp_Box = uix.HBox('Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
-        %         uix.Empty( 'Parent', Comp_Box );
-        %         uicontrol( 'Style', 'PushButton', 'Parent', Comp_Box, 'Callback', @GroupsCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'on');
-        %         uix.Empty( 'Parent', Comp_Box );
-        %         uix.Empty( 'Parent', Comp_Box );
-        %
-        %         max_extent_control = calc_max_control_x_extend(aa);
-        %         field_size = [max_extent_control + 5, 225, 80 -1];
-        %         set( DataTypeBox, 'Widths', field_size );
-        %         set( FileTypeBox, 'Widths', field_size );
-        %         set( GUI.LoadBox, 'Widths', field_size );
-        %         set( GUI.MembersBox, 'Widths', field_size );
-        %         set( GUI.NamesBox, 'Widths', field_size );
-        %         set( GUI.GroupsBox, 'Widths', field_size );
-        %         set( Comp_Box, 'Widths', field_size );
-        %
-        %         uix.Empty( 'Parent', GUI.GroupBox );
-        %
-        %         set( GUI.GroupBox, 'Heights', [-1 -7.5 -7.5 -7.5 -1 -20 -1 -7 -1 -20 -5 -7 -1] );
-        
         %---------------------------
+        %---------------------------
+        %---------------------------
+        %---------------------------
+        %---------------------------
+        
+%                 uix.Empty( 'Parent', GUI.GroupBox );
+        if Module3
+                DataTypeBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+                aa{1} = uicontrol( 'Style', 'text', 'Parent', DataTypeBox, 'String', 'Data Type', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+                GUI.DataType_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DataTypeBox, 'Callback', @DataType_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', {'QRS'; 'ECG'}, 'Enable', 'on');
+                uix.Empty( 'Parent', DataTypeBox );
+                uix.Empty( 'Parent', DataTypeBox );
+        
+                FileTypeBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+                aa{2} = uicontrol( 'Style', 'text', 'Parent', FileTypeBox, 'String', 'File Type', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+                GUI.Group.pmFileType = uicontrol( 'Style', 'PopUpMenu', 'Parent', FileTypeBox, 'Callback', @FileType_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', DATA.file_types_groups);
+                uix.Empty( 'Parent', FileTypeBox );
+                uix.Empty( 'Parent', FileTypeBox );
+        
+                %         DataType_bg = uibuttongroup( 'Parent', DataTypeBox, 'Title', 'Data Type');
+                %         uix.Empty( 'Parent', DataTypeBox );
+                %         uix.Empty( 'Parent', DataTypeBox );
+                %         ECG_radiobutton = uicontrol('Parent', DataType_bg, 'Style', 'radiobutton', 'String', 'ECG');
+                %         QRS_radiobutton = uicontrol('Parent', DataType_bg, 'Style', 'radiobutton', 'String', 'QRS');
+                %         get(ECG_radiobutton, 'Units')
+                %         get(ECG_radiobutton, 'Position')
+                %         DataType_bg.Visible = 'on';
+        
+                GUI.LoadBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+                aa{3} = uicontrol( 'Style', 'text', 'Parent', GUI.LoadBox, 'String', 'Load', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+                GUI.Group.pmWorkDir = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.LoadBox, 'Callback', @LoadGroupDir_popupmenu_Callback, 'FontSize', SmallFontSize, 'String', '  ');
+                GUI.LoadButtons_Box = uix.HButtonBox('Parent', GUI.LoadBox, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'ButtonSize', [70, 30]);
+                GUI.Group.btnLoadDir = uicontrol( 'Style', 'PushButton', 'Parent', GUI.LoadButtons_Box, 'Callback', @LoadDir_pushbutton_Callback, 'FontSize', BigFontSize, 'String', '  ...  ');
+                uix.Empty( 'Parent', GUI.LoadBox );
+        
+                uix.Empty( 'Parent', GUI.GroupBox );
+        
+                GUI.MembersBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+                aa{4} = uicontrol( 'Style', 'text', 'Parent', GUI.MembersBox, 'String', 'Members', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+                GUI.Group.lbMembers = uicontrol( 'Style', 'ListBox', 'Parent', GUI.MembersBox, 'Callback', @Members_listbox_Callback, 'FontSize', SmallFontSize, 'String', {' '; ' '; ' '; ' '}, 'Max', 5);
+                uix.Empty( 'Parent', GUI.MembersBox );
+                uix.Empty( 'Parent', GUI.MembersBox );
+        
+                uix.Empty( 'Parent', GUI.GroupBox );
+        
+                GUI.NamesBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+                aa{5} = uicontrol( 'Style', 'text', 'Parent', GUI.NamesBox, 'String', 'Name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+                GUI.Group.ebName = uicontrol( 'Style', 'edit', 'Parent', GUI.NamesBox, 'Callback', @Name_edit_Callback, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+                GUI.AddDelButtons_Box = uix.HButtonBox('Parent', GUI.NamesBox, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'ButtonSize', [70, 30]);
+                GUI.Group.btnAddGroup = uicontrol( 'Style', 'PushButton', 'Parent', GUI.AddDelButtons_Box, 'Callback', @Add_PushButton_Callback, 'FontSize', BigFontSize, 'String', 'Add', 'Enable', 'off');
+                GUI.Group.btnDelGroup = uicontrol( 'Style', 'PushButton', 'Parent', GUI.AddDelButtons_Box, 'Callback', @Del_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Del');
+                uix.Empty( 'Parent', GUI.NamesBox );
+        
+                uix.Empty( 'Parent', GUI.GroupBox );
+        
+                GUI.GroupsBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+                aa{6} = uicontrol( 'Style', 'text', 'Parent', GUI.GroupsBox, 'String', 'Groups', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+                GUI.Group.lbGroups = uicontrol( 'Style', 'ListBox', 'Parent', GUI.GroupsBox, 'Callback', @Groups_listbox_Callback, 'FontSize', SmallFontSize, 'String', {' '; ' '; ' '; ' '});
+                uix.Empty( 'Parent', GUI.GroupsBox );
+                uix.Empty( 'Parent', GUI.GroupsBox );
+                                                        
+                GUI.GroupsConfigFileNameBox = uix.HBox( 'Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+                aa{7} = uicontrol( 'Style', 'text', 'Parent', GUI.GroupsConfigFileNameBox, 'String', 'Config file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+                GUI.GroupsConfig_text = uicontrol( 'Style', 'text', 'Parent', GUI.GroupsConfigFileNameBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');                
+                GUI.groups_open_config_pushbutton_handle = uicontrol( 'Style', 'PushButton', 'Parent', GUI.GroupsConfigFileNameBox, 'Callback', @onLoadCustomConfigFile, 'FontSize', SmallFontSize, 'String', '...', 'Enable', 'on');
+                uix.Empty( 'Parent', GUI.GroupsConfigFileNameBox );                                
+                
+%                 uix.Empty( 'Parent', GUI.GroupBox );
+        
+                Comp_Box = uix.HBox('Parent', GUI.GroupBox, 'Spacing', DATA.Spacing);
+                uix.Empty( 'Parent', Comp_Box );
+                uicontrol( 'Style', 'PushButton', 'Parent', Comp_Box, 'Callback', @GroupsCompute_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Compute', 'Enable', 'on');
+                uix.Empty( 'Parent', Comp_Box );
+                uix.Empty( 'Parent', Comp_Box );
+        
+                max_extent_control = calc_max_control_x_extend(aa);
+                field_size = [max_extent_control + 5, 225, 80 -1];
+                set( DataTypeBox, 'Widths', field_size );
+                set( FileTypeBox, 'Widths', field_size );
+                set( GUI.LoadBox, 'Widths', field_size );
+                set( GUI.MembersBox, 'Widths', field_size );
+                set( GUI.NamesBox, 'Widths', field_size );
+                set( GUI.GroupsBox, 'Widths', field_size );
+                set( GUI.GroupsConfigFileNameBox, 'Widths', field_size );
+                set( Comp_Box, 'Widths', field_size );
+        
+%                 uix.Empty( 'Parent', GUI.GroupBox );
+        
+                h1 = -20;
+                h2 = -40;
+                he = -0.005;
+
+                set( GUI.GroupBox, 'Heights', [h1 h1 h1 he h2 he h1 he h2 h1 h1] );
+        end
+        %---------------------------
+        %---------------------------
+        %---------------------------
+        %---------------------------
+        %---------------------------
+        
         tables_field_size = [-85 -15];
         
         GUI.TimeBox = uix.HBox( 'Parent', GUI.TimeTab, 'Spacing', DATA.Spacing);
@@ -900,8 +935,10 @@ displayEndOfDemoMessage('');
         GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticsTab, 'FontSize', SmallFontSize, 'ColumnWidth',{800 'auto'}, 'FontName', 'Calibri');    % 550
         GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};
         %---------------------------
-        %         GUI.GroupSummaryTable = uitable( 'Parent', GUI.GroupSummaryTab, 'FontSize', SmallFontSize, 'ColumnWidth',{800 'auto'}, 'FontName', 'Calibri');    % 550
-        %         GUI.GroupSummaryTable.ColumnName = {'Description'; 'Values'};
+        if Module3
+            GUI.GroupSummaryTable = uitable( 'Parent', GUI.GroupSummaryTab, 'FontSize', SmallFontSize, 'ColumnWidth',{800 'auto'}, 'FontName', 'Calibri');    % 550
+            GUI.GroupSummaryTable.ColumnName = {'Description'; 'Values'};
+        end
         %---------------------------
         
         % Upper Part
@@ -946,11 +983,13 @@ displayEndOfDemoMessage('');
     end
 %%
     function TabChange_Callback(~, eventData)
-        %         if eventData.NewValue == 3
-        %             GUI.UpCentral_TabPanel.Selection = 2;
-        %         else
-        %             GUI.UpCentral_TabPanel.Selection = 1;
-        %         end
+        if eventData.NewValue == 5
+            GUI.UpCentral_TabPanel.Selection = 2;
+            GUI.Analysis_TabPanel.Selection = 5;
+        else
+            GUI.UpCentral_TabPanel.Selection = 1;
+            GUI.Analysis_TabPanel.Selection = 1;
+        end
     end
 %%
     function [param_keys_length, max_extent_control, handles_boxes] = FillParamFields(VBoxHandle, param_map)
@@ -1925,6 +1964,9 @@ displayEndOfDemoMessage('');
             PathName = fileNameFromM1.PathName;
             DataFileMap = DataFileMapFromM1;
         end
+        
+        DATA.GroupsCalc = 0;
+        
         try
             Load_Single_File(QRS_FileName, PathName, DataFileMap);
         catch e
@@ -1939,7 +1981,7 @@ displayEndOfDemoMessage('');
             if files_num == 1
                 
                 try
-                    waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Working on it...');
+                    waitbar_handle = waitbar(1/2, ['Loading file "' strrep(QRS_FileName, '_', '\_') '" '], 'Name', 'Loading...');
                     setLogo(waitbar_handle, 'M2');
                     [mammal, mammal_index, integration, whichModule] = Load_Data_from_SingleFile(QRS_FileName, PathName, DataFileMap, waitbar_handle);
                     if whichModule == 1
@@ -1971,25 +2013,36 @@ displayEndOfDemoMessage('');
                     end
                     DATA.mammal = mammal;
                     DATA.mammal_index = mammal_index;
-%                     GUI.Mammal_popupmenu.Value = DATA.mammal_index;
-                    GUI.Mammal_popupmenu.String = mammal;
-                    
+                                        
                     DATA.Integration = integration;
                     DATA.integration_index = find(strcmpi(DATA.GUI_Integration, DATA.Integration));
-                    GUI.Integration_popupmenu.Value = DATA.integration_index;
-                                                            
+                                                         
+                    if ~DATA.GroupsCalc
+                        GUI.Mammal_popupmenu.String = mammal;
+                        GUI.Integration_popupmenu.Value = DATA.integration_index;
+                    end
+                                        
                     if mammal_index == length(DATA.mammals) % Custom mammal                                        
-                        config_file_name = 'default_ecg';                                                
-                        GUI.Mammal_popupmenu.String = 'default';                                                
+                        config_file_name = 'default_ecg';   
+                        if ~DATA.GroupsCalc
+                            GUI.Mammal_popupmenu.String = 'default';                                                
+                        end
                     else                                                
                         config_file_name = [DATA.mammals{DATA.mammal_index} '_' DATA.integration_level{DATA.integration_index}];                      
                     end
                                         
                     try                        
-                        mhrv_load_defaults(config_file_name);     
-                        set(GUI.Config_text, 'String', [config_file_name '.yml']);
-%                         set_text_position(GUI.Config_text, GUI.open_config_pushbutton_handle, [config_file_name '.yml']);                                                
+                        mhrv_load_defaults(config_file_name);   
+                        
+                        conf_name = [config_file_name '.yml'];
+                        if ~DATA.GroupsCalc
+                            set(GUI.Config_text, 'String', conf_name);                                                                        
+                        end
+                        if Module3
+                            set(GUI.GroupsConfig_text, 'String', conf_name); % for Groups analysis
+                        end
                         DATA.config_file_name = config_file_name;
+                        
                     catch e
                         h_e = errordlg(['mhrv_load_defaults: ' e.message], 'Input Error');
                         setLogo(h_e, 'M2');
@@ -1997,37 +2050,44 @@ displayEndOfDemoMessage('');
                             close(waitbar_handle);
                         end
                         return;
-                    end                    
-                    waitbar(2 / 2, waitbar_handle, 'Create Config Parameters Windows');
-                    setLogo(waitbar_handle, 'M2');
-                    createConfigParametersInterface();
-                    close(waitbar_handle);
+                    end     
+                    if ~DATA.GroupsCalc
+                        waitbar(2 / 2, waitbar_handle, 'Create Config Parameters Windows');
+                        setLogo(waitbar_handle, 'M2');
+                        createConfigParametersInterface();                        
+                    end
+                    if isvalid(waitbar_handle)
+                        close(waitbar_handle);
+                    end
                 else
                     close(waitbar_handle);
                 end
                 
                 reset_plot_Data();
-                reset_plot_GUI();
-                EnablePageUpDown();
                 
-                if isfield(GUI, 'RRDataAxes')
-                    PathName = strrep(PathName, '\', '\\');
-                    PathName = strrep(PathName, '_', '\_');
-                    QRS_FileName_title = strrep(QRS_FileName, '_', '\_');
-                    
-                    TitleName = [PathName QRS_FileName_title] ;
-                    title(GUI.RRDataAxes, TitleName, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize);
-                    
-                    set(GUI.RecordName_text, 'String', QRS_FileName);
+                if ~DATA.GroupsCalc
+                    reset_plot_GUI();
+                    EnablePageUpDown();
+                                        
+                    if isfield(GUI, 'RRDataAxes')
+                        PathName = strrep(PathName, '\', '\\');
+                        PathName = strrep(PathName, '_', '\_');
+                        QRS_FileName_title = strrep(QRS_FileName, '_', '\_');
+                        
+                        TitleName = [PathName QRS_FileName_title] ;
+                        title(GUI.RRDataAxes, TitleName, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize);
+                        
+                        set(GUI.RecordName_text, 'String', QRS_FileName);
+                    end
+                    set(GUI.DataQualityMenu, 'Enable', 'on');
+                    set(GUI.SaveMeasures, 'Enable', 'on');
+                    set(GUI.SaveFiguresAsMenu, 'Enable', 'on');
+                    set(GUI.SaveParamFileMenu, 'Enable', 'on');
+                    set(GUI.LoadConfigFile, 'Enable', 'on');
+                    %                 set(GUI.open_record_pushbutton_handle, 'Enable', 'on');
+                    set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
+                    set(GUI.open_config_pushbutton_handle, 'Enable', 'on');
                 end
-                set(GUI.DataQualityMenu, 'Enable', 'on');
-                set(GUI.SaveMeasures, 'Enable', 'on');
-                set(GUI.SaveFiguresAsMenu, 'Enable', 'on');
-                set(GUI.SaveParamFileMenu, 'Enable', 'on');
-                set(GUI.LoadConfigFile, 'Enable', 'on');
-%                 set(GUI.open_record_pushbutton_handle, 'Enable', 'on');                                
-                set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');                                
-                set(GUI.open_config_pushbutton_handle, 'Enable', 'on');                                
             end
         end
     end
@@ -2809,7 +2869,14 @@ displayEndOfDemoMessage('');
             config_file_name = DATA.config_file_name;
             %mhrv_load_defaults([DATA.mammals{DATA.mammal_index} '_' integration]);
             mhrv_load_defaults(config_file_name);
-            set(GUI.Config_text, 'String', [config_file_name '.yml']);
+            
+            conf_name = [config_file_name '.yml'];
+            set(GUI.Config_text, 'String', conf_name);
+            
+            if Module3
+                set(GUI.GroupsConfig_text, 'String', conf_name); % for Group analysis
+            end
+            
 %             set_text_position(GUI.Config_text, GUI.open_config_pushbutton_handle, [config_file_name '.yml']);
             createConfigParametersInterface();
         catch e
@@ -3047,57 +3114,60 @@ displayEndOfDemoMessage('');
         set(GUI.FilteringLevel_popupmenu, 'Value', DATA.default_filter_level_index);
         DATA.filter_level_index = DATA.default_filter_level_index;
         
-        if strcmp(Filter, 'Range')
-            GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
-            GUI.FilteringLevel_popupmenu.Enable = 'on';
-            set_default_filters_threshoulds('filtrr.range.rr_max', DATA.default_filters_thresholds.range.rr_max);
-            set_default_filters_threshoulds('filtrr.range.rr_min', DATA.default_filters_thresholds.range.rr_min);
-        elseif strcmp(Filter, 'No filtering')
-            GUI.FilteringLevel_popupmenu.String = DATA.FilterNoLevel;
-            GUI.FilteringLevel_popupmenu.Enable = 'inactive';
-        elseif strcmp(Filter, 'Moving average')
-            GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
-            GUI.FilteringLevel_popupmenu.Enable = 'on';
-            set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.moving_average.win_threshold);
-            set_default_filters_threshoulds('filtrr.moving_average.win_length', DATA.default_filters_thresholds.moving_average.win_length);
-        elseif strcmp(Filter, 'Quotient')
-            GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
-            GUI.FilteringLevel_popupmenu.Enable = 'on';
-            set_default_filters_threshoulds('filtrr.quotient.rr_max_change', DATA.default_filters_thresholds.quotient.rr_max_change);
-        elseif strcmp(Filter, 'Combined filters')
-            GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
-            GUI.FilteringLevel_popupmenu.Enable = 'on';
-            set_default_filters_threshoulds('filtrr.range.rr_max', DATA.default_filters_thresholds.range.rr_max);
-            set_default_filters_threshoulds('filtrr.range.rr_min', DATA.default_filters_thresholds.range.rr_min);
-            set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.moving_average.win_threshold);
-            set_default_filters_threshoulds('filtrr.moving_average.win_length', DATA.default_filters_thresholds.moving_average.win_length);
-        end
-        
-        try
-            set_filters(Filter);
-        catch e
-            h_e = errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
-            setLogo(h_e, 'M2');
-            GUI.Filtering_popupmenu.Value = DATA.filter_index;
-            set_filters(items{DATA.filter_index});
-            return;
-        end
-        try
-            calc_filt_signal();
-            DATA.filter_index = index_selected;
+        if isfield(DATA, 'default_filters_thresholds')
             
-            if index_selected == length(DATA.Filters)
-                DATA.legend_handle.String{2} = 'Selected time series';
-            else
-                DATA.legend_handle.String{2} = 'Selected filtered time series';
+            if strcmp(Filter, 'Range')
+                GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
+                GUI.FilteringLevel_popupmenu.Enable = 'on';
+                set_default_filters_threshoulds('filtrr.range.rr_max', DATA.default_filters_thresholds.range.rr_max);
+                set_default_filters_threshoulds('filtrr.range.rr_min', DATA.default_filters_thresholds.range.rr_min);
+            elseif strcmp(Filter, 'No filtering')
+                GUI.FilteringLevel_popupmenu.String = DATA.FilterNoLevel;
+                GUI.FilteringLevel_popupmenu.Enable = 'inactive';
+            elseif strcmp(Filter, 'Moving average')
+                GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
+                GUI.FilteringLevel_popupmenu.Enable = 'on';
+                set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.moving_average.win_threshold);
+                set_default_filters_threshoulds('filtrr.moving_average.win_length', DATA.default_filters_thresholds.moving_average.win_length);
+            elseif strcmp(Filter, 'Quotient')
+                GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
+                GUI.FilteringLevel_popupmenu.Enable = 'on';
+                set_default_filters_threshoulds('filtrr.quotient.rr_max_change', DATA.default_filters_thresholds.quotient.rr_max_change);
+            elseif strcmp(Filter, 'Combined filters')
+                GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
+                GUI.FilteringLevel_popupmenu.Enable = 'on';
+                set_default_filters_threshoulds('filtrr.range.rr_max', DATA.default_filters_thresholds.range.rr_max);
+                set_default_filters_threshoulds('filtrr.range.rr_min', DATA.default_filters_thresholds.range.rr_min);
+                set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.moving_average.win_threshold);
+                set_default_filters_threshoulds('filtrr.moving_average.win_length', DATA.default_filters_thresholds.moving_average.win_length);
             end
             
-        catch e
-            h_e = errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
-            setLogo(h_e, 'M2');
-            GUI.Filtering_popupmenu.Value = DATA.filter_index;
-            set_filters(items{DATA.filter_index});
-            return;
+            try
+                set_filters(Filter);
+            catch e
+                h_e = errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
+                setLogo(h_e, 'M2');
+                GUI.Filtering_popupmenu.Value = DATA.filter_index;
+                set_filters(items{DATA.filter_index});
+                return;
+            end
+            try
+                calc_filt_signal();
+                DATA.filter_index = index_selected;
+                
+                if index_selected == length(DATA.Filters)
+                    DATA.legend_handle.String{2} = 'Selected time series';
+                else
+                    DATA.legend_handle.String{2} = 'Selected filtered time series';
+                end
+                
+            catch e
+                h_e = errordlg(['Filtering_popupmenu_Callback Error: ' e.message], 'Input Error');
+                setLogo(h_e, 'M2');
+                GUI.Filtering_popupmenu.Value = DATA.filter_index;
+                set_filters(items{DATA.filter_index});
+                return;
+            end
         end
     end
 %%
@@ -4086,7 +4156,7 @@ displayEndOfDemoMessage('');
         set(pushbutton_handle, 'Position', [config_file_name_position(1)+config_file_name_extent(3)+10 load_config_name_button_position(2) load_config_name_button_position(3) load_config_name_button_position(4)]);        
     end
 %%
-    function onLoadCustomConfigFile( ~, ~)
+    function onLoadCustomConfigFile(~, ~)
         set_defaults_path();
         
         [Config_FileName, PathName] = uigetfile({'*.yml','Yaml-files (*.yml)'}, 'Open Configuration File', [DIRS.configDirectory filesep]);                
@@ -4102,7 +4172,11 @@ displayEndOfDemoMessage('');
                 return;
             else
                 
-                set(GUI.Config_text, 'String', [name conf_ext]);
+                conf_name = [name conf_ext];
+                set(GUI.Config_text, 'String', conf_name);
+                if Module3
+                    set(GUI.GroupsConfig_text, 'String', conf_name);
+                end
 %                 set_text_position(GUI.Config_text, GUI.open_config_pushbutton_handle, [name conf_ext]);
                 
 %                 set(GUI.Config_text, 'String', [name conf_ext]);
@@ -4305,6 +4379,11 @@ displayEndOfDemoMessage('');
                     set(GUI.Filt_RawDataSlider, 'Value', DATA.AnalysisParams.activeWin_startTime);
                     set(GUI.blue_line, 'XData', [DATA.AnalysisParams.segment_startTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_effectiveEndTime DATA.AnalysisParams.segment_startTime]);
                 end
+                
+                if DATA.AnalysisParams.winNum == 1 && get(GUI.AutoCalc_checkbox, 'Value')                    
+                    calcStatistics();                    
+                end                
+                
             end
         else
 %             throw(MException('batch_Edit_Callback:NoData', 'No data'));
@@ -5465,13 +5544,14 @@ displayEndOfDemoMessage('');
             lambda = mhrv_get_default('filtrr.detrending.lambda');
             nni_detrended_trans = detrendrr(nni, lambda.value, DATA.SamplingFrequency);
             nni_detrended = nni - nni_detrended_trans;
+            nni_detrended_trans = nni_detrended_trans + mean(nni);
         catch
             throw(MException('detrend_data:error', 'Detrending error.'));
         end
     end
 %%
     function DetrendIfNeed_data_chunk()
-        if isfield(DATA.AnalysisParams, 'segment_startTime')
+        if isfield(DATA, 'AnalysisParams') && isfield(DATA.AnalysisParams, 'segment_startTime')
             Filt_time_data = DATA.tnn;                                    
             Filt_data = DATA.nni_saved;                        
 %           Filt_data = DATA.nni;
@@ -5487,7 +5567,7 @@ displayEndOfDemoMessage('');
                         GUI.filtered_handle.LineWidth = 1.5;
                         GUI.filtered_handle.Color = 'red'; 
                         uistack(GUI.filtered_handle, 'top');
-                        DATA.legend_handle.String
+%                         DATA.legend_handle.String
                         if isfield(GUI, 'PinkLineHandle') && isvalid(GUI.PinkLineHandle(1)) && length(DATA.legend_handle.String) == 3                            
                             legend([GUI.raw_data_handle, GUI.only_filtered_handle, GUI.filtered_handle, GUI.PinkLineHandle(1)], [DATA.legend_handle.String(1:end-1), 'Detrended time series', DATA.legend_handle.String(end)]);
                         elseif length(DATA.legend_handle.String) == 2
@@ -5498,7 +5578,7 @@ displayEndOfDemoMessage('');
                         data2calc = filt_signal_data;
                         GUI.filtered_handle.LineWidth = 1;
                         GUI.filtered_handle.Color = 'green'; 
-                        DATA.legend_handle.String
+%                         DATA.legend_handle.String
                         if isfield(GUI, 'PinkLineHandle') && isvalid(GUI.PinkLineHandle(1)) && length(DATA.legend_handle.String) == 4
                             legend([GUI.raw_data_handle, GUI.filtered_handle, GUI.PinkLineHandle(1)], [DATA.legend_handle.String(1 : end - 2), DATA.legend_handle.String(end)]); 
                         elseif ~isfield(GUI, 'PinkLineHandle') && length(DATA.legend_handle.String) > 2
@@ -5782,6 +5862,11 @@ displayEndOfDemoMessage('');
             setLogo(h_e, 'M2');
             return;
         end
+        if ~isfield(DATA.Group.Path, 'CurrentDir')   %% Need to check if Path is exist!!!!!!!!!!!!!
+            h_e = errordlg('Please, choose directiry name and files first.', 'Input Error');
+            setLogo(h_e, 'M2');
+            return;
+        end
         
         if isempty(color_index)
             color_index = 1;
@@ -5802,6 +5887,8 @@ displayEndOfDemoMessage('');
         
         DATA.Group.Groups(end+1).Name = DATA.Group.CurrentName;
         DATA.Group.Groups(end).Path = DATA.Group.Path.CurrentDir;
+        DATA.Group.Groups(end).Ext = DATA.Group.Path.CurrentExt;
+        
         strMembers = get(GUI.Group.lbMembers, 'String');
         DATA.Group.Groups(end).Members = strMembers(get(GUI.Group.lbMembers, 'Value'));
         
@@ -5842,13 +5929,18 @@ displayEndOfDemoMessage('');
         strGroups = get(GUI.Group.lbGroups, 'String');
         valGroups = get(GUI.Group.lbGroups, 'Value');
         strDirs = get(GUI.Group.pmWorkDir, 'String');
+        strExts = get(GUI.Group.pmFileType, 'String');
+        
         DATA.Group.CurrentName = cell2mat(strGroups(valGroups));
         set(GUI.Group.ebName, 'String', DATA.Group.CurrentName);
         iGroup = ismember( {DATA.Group.Groups.Name}', DATA.Group.CurrentName);
         if ~isempty(DATA.Group.Groups(iGroup))
             DATA.Group.Path.CurrentDir = DATA.Group.Groups(iGroup).Path;
+            DATA.Group.Path.CurrentExt = DATA.Group.Groups(iGroup).Ext;
             [iPath, ~] = find((ismember( strDirs, DATA.Group.Path.CurrentDir)));
+            [iExt, ~] = find((ismember( strExts, DATA.Group.Path.CurrentExt)));
             set(GUI.Group.pmWorkDir, 'Value', iPath);
+            set(GUI.Group.pmFileType, 'Value', iExt);
             feval(pmLoadDir);
             AllFiles = get(GUI.Group.lbMembers, 'String');
             [iMembers, ~] = find(ismember(AllFiles, DATA.Group.Groups(iGroup).Members));
@@ -5859,15 +5951,22 @@ displayEndOfDemoMessage('');
     function LoadGroupDir_popupmenu_Callback(~, ~)
         strDirs = get(GUI.Group.pmWorkDir, 'String');
         valDirs = get(GUI.Group.pmWorkDir, 'Value');
+        
+        strExt = get(GUI.Group.pmFileType, 'String');
+        valExt = get(GUI.Group.pmFileType, 'Value');
+        
         DATA.Group.Path.CurrentDir = cell2mat(strDirs(valDirs));
-        DIRS.DataBaseDirectory = DATA.Group.Path.CurrentDir;
+        DATA.Group.Path.CurrentExt = cell2mat(strExt(valExt));
         
-        curr_ext = DATA.Group.Path.AllExts{valDirs};
+        DIRS.DataBaseDirectory = DATA.Group.Path.CurrentDir;        
+        DIRS.Ext_group = DATA.Group.Path.CurrentExt; % ???????????
         
-        dr = dir([DATA.Group.Path.CurrentDir, '\*.' curr_ext]);
+%         curr_ext = DATA.Group.Path.AllExts{valDirs};
+        
+        dr = dir([DATA.Group.Path.CurrentDir, '\*.' DATA.Group.Path.CurrentExt]);
         set(GUI.Group.lbMembers, 'String', {dr.name}, 'Value', 1);
         
-        set(GUI.Group.pmFileType, 'Value', valDirs);
+%         set(GUI.Group.pmFileType, 'Value', valDirs);
     end
 %%
     function Members_listbox_Callback(~,~)
@@ -5877,7 +5976,11 @@ displayEndOfDemoMessage('');
                 strFiles = get(GUI.Group.lbMembers,'str');
                 valFiles = get(GUI.Group.lbMembers,'value');
                 clearStatTables();
-                Load_Calc(cell2mat(strFiles(valFiles)), [DATA.Group.Path.CurrentDir,'\']);
+%                 Load_Calc(cell2mat(strFiles(valFiles)), [DATA.Group.Path.CurrentDir,'\']);   
+
+
+                Load_Single_File(cell2mat(strFiles(valFiles)), [DATA.Group.Path.CurrentDir,'\'], struct());
+
             otherwise
         end
     end
@@ -5889,38 +5992,56 @@ displayEndOfDemoMessage('');
         % if isempty(DATA.Group.Path.CurrentDir)
         %     DATA.Group.Path.CurrentDir = 'D:\';
         % end
-        % tempPath = uigetdir([DATA.Group.Path.CurrentDir]);
+        % tempPath = uigetdir([DATA.Group.Path.CurrentDir]);                
+        
+        if ~isfield(DIRS, 'DataBaseDirectory')
+            DIRS.DataBaseDirectory = basepath;
+        end
+        
         tempPath = uigetdir([DIRS.DataBaseDirectory]);
         if tempPath
             DATA.Group.Path.CurrentDir = tempPath;
             DIRS.DataBaseDirectory = tempPath;
+                                    
+            DATA.Group.Path.CurrentExt = DIRS.Ext_group;            
         else
             return
         end
         dr = dir([DATA.Group.Path.CurrentDir, '\*.' DIRS.Ext_group]);
         set(GUI.Group.lbMembers, 'String', {dr.name}, 'Value', 1);
+               
+        if ~isfield(DATA.Group.Path, 'AllDirs')
+            DATA.Group.Path.AllDirs = [];
+        end
         
         DATA.Group.Path.AllDirs = unique(sort([DATA.Group.Path.AllDirs; {DATA.Group.Path.CurrentDir}]));
-        DATA.Group.Path.AllExts = unique(sort([DATA.Group.Path.AllExts; {DIRS.Ext_group}]));
+%         DATA.Group.Path.AllExts = (sort([DATA.Group.Path.AllExts; {DIRS.Ext_group}]));
         
         [ind, ~] = find(strcmp(DATA.Group.Path.AllDirs, DATA.Group.Path.CurrentDir));
         set(GUI.Group.pmWorkDir, 'String', DATA.Group.Path.AllDirs, 'Value', ind);
         
-        [ind, ~] = find(strcmp(DATA.Group.Path.AllExts, DIRS.Ext_group));
-        set(GUI.Group.pmFileType, 'Value', ind);
+%         [ind, ~] = find(strcmp(DATA.Group.Path.AllExts, DIRS.Ext_group));
+%         set(GUI.Group.pmFileType, 'Value', ind);
     end
 %%
     function FileType_popupmenu_Callback(src, ~)
         items = get(src, 'String');
         DATA.file_types_index = get(src, 'Value');
         DIRS.Ext_group = items{DATA.file_types_index};
+        LoadGroupDir_popupmenu_Callback();
     end
 %%
-    function Load_Calc(curr_file_name, curr_path)
+%     function onLoadGroupConfigFile(~, ~)
+%         conf_name = onLoadCustomConfigFile();
+%         set(GUI.GroupsConfig_text, 'String', conf_name);
+%     end
+%%
+    function Load_Calc(curr_file_name, curr_path)        
+        
         waitbar_handle = waitbar(1/2, 'Loading data', 'Name', 'Working on it...');
         setLogo(waitbar_handle, 'M2');
-        [mammal, mammal_index] = Load_Data_from_SingleFile(curr_file_name, curr_path, waitbar_handle);
-        
+        [mammal, mammal_index, integration, whichModule] = Load_Data_from_SingleFile(curr_file_name, curr_path, struct(), waitbar_handle);
+                
         if ~isfield(GUI, 'ConfigParamHandlesMap')
             mhrv_load_defaults(DATA.mammals{DATA.mammal_index});
         end
@@ -5964,7 +6085,8 @@ displayEndOfDemoMessage('');
                     curr_file_name = DATA.Group.Groups(gr).Members{gr_member};
                     
                     curr_path = [DATA.Group.Groups(gr).Path filesep];
-                    Load_Calc(curr_file_name, curr_path);
+%                     Load_Calc(curr_file_name, curr_path);
+                    Load_Single_File(curr_file_name, curr_path, struct());
                     
                     curr_hrv = horzcat(DATA.TimeStat.hrv_time_metrics, DATA.FrStat.hrv_fr_metrics, DATA.NonLinStat.hrv_nonlin_metrics);
                     

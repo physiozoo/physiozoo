@@ -121,6 +121,7 @@ end
         GUI.SavePeaks.Enable = 'off';       
         GUI.SaveDataQuality.Enable = 'off';
         GUI.OpenDataQuality.Enable = 'off';
+        GUI.SaveFiguresFile.Enable = 'off';
         GUI.GUIRecord.PeaksFileName_text_pushbutton_handle.Enable = 'off';
         GUI.GUIRecord.Config_text_pushbutton_handle.Enable = 'off';
         GUI.GUIRecord.DataQualityFileName_text_pushbutton_handle.Enable = 'off';
@@ -165,7 +166,7 @@ end
         DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};
         DATA.integration_level = {'ecg'; 'electrogram'; 'ap'};        
         
-        DATA.GUI_PeakDetector = {'rgrs'; 'jqrs'; 'wjqrs'};
+        DATA.GUI_PeakDetector = {'rgrs'; 'jqrs'; 'wjqrs'; 'EGM peaks'}; % 'EGM peaks'
         DATA.peakDetector_index = 1;
         
         DATA.GUI_Annotation = {'Peak'; 'Signal quality'};
@@ -247,6 +248,7 @@ end
         GUI.SaveDataQuality = uimenu( GUI.FileMenu, 'Label', 'Save signal quality file', 'Callback', @SaveDataQuality_Callback, 'Accelerator', 'D');        
         GUI.LoadConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Load configuration file', 'Callback', @LoadConfigurationFile_Callback, 'Accelerator', 'F');
         GUI.SaveConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Save configuration file', 'Callback', @SaveConfigurationFile_Callback, 'Accelerator', 'C');
+        GUI.SaveFiguresFile = uimenu( GUI.FileMenu, 'Label', 'Save figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator', 'G');
         
         uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @Exit_Callback, 'Separator', 'on', 'Accelerator', 'E');
         
@@ -316,7 +318,7 @@ end
         
         
         tabs_widths = Left_Part_widths_in_pixels;
-        tabs_heights = 370;
+        tabs_heights = 430; % 370
         
         RecordSclPanel = uix.ScrollingPanel( 'Parent', RecordTab);
         RecordBox = uix.VBox( 'Parent', RecordSclPanel, 'Spacing', DATA.Spacing);
@@ -429,8 +431,16 @@ end
         
         uix.Empty('Parent', GUI.ConfigBox );
         
+        % ORI's algorithm for EGM peaks
+        uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'EGM peaks', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+        [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'alpha', 'Alpha', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'alpha');
+        [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ref_per', 'Refractory period', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ref_per');
+        [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'bi', 'BI', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'bi');
+        
+        uix.Empty('Parent', GUI.ConfigBox );
+        
         GUI.AutoPeakWin_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', SmallFontSize, 'String', 'Auto', 'Value', 1);
-        [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window');
+        [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window');
         
 %         uix.Empty('Parent', GUI.ConfigBox );
 %         uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'Adjust R-peak location', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
@@ -446,24 +456,29 @@ end
         
         %         uix.Empty('Parent', GUI.ConfigBox );
 %         set(GUI.ConfigBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7   -1 -7 -7 -7 -7 -7 -7   -8 -7 -7   -7 -7] );
-        set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)   -1 -7 * ones(1, 6)   -8 -7 -7 ] );
+
+
+
+        set(GUI.ConfigBox, 'Heights', [-15 * ones(1, 8)   -0.5 -15 * ones(1, 6) -0.5 -15 * ones(1, 4)  -0.5 -15 -15]);
+%         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)   -1 -7 * ones(1, 6) -1 -7 * ones(1, 4)  -8 -7 -7 ] );        
+%         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)    -7 * ones(1, 6) -7 * ones(1, 4)  -7 -7 ] );
         %-------------------------------------------------------
         % Display Tab
         %         field_size = [110, 140, 10, -1];
         
         uix.Empty( 'Parent', DisplayBox );
         
-        [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', '');
-        [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', '');
+        [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', '');
+        [GUI, textBox{18}, text_handles{18}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', '');
         
         %         field_size = [110, 64, 4, 63, 10];
-        [GUI, YLimitBox, text_handles{16}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', '');
+        [GUI, YLimitBox, text_handles{19}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', '');
         
         uix.Empty('Parent', DisplayBox );
         
         
-        [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
-        [GUI, YLimitBox2, text_handles{18}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', '');
+        [GUI, textBox{20}, text_handles{20}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
+        [GUI, YLimitBox2, text_handles{21}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', '');
         
         set(GUI.GUIDisplay.FirstSecond, 'Enable', 'off');
         set(GUI.GUIDisplay.WindowSize, 'Enable', 'off');
@@ -534,6 +549,7 @@ end
         GUI.LoadConfigurationFile.Enable = 'off';
         GUI.SaveConfigurationFile.Enable = 'off';
         GUI.SavePeaks.Enable = 'off';
+        GUI.SaveFiguresFile.Enable = 'off';
         %GUI.LoadPeaks.Enable = 'off';
     end
 %%
@@ -896,7 +912,7 @@ end
                 
                 set(GUI.GUIRecord.RecordFileName_text, 'String', ECG_FileName);
                 
-                GUI.RawData_handle = line(DATA.tm, DATA.sig, 'Parent', GUI.ECG_Axes);
+                GUI.RawData_handle = line(DATA.tm, DATA.sig, 'Parent', GUI.ECG_Axes, 'Tag', 'RawData');
                 
                 PathName = strrep(PathName, '\', '\\');
                 PathName = strrep(PathName, '_', '\_');
@@ -909,7 +925,7 @@ end
                 setECGXLim(0, right_limit2plot);
                 setECGYLim(0, right_limit2plot);
                 
-                xlabel(GUI.ECG_Axes, 'Time (sec)');
+                xlabel(GUI.ECG_Axes, 'Time (h:min:sec)');
                 ylabel(GUI.ECG_Axes, 'ECG (mV)');
                 hold(GUI.ECG_Axes, 'on');                                
                 
@@ -935,6 +951,7 @@ end
                 GUI.SavePeaks.Enable = 'on';
                 GUI.SaveDataQuality.Enable = 'on';
                 GUI.OpenDataQuality.Enable = 'on';
+                GUI.SaveFiguresFile.Enable = 'on';
                 GUI.GUIRecord.PeaksFileName_text_pushbutton_handle.Enable = 'on';
                 GUI.GUIRecord.Config_text_pushbutton_handle.Enable = 'on';
                 GUI.GUIRecord.DataQualityFileName_text_pushbutton_handle.Enable = 'on';
@@ -1038,9 +1055,12 @@ end
             
             for i = 1 : length(params_GUI_edit_values)
                 if ~isempty(fields_names{i})
-                    param_value = DATA.config_map(fields_names{i});
-                    tooltip = DATA.config_struct.(fields_names{i}).description;
-                    set(params_GUI_edit_values(i), 'String', param_value, 'Tooltip', tooltip);                    
+                    try
+                        param_value = DATA.config_map(fields_names{i});
+                        tooltip = DATA.config_struct.(fields_names{i}).description;
+                        set(params_GUI_edit_values(i), 'String', param_value, 'Tooltip', tooltip);
+                    catch
+                    end
                 end
             end
             
@@ -1083,7 +1103,7 @@ end
                     waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
                     setLogo(waitbar_handle, 'M1');
                     
-                    if ~strcmpi(peak_detector, 'rgrs')
+                    if ~strcmpi(peak_detector, 'rgrs') && ~strcmpi(peak_detector, 'EGM peaks')
                         
                         lcf = DATA.config_map('lcf');
                         hcf = DATA.config_map('hcf');
@@ -1099,8 +1119,24 @@ end
                         DATA.qrs = qrs_pos';                        
                     elseif strcmp(peak_detector, 'wjqrs')
                         qrs_pos = wjqrs(bpecg, DATA.Fs, thr, rp, ws);
-                        DATA.qrs = qrs_pos';                        
-                    else                        
+                        DATA.qrs = qrs_pos';      
+                    elseif strcmp(peak_detector, 'EGM peaks')
+                        params_struct = struct();
+                        
+                        params_struct.Fs = DATA.Fs;
+                        try
+                            params_struct.alpha = DATA.config_map('alpha');
+                            params_struct.refractory_period = DATA.config_map('ref_per');
+                            params_struct.BI = DATA.config_map('bi');
+                            tic
+                            qrs_pos = EGM_peaks(DATA.sig, params_struct);
+                            toc
+                            DATA.qrs = qrs_pos;
+                        catch
+                            h_e = errordlg('The parameters for the EGM algorithms were not defined.', 'Input Error');
+                            setLogo(h_e, 'M1');
+                        end
+                    else
                         if exist(fullfile([DATA.wfdb_record_name '.dat']), 'file') && exist(fullfile([DATA.wfdb_record_name '.hea']), 'file')
                             
 %                             mhrv_set_default('rqrs.window_size_sec', 0.8 * str2double(get(GUI.GUIConfig.QS, 'String')));
@@ -1118,7 +1154,7 @@ end
                     if ~isempty(DATA.qrs)
                         DATA.qrs_saved = DATA.qrs;
                         DATA.qrs = double(DATA.qrs);
-                        GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
+                        GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
                         uistack(GUI.red_peaks_handle, 'top');  % bottom
                         
                         plot_rr_data();
@@ -1204,7 +1240,7 @@ end
                         yString = 'RR (sec)';
                     end
                     
-                    GUI.RRInt_handle = line(rr_time, rr_data, 'Parent', GUI.RRInt_Axes, 'Marker', '*', 'MarkerSize', 2);
+                    GUI.RRInt_handle = line(rr_time, rr_data, 'Parent', GUI.RRInt_Axes, 'Marker', '*', 'MarkerSize', 2, 'Tag', 'RRInt');
                     
 %                     DATA.maxRRTime = max(rr_time_filterd);
                     
@@ -1437,6 +1473,42 @@ end
             return;
         end
         
+        if strcmp(get(src, 'UserData'), 'bi')
+            if (numeric_field_value < 0 || numeric_field_value > 20000)
+                h_e = errordlg('The beating interval must be in the range of 0 - 20000.', 'Input Error');
+                setLogo(h_e, 'M1');
+                set(src, 'String', DATA.config_map(get(src, 'UserData')));
+                return;
+            end
+            if numeric_field_value <= DATA.config_map('ref_per')
+                h_e = errordlg('The beating interval must be greater than refractory period.', 'Input Error');
+                setLogo(h_e, 'M1');
+                set(src, 'String', DATA.config_map(get(src, 'UserData')));
+                return;
+            end
+        end
+        
+        if strcmp(get(src, 'UserData'), 'alpha') && (numeric_field_value < 0 || numeric_field_value > 20)
+            h_e = errordlg('Alpha must be in the range of 0 - 20.', 'Input Error');
+            setLogo(h_e, 'M1');
+            set(src, 'String', DATA.config_map(get(src, 'UserData')));
+            return;
+        end
+        
+        if strcmp(get(src, 'UserData'), 'ref_per')
+            if (numeric_field_value < 0 || numeric_field_value > 20000)
+                h_e = errordlg('The refractory period must be in the range of 0 - 20000', 'Input Error');
+                setLogo(h_e, 'M1');
+                set(src, 'String', DATA.config_map(get(src, 'UserData')));
+                return;
+            elseif numeric_field_value > DATA.config_map('bi')
+                h_e = errordlg('The beating interval must be greater than refractory period.', 'Input Error');
+                setLogo(h_e, 'M1');
+                set(src, 'String', DATA.config_map(get(src, 'UserData')));
+                return;
+            end            
+        end
+        
         if isfield(DATA, 'config_map') && ~isempty(DATA.config_map)
             DATA.config_map(get(src, 'UserData')) = numeric_field_value;
             DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
@@ -1586,7 +1658,7 @@ end
                     delete(GUI.red_peaks_handle);
                 end
                 DATA.qrs = double(DATA.qrs);
-                GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
+                GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
                 uistack(GUI.red_peaks_handle, 'bottom');
                 
                 if isfield(GUI, 'RRInt_handle') && ishandle(GUI.RRInt_handle) && isvalid(GUI.RRInt_handle)
@@ -1948,7 +2020,7 @@ end
                     v = [DATA_QualityAnnotations_Data(i,1) min(ylim); DATA_QualityAnnotations_Data(i,2) min(ylim); DATA_QualityAnnotations_Data(i,2) max(ylim); DATA_QualityAnnotations_Data(i,1) max(ylim)];
                     
                     GUI.PinkLineHandle_AllDataAxes(prev_quality_win_num + i) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{class_ind}, 'EdgeColor', DATA.quality_color{class_ind}, ...
-                                                                               'LineWidth', 1, 'FaceAlpha', 0.75, 'EdgeAlpha', 0.85, 'UserData', class_ind, 'Parent', GUI.RRInt_Axes);           
+                                                                               'LineWidth', 1, 'FaceAlpha', 0.75, 'EdgeAlpha', 0.85, 'UserData', class_ind, 'Parent', GUI.RRInt_Axes, 'Tag', 'RRIntQuality');           
                    uistack(GUI.PinkLineHandle_AllDataAxes(prev_quality_win_num + i), 'bottom');
             end
         end
@@ -1962,7 +2034,7 @@ end
         f = [1 2 3 4];
         
         GUI.quality_win(quality_win_num) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.quality_color{quality_class}, 'EdgeColor', DATA.quality_color{quality_class}, ...
-            'LineWidth', 1, 'FaceAlpha', 0.45, 'EdgeAlpha', 0.5, 'UserData', quality_class, 'Parent', GUI.ECG_Axes); % 'FaceAlpha', 0.1
+            'LineWidth', 1, 'FaceAlpha', 0.45, 'EdgeAlpha', 0.5, 'UserData', quality_class, 'Parent', GUI.ECG_Axes, 'Tag', 'DataQuality'); % 'FaceAlpha', 0.1
         
         uistack(GUI.quality_win(quality_win_num), 'bottom');        
     end
@@ -2117,7 +2189,6 @@ end
             otherwise
         end
     end
-
 %%
     function LR_Resize(type)
         xdata = get(GUI.red_rect_handle, 'XData');
@@ -2315,7 +2386,7 @@ end
             if isfield(GUI, 'red_peaks_handle') && isvalid(GUI.red_peaks_handle)
                 set(GUI.red_peaks_handle, 'XData', temp_XData, 'YData', temp_YData);
             else
-                GUI.red_peaks_handle = line(temp_XData, temp_YData, 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
+                GUI.red_peaks_handle = line(temp_XData, temp_YData, 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
                 uistack(GUI.red_peaks_handle, 'top');
             end
         else
@@ -2621,7 +2692,7 @@ end
                 delete(GUI.red_peaks_handle);
             end
             DATA.qrs = double(DATA.qrs);
-            GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2);
+            GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
             uistack(GUI.red_peaks_handle, 'top');
             
             delete(GUI.red_rect_handle);
@@ -2865,6 +2936,210 @@ end
             end
             plot_quality_line(DATA_QualityAnnotations_Data, DATA_Class);
         end
+    end
+%%
+    function onSaveFiguresAsFile( ~, ~ )
+        
+        main_screensize = DATA.screensize;
+
+        GUI.SaveFiguresWindow = figure( ...
+            'Name', 'Save Figures Options', ...
+            'NumberTitle', 'off', ...
+            'MenuBar', 'none', ...
+            'Toolbar', 'none', ...
+            'HandleVisibility', 'off', ...
+            'Position', [(main_screensize(3)-400)/2, (main_screensize(4)-300)/2, 400, 300]); 
+        
+        setLogo(GUI.SaveFiguresWindow, 'M1');
+        
+        mainSaveFigurestLayout = uix.VBox('Parent', GUI.SaveFiguresWindow, 'Spacing', DATA.Spacing);
+        figures_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', DATA.Padding+2, 'Title', 'Select figures to save:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
+        figures_box = uix.VButtonBox('Parent', figures_panel, 'Spacing', DATA.Spacing-1, 'HorizontalAlignment', 'left', 'ButtonSize', [200 25]);
+                
+        uicontrol( 'Style', 'checkbox', 'Parent', figures_box, 'FontSize', DATA.BigFontSize, ...
+            'Tag', 'TimeSeries', 'String', 'Session Time Series', 'FontName', 'Calibri', 'Value', 1);   
+        tempBox1 = uix.HBox('Parent', figures_box, 'Spacing', DATA.Spacing);
+        uix.Empty( 'Parent', tempBox1 );
+        uicontrol( 'Style', 'checkbox', 'Parent', tempBox1, 'FontSize', DATA.BigFontSize, ...
+            'Tag', 'Peaks', 'String', 'Peaks', 'FontName', 'Calibri', 'Value', 1);
+        set(tempBox1, 'Widths', [-1 -5]);
+        
+        tempBox2 = uix.HBox('Parent', figures_box, 'Spacing', DATA.Spacing);
+        uix.Empty( 'Parent', tempBox2 );
+        uicontrol( 'Style', 'checkbox', 'Parent', tempBox2, 'FontSize', DATA.BigFontSize, ...
+            'Tag', 'DataQuality', 'String', 'Signal Quality', 'FontName', 'Calibri', 'Value', 1);
+        set(tempBox2, 'Widths', [-1 -5]);
+        
+        uix.Empty( 'Parent', figures_box );
+        
+        uicontrol( 'Style', 'checkbox', 'Parent', figures_box, 'FontSize', DATA.BigFontSize, ...
+            'Tag', 'RRTimeSeries', 'String', 'RR Time Series', 'FontName', 'Calibri', 'Value', 1);
+        tempBox3 = uix.HBox('Parent', figures_box, 'Spacing', DATA.Spacing);
+        uix.Empty( 'Parent', tempBox3 );
+        uicontrol( 'Style', 'checkbox', 'Parent', tempBox3, 'FontSize', DATA.BigFontSize, ...
+            'Tag', 'RRIntQuality', 'String', 'Signal Quality', 'FontName', 'Calibri', 'Value', 1);
+        set(tempBox3, 'Widths', [-1 -5]);
+                
+        CommandsButtons_Box = uix.HButtonBox('Parent', mainSaveFigurestLayout, 'Spacing', DATA.Spacing, 'VerticalAlignment', 'middle', 'ButtonSize', [100 30]);
+        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Save As', 'FontName', 'Calibri');
+        uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @cancel_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
+        
+        set( mainSaveFigurestLayout, 'Heights',  [-70 -30]);                
+    end
+%%
+    function dir_button_Callback( ~, ~ )
+       
+        persistent DIRS;
+        persistent DATA_Fig;
+        
+        % Add third-party dependencies to path
+        gui_basepath = fileparts(mfilename('fullpath'));
+        basepath = fileparts(gui_basepath);
+        
+        if isdeployed
+            res_parh = [userpath filesep 'PhysioZoo' filesep 'Results'];
+        else
+            res_parh = [basepath filesep 'Results'];
+        end
+        
+        if ~isdir(res_parh)
+            warning('off');
+            mkdir(res_parh);
+            warning('on');
+        end
+        
+        if ~isfield(DIRS, 'analyzedDataDirectory')
+            DIRS.analyzedDataDirectory = res_parh;
+        end
+        if isempty(DATA_Fig)
+            DATA_Fig.Ext = 'png';
+        end
+        
+        [fig_full_name, fig_path, FilterIndex] = uiputfile({'*.*', 'All files';...
+            '*.fig','MATLAB Figure (*.fig)';...
+            '*.bmp','Bitmap file (*.bmp)';...
+            '*.eps','EPS file (*.eps)';...
+            '*.emf','Enhanced metafile (*.emf)';...
+            '*.jpg','JPEG image (*.jpg)';...
+            '*.pcx','Paintbrush 24-bit file (*.pcx)';...
+            '*.pbm','Portable Bitmap file (*.pbm)';...
+            '*.pdf','Portable Document Format (*.pdf)';...
+            '*.pgm','Portable Graymap file (*.pgm)';...
+            '*.png','Portable Network Grafics file (*.png)';...
+            '*.ppm','Portable Pixmap file (*.ppm)';...
+            '*.svg','Scalable Vector Graphics file (*.svg)';...
+            '*.tif','TIFF image (*.tif)';...
+            '*.tif','TIFF no compression image (*.tif)'},...
+            'Choose Figures file Name',...
+            [DIRS.analyzedDataDirectory, filesep, [DATA.DataFileName, '.', DATA_Fig.Ext]]);
+        if ~isequal(fig_path, 0)
+            DIRS.analyzedDataDirectory = fig_path;
+            
+            [~, fig_name, fig_ext] = fileparts(fig_full_name);
+            
+            DATA_Fig.FigFileName = fig_name;
+            if ~isempty(fig_ext)
+                DATA_Fig.Ext = fig_ext(2:end);
+            else
+                DATA_Fig.Ext = 'png';
+            end
+            saveAs_figures_button(DIRS.analyzedDataDirectory, DATA_Fig.FigFileName, DATA_Fig.Ext);
+        end
+    end
+%%
+    function saveAs_figures_button(fig_path, fig_name, fig_ext)                                        
+        
+        if ~isempty(fig_path) && ~isempty(fig_name) && ~isempty(fig_ext)
+            
+            figures_names = {'_data'; '_rr_int'};
+            
+            ext = fig_ext(1:end);
+            if strcmpi(ext, 'pcx')
+                ext = 'pcx24b';
+            elseif strcmpi(ext, 'emf')
+                ext = 'meta';
+            elseif strcmpi(ext, 'jpg')
+                ext = 'jpeg';
+            elseif strcmpi(ext, 'tif')
+                ext = 'tiff';
+            elseif strcmpi(ext, 'tiff')
+                ext = 'tiffn';
+            end
+            
+            export_path_name = fullfile(fig_path, fig_name);
+            
+            axes_array = [GUI.ECG_Axes GUI.RRInt_Axes];
+            
+            for i = 1 : length(axes_array)
+                
+                axes_handle = axes_array(i);
+                
+                af = figure;
+                set(af, 'Name', [fig_name figures_names{i}], 'NumberTitle', 'off');
+                new_axes = copyobj(axes_handle, af);  
+                xlabel(new_axes, 'Time (h:min:sec)');
+                
+                uicontrolData = findobj(GUI.SaveFiguresWindow, 'Tag', 'TimeSeries');
+                uicontrolPeaks = findobj(GUI.SaveFiguresWindow, 'Tag', 'Peaks');
+                uicontrolRRInt = findobj(GUI.SaveFiguresWindow, 'Tag', 'RRTimeSeries');
+                uicontrolDataQuality = findobj(GUI.SaveFiguresWindow, 'Tag', 'DataQuality');
+                uicontrolRRIntQuality = findobj(GUI.SaveFiguresWindow, 'Tag', 'RRIntQuality');
+                
+                try                                        
+                    line_handle = findobj(new_axes.Children, 'Tag', 'red_zoom_rect');
+                    delete(line_handle);
+                    
+                    if ~uicontrolData.Value
+                        line_handle = findobj(new_axes.Children, 'Tag', 'RawData');
+                        delete(line_handle);
+                    end
+                    if ~uicontrolPeaks.Value
+                        line_handle = findobj(new_axes.Children, 'Tag', 'Peaks');
+                        delete(line_handle);
+                    end
+                    if ~uicontrolRRInt.Value
+                        line_handle = findobj(new_axes.Children, 'Tag', 'RRInt');
+                        delete(line_handle);
+                    end
+                    if ~uicontrolDataQuality.Value
+                        line_handle = findobj(new_axes.Children, 'Tag', 'DataQuality');
+                        delete(line_handle);
+                    end
+                    if ~uicontrolRRIntQuality.Value
+                        line_handle = findobj(new_axes.Children, 'Tag', 'RRIntQuality');
+                        delete(line_handle);
+                    end                                                            
+                    
+                    if ~isempty(new_axes.Children)
+                        file_name = [export_path_name figures_names{i}];
+                        
+                        if exist([file_name '.' ext], 'file')
+                            button = questdlg([file_name '.' ext ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
+                            if strcmp(button, 'No')
+                                close(af);
+                                continue;
+                            end
+                        end
+                        if strcmpi(ext, 'fig')
+                            savefig(af, file_name, 'compact');
+                        elseif ~strcmpi(ext, 'fig')
+                            fig_print( af, file_name, 'output_format', ext, 'font_size', 16, 'width', 20);
+                        end
+                    end
+                    close(af);                                        
+                catch e
+                    disp(e);
+                end                
+            end
+        else
+            h_e = errordlg('Please enter valid path to save figures', 'Input Error');
+            setLogo(h_e, 'M1');
+        end
+        delete(GUI.SaveFiguresWindow);
+    end
+%%
+    function cancel_button_Callback(~, ~)
+        delete( GUI.SaveFiguresWindow );
     end
 %%
     function onPhysioZooHome( ~, ~ )

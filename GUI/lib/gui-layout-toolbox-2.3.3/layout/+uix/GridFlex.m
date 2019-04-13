@@ -1,23 +1,24 @@
-classdef HBoxFlex < uix.HBox & uix.mixin.Flex
-    %uix.HBoxFlex  Flexible horizontal box
+classdef GridFlex < uix.Grid & uix.mixin.Flex
+    %uix.GridFlex  Flexible grid
     %
-    %  b = uix.HBoxFlex(p1,v1,p2,v2,...) constructs a flexible horizontal
-    %  box and sets parameter p1 to value v1, etc.
+    %  b = uix.GridFlex(p1,v1,p2,v2,...) constructs a flexible grid and
+    %  sets parameter p1 to value v1, etc.
     %
-    %  A horizontal box lays out contents from left to right.  Users can
-    %  resize contents by dragging the dividers.
+    %  A grid lays out contents from top to bottom and left to right.
+    %  Users can resize contents by dragging the dividers.
     %
-    %  See also: uix.VBoxFlex, uix.GridFlex, uix.HBox, uix.HButtonBox
+    %  See also: uix.HBoxFlex, uix.VBoxFlex, uix.Grid
     
     %  Copyright 2009-2016 The MathWorks, Inc.
-    %  $Revision: 1436 $ $Date: 2016-11-17 17:53:29 +0000 (Thu, 17 Nov 2016) $
+    %  $Revision: 1682 $ $Date: 2018-06-11 16:57:09 +0100 (Mon, 11 Jun 2018) $
     
     properties( Access = public, Dependent, AbortSet )
         DividerMarkings % divider markings [on|off]
     end
     
     properties( Access = private )
-        ColumnDividers = uix.Divider.empty( [0 1] ) % column dividers
+        RowDividers = uix.Divider.empty( [0 1] )
+        ColumnDividers = uix.Divider.empty( [0 1] )
         FrontDivider % front divider
         DividerMarkings_ = 'on' % backing for DividerMarkings
         MousePressListener = event.listener.empty( [0 0] ) % mouse press listener
@@ -31,12 +32,12 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
     
     methods
         
-        function obj = HBoxFlex( varargin )
-            %uix.HBoxFlex  Flexible horizontal box constructor
+        function obj = GridFlex( varargin )
+            %uix.GridFlex  Flexible grid constructor
             %
-            %  b = uix.HBoxFlex() constructs a flexible horizontal box.
+            %  b = uix.GridFlex() constructs a flexible grid.
             %
-            %  b = uix.HBoxFlex(p1,v1,p2,v2,...) sets parameter p1 to value
+            %  b = uix.GridFlex(p1,v1,p2,v2,...) sets parameter p1 to value
             %  v1, etc.
             
             % Create front divider
@@ -54,16 +55,15 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
             obj.FrontDivider = frontDivider;
             obj.BackgroundColorListener = backgroundColorListener;
             
+            % Set Spacing property (may be overwritten by uix.set)
+            obj.Spacing = 5;
+            
             % Set properties
-            if nargin > 0
-                try
-                    assert( rem( nargin, 2 ) == 0, 'uix:InvalidArgument', ...
-                        'Parameters and values must be provided in pairs.' )
-                    set( obj, varargin{:} )
-                catch e
-                    delete( obj )
-                    e.throwAsCaller()
-                end
+            try
+                uix.set( obj, varargin{:} )
+            catch e
+                delete( obj )
+                e.throwAsCaller()
             end
             
         end % constructor
@@ -101,11 +101,19 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
             %onMousePress  Handler for WindowMousePress events
             
             % Check whether mouse is over a divider
-            loc = find( obj.ColumnDividers.isMouseOver( eventData ) );
-            if isempty( loc ), return, end
+            locr = find( obj.RowDividers.isMouseOver( eventData ) );
+            locc = find( obj.ColumnDividers.isMouseOver( eventData ) );
+            if ~isempty( locr )
+                loc = locr;
+                divider = obj.RowDividers(locr);
+            elseif ~isempty( locc )
+                loc = -locc;
+                divider = obj.ColumnDividers(locc);
+            else
+                return
+            end
             
             % Capture state at button down
-            divider = obj.ColumnDividers(loc);
             obj.ActiveDivider = loc;
             obj.ActiveDividerPosition = divider.Position;
             root = groot();
@@ -117,6 +125,7 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
             % Activate divider
             frontDivider = obj.FrontDivider;
             frontDivider.Position = divider.Position;
+            frontDivider.Orientation = divider.Orientation;
             divider.Visible = 'off';
             frontDivider.Parent = [];
             frontDivider.Parent = obj;
@@ -131,14 +140,49 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
             loc = obj.ActiveDivider;
             if loc > 0
                 root = groot();
-                delta = root.PointerLocation(1) - obj.MousePressLocation(1);
-                iw = loc;
-                jw = loc + 1;
+                delta = root.PointerLocation(2) - obj.MousePressLocation(2);
+                ih = loc;
+                jh = loc + 1;
                 ic = loc;
                 jc = loc + 1;
-                divider = obj.ColumnDividers(loc);
+                divider = obj.RowDividers(loc);
                 contents = obj.Contents_;
-                oldPixelWidths = [contents(ic).Position(3); contents(jc).Position(3)];
+                ip = uix.getPosition( contents(ic), 'pixels' );
+                jp = uix.getPosition( contents(jc), 'pixels' );
+                oldPixelHeights = [ip(4); jp(4)];
+                minimumHeights = obj.MinimumHeights_(ih:jh,:);
+                if delta < 0 % limit to minimum distance from lower neighbor
+                    delta = max( delta, minimumHeights(2) - oldPixelHeights(2) );
+                else % limit to minimum distance from upper neighbor
+                    delta = min( delta, oldPixelHeights(1) - minimumHeights(1) );
+                end
+                oldHeights = obj.Heights_(loc:loc+1);
+                newPixelHeights = oldPixelHeights - delta * [1;-1];
+                if oldHeights(1) < 0 && oldHeights(2) < 0 % weight, weight
+                    newHeights = oldHeights .* newPixelHeights ./ oldPixelHeights;
+                elseif oldHeights(1) < 0 && oldHeights(2) >= 0 % weight, pixels
+                    newHeights = [oldHeights(1) * newPixelHeights(1) / ...
+                        oldPixelHeights(1); newPixelHeights(2)];
+                elseif oldHeights(1) >= 0 && oldHeights(2) < 0 % pixels, weight
+                    newHeights = [newPixelHeights(1); oldHeights(2) * ...
+                        newPixelHeights(2) / oldPixelHeights(2)];
+                else % sizes(1) >= 0 && sizes(2) >= 0 % pixels, pixels
+                    newHeights = newPixelHeights;
+                end
+                obj.Heights_(loc:loc+1) = newHeights;
+            elseif loc < 0
+                root = groot();
+                delta = root.PointerLocation(1) - obj.MousePressLocation(1);
+                iw = -loc;
+                jw = -loc + 1;
+                r = numel( obj.Heights_ );
+                ic = r * (-loc-1) + 1;
+                jc = r * -loc + 1;
+                divider = obj.ColumnDividers(iw);
+                contents = obj.Contents_;
+                ip = uix.getPosition( contents(ic), 'pixels' );
+                jp = uix.getPosition( contents(jc), 'pixels' );
+                oldPixelWidths = [ip(3); jp(3)];
                 minimumWidths = obj.MinimumWidths_(iw:jw,:);
                 if delta < 0 % limit to minimum distance from left neighbor
                     delta = max( delta, minimumWidths(1) - oldPixelWidths(1) );
@@ -183,15 +227,37 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
             loc = obj.ActiveDivider;
             if loc == 0 % hovering, update pointer
                 obj.updateMousePointer( source, eventData );
-            else % dragging column divider
+            elseif loc > 0 % dragging row divider
                 root = groot();
-                delta = root.PointerLocation(1) - obj.MousePressLocation(1);
-                iw = loc;
-                jw = loc + 1;
+                delta = root.PointerLocation(2) - obj.MousePressLocation(2);
+                ih = loc;
+                jh = loc + 1;
                 ic = loc;
                 jc = loc + 1;
                 contents = obj.Contents_;
-                oldPixelWidths = [contents(ic).Position(3); contents(jc).Position(3)];
+                ip = uix.getPosition( contents(ic), 'pixels' );
+                jp = uix.getPosition( contents(jc), 'pixels' );
+                oldPixelHeights = [ip(4); jp(4)];
+                minimumHeights = obj.MinimumHeights_(ih:jh,:);
+                if delta < 0 % limit to minimum distance from lower neighbor
+                    delta = max( delta, minimumHeights(2) - oldPixelHeights(2) );
+                else % limit to minimum distance from upper neighbor
+                    delta = min( delta, oldPixelHeights(1) - minimumHeights(1) );
+                end
+                obj.FrontDivider.Position = ...
+                    obj.ActiveDividerPosition + [0 delta 0 0];
+            else % loc < 0, dragging column divider
+                root = groot();
+                delta = root.PointerLocation(1) - obj.MousePressLocation(1);
+                iw = -loc;
+                jw = -loc + 1;
+                r = numel( obj.Heights_ );
+                ic = r * (-loc-1) + 1;
+                jc = r * -loc + 1;
+                contents = obj.Contents_;
+                ip = uix.getPosition( contents(ic), 'pixels' );
+                jp = uix.getPosition( contents(jc), 'pixels' );
+                oldPixelWidths = [ip(3); jp(3)];
                 minimumWidths = obj.MinimumWidths_(iw:jw,:);
                 if delta < 0 % limit to minimum distance from left neighbor
                     delta = max( delta, minimumWidths(1) - oldPixelWidths(1) );
@@ -210,6 +276,13 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
             backgroundColor = obj.BackgroundColor;
             highlightColor = min( [backgroundColor / 0.75; 1 1 1] );
             shadowColor = max( [backgroundColor * 0.75; 0 0 0] );
+            rowDividers = obj.RowDividers;
+            for ii = 1:numel( rowDividers )
+                rowDivider = rowDividers(ii);
+                rowDivider.BackgroundColor = backgroundColor;
+                rowDivider.HighlightColor = highlightColor;
+                rowDivider.ShadowColor = shadowColor;
+            end
             columnDividers = obj.ColumnDividers;
             for jj = 1:numel( columnDividers )
                 columnDivider = columnDividers(jj);
@@ -232,17 +305,17 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
             %  c.redraw() redraws the container c.
             
             % Call superclass method
-            redraw@uix.HBox( obj )
+            redraw@uix.Grid( obj )
             
             % Create or destroy column dividers
             b = numel( obj.ColumnDividers ); % current number of dividers
             c = max( [numel( obj.Widths_ )-1 0] ); % required number of dividers
             if b < c % create
                 for ii = b+1:c
-                    divider = uix.Divider( 'Parent', obj, ...
+                    columnDivider = uix.Divider( 'Parent', obj, ...
                         'Orientation', 'vertical', ...
                         'BackgroundColor', obj.BackgroundColor );
-                    obj.ColumnDividers(ii,:) = divider;
+                    obj.ColumnDividers(ii,:) = columnDivider;
                 end
             elseif b > c % destroy
                 % Destroy dividers
@@ -254,6 +327,30 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
                 end
             end
             
+            % Create or destroy row dividers
+            q = numel( obj.RowDividers ); % current number of dividers
+            r = max( [numel( obj.Heights_ )-1 0] ); % required number of dividers
+            if q < r % create
+                for ii = q+1:r
+                    columnDivider = uix.Divider( 'Parent', obj, ...
+                        'Orientation', 'horizontal', ...
+                        'BackgroundColor', obj.BackgroundColor );
+                    obj.RowDividers(ii,:) = columnDivider;
+                end
+                % Bring front divider to the front
+                frontDivider = obj.FrontDivider;
+                frontDivider.Parent = [];
+                frontDivider.Parent = obj;
+            elseif q > r % destroy
+                % Destroy dividers
+                delete( obj.RowDividers(r+1:q,:) )
+                obj.RowDividers(r+1:q,:) = [];
+                % Update pointer
+                if r == 0 && strcmp( obj.Pointer, 'top' )
+                    obj.unsetPointer()
+                end
+            end
+            
             % Compute container bounds
             bounds = hgconvertunits( ancestor( obj, 'figure' ), ...
                 [0 0 1 1], 'normalized', 'pixels', obj );
@@ -261,8 +358,20 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
             % Retrieve size properties
             widths = obj.Widths_;
             minimumWidths = obj.MinimumWidths_;
+            heights = obj.Heights_;
+            minimumHeights = obj.MinimumHeights_;
             padding = obj.Padding_;
             spacing = obj.Spacing_;
+            
+            % Compute row divider positions
+            xRowPositions = [padding + 1, max( bounds(3) - 2 * padding, 1 )];
+            xRowPositions = repmat( xRowPositions, [r 1] );
+            yRowSizes = uix.calcPixelSizes( bounds(4), heights, ...
+                minimumHeights, padding, spacing );
+            yRowPositions = [bounds(4) - cumsum( yRowSizes(1:r,:) ) - padding - ...
+                spacing * transpose( 1:r ) + 1, repmat( spacing, [r 1] )];
+            rowPositions = [xRowPositions(:,1), yRowPositions(:,1), ...
+                xRowPositions(:,2), yRowPositions(:,2)];
             
             % Compute column divider positions
             xColumnSizes = uix.calcPixelSizes( bounds(3), widths, ...
@@ -274,13 +383,27 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
             columnPositions = [xColumnPositions(:,1), yColumnPositions(:,1), ...
                 xColumnPositions(:,2), yColumnPositions(:,2)];
             
+            % Position row dividers
+            for ii = 1:r
+                rowDivider = obj.RowDividers(ii);
+                rowDivider.Position = rowPositions(ii,:);
+                switch obj.DividerMarkings_
+                    case 'on'
+                        rowDivider.Markings = cumsum( xColumnSizes ) + ...
+                            spacing * transpose( 0:c ) - xColumnSizes / 2;
+                    case 'off'
+                        rowDivider.Markings = zeros( [0 1] );
+                end
+            end
+            
             % Position column dividers
             for ii = 1:c
                 columnDivider = obj.ColumnDividers(ii);
                 columnDivider.Position = columnPositions(ii,:);
                 switch obj.DividerMarkings_
                     case 'on'
-                        columnDivider.Markings = columnPositions(ii,4)/2;
+                        columnDivider.Markings = cumsum( yRowSizes ) + ...
+                            spacing * transpose( 0:r ) - yRowSizes / 2;
                     case 'off'
                         columnDivider.Markings = zeros( [0 1] );
                 end
@@ -312,7 +435,7 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
             obj.MouseMotionListener = mouseMotionListener;
             
             % Call superclass method
-            reparent@uix.HBox( obj, oldFigure, newFigure )
+            reparent@uix.Grid( obj, oldFigure, newFigure )
             
             % Update pointer
             if ~isempty( oldFigure ) && ~strcmp( obj.Pointer, 'unset' )
@@ -328,7 +451,9 @@ classdef HBoxFlex < uix.HBox & uix.mixin.Flex
         function updateMousePointer ( obj, source, eventData  )
             
             oldPointer = obj.Pointer;
-            if any( obj.ColumnDividers.isMouseOver( eventData ) )
+            if any( obj.RowDividers.isMouseOver( eventData ) )
+                newPointer = 'top';
+            elseif any( obj.ColumnDividers.isMouseOver( eventData ) )
                 newPointer = 'left';
             else
                 newPointer = 'unset';

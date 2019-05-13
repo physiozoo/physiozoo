@@ -17,7 +17,10 @@ basepath = fileparts(mfilename('fullpath'));
 
 %% Initialize mhrv toolbox
 
-mhrv_init_script = [basepath filesep 'mhrv' filesep 'mhrv_init'];
+lib_path = [basepath filesep 'lib'];
+addpath(lib_path);
+
+mhrv_init_script = [lib_path filesep 'mhrv' filesep 'mhrv_init'];
 run(mhrv_init_script);
 
 %% Start PhysioZoo GUI

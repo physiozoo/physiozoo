@@ -1,5 +1,8 @@
 # mhrv
 
+[![Documentation
+Status](https://readthedocs.org/projects/mhrv/badge/?version=latest)](https://mhrv.readthedocs.io/en/latest/?badge=latest)
+
 `mhrv` is a matlab toolbox for calculating Heart-Rate Variability (HRV) metrics
 from both ECG signals and RR-interval time series. The toolbox works with ECG
 data in the [PhysioNet](https://physionet.org/) [1] WFDB data format.
@@ -7,50 +10,51 @@ data in the [PhysioNet](https://physionet.org/) [1] WFDB data format.
 ## Features
 
 - **WFDB wrappers and helpers**. A small subset of the PhysioNet WFDB tools are
-  wrapped with matlab functions, to allow using them directly from matlab.
-    * `gqrs` - A QRS detection algorithm.
-    * `rdsamp` - For reading PhysioNet signal data into matlab.
-    * `rdann` - For reading PhysioNet annotation data into matlab.
-    * `wrann` - For writing PhysioNet annotation data from matlab datatypes.
-    * `wfdb_header` - Read record metadata from a WFDB header file (`.hea`).
+  wrapped with matlab functions, to allow using them directly from matlab. For
+  example,
+    * `mhrv.wfdb.gqrs` - A QRS detection algorithm.
+    * `mhrv.wfdb.rdsamp` - For reading PhysioNet signal data into matlab.
+    * `mhrv.wfdb.rdann` - For reading PhysioNet annotation data into matlab.
+    * `mhrv.wfdb.wrann` - For writing PhysioNet annotation data from matlab datatypes.
+    * `mhrv.wfdb.wfdb_header` - Read record metadata from a WFDB header file (`.hea`).
 
 - **ECG signal processing**. Peak detection and RR interval extraction from ECG data
-  in PhysioNet format.
-    * `rqrs` - Detection of R-peaks in ECG signals (based on PhysioNet's
+  in PhysioNet format. For example,
+    * `mhrv.wfdb.rqrs` - Detection of R-peaks in ECG signals (based on PhysioNet's
       `gqrs`). Configurable for use with both human and animal ECGs.
-    * `jqrs`/`wjqrs` - An ECG peak-detector based on a modified Pan & Tompkins
+    * `mhrv.ecg.jqrs`/`mhrv.ecg.wjqrs` - An ECG peak-detector based on a modified Pan & Tompkins
       algorithm and a windowed version.
-    * `bpfilt`- Bandpass filtering for removing noise artifacts from ECG
+    * `mhrv.ecg.bpfilt`- Bandpass filtering for removing noise artifacts from ECG
       signals.
-    * `ecgrr` - Construction of RR intervals from ECG data in PhysioNet format.
-    * `qrs_compare` - Comparison of QRS detections to reference annotations and
+    * `mhrv.wfdb.ecgrr` - Construction of RR intervals from ECG data in PhysioNet format.
+    * `mhrv.wfdb.qrs_compare` - Comparison of QRS detections to reference annotations and
       calculation of quality measures like Sensitivity, PPV.
 
 - **RR-intervals signal processing**. Ectopic beat rejection, frequency filtering,
-  nonlinear dynamic and fractal analysis.
-    * `filtrr` - Filtering of RR interval time series to detect ectopic (out of
+  nonlinear dynamic and fractal analysis. For example,
+    * `mhrv.rri.filtrr` - Filtering of RR interval time series to detect ectopic (out of
       place) beats.
-    * `dfa` - Detrended Fluctuation Analysis, a method of estimating the fractal
+    * `mhrv.rri.dfa` - Detrended Fluctuation Analysis, a method of estimating the fractal
       scaling exponent of a signal [3].
-    * `mse` - Multiscale Sample Entropy, a measure of the complexity of the
+    * `mhrv.rri.mse` - Multiscale Sample Entropy, a measure of the complexity of the
       signal computed on multiple time scales [4].
-    * `sample_entropy` - Sample Entropy, a measure of the irregularity of a signal.
+    * `mhrv.rri.sample_entropy` - Sample Entropy, a measure of the irregularity of a signal.
 
 * HRV Metrics: Calculating quantitative measures that indicate the activity of
     the heart based on RR intervals using all standard HRV metrics defined in
     the literature (see e.g. [2]).
-    * `hrv_time` - Time Domain: AVNN, SDNN, RMSSD, pNNx.
-    * `hrv_freq` - Frequency Domain:
+    * `mhrv.hrv.hrv_time` - Time Domain: AVNN, SDNN, RMSSD, pNNx.
+    * `mhrv.hrv.hrv_freq` - Frequency Domain:
         * Total and normalized power in (configurable) VLF, LF, HF and custom
           user-defined bands.
         * Spectral power estimation using Lomb, Auto Regressive, Welch and FFT methods.
         * Additional frequency-domain features: LF/HF ratio, LF and HF peak
           frequencies, power-law scaling exponent (beta).
-    * `hrv_nonlinear` - Nonlinear methods:
+    * `mhrv.hrv.hrv_nonlinear` - Nonlinear methods:
         * Short- and long-term scaling exponents (alpha1, alpha2) based on DFA.
         * Sample Entropy and Multiscale sample entropy (MSE).
         * Poincaré plot metrics (SD1, SD2).
-    * `hrv_fragmentation` - Time-domain RR interval fragmentation analysis [5].
+    * `mhrv.hrv.hrv_fragmentation` - Time-domain RR interval fragmentation analysis [5].
 
 * Configuration: The toolbox is fully configurable with many user-adjustable
   parameters.
@@ -61,7 +65,7 @@ data in the [PhysioNet](https://physionet.org/) [1] WFDB data format.
     * Custom configuration files can be loaded with a single call which updates
       the defaults for the entire toolbox. This allows simple, reproducible
       analysis of different datasets that require different analysis
-      configurations.
+      configurations. See the `mhrv.defaults` package.
     * The settings for any of the functions can either be configured globally
       with configuration `yml` files or on a per-call basis with matlab-style
       key-value argument pairs.
@@ -69,13 +73,14 @@ data in the [PhysioNet](https://physionet.org/) [1] WFDB data format.
 * Plotting: All toolbox functions support plotting their output for data
   visualization. The plotting code is separated from the algorithmic code in
   order to simplify embedding this toolbox in other matlab applications.
+  See the `mhrv.plots` package.
 
 * Top-level analysis functions: These functions work with PhysioNet records and
   allow streamlined HRV analysis by composing the functions of this toolbox.
-    * `mhrv` - Analyzes a single PhysioNet record (ECG data or annotations),
+    * `mhrv.mhrv` - Analyzes a single PhysioNet record (ECG data or annotations),
       optionally split into multiple analysis windows.  Extracts all
       supported HRV features and optionally generates plots.
-    * `mhrv_batch` - Analyzes many PhysioNet records (ECG data or annotations) which
+    * `mhrv.mhrv_batch` - Analyzes many PhysioNet records (ECG data or annotations) which
       can be further separated into user-defined groups (e.g. Control, Test).
       Automatically computes HRV metrics per group and generates a comparative
       summary of the HRV features in each group.
@@ -134,44 +139,50 @@ PhysioNet (in this case from
 
 ```matlab
 % Download the mitdb/111 record from PhysioNet to local folder named 'db'
->> download_wfdb_records('mitdb', '111', 'db');
-
+>> mhrv.wfdb.download_wfdb_records('mitdb', '111', 'db');
+```
+```
+[0.210] >> mitdb: Found 48 records
+[0.300] >> mitdb: Found 1 annotators
+[0.400] >> mitdb: Downloaded: 111.hea -> db/mitdb/111.hea
+[0.500] >> mitdb: Downloaded: 111.atr -> db/mitdb/111.atr
+[1.030] >> mitdb: Downloaded: 111.dat -> db/mitdb/111.dat
+[1.040] >> mitdb: Done, 1 records downloaded.
+```
+```matlab
 % Run HRV analysis
->> mhrv('db/mitdb/111', 'window_minutes', 15, 'plot', true);
+>> mhrv.mhrv('db/mitdb/111', 'window_minutes', 15, 'plot', true);
 ```
-
-Will give you:
 ```
-[0.000] >> mhrv: Processing ECG signal from record db/mitdb/111 (ch. 1)...
-[0.000] >> mhrv: Signal duration: 00:30:05.000 [HH:mm:ss.ms]
-[0.010] >> mhrv: Analyzing window 1 of 2...
-[0.010] >> mhrv: [1/2] Detecting QRS end RR intervals...
-[0.810] >> mhrv: [1/2] Filtering RR intervals...
-[0.840] >> mhrv: [1/2] 1039 NN intervals, 6 RR intervals were filtered out
-[0.840] >> mhrv: [1/2] Calculating time-domain metrics...
-[0.920] >> mhrv: [1/2] Calculating frequency-domain metrics...
-[1.180] >> mhrv: [1/2] Calculating nonlinear metrics...
-[1.430] >> mhrv: [1/2] Calculating fragmentation metrics...
-[1.490] >> mhrv: Analyzing window 2 of 2...
-[1.490] >> mhrv: [2/2] Detecting QRS end RR intervals...
-[2.080] >> mhrv: [2/2] Filtering RR intervals...
-[2.100] >> mhrv: [2/2] 1057 NN intervals, 8 RR intervals were filtered out
-[2.100] >> mhrv: [2/2] Calculating time-domain metrics...
-[2.140] >> mhrv: [2/2] Calculating frequency-domain metrics...
-[2.240] >> mhrv: [2/2] Calculating nonlinear metrics...
-[2.450] >> mhrv: [2/2] Calculating fragmentation metrics...
-[2.490] >> mhrv: Building statistics table...
-[2.520] >> mhrv: Displaying Results...
-               RR      NN      AVNN      SDNN     RMSSD      pNN50       SEM      TOTAL_POWER_LOMB    VLF_POWER_LOMB    LF_POWER_LOMB    HF_POWER_LOMB    LF_NORM_LOMB    HF_NORM_LOMB    LF_TO_HF_LOMB    LF_PEAK_LOMB    HF_PEAK_LOMB      SD1       SD2       alpha1      alpha2      beta      SampEn       PIP        IALS        PSS       PAS  
-              ____    ____    ______    ______    ______    _______    _______    ________________    ______________    _____________    _____________    ____________    ____________    _____________    ____________    ____________    _______    ______    ________    ________    _______    _______    _______    _________    ______    ______
-    1         1045    1039    858.96    30.961    33.622     14.162    0.96054    333.22              67.098            23.574           242.55           8.8583          91.142          0.097193          0.046667       0.16667          23.786    36.745     0.65937     0.72845    -1.2471      1.835     53.321      0.53468    61.598    12.512
-    2         1065    1057    841.86    40.182    32.306     12.784     1.2359    388.66               132.7            32.031           223.93           12.514          87.486           0.14304          0.043333       0.16667          22.855    51.996     0.70064     0.92309    -1.6706     1.6483     52.318      0.52462    57.332    15.137
-    Mean      1055    1048    850.41    35.572    32.964     13.473     1.0982    360.94              99.899            27.802           233.24           10.686          89.314           0.12012             0.045       0.16667           23.32    44.371        0.68     0.82577    -1.4588     1.7417     52.819      0.52965    59.465    13.825
-    SE          10       9    8.5503    4.6103    0.6578    0.68888     0.1377    27.723              32.801            4.2286           9.3065           1.8278          1.8278          0.022923         0.0016667             0         0.46545    7.6255    0.020637    0.097316    0.21176    0.09336    0.50131    0.0050304    2.1328    1.3126
-    Median    1055    1048    850.41    35.572    32.964     13.473     1.0982    360.94              99.899            27.802           233.24           10.686          89.314           0.12012             0.045       0.16667           23.32    44.371        0.68     0.82577    -1.4588     1.7417     52.819      0.52965    59.465    13.825
-[2.580] >> mhrv: Generating plots...
-[4.930] >> mhrv: Finished processing record db/mitdb/111.
+[0.010] >> mhrv: Processing record db/mitdb/111 (ch. 1)...
+[0.010] >> mhrv: Signal duration: 00:30:05.555 [HH:mm:ss.ms]
+[0.020] >> mhrv: Analyzing window 1 of 2...
+[0.020] >> mhrv: [1/2] Detecting RR intervals from ECG... 1046 intervals detected.
+[0.280] >> mhrv: [1/2] Removing ectopic intervals... 13 intervals removed.
+[0.300] >> mhrv: [1/2] Calculating time-domain metrics...
+[0.310] >> mhrv: [1/2] Calculating frequency-domain metrics...
+[0.580] >> mhrv: [1/2] Calculating nonlinear metrics...
+[0.660] >> mhrv: [1/2] Calculating fragmentation metrics...
+[0.680] >> mhrv: Analyzing window 2 of 2...
+[0.680] >> mhrv: [2/2] Detecting RR intervals from ECG... 1065 intervals detected.
+[0.930] >> mhrv: [2/2] Removing ectopic intervals... 4 intervals removed.
+[0.950] >> mhrv: [2/2] Calculating time-domain metrics...
+[0.960] >> mhrv: [2/2] Calculating frequency-domain metrics...
+[1.110] >> mhrv: [2/2] Calculating nonlinear metrics...
+[1.180] >> mhrv: [2/2] Calculating fragmentation metrics...
+[1.190] >> mhrv: Building statistics table...
+[1.200] >> mhrv: Displaying Results...
+                RR       NN      AVNN      SDNN      RMSSD      pNN50       SEM      BETA_LOMB    HF_NORM_LOMB    HF_PEAK_LOMB    HF_POWER_LOMB    LF_NORM_LOMB    LF_PEAK_LOMB    LF_POWER_LOMB    LF_TO_HF_LOMB    TOTAL_POWER_LOMB    VLF_NORM_LOMB    VLF_POWER_LOMB      SD1       SD2       alpha1     alpha2      SampEn        PIP        IALS        PSS       PAS  
+              ______    ____    ______    ______    _______    _______    _______    _________    ____________    ____________    _____________    ____________    ____________    _____________    _____________    ________________    _____________    ______________    _______    ______    ________    _______    _________    _______    _________    ______    ______
 
+    1           1046    1033    858.95    30.958     33.598      14.05    0.96322     -1.1881        63.899         0.16744          443.95            6.6518        0.056809         46.214            0.1041            694.76            25.832            179.47         23.769     36.77     0.64751    0.69834       1.8402     52.662       0.5281    60.213     11.81
+    2           1065    1061    841.79    40.042     31.725     12.075     1.2293     -1.4542        51.529         0.16744          394.82            6.7584        0.044849         51.783           0.13116            766.21            35.367            270.99         22.444     51.96     0.70254    0.93526       1.8466     51.555      0.51698    55.702    14.138
+    Mean      1055.5    1047    850.37      35.5     32.662     13.063     1.0963     -1.3212        57.714         0.16744          419.38            6.7051        0.050829         48.999           0.11763            730.48              30.6            225.23         23.106    44.365     0.67502     0.8168       1.8434     52.109      0.52254    57.958    12.974
+    SE           9.5      14     8.581    4.5421    0.93663    0.98746    0.13305     0.13306        6.1852               0          24.564          0.053267       0.0059799         2.7844          0.013529            35.724            4.7674            45.757        0.66276    7.5954    0.027515    0.11846    0.0032216    0.55351    0.0055598    2.2554    1.1637
+    Median    1055.5    1047    850.37      35.5     32.662     13.063     1.0963     -1.3212        57.714         0.16744          419.38            6.7051        0.050829         48.999           0.11763            730.48              30.6            225.23         23.106    44.365     0.67502     0.8168       1.8434     52.109      0.52254    57.958    12.974
+
+[1.220] >> mhrv: Generating plots...
+[3.260] >> mhrv: Finished processing record db/mitdb/111.
 ```
 
 The `window_minutes` parameter allow splitting the signal into windows and
@@ -201,7 +212,7 @@ To use it in you own research, please cite:
   pacemaker mechanisms: Decoupling neural input using heart rate variability
   measurements.’ MSc Thesis. Technion, Israel Institute of Technology.
 
-* Behar J. A., Rosenberg A. A. et. al. (2018) ‘PhysioZoo: a novel open access
+* Behar J. A., Rosenberg A. A. et al. (2018) ‘PhysioZoo: a novel open access
   platform for heart rate variability analysis of mammalian
   electrocardiographic data.’ Frontiers in Physiology.
 

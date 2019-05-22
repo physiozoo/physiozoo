@@ -4924,10 +4924,11 @@ displayEndOfDemoMessage('');
             status = 1;
         end
         
+        direction = 1;
         if callbackdata.VerticalScrollCount > 0
             direction = -1;
         elseif callbackdata.VerticalScrollCount < 0
-            direction = 1;
+            direction = 1;            
         end
         
         % Up axes

@@ -33,7 +33,7 @@ persistent DATA_Measure;
 persistent defaultRate;
 
 %% Load default toolbox parameters
-%mhrv_load_defaults --clear;
+%mhrv.defaults.mhrv_load_defaults --clear;
 
 %%
 DATA = createData();
@@ -1123,7 +1123,7 @@ displayEndOfDemoMessage('');
         
         GUI.ConfigParamHandlesMap = containers.Map;
         
-        defaults_map = mhrv_get_all_defaults();
+        defaults_map = mhrv.defaults.mhrv_get_all_defaults();
         param_keys = keys(defaults_map);
         
         filtrr_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'filtrr')), param_keys)));
@@ -1137,15 +1137,15 @@ displayEndOfDemoMessage('');
         quotient_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), quotient_range_keys))) = [];
         detrending_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), detrending_range_keys))) = [];
         
-        DATA.filter_quotient = mhrv_get_default('filtrr.quotient.enable', 'value');
-        DATA.filter_ma = mhrv_get_default('filtrr.moving_average.enable', 'value');
-        DATA.filter_range = mhrv_get_default('filtrr.range.enable', 'value');
+        DATA.filter_quotient = mhrv.defaults.mhrv_get_default('filtrr.quotient.enable', 'value');
+        DATA.filter_ma = mhrv.defaults.mhrv_get_default('filtrr.moving_average.enable', 'value');
+        DATA.filter_range = mhrv.defaults.mhrv_get_default('filtrr.range.enable', 'value');
         
-        DATA.default_filters_thresholds.moving_average.win_threshold = mhrv_get_default('filtrr.moving_average.win_threshold', 'value');
-        DATA.default_filters_thresholds.moving_average.win_length = mhrv_get_default('filtrr.moving_average.win_length', 'value');
-        DATA.default_filters_thresholds.quotient.rr_max_change = mhrv_get_default('filtrr.quotient.rr_max_change', 'value');
-        DATA.default_filters_thresholds.range.rr_max = mhrv_get_default('filtrr.range.rr_max', 'value');
-        DATA.default_filters_thresholds.range.rr_min = mhrv_get_default('filtrr.range.rr_min', 'value');
+        DATA.default_filters_thresholds.moving_average.win_threshold = mhrv.defaults.mhrv_get_default('filtrr.moving_average.win_threshold', 'value');
+        DATA.default_filters_thresholds.moving_average.win_length = mhrv.defaults.mhrv_get_default('filtrr.moving_average.win_length', 'value');
+        DATA.default_filters_thresholds.quotient.rr_max_change = mhrv.defaults.mhrv_get_default('filtrr.quotient.rr_max_change', 'value');
+        DATA.default_filters_thresholds.range.rr_max = mhrv.defaults.mhrv_get_default('filtrr.range.rr_max', 'value');
+        DATA.default_filters_thresholds.range.rr_min = mhrv.defaults.mhrv_get_default('filtrr.range.rr_min', 'value');
         
         DATA.custom_filters_thresholds = DATA.default_filters_thresholds;
         %         DATA.custom_config_params = defaults_map;
@@ -1765,8 +1765,8 @@ displayEndOfDemoMessage('');
                 end
                 %             elseif strcmpi(ExtensionFileName, 'sqi') % strcmpi(ExtensionFileName, 'qrs') || strcmpi(ExtensionFileName, 'atr')
                 %                 if DATA.SamplingFrequency ~= 0
-                % %                     quality_data = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"')/DATA.SamplingFrequency;
-                %                     quality_data = rdann( [PathName QualityFileName], ExtensionFileName)/DATA.SamplingFrequency;
+                % %                     quality_data = mhrv.wfdb.rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"')/DATA.SamplingFrequency;
+                %                     quality_data = mhrv.wfdb.rdann( [PathName QualityFileName], ExtensionFileName)/DATA.SamplingFrequency;
                 %                     DATA.QualityAnnotations_Data = [quality_data(1:2:end), quality_data(2:2:end)];
                 %                 else
                 %                     errordlg('Cann''t get sampling frequency.', 'Input Error');
@@ -2032,7 +2032,7 @@ displayEndOfDemoMessage('');
                     end
                                         
                     try                        
-                        mhrv_load_defaults(config_file_name);   
+                        mhrv.defaults.mhrv_load_defaults(config_file_name);   
                         
                         conf_name = [config_file_name '.yml'];
                         if ~DATA.GroupsCalc
@@ -2044,7 +2044,7 @@ displayEndOfDemoMessage('');
                         DATA.config_file_name = config_file_name;
                         
                     catch e
-                        h_e = errordlg(['mhrv_load_defaults: ' e.message], 'Input Error');
+                        h_e = errordlg(['mhrv.defaults.mhrv_load_defaults: ' e.message], 'Input Error');
                         setLogo(h_e, 'M2');
                         if isvalid(waitbar_handle)
                             close(waitbar_handle);
@@ -2187,7 +2187,7 @@ displayEndOfDemoMessage('');
         plot_data = DATA.TimeStat.PlotData{active_window};
         
         if ~isempty(plot_data)
-            plot_hrv_time_hist(GUI.TimeAxes1, plot_data, 'clear', true);
+            mhrv.plots.plot_hrv_time_hist(GUI.TimeAxes1, plot_data, 'clear', true);
         end
         box(GUI.TimeAxes1, 'off' );
         setAllowAxesZoom(DATA.zoom_handle, GUI.TimeAxes1, false);
@@ -2200,8 +2200,8 @@ displayEndOfDemoMessage('');
         plot_data = DATA.FrStat.PlotData{active_window};
         
         if ~isempty(plot_data)
-            plot_hrv_freq_spectrum(GUI.FrequencyAxes1, plot_data, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
-            plot_hrv_freq_beta(GUI.FrequencyAxes2, plot_data);
+            mhrv.plots.plot_hrv_freq_spectrum(GUI.FrequencyAxes1, plot_data, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
+            mhrv.plots.plot_hrv_freq_beta(GUI.FrequencyAxes2, plot_data);
         end
         box(GUI.FrequencyAxes1, 'off' );
         box(GUI.FrequencyAxes2, 'off' );
@@ -2215,9 +2215,9 @@ displayEndOfDemoMessage('');
         plot_data = DATA.NonLinStat.PlotData{active_window};
         
         if ~isempty(plot_data)
-            plot_dfa_fn(GUI.NonLinearAxes1, plot_data.dfa);
-            plot_mse(GUI.NonLinearAxes3, plot_data.mse);
-            plot_poincare_ellipse(GUI.NonLinearAxes2, plot_data.poincare);
+            mhrv.plots.plot_dfa_fn(GUI.NonLinearAxes1, plot_data.dfa);
+            mhrv.plots.plot_mse(GUI.NonLinearAxes3, plot_data.mse);
+            mhrv.plots.plot_poincare_ellipse(GUI.NonLinearAxes2, plot_data.poincare);
         end
         box(GUI.NonLinearAxes1, 'off' );
         box(GUI.NonLinearAxes2, 'off' );
@@ -2251,7 +2251,7 @@ displayEndOfDemoMessage('');
             DATA.maxSignalLength = DATA.trr(end);
             DATA.RRIntPage_Length = DATA.maxSignalLength;
             
-            DATA.Filt_MyDefaultWindowSize = mhrv_get_default('hrv_freq.window_minutes', 'value') * 60; % min to sec
+            DATA.Filt_MyDefaultWindowSize = mhrv.defaults.mhrv_get_default('hrv_freq.window_minutes', 'value') * 60; % min to sec
             
             DATA.PlotHR = 0;
             DATA.firstSecond2Show = 0;
@@ -2867,8 +2867,8 @@ displayEndOfDemoMessage('');
         try
             % Load user-specified default parameters
             config_file_name = DATA.config_file_name;
-            %mhrv_load_defaults([DATA.mammals{DATA.mammal_index} '_' integration]);
-            mhrv_load_defaults(config_file_name);
+            %mhrv.defaults.mhrv_load_defaults([DATA.mammals{DATA.mammal_index} '_' integration]);
+            mhrv.defaults.mhrv_load_defaults(config_file_name);
             
             conf_name = [config_file_name '.yml'];
             set(GUI.Config_text, 'String', conf_name);
@@ -2918,7 +2918,7 @@ displayEndOfDemoMessage('');
         
         if ~isempty(DATA.rri)
             
-            [nni, tnn, ~] = filtrr(DATA.rri, DATA.trr, 'filter_quotient', filter_quotient, 'filter_ma', filter_ma, 'filter_range', filter_range);
+            [nni, tnn, ~] = mhrv.rri.filtrr(DATA.rri, DATA.trr, 'filter_quotient', filter_quotient, 'filter_ma', filter_ma, 'filter_range', filter_range);
             
             if isempty(nni)                
                 throw(MException('FiltCalcPlotSignalStat:FiltrrNoNNIntervalOutputted', 'No NN interval outputted'));
@@ -2943,7 +2943,7 @@ displayEndOfDemoMessage('');
             if ~isequal(Config_FileName, 0)
                 params_filename = fullfile(PathName, Config_FileName);
                 [pathstr, name, ~] = fileparts(params_filename);
-                mhrv_load_defaults([pathstr filesep name]);
+                mhrv.defaults.mhrv_load_defaults([pathstr filesep name]);
                 DIRS.configDirectory = PathName;
             else % Cancel by user
                 GUI.Mammal_popupmenu.Value = DATA.mammal_index;
@@ -2951,7 +2951,7 @@ displayEndOfDemoMessage('');
             end
         else
             % Load user-specified default parameters
-            mhrv_load_defaults(DATA.mammals{index_selected});
+            mhrv.defaults.mhrv_load_defaults(DATA.mammals{index_selected});
         end
         createConfigParametersInterface();        
         reset_plot_Data();
@@ -2962,7 +2962,7 @@ displayEndOfDemoMessage('');
     function Mammal_popupmenu_Callback( src, ~ )
         %         index_selected = get(GUI.Mammal_popupmenu, 'Value');
         %         choose_new_mammal(index_selected);        
-        mhrv_set_default('parameters_type.mammal', get(src, 'String'));        
+        mhrv.defaults.mhrv_set_default('parameters_type.mammal', get(src, 'String'));        
     end
 %%
     function Integration_popupmenu_Callback( ~, ~ )
@@ -2975,7 +2975,7 @@ displayEndOfDemoMessage('');
 %             if ~isequal(Config_FileName, 0)
 %                 params_filename = fullfile(PathName, Config_FileName);
 %                 [pathstr, name, ~] = fileparts(params_filename);
-%                 mhrv_load_defaults([pathstr filesep name]);
+%                 mhrv.defaults.mhrv_load_defaults([pathstr filesep name]);
 %                 DIRS.configDirectory = PathName;
 %                 createConfigParametersInterface();
 %                 reset_plot_Data();
@@ -3003,7 +3003,7 @@ displayEndOfDemoMessage('');
 %             if ~isequal(Config_FileName, 0)
 %                 params_filename = fullfile(PathName, Config_FileName);
 %                 [pathstr, name, ~] = fileparts(params_filename);
-%                 mhrv_load_defaults([pathstr filesep name]);
+%                 mhrv.defaults.mhrv_load_defaults([pathstr filesep name]);
 %                 DIRS.configDirectory = PathName;
 %                 DATA.mammal_index = length(DATA.mammals);
 %                 createConfigParametersInterface();
@@ -3019,13 +3019,13 @@ displayEndOfDemoMessage('');
 %         DATA.Integration = items{index_selected};
 
         DATA.integration_index = index_selected;        
-        mhrv_set_default('parameters_type.integration_level', items{index_selected});
+        mhrv.defaults.mhrv_set_default('parameters_type.integration_level', items{index_selected});
     end
 %%
     function set_default_filters_threshoulds(param_field, param_value)
         if isfield(GUI, 'ConfigParamHandlesMap')
             set(GUI.ConfigParamHandlesMap(param_field), 'String', num2str(param_value));
-            mhrv_set_default(param_field, param_value);
+            mhrv.defaults.mhrv_set_default(param_field, param_value);
         end
     end
 %%
@@ -3228,9 +3228,9 @@ displayEndOfDemoMessage('');
         else
             error('Unknown filter!');
         end
-        mhrv_set_default('filtrr.range.enable', DATA.filter_range);
-        mhrv_set_default('filtrr.quotient.enable', DATA.filter_quotient);
-        mhrv_set_default('filtrr.ma.enable', DATA.filter_ma);
+        mhrv.defaults.mhrv_set_default('filtrr.range.enable', DATA.filter_range);
+        mhrv.defaults.mhrv_set_default('filtrr.quotient.enable', DATA.filter_quotient);
+        mhrv.defaults.mhrv_set_default('filtrr.ma.enable', DATA.filter_ma);
     end
 %%
     function FirstSecond_Callback ( ~, ~ )
@@ -3459,8 +3459,8 @@ displayEndOfDemoMessage('');
                         af = figure;
                         setLogo(af, 'M2');
                         set(af, 'Visible', 'off')
-                        plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
-                        fig_print( af, [export_path_name, DATA.FiguresNames{1}], 'output_format', ext, 'title', figure_title(fig_name, 1));
+                        mhrv.plots.plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
+                        mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{1}], 'output_format', ext, 'title', figure_title(fig_name, 1));
                         close(af);
                     end
                     
@@ -3469,16 +3469,16 @@ displayEndOfDemoMessage('');
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
-                            plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
-                            fig_print( af, [export_path_name, DATA.FiguresNames{2}], 'output_format', ext, 'title', figure_title(fig_name, 2));
+                            mhrv.plots.plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
+                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{2}], 'output_format', ext, 'title', figure_title(fig_name, 2));
                             close(af);
                         end
                         if DATA_Fig.export_figures(3) && yes_no(3)
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
-                            plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
-                            fig_print( af, [export_path_name, DATA.FiguresNames{3}], 'output_format', ext, 'title', figure_title(fig_name, 3));
+                            mhrv.plots.plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
+                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{3}], 'output_format', ext, 'title', figure_title(fig_name, 3));
                             close(af);
                         end
                     end
@@ -3488,24 +3488,24 @@ displayEndOfDemoMessage('');
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
-                            plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
-                            fig_print( af, [export_path_name, DATA.FiguresNames{4}], 'output_format', ext, 'title', figure_title(fig_name, 4));
+                            mhrv.plots.plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
+                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{4}], 'output_format', ext, 'title', figure_title(fig_name, 4));
                             close(af);
                         end
                         if DATA_Fig.export_figures(5) && yes_no(5)
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
-                            plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
-                            fig_print( af, [export_path_name, DATA.FiguresNames{5}], 'output_format', ext, 'title', figure_title(fig_name, 5));
+                            mhrv.plots.plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
+                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{5}], 'output_format', ext, 'title', figure_title(fig_name, 5));
                             close(af);
                         end
                         if DATA_Fig.export_figures(6) && yes_no(6)
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
-                            plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
-                            fig_print( af, [export_path_name, DATA.FiguresNames{6}], 'output_format', ext, 'title', figure_title(fig_name, 6));
+                            mhrv.plots.plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
+                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{6}], 'output_format', ext, 'title', figure_title(fig_name, 6));
                             close(af);
                         end
                     end
@@ -3514,7 +3514,7 @@ displayEndOfDemoMessage('');
                         setLogo(af, 'M2');
                         set(af, 'Visible', 'off')
                         plot_rr_time_series(gca);
-                        fig_print( af, [export_path_name, DATA.FiguresNames{7}], 'output_format', ext, 'title', figure_title(fig_name, 7));
+                        mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{7}], 'output_format', ext, 'title', figure_title(fig_name, 7));
                         close(af);
                     end
                 elseif strcmpi(ext, 'fig')
@@ -3522,7 +3522,7 @@ displayEndOfDemoMessage('');
                         af = figure;
                         setLogo(af, 'M2');
                         set(af, 'Name', [fig_name, DATA.FiguresNames{1}], 'NumberTitle', 'off');
-                        plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
+                        mhrv.plots.plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
                         title(gca, figure_title(fig_name, 1));
                         savefig(af, [export_path_name, DATA.FiguresNames{1}], 'compact');
                         close(af);
@@ -3532,7 +3532,7 @@ displayEndOfDemoMessage('');
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{2}], 'NumberTitle', 'off');
-                            plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
+                            mhrv.plots.plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
                             title(gca, figure_title(fig_name, 2));
                             savefig(af, [export_path_name, DATA.FiguresNames{2}], 'compact');
                             close(af);
@@ -3541,7 +3541,7 @@ displayEndOfDemoMessage('');
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{3}], 'NumberTitle', 'off');
-                            plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
+                            mhrv.plots.plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
                             title(gca, figure_title(fig_name, 3));
                             savefig(af, [export_path_name, DATA.FiguresNames{3}], 'compact');
                             close(af);
@@ -3552,7 +3552,7 @@ displayEndOfDemoMessage('');
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{4}], 'NumberTitle', 'off');
-                            plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
+                            mhrv.plots.plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
                             title(gca, figure_title(fig_name, 4));
                             savefig(af, [export_path_name, DATA.FiguresNames{4}], 'compact');
                             close(af);
@@ -3561,7 +3561,7 @@ displayEndOfDemoMessage('');
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{5}], 'NumberTitle', 'off');
-                            plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
+                            mhrv.plots.plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
                             title(gca, figure_title(fig_name, 5));
                             savefig(af, [export_path_name, DATA.FiguresNames{5}], 'compact');
                             close(af);
@@ -3570,7 +3570,7 @@ displayEndOfDemoMessage('');
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{6}], 'NumberTitle', 'off');
-                            plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
+                            mhrv.plots.plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
                             title(gca, figure_title(fig_name, 6));
                             savefig(af, [export_path_name, DATA.FiguresNames{6}], 'compact');
                             close(af);
@@ -4044,7 +4044,7 @@ displayEndOfDemoMessage('');
                 
                 if do_couple
                     cp_param_array = mhrv_get_default(couple_name);
-                    mhrv_set_default( couple_name, [cp_param_array.value(1) screen_value] );
+                    mhrv.defaults.mhrv_set_default( couple_name, [cp_param_array.value(1) screen_value] );
                     couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
                     set(findobj(couple_handle, 'Tag', [couple_name '.max']), 'String', num2str(screen_value));
                 end
@@ -4075,7 +4075,7 @@ displayEndOfDemoMessage('');
                 end
                 if do_couple
                     cp_param_array = mhrv_get_default(couple_name);
-                    mhrv_set_default( couple_name, [screen_value cp_param_array.value(2)] );
+                    mhrv.defaults.mhrv_set_default( couple_name, [screen_value cp_param_array.value(2)] );
                     couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
                     set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(screen_value));
                 end
@@ -4085,7 +4085,7 @@ displayEndOfDemoMessage('');
                 prev_param_value = prev_param_array.value;
             end
             
-            mhrv_set_default( param_name, param_value );
+            mhrv.defaults.mhrv_set_default( param_name, param_value );
             
             %         if ~get(GUI.AutoCalc_checkbox, 'Value')
             %             DATA.custom_config_params(param_name) = param_value;
@@ -4124,7 +4124,7 @@ displayEndOfDemoMessage('');
                     h_e = errordlg(['set_config_Callback error: ' e.message], 'Input Error');
                     setLogo(h_e, 'M2');
                     
-                    mhrv_set_default( param_name, prev_param_array );
+                    mhrv.defaults.mhrv_set_default( param_name, prev_param_array );
                     
                     if strcmp(param_name, 'hrv_freq.window_minutes')
                         set(src, 'String', calcDuration(prev_param_value*60, 0));
@@ -4133,7 +4133,7 @@ displayEndOfDemoMessage('');
                     end
                     
                     if ~isempty(cp_param_array)
-                        mhrv_set_default( couple_name, cp_param_array );
+                        mhrv.defaults.mhrv_set_default( couple_name, cp_param_array );
                         couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
                         if ~isempty(min_suffix_ind)
                             set(findobj(couple_handle, 'Tag', [couple_name '.max']), 'String', num2str(prev_param_value))
@@ -4185,10 +4185,10 @@ displayEndOfDemoMessage('');
 %                 load_config_name_button_position = get(GUI.open_config_pushbutton_handle, 'Position');
 %                 set(GUI.open_config_pushbutton_handle, 'Position', [config_file_name_position(1)+config_file_name_extent(3)+10 load_config_name_button_position(2) load_config_name_button_position(3) load_config_name_button_position(4)]);
                 
-                mhrv_set_default('parameters_type.mammal', '');
-                mhrv_set_default('parameters_type.integration_level', '');
+                mhrv.defaults.mhrv_set_default('parameters_type.mammal', '');
+                mhrv.defaults.mhrv_set_default('parameters_type.integration_level', '');
                 
-                mhrv_load_defaults([pathstr filesep name]);
+                mhrv.defaults.mhrv_load_defaults([pathstr filesep name]);
                 
                 mammal = mhrv_get_default('parameters_type.mammal');
                 mammal = mammal.value;
@@ -4198,8 +4198,8 @@ displayEndOfDemoMessage('');
                 if isempty(mammal) || isempty(integration)
                     mammal = 'custom';
                     integration = 'ECG';
-                    mhrv_set_default('parameters_type.mammal', mammal);
-                    mhrv_set_default('parameters_type.integration_level', integration);
+                    mhrv.defaults.mhrv_set_default('parameters_type.mammal', mammal);
+                    mhrv.defaults.mhrv_set_default('parameters_type.integration_level', integration);
                 end
                 
                 %             GUI.Mammal_popupmenu.Value = length(DATA.mammals);
@@ -4261,7 +4261,7 @@ displayEndOfDemoMessage('');
         if ~isequal(results_folder_name, 0)
             DIRS.configDirectory = results_folder_name;
             full_file_name = fullfile(results_folder_name, filename);
-            mhrv_save_defaults( full_file_name );
+            mhrv.defaults.mhrv_save_defaults( full_file_name );
             
             temp_mhrv_default_values = ReadYaml(full_file_name);
             
@@ -4289,7 +4289,7 @@ displayEndOfDemoMessage('');
             DATA.freq_yscale = 'log';
         end
         if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
-            plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale, 'clear', true);
+            mhrv.plots.plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale, 'clear', true);
         end
     end
 %%
@@ -4500,10 +4500,10 @@ displayEndOfDemoMessage('');
                     setLogo(waitbar_handle, 'M2');
                     % Time Domain metrics
                     fprintf('[win % d: %.3f] >> mhrv: Calculating time-domain metrics...\n', i, cputime-t0);
-                    [hrv_td, pd_time] = hrv_time(nni_window);
+                    [hrv_td, pd_time] = mhrv.hrv.hrv_time(nni_window);
                     % Heart rate fragmentation metrics
                     fprintf('[win % d: %.3f] >> mhrv: Calculating fragmentation metrics...\n', i, cputime-t0);
-                    hrv_frag = hrv_fragmentation(nni_window);
+                    hrv_frag = mhrv.hrv.hrv_fragmentation(nni_window);
                     
                     DATA.TimeStat.PlotData{i} = pd_time;
                     
@@ -4591,9 +4591,9 @@ displayEndOfDemoMessage('');
                     
                     if DATA.WinAverage
                         window_minutes = mhrv_get_default('hrv_freq.window_minutes');
-                        [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', window_minutes.value, 'time_intervals', tnn_window);
+                        [ hrv_fd, ~, ~, pd_freq ] = mhrv.hrv.hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', window_minutes.value, 'time_intervals', tnn_window);
                     else
-                        [ hrv_fd, ~, ~, pd_freq ] = hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', [], 'time_intervals', tnn_window);
+                        [ hrv_fd, ~, ~, pd_freq ] = mhrv.hrv.hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', [], 'time_intervals', tnn_window);
                     end
                     
                     DATA.FrStat.PlotData{i} = pd_freq;
@@ -4678,7 +4678,7 @@ displayEndOfDemoMessage('');
                 waitbar(3 / 3, waitbar_handle, ['Calculating nolinear measures for window ' num2str(i)]);
                 setLogo(waitbar_handle, 'M2');
                 fprintf('[win % d: %.3f] >> mhrv: Calculating nonlinear metrics...\n', i, cputime-t0);
-                [hrv_nl, pd_nl] = hrv_nonlinear(nni_window);
+                [hrv_nl, pd_nl] = mhrv.hrv.hrv_nonlinear(nni_window);
                 
                 DATA.NonLinStat.PlotData{i} = pd_nl;
                 
@@ -5507,7 +5507,7 @@ displayEndOfDemoMessage('');
 %%
     function Normalize_STD_checkbox_Callback(src, ~)
         
-        mhrv_set_default('mse.normalize_std', get(src, 'Value'));
+        mhrv.defaults.mhrv_set_default('mse.normalize_std', get(src, 'Value'));
         
         if get(GUI.AutoCalc_checkbox, 'Value')
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
@@ -5519,7 +5519,7 @@ displayEndOfDemoMessage('');
 %%
     function Detrending_checkbox_Callback(~, ~)
         detrend = get(GUI.Detrending_checkbox, 'Value');
-        mhrv_set_default('filtrr.detrending.enable', detrend);
+        mhrv.defaults.mhrv_set_default('filtrr.detrending.enable', detrend);
         DATA.Detrending = detrend;        
         try
             DetrendIfNeed_data_chunk();
@@ -5542,7 +5542,7 @@ displayEndOfDemoMessage('');
     function [nni_detrended_trans, nni_detrended] = detrend_data(nni)
         try
             lambda = mhrv_get_default('filtrr.detrending.lambda');
-            nni_detrended_trans = detrendrr(nni, lambda.value, DATA.SamplingFrequency);
+            nni_detrended_trans = mhrv.rri.detrendrr(nni, lambda.value, DATA.SamplingFrequency);
             nni_detrended = nni - nni_detrended_trans;
             nni_detrended_trans = nni_detrended_trans + mean(nni);
         catch
@@ -5722,10 +5722,10 @@ displayEndOfDemoMessage('');
                 prev_hf = mhrv_get_default('hrv_freq.hf_band');
                 beta_band = mhrv_get_default('hrv_freq.beta_band');
                 
-                mhrv_set_default('hrv_freq.hf_band', [f_LF_HF f_HF_up]);
-                mhrv_set_default('hrv_freq.lf_band', [f_VLF_LF f_LF_HF]);
-                mhrv_set_default('hrv_freq.vlf_band', [prev_vlf.value(1) f_VLF_LF]);
-                mhrv_set_default('hrv_freq.beta_band', [prev_vlf.value(1) f_VLF_LF]);
+                mhrv.defaults.mhrv_set_default('hrv_freq.hf_band', [f_LF_HF f_HF_up]);
+                mhrv.defaults.mhrv_set_default('hrv_freq.lf_band', [f_VLF_LF f_LF_HF]);
+                mhrv.defaults.mhrv_set_default('hrv_freq.vlf_band', [prev_vlf.value(1) f_VLF_LF]);
+                mhrv.defaults.mhrv_set_default('hrv_freq.beta_band', [prev_vlf.value(1) f_VLF_LF]);
                 
                 if get(GUI.AutoCalc_checkbox, 'Value')
                     try
@@ -5734,10 +5734,10 @@ displayEndOfDemoMessage('');
                         h_e = errordlg(['ok_estimate_button_Callback error: ' e.message], 'Input Error');
                         setLogo(h_e, 'M2');
                         
-                        mhrv_set_default('hrv_freq.hf_band', prev_hf);
-                        mhrv_set_default('hrv_freq.lf_band', prev_lf);
-                        mhrv_set_default('hrv_freq.vlf_band', prev_vlf);
-                        mhrv_set_default('hrv_freq.beta_band', beta_band);
+                        mhrv.defaults.mhrv_set_default('hrv_freq.hf_band', prev_hf);
+                        mhrv.defaults.mhrv_set_default('hrv_freq.lf_band', prev_lf);
+                        mhrv.defaults.mhrv_set_default('hrv_freq.vlf_band', prev_vlf);
+                        mhrv.defaults.mhrv_set_default('hrv_freq.beta_band', beta_band);
                         delete(GUI.EstimateLFBandWindow);
                         return;
                     end
@@ -5755,7 +5755,7 @@ displayEndOfDemoMessage('');
                 param_name = 'hrv_time.pnn_thresh_ms';
                 
                 prev_pnn_thresh = mhrv_get_default(param_name);
-                mhrv_set_default(param_name, xx);
+                mhrv.defaults.mhrv_set_default(param_name, xx);
                 
                 if get(GUI.AutoCalc_checkbox, 'Value')
                     try
@@ -5763,7 +5763,7 @@ displayEndOfDemoMessage('');
                     catch e
                         h_e = errordlg(['ok_estimate_button_Callback error: ' e.message], 'Input Error');
                         setLogo(h_e, 'M2');
-                        mhrv_set_default(param_name, prev_pnn_thresh);
+                        mhrv.defaults.mhrv_set_default(param_name, prev_pnn_thresh);
                         delete(GUI.EstimateLFBandWindow);
                         return;
                     end
@@ -6043,7 +6043,7 @@ displayEndOfDemoMessage('');
         [mammal, mammal_index, integration, whichModule] = Load_Data_from_SingleFile(curr_file_name, curr_path, struct(), waitbar_handle);
                 
         if ~isfield(GUI, 'ConfigParamHandlesMap')
-            mhrv_load_defaults(DATA.mammals{DATA.mammal_index});
+            mhrv.defaults.mhrv_load_defaults(DATA.mammals{DATA.mammal_index});
         end
         
         set_default_values();
@@ -6111,7 +6111,7 @@ displayEndOfDemoMessage('');
                 
                 % Save rec_type tables
                 hrv_tables{gr} = rec_type_table;
-                stats_tables{gr} = table_stats(rec_type_table);
+                stats_tables{gr} = mhrv.util.table_stats(rec_type_table);
                 
                 groups_mean{gr} = stats_tables{gr}{1, :};
                 

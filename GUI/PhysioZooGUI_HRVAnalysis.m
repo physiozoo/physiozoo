@@ -4020,7 +4020,7 @@ displayEndOfDemoMessage('');
             if ~isempty(min_suffix_ind)
                 param_name = param_name(1 : min_suffix_ind - 1);
                 min_param_value = screen_value;
-                prev_param_array = mhrv_get_default(param_name);
+                prev_param_array = mhrv.defaults.mhrv_get_default(param_name);
                 max_param_value = prev_param_array.value(2);
                 
                 if min_param_value > max_param_value
@@ -4043,7 +4043,7 @@ displayEndOfDemoMessage('');
                 end
                 
                 if do_couple
-                    cp_param_array = mhrv_get_default(couple_name);
+                    cp_param_array = mhrv.defaults.mhrv_get_default(couple_name);
                     mhrv.defaults.mhrv_set_default( couple_name, [cp_param_array.value(1) screen_value] );
                     couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
                     set(findobj(couple_handle, 'Tag', [couple_name '.max']), 'String', num2str(screen_value));
@@ -4052,7 +4052,7 @@ displayEndOfDemoMessage('');
             elseif ~isempty(max_suffix_ind)
                 param_name = param_name(1 : max_suffix_ind - 1);
                 max_param_value = screen_value;
-                prev_param_array = mhrv_get_default(param_name);
+                prev_param_array = mhrv.defaults.mhrv_get_default(param_name);
                 min_param_value = prev_param_array.value(1);
                 
                 if max_param_value < min_param_value
@@ -4074,14 +4074,14 @@ displayEndOfDemoMessage('');
                     do_couple = true;
                 end
                 if do_couple
-                    cp_param_array = mhrv_get_default(couple_name);
+                    cp_param_array = mhrv.defaults.mhrv_get_default(couple_name);
                     mhrv.defaults.mhrv_set_default( couple_name, [screen_value cp_param_array.value(2)] );
                     couple_handle = get(get(get(src, 'Parent'), 'Parent'), 'Children');
                     set(findobj(couple_handle, 'Tag', [couple_name '.min']), 'String', num2str(screen_value));
                 end
             else
                 param_value = screen_value;
-                prev_param_array = mhrv_get_default(param_name);
+                prev_param_array = mhrv.defaults.mhrv_get_default(param_name);
                 prev_param_value = prev_param_array.value;
             end
             
@@ -4190,9 +4190,9 @@ displayEndOfDemoMessage('');
                 
                 mhrv.defaults.mhrv_load_defaults([pathstr filesep name]);
                 
-                mammal = mhrv_get_default('parameters_type.mammal');
+                mammal = mhrv.defaults.mhrv_get_default('parameters_type.mammal');
                 mammal = mammal.value;
-                integration = mhrv_get_default('parameters_type.integration_level');
+                integration = mhrv.defaults.mhrv_get_default('parameters_type.integration_level');
                 integration = integration.value;
                 
                 if isempty(mammal) || isempty(integration)
@@ -4590,7 +4590,7 @@ displayEndOfDemoMessage('');
                     fprintf('[win % d: %.3f] >> mhrv: Calculating frequency-domain metrics...\n', i, cputime-t0);
                     
                     if DATA.WinAverage
-                        window_minutes = mhrv_get_default('hrv_freq.window_minutes');
+                        window_minutes = mhrv.defaults.mhrv_get_default('hrv_freq.window_minutes');
                         [ hrv_fd, ~, ~, pd_freq ] = mhrv.hrv.hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', window_minutes.value, 'time_intervals', tnn_window);
                     else
                         [ hrv_fd, ~, ~, pd_freq ] = mhrv.hrv.hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', [], 'time_intervals', tnn_window);
@@ -5541,7 +5541,7 @@ displayEndOfDemoMessage('');
 %%
     function [nni_detrended_trans, nni_detrended] = detrend_data(nni)
         try
-            lambda = mhrv_get_default('filtrr.detrending.lambda');
+            lambda = mhrv.defaults.mhrv_get_default('filtrr.detrending.lambda');
             nni_detrended_trans = mhrv.rri.detrendrr(nni, lambda.value, DATA.SamplingFrequency);
             nni_detrended = nni - nni_detrended_trans;
             nni_detrended_trans = nni_detrended_trans + mean(nni);
@@ -5717,10 +5717,10 @@ displayEndOfDemoMessage('');
             if strcmp(tag, 'Frequency_Bands')
                 [f_VLF_LF, f_LF_HF, f_HF_up] = compute_bands(HR);
                 
-                prev_vlf = mhrv_get_default('hrv_freq.vlf_band');
-                prev_lf = mhrv_get_default('hrv_freq.lf_band');
-                prev_hf = mhrv_get_default('hrv_freq.hf_band');
-                beta_band = mhrv_get_default('hrv_freq.beta_band');
+                prev_vlf = mhrv.defaults.mhrv_get_default('hrv_freq.vlf_band');
+                prev_lf = mhrv.defaults.mhrv_get_default('hrv_freq.lf_band');
+                prev_hf = mhrv.defaults.mhrv_get_default('hrv_freq.hf_band');
+                beta_band = mhrv.defaults.mhrv_get_default('hrv_freq.beta_band');
                 
                 mhrv.defaults.mhrv_set_default('hrv_freq.hf_band', [f_LF_HF f_HF_up]);
                 mhrv.defaults.mhrv_set_default('hrv_freq.lf_band', [f_VLF_LF f_LF_HF]);
@@ -5754,7 +5754,7 @@ displayEndOfDemoMessage('');
                 xx = compute_pnnxx(HR);
                 param_name = 'hrv_time.pnn_thresh_ms';
                 
-                prev_pnn_thresh = mhrv_get_default(param_name);
+                prev_pnn_thresh = mhrv.defaults.mhrv_get_default(param_name);
                 mhrv.defaults.mhrv_set_default(param_name, xx);
                 
                 if get(GUI.AutoCalc_checkbox, 'Value')

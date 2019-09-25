@@ -85,11 +85,6 @@ peaks_window:
     
 # EGM peaks
 
-alpha:
-    value: 0.95
-    units: n.u.
-    description: Peak prominence parameter
-    name: alpha
 ref_per:
     value: 140
     units: msec

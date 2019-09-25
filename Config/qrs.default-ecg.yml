@@ -1,6 +1,6 @@
 mammal:             default
 integration_level:  ECG
-peak_detector:      rgrs
+peak_detector:      rqrs
 peak_adjustment:    default
 
 # default rqrs config file:

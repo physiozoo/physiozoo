@@ -166,7 +166,7 @@ end
         DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};
         DATA.integration_level = {'ecg'; 'electrogram'; 'ap'};        
         
-        DATA.GUI_PeakDetector = {'rgrs'; 'jqrs'; 'wjqrs'; 'EGM peaks'}; % 'EGM peaks'
+        DATA.GUI_PeakDetector = {'rqrs'; 'jqrs'; 'wjqrs'; 'EGM peaks'}; % 'EGM peaks'
         DATA.peakDetector_index = 1;
         
         DATA.GUI_Annotation = {'Peak'; 'Signal quality'};
@@ -433,14 +433,14 @@ end
         
         % ORI's algorithm for EGM peaks
         uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'EGM peaks', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
-        [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'alpha', 'Alpha', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'alpha');
-        [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ref_per', 'Refractory period', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ref_per');
-        [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'bi', 'BI', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'bi');
+%         [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'alpha', 'Alpha', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'alpha');
+        [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ref_per', 'Refractory period', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ref_per');
+        [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIConfig', 'bi', 'BI', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'bi');
         
         uix.Empty('Parent', GUI.ConfigBox );
         
         GUI.AutoPeakWin_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', SmallFontSize, 'String', 'Auto', 'Value', 1);
-        [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window');
+        [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window');
         
 %         uix.Empty('Parent', GUI.ConfigBox );
 %         uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'Adjust R-peak location', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
@@ -459,7 +459,7 @@ end
 
 
 
-        set(GUI.ConfigBox, 'Heights', [-15 * ones(1, 8)   -0.5 -15 * ones(1, 6) -0.5 -15 * ones(1, 4)  -0.5 -15 -15]);
+        set(GUI.ConfigBox, 'Heights', [-15 * ones(1, 8)   -0.5 -15 * ones(1, 6) -0.5 -15 * ones(1, 3)  -0.5 -15 -15]);
 %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)   -1 -7 * ones(1, 6) -1 -7 * ones(1, 4)  -8 -7 -7 ] );        
 %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)    -7 * ones(1, 6) -7 * ones(1, 4)  -7 -7 ] );
         %-------------------------------------------------------
@@ -468,17 +468,17 @@ end
         
         uix.Empty( 'Parent', DisplayBox );
         
-        [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', '');
-        [GUI, textBox{18}, text_handles{18}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', '');
+        [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', '');
+        [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', '');
         
         %         field_size = [110, 64, 4, 63, 10];
-        [GUI, YLimitBox, text_handles{19}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', '');
+        [GUI, YLimitBox, text_handles{18}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', '');
         
         uix.Empty('Parent', DisplayBox );
         
         
-        [GUI, textBox{20}, text_handles{20}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
-        [GUI, YLimitBox2, text_handles{21}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', '');
+        [GUI, textBox{19}, text_handles{19}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
+        [GUI, YLimitBox2, text_handles{20}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', '');
         
         set(GUI.GUIDisplay.FirstSecond, 'Enable', 'off');
         set(GUI.GUIDisplay.WindowSize, 'Enable', 'off');
@@ -1103,7 +1103,7 @@ end
                     waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
                     setLogo(waitbar_handle, 'M1');
                     
-                    if ~strcmpi(peak_detector, 'rgrs') && ~strcmpi(peak_detector, 'EGM peaks')
+                    if ~strcmpi(peak_detector, 'rqrs') && ~strcmpi(peak_detector, 'EGM peaks')
                         
                         lcf = DATA.config_map('lcf');
                         hcf = DATA.config_map('hcf');
@@ -1125,11 +1125,11 @@ end
                         
                         params_struct.Fs = DATA.Fs;
                         try
-                            params_struct.alpha = DATA.config_map('alpha');
+%                             params_struct.alpha = DATA.config_map('alpha');
                             params_struct.refractory_period = DATA.config_map('ref_per');
                             params_struct.BI = DATA.config_map('bi');
                             tic
-                            qrs_pos = EGM_peaks(DATA.sig, params_struct);
+                            qrs_pos = EGM_peaks(DATA.sig, params_struct, 0);
                             toc
                             DATA.qrs = qrs_pos;
                         catch
@@ -1488,12 +1488,12 @@ end
             end
         end
         
-        if strcmp(get(src, 'UserData'), 'alpha') && (numeric_field_value < 0 || numeric_field_value > 20)
-            h_e = errordlg('Alpha must be in the range of 0 - 20.', 'Input Error');
-            setLogo(h_e, 'M1');
-            set(src, 'String', DATA.config_map(get(src, 'UserData')));
-            return;
-        end
+%         if strcmp(get(src, 'UserData'), 'alpha') && (numeric_field_value < 0 || numeric_field_value > 20)
+%             h_e = errordlg('Alpha must be in the range of 0 - 20.', 'Input Error');
+%             setLogo(h_e, 'M1');
+%             set(src, 'String', DATA.config_map(get(src, 'UserData')));
+%             return;
+%         end
         
         if strcmp(get(src, 'UserData'), 'ref_per')
             if (numeric_field_value < 0 || numeric_field_value > 20000)

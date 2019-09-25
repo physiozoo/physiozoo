@@ -1,6 +1,6 @@
 mammal:             mouse
 integration_level:  ECG
-peak_detector:      rgrs
+peak_detector:      rqrs
 peak_adjustment:    default
 
 # rqrs config file for mouse

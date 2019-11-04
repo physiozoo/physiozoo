@@ -356,7 +356,7 @@ displayEndOfDemoMessage('');
         GUI.FileMenu = uimenu( GUI.Window, 'Label', 'File' );
         uimenu( GUI.FileMenu, 'Label', 'Open data file', 'Callback', @onOpenFile, 'Accelerator','O');
         GUI.DataQualityMenu = uimenu( GUI.FileMenu, 'Label', 'Open signal quality file', 'Callback', @onOpenDataQualityFile, 'Accelerator','Q', 'Enable', 'off');
-        GUI.LoadConfigFile = uimenu( GUI.FileMenu, 'Label', 'Load custom config file', 'Callback', @onLoadCustomConfigFile, 'Accelerator','P', 'Enable', 'off');
+        GUI.LoadConfigFile = uimenu( GUI.FileMenu, 'Label', 'Load custom config file', 'Callback', @onLoadCustomConfigFile, 'Accelerator','L', 'Enable', 'off');
         GUI.SaveParamFileMenu = uimenu( GUI.FileMenu, 'Label', 'Save config file', 'Callback', @onSaveParamFile, 'Accelerator','P', 'Enable', 'off');
         GUI.SaveFiguresAsMenu = uimenu( GUI.FileMenu, 'Label', 'Save figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator','F', 'Enable', 'off');
         GUI.SaveMeasures = uimenu( GUI.FileMenu, 'Label', 'Save HRV measures', 'Callback', @onSaveMeasures, 'Accelerator', 'S', 'Enable', 'off');
@@ -1642,7 +1642,7 @@ displayEndOfDemoMessage('');
                     GUI.GreenLineHandle.XData = [DATA.firstSecond2Show DATA.firstSecond2Show + DATA.MyWindowSize];
                     GUI.GreenLineHandle.YData = [MaxYLimit MaxYLimit];
                 end
-                uistack(GUI.GreenLineHandle, 'down')
+                uistack(GUI.GreenLineHandle, 'down');
                 %---------------------------------
                 
                 if ~(DATA.QualityAnnotations_Data(1, 1) + DATA.QualityAnnotations_Data(1,2))==0

@@ -818,7 +818,7 @@ end
                         time_data = data.Time.Data;
                         DATA.tm = time_data - time_data(1);                                                
                         
-%                         [t_max, h, m, s ,ms] = signal_duration(length(DATA.tm), DATA.Fs);
+%                         [t_max, h, m, s ,ms] = mhrv.wfdb.signal_duration(length(DATA.tm), DATA.Fs);
 %                         header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
                         
                         DATA.ecg_channel = 1;
@@ -1111,14 +1111,14 @@ end
                         rp =  DATA.config_map('rp');
                         ws =  DATA.config_map('ws');
                         
-                        bpecg = bpfilt(DATA.sig, DATA.Fs, lcf, hcf, [], 0);  % bpecg = prefilter2(ecg,fs,lcf,hcf,0);
+                        bpecg = mhrv.ecg.bpfilt(DATA.sig, DATA.Fs, lcf, hcf, [], 0);  % bpecg = prefilter2(ecg,fs,lcf,hcf,0);
                     end
                     
                     if strcmp(peak_detector, 'jqrs')
-                        qrs_pos = jqrs(bpecg, DATA.Fs, thr, rp, 0); % qrs_pos = ptqrs(bpecg,fs,thr,rp,0);
+                        qrs_pos = mhrv.ecg.jqrs(bpecg, DATA.Fs, thr, rp, 0); % qrs_pos = ptqrs(bpecg,fs,thr,rp,0);
                         DATA.qrs = qrs_pos';                        
                     elseif strcmp(peak_detector, 'wjqrs')
-                        qrs_pos = wjqrs(bpecg, DATA.Fs, thr, rp, ws);
+                        qrs_pos = mhrv.ecg.wjqrs(bpecg, DATA.Fs, thr, rp, ws);
                         DATA.qrs = qrs_pos';      
                     elseif strcmp(peak_detector, 'EGM peaks')
                         params_struct = struct();
@@ -1139,10 +1139,10 @@ end
                     else
                         if exist(fullfile([DATA.wfdb_record_name '.dat']), 'file') && exist(fullfile([DATA.wfdb_record_name '.hea']), 'file')
                             
-%                             mhrv_set_default('rqrs.window_size_sec', 0.8 * str2double(get(GUI.GUIConfig.QS, 'String')));
-                            mhrv_set_default('rqrs.window_size_sec', DATA.config_map('window_size_sec'));
+%                             mhrv.defaults.mhrv_set_default('rqrs.window_size_sec', 0.8 * str2double(get(GUI.GUIConfig.QS, 'String')));
+                            mhrv.defaults.mhrv_set_default('rqrs.window_size_sec', DATA.config_map('window_size_sec'));
                                                     
-                            [DATA.qrs, tm, sig, Fs] = rqrs(DATA.wfdb_record_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);                              
+                            [DATA.qrs, tm, sig, Fs] = mhrv.wfdb.rqrs(DATA.wfdb_record_name, 'gqconf', DATA.customConfigFile, 'ecg_channel', DATA.ecg_channel, 'plot', false);                              
                         else
                             throw(MException('calc_peaks:text', 'Problems with peaks calculation. Wfdb file not exists.'));
                         end
@@ -1222,15 +1222,15 @@ end
                 throw(MException('plot_rr_data:text', 'Not enough datapoints!'));
             else
                 try
-                    [rr_data_filtered, rr_time_filtered, ~] = filtrr(rr_data, rr_time, 'filter_quotient', false, 'filter_ma', true, 'filter_range', false);
+                    [rr_data_filtered, rr_time_filtered, ~] = mhrv.rri.filtrr(rr_data, rr_time, 'filter_quotient', false, 'filter_ma', true, 'filter_range', false);
                 catch e
                     rethrow(e);
                 end
                 
                 if isempty(rr_data_filtered)
-                    throw(MException('filtrr:text', 'Not enough datapoints!'));
+                    throw(MException('mhrv.rri.filtrr:text', 'Not enough datapoints!'));
                 elseif length(rr_data) * 0.1 > length(rr_data_filtered)
-                    throw(MException('filtrr:text', 'Not enough datapoints!'));
+                    throw(MException('mhrv.rri.filtrr:text', 'Not enough datapoints!'));
                 else
                     
                     if (DATA.PlotHR == 1)
@@ -1784,11 +1784,11 @@ end
                     %                                         wfdb_path = 'D:\Temp\wfdb-app-toolbox-0-9-10\mcode';
                     %                                         addpath(wfdb_path);
                     %                                         mat2wfdb(Data, filename_noExt, Fs, [], ' ', {}, [], {strcat(Integration_level, '-', Mammal)});
-                    %                                         wrann(filename_noExt, 'qrs', int64(Data));
+                    %                                         mhrv.wfdb.wrann(filename_noExt, 'qrs', int64(Data));
                     %                                         rmpath(wfdb_path);
                     %                                         delete([filename_noExt '.dat']);
                     
-                    %                     if ~isrecord([results_folder_name filename_noExt], 'hea')
+                    %                     if ~mhrv.wfdb.isrecord([results_folder_name filename_noExt], 'hea')
                     %                         % Create header
                     %                         saved_path = pwd;
                     %                         cd(results_folder_name);
@@ -1799,9 +1799,9 @@ end
                     
                     comments = {['Mammal:' Mammal ',Integration_level:' Integration_level]};
                     
-                    %                     wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
+                    %                     mhrv.wfdb.wrann([results_folder_name filename_noExt], 'qrs', int64(Data), 'fs', Fs, 'comments', [DATA.Integration '-' DATA.Mammal]);
                     
-                    wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data), 'fs', Fs, 'comments', comments); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
+                    mhrv.wfdb.wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data), 'fs', Fs, 'comments', comments); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
                     
                 catch e
                     disp(e);
@@ -2671,8 +2671,8 @@ end
                 waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
                 setLogo(waitbar_handle, 'M1');
                 
-%                 DATA.qrs = qrs_adjust(DATA.sig, DATA.qrs, DATA.Fs, DATA.Adjust, DATA.peak_search_win/1000, false);
-                DATA.qrs = qrs_adjust(DATA.sig, double(QRS), DATA.Fs, DATA.Adjust, DATA.peak_search_win/1000, false);
+%                 DATA.qrs = mhrv.ecg.qrs_adjust(DATA.sig, DATA.qrs, DATA.Fs, DATA.Adjust, DATA.peak_search_win/1000, false);
+                DATA.qrs = mhrv.ecg.qrs_adjust(DATA.sig, double(QRS), DATA.Fs, DATA.Adjust, DATA.peak_search_win/1000, false);
                 
                 if isvalid(waitbar_handle)
                     close(waitbar_handle);
@@ -2681,7 +2681,7 @@ end
                 if isvalid(waitbar_handle)
                     close(waitbar_handle);
                 end
-                h_e = errordlg(['qrs_adjust error: ' e.message], 'Input Error');
+                h_e = errordlg(['mhrv.ecg.qrs_adjust error: ' e.message], 'Input Error');
                 setLogo(h_e, 'M1');
                 return;
             end
@@ -2794,7 +2794,7 @@ end
                 %                 Quality_annotations_for_wfdb = reshape(signal_quality', [size(signal_quality, 1) * size(signal_quality, 2), 1]);
                 %                 Class_for_wfdb = reshape([class class]', [2*size(class, 1), 1])';
                 %
-                %                 wrann([results_folder_name filename_noExt], 'sqi', int64(Quality_annotations_for_wfdb*DATA.Fs), 'fs', DATA.Fs, 'type', Class_for_wfdb);
+                %                 mhrv.wfdb.wrann([results_folder_name filename_noExt], 'sqi', int64(Quality_annotations_for_wfdb*DATA.Fs), 'fs', DATA.Fs, 'type', Class_for_wfdb);
             else
                 h_e = errordlg('Please, choose only *.mat or *.txt file .', 'Input Error');
                 setLogo(h_e, 'M1');
@@ -2903,9 +2903,9 @@ end
                 end
                 
                 %             elseif strcmpi(ExtensionFileName, 'sqi')
-                % %                 [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"');
-                % %                 [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"ABC"');
-                %                 [quality_data, class] = rdann( [PathName QualityFileName], ExtensionFileName);
+                % %                 [quality_data, class] = mhrv.wfdb.rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"F"');
+                % %                 [quality_data, class] = mhrv.wfdb.rdann( [PathName QualityFileName], ExtensionFileName, 'ann_types', '"ABC"');
+                %                 [quality_data, class] = mhrv.wfdb.rdann( [PathName QualityFileName], ExtensionFileName);
                 %                 quality_data = double(quality_data)/DATA.Fs;
                 %                 DATA_QualityAnnotations_Data = [quality_data(1:2:end), quality_data(2:2:end)];
                 %                 DATA_Class = class(1:2:end);
@@ -3124,7 +3124,7 @@ end
                         if strcmpi(ext, 'fig')
                             savefig(af, file_name, 'compact');
                         elseif ~strcmpi(ext, 'fig')
-                            fig_print( af, file_name, 'output_format', ext, 'font_size', 16, 'width', 20);
+                            mhrv.util.fig_print( af, file_name, 'output_format', ext, 'font_size', 16, 'width', 20);
                         end
                     end
                     close(af);                                        

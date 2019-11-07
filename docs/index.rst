@@ -36,14 +36,9 @@ mhrv toolbox documentation
    
 .. toctree::
    :maxdepth: 2
-   :caption: Package API Reference
+   :caption: mhrv API Reference
 
-   mhrv/sections/mhrv.rst
-   mhrv/sections/mhrv.defaults.rst
-   mhrv/sections/mhrv.ecg.rst
-   mhrv/sections/mhrv.hrv.rst
-   mhrv/sections/mhrv.rri.rst
-   mhrv/sections/mhrv.wfdb.rst
+   sections/mhrv/mhrv.rst
 
 Indices and tables
 ==================

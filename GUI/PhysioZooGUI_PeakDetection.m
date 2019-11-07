@@ -2923,17 +2923,27 @@ end
                 quality_win_ind = 1;
             end
             
-            for i = 1 : length(DATA_Class)
+            waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+            
+            quality_annotations_num = length(DATA_Class);
+            
+            for i = 1 : quality_annotations_num
                 [is_member, class_ind] = ismember(DATA_Class{i}, DATA.GUI_Class);
                 if ~is_member
                     class_ind = 3;
                 end
                 if DATA_QualityAnnotations_Data(i, 1) ~= DATA_QualityAnnotations_Data(i, 2)
+                    
+                    waitbar(i / quality_annotations_num, waitbar_handle, ['Ploting signal quality for ' num2str(i) ' annotation']); setLogo(waitbar_handle, 'M1');
+                    
                     plot_quality_rect(DATA_QualityAnnotations_Data(i, :), quality_win_ind, class_ind);
                     DATA.quality_win_num = DATA.quality_win_num + 1;
                     quality_win_ind = quality_win_ind + 1;
                     Select_Quality_Win(DATA_QualityAnnotations_Data(i, :));
                 end
+            end
+            if isvalid(waitbar_handle)
+                close(waitbar_handle);
             end
             plot_quality_line(DATA_QualityAnnotations_Data, DATA_Class);
         end

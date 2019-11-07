@@ -1,0 +1,202 @@
+# Default parameter values of the mhrv toolbox
+---
+
+# Peak detection
+rqrs:
+    use_gqpost:
+        value: false
+        description: Wheter to use gqpost for peak detection post-processing
+        name: Use gqpost
+        units: boolean
+    gqconf:
+        value: gqrs.default.conf
+        description: Path to gqrs config file
+        name: gqconf path
+    window_size_sec:
+        value: 0.056
+        description: Size of rqrs forward-search window
+        name: rqrs Window Size
+        units: Seconds
+
+# RR Interval filtering
+filtrr:
+    range:
+        enable:
+            value: true
+            description: Whether to enable range-based filtering
+            name: Enable range filter
+            units: boolean
+        rr_min:
+            value: 0.32
+            description: Minimal allowed RR interval duration
+            name: RR min
+            units: Seconds
+        rr_max:
+            value: 1.5
+            description: Maximal allowed RR interval duration
+            name: RR max
+            units: Seconds
+    moving_average:
+        enable:
+            value: true
+            description: Whether to enable moving average-based filtering
+            name: Enable moving average filter
+            units: boolean
+        win_length:
+            value: 10
+            description: Length in samples of the moving average filter
+            name: Moving average filter length
+            units: Samples
+        win_threshold:
+            value: 20
+            description: Threshold percantage above/below the moving average filter value.
+            name: Moving average filter threshold
+            units: '%'
+    quotient:
+        enable:
+            value: true
+            description: Whether to enable quotient filter
+            name: Enable quotient filter
+            units: boolean
+        rr_max_change:
+            value: 25
+            description: Maximal allowed change between adjacent RR intervals
+            name: RR max change
+            units: '%'
+
+# Time-domain HRV parameters
+hrv_time:
+    pnn_thresh_ms:
+        value: 50
+        description: Threshold value for PNNx
+        name: PNN Threshold
+        units: Milliseconds
+
+# Frequency-domain HRV parameters
+hrv_freq:
+    methods:
+        value: [lomb, ar, welch]  # possible methods: 
+        description: Methods of spectral calculation (can be lomb/ar/welch/fft)
+        name: Spectrum types
+    power_methods:
+        value: [] # Empty means first method in 'methods'
+        description: Spectrums to calculate power from
+        name: Spectrums for power calculation
+    norm_method:
+        value: total # total, lf_hf
+        description: How to normalize the LF and HF bands
+        name: LF and HF band normalization method
+        units: ''
+    beta_band:
+        value: []
+        description: Frequency band range for beta calculation (empty = use VLF band)
+        name: Beta Band
+        units: Hz
+    vlf_band:
+        value: [0.003, 0.04]
+        description: VLF frequency band range
+        name: VLF Band
+        units: Hz
+    lf_band:
+        value: [0.04,  0.15]
+        description: LF frequency band range
+        name: LF Band
+        units: Hz
+    hf_band:
+        value: [0.15,  0.4]
+        description: HF frequency band range
+        name: HF Band
+        units: Hz
+    extra_bands:
+        value: []
+        description: Additional frequency bands for power calculation (each element should be a two-element array)
+        name: Extra bands
+        units: Hz
+    window_minutes:
+        value: 5
+        description: Duration of winodow for spectral averaging
+        name: Spectral window duration
+        units: Minutes
+    welch_overlap:
+        value: 50
+        description: Percent overlap between windows when using welch method
+        name: Welch overlap
+        units: '%'
+    ar_order:
+        value: 24
+        description: Order of AR model to fit
+        name: AR order
+        units: n.u.
+    osf:
+        value: 4
+        description: Factor of oversampling in frequency domain resolution
+        name: Frequency oversampling factor
+        units: n.u.
+    resample_factor:
+        value: 2.25
+        description: Factor of f_max (hf_band(2)) to obtain the uniform sampling frequecncy. Must be >= 2.
+        name: Frequency resampling factor
+        units: n.u.
+    win_func:
+        value: hamming
+        description: Name of window to apply to segments. Should be one of the matlab window functions.
+        name: Window function.
+        units: n.u.
+
+# DFA Parameters
+dfa:
+    n_min:
+        value: 4
+        description: Minimal DFA box size
+        units: n.u.
+    n_max:
+        value: 64
+        description: Maximal DFA box size
+        units: n.u.
+    n_incr:
+        value: 2
+        description: DFA box size increment
+        units: n.u.
+    alpha1_range:
+        value: [4, 15]
+        description: Box size range for alpha1 slope calculation
+        name: Alpha1 range
+        units: n.u.
+    alpha2_range:
+        value: [16, 64]
+        description: Box size range for alpha2 slope calculation
+        name: Alpha2 range
+        units: n.u.
+
+# MSE Parameters
+mse:
+    mse_max_scale:
+        value: 15
+        description: Maximal scale value for MSE calculation
+        name: MSE max scale
+        units: n.u.
+    sampen_r:
+        value: 0.2
+        description: Sample entropy template match threshold
+        name: SampEn r
+        units: n.u.
+    sampen_m:
+        value: 2
+        description: Sample entropy template length
+        name: SampEn m
+        units: n.u.
+    normalize_std:
+        value: true
+        description: Whether to normalize the signal to std=1 before calculating MSE.
+        name: Normalize Standard Deviation
+        units: boolean
+    mse_metrics:
+        value: false
+        description: Whether to output each MSE value as a metric
+        name: Output MSE metrics
+        units: boolean
+
+# General toolbox options
+mhrv:
+    paths:
+        wfdb_path: ''

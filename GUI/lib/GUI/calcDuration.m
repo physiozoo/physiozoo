@@ -1,3 +1,4 @@
+%%
 function signalDuration = calcDuration(varargin)
 
 show_hours = 1;

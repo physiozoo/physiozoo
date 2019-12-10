@@ -3236,7 +3236,7 @@ displayEndOfDemoMessage('');
     function FirstSecond_Callback ( ~, ~ )
         if ~isempty(DATA.rri)
             screen_value = get(GUI.FirstSecond, 'String');
-            [firstSecond2Show, isInputNumeric]  = calcDurationInSeconds(GUI.FirstSecond, screen_value, DATA.firstSecond2Show);
+            [firstSecond2Show, isInputNumeric] = calcDurationInSeconds(GUI.FirstSecond, screen_value, DATA.firstSecond2Show);
             if isInputNumeric
                 if firstSecond2Show < 0 || firstSecond2Show > DATA.maxSignalLength - DATA.MyWindowSize  % + 1
                     set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0));

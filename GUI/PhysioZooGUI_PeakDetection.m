@@ -136,6 +136,12 @@ end
         set(GUI.Window, 'WindowScrollWheelFcn', '');
         set(GUI.Window, 'WindowKeyPressFcn', '');
         set(GUI.Window, 'WindowKeyReleaseFcn', '');
+        if isfield(GUI, 'timer_object')
+            delete(GUI.timer_object);
+        end
+        reset_movie_buttons();
+        
+        GUI.GUIDisplay.Movie_Delay.String = 2;
     end
 %%
     function DATA = createData()
@@ -287,10 +293,10 @@ end
         
         RightLeft_TabPanel = uix.TabPanel('Parent', temp_panel_left, 'Padding', DATA.Padding);
         two_axes_box = uix.VBox('Parent', temp_panel_right, 'Spacing', DATA.Spacing);
-        CommandsButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
-        PageUpDownButtons_Box = uix.HButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
+        CommandsButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');        
+        play_box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
         
-        set(temp_vbox_buttons, 'Heights', [-100, -35]);
+%         set(temp_vbox_buttons, 'Heights', [-100, -35]); 
         
         RecordTab = uix.Panel( 'Parent', RightLeft_TabPanel, 'Padding', DATA.Padding);
         ConfigParamTab = uix.Panel( 'Parent', RightLeft_TabPanel, 'Padding', DATA.Padding);
@@ -310,12 +316,23 @@ end
         
         GUI.RR_or_HR_plot_button = uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
         GUI.Reset_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
-        set(CommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing); % [70, 25]
+        set(CommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing); % [70, 25]                                                
+                                
+        MovieStartStioHButtons_Box = uix.HButtonBox('Parent', play_box, 'Spacing', DATA.Spacing); % , 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom'        
+        GUI.PlayStopReverseMovieButton = uicontrol('Style', 'ToggleButton', 'Parent', MovieStartStioHButtons_Box, 'Callback', @play_stop_reverse_movie_pushbutton_Callback,...
+            'FontSize', BigFontSize, 'String', sprintf('\x25C4'), 'Enable', 'inactive', 'Tooltip', 'Start/Stop scrolling (reverse)'); % sprintf('\x25A0') 25B2                
+        GUI.PlayStopForwMovieButton = uicontrol('Style', 'ToggleButton', 'Parent', MovieStartStioHButtons_Box, 'Callback', @play_stop_movie_pushbutton_Callback,...
+            'FontSize', BigFontSize, 'String', sprintf('\x25BA'), 'Enable', 'inactive', 'Tooltip', 'Start/Stop scrolling (forward)'); % sprintf('\x25A0') 25B2
         
-        GUI.PageDownButton = uicontrol( 'Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', @page_down_pushbutton_Callback, 'FontSize', BigFontSize, 'String', sprintf('\x25C0'), 'Visible', 'on');  % 2190'
-        GUI.PageUpButton = uicontrol( 'Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', @page_up_pushbutton_Callback, 'FontSize', BigFontSize, 'String', sprintf('\x25B6'), 'Visible', 'on');  % 2192
-        set( PageUpDownButtons_Box, 'ButtonSize', [70, 25], 'Spacing', DATA.Spacing  );
+        PageUpDownButtons_Box = uix.HButtonBox('Parent', play_box, 'Spacing', DATA.Spacing); % , 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom'                              
+        GUI.PageDownButton = uicontrol('Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', {@page_down_pushbutton_Callback, ''}, 'FontSize', BigFontSize, 'String', sprintf('\x25C0'), 'Enable', 'off');  % 2190'
+        GUI.PageUpButton = uicontrol('Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', {@page_up_pushbutton_Callback, ''}, 'FontSize', BigFontSize, 'String', sprintf('\x25B6'), 'Enable', 'off');  % 2192
+        set(PageUpDownButtons_Box, 'ButtonSize', [70, 25], 'Spacing', DATA.Spacing);
+        set(MovieStartStioHButtons_Box, 'ButtonSize', [70, 25], 'Spacing', DATA.Spacing);
+        set(play_box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing); % [70, 25]
         
+        GUI.CommandsButtons_Box = CommandsButtons_Box;
+        GUI.PageUpDownButtons_Box = PageUpDownButtons_Box;
         
         tabs_widths = Left_Part_widths_in_pixels;
         tabs_heights = 430; % 370
@@ -332,6 +349,10 @@ end
         DisplayBox = uix.VBox( 'Parent', DisplaySclPanel, 'Spacing', DATA.Spacing);
         set(DisplaySclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
         
+        GUI.RecordTab = RecordTab;
+        GUI.ConfigParamTab = ConfigParamTab;
+        GUI.DisplayTab = DisplayTab;
+        
         %-------------------------------------------------------
         % Record Tab
         
@@ -341,7 +362,7 @@ end
         [GUI, textBox{4}, text_handles{4}] = createGUITextLine(GUI, 'GUIRecord', 'Config_text', 'Config file name:', RecordBox, 'text', 1, @LoadConfigurationFile_Callback);
         [GUI, textBox{5}, text_handles{5}] = createGUITextLine(GUI, 'GUIRecord', 'TimeSeriesLength_text', 'Time series length:', RecordBox, 'text', 0, '');
         [GUI, textBox{6}, text_handles{6}] = createGUITextLine(GUI, 'GUIRecord', 'Mammal_popupmenu', 'Mammal', RecordBox, 'edit', 0, '');
-        GUI.GUIRecord.Mammal_popupmenu.Callback = @Mammal_popupmenu_Callback;
+        GUI.GUIRecord.Mammal_popupmenu.Callback = @Mammal_popupmenu_Callback;        
         
         %         [GUI, textBox{5}, text_handles{5}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Mammal_popupmenu', 'Mammal', RecordBox, @Mammal_popupmenu_Callback, DATA.GUI_mammals);
         [GUI, textBox{7}, text_handles{7}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Integration_popupmenu', 'Integration level', RecordBox, @Integration_popupmenu_Callback, DATA.GUI_Integration);
@@ -468,20 +489,24 @@ end
         
         uix.Empty( 'Parent', DisplayBox );
         
-        [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', '');
-        [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', '');
+        [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', 0);
+        [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', 0);
         
         %         field_size = [110, 64, 4, 63, 10];
         [GUI, YLimitBox, text_handles{18}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', '');
         
         uix.Empty('Parent', DisplayBox );
-        
-        
+                
         [GUI, textBox{19}, text_handles{19}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
         [GUI, YLimitBox2, text_handles{20}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', '');
         
-        set(GUI.GUIDisplay.FirstSecond, 'Enable', 'off');
-        set(GUI.GUIDisplay.WindowSize, 'Enable', 'off');
+        uix.Empty('Parent', DisplayBox );
+        
+        [GUI, textBox{21}, text_handles{21}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'Movie_Delay', 'Movie Speed:', 'n.u.', DisplayBox, @Movie_Delay_Callback, '', 2);        
+        GUI.GUIDisplay.Movie_Delay.String = 2;
+                
+        set(GUI.GUIDisplay.FirstSecond, 'Enable', 'on');
+        set(GUI.GUIDisplay.WindowSize, 'Enable', 'on');
         set(GUI.GUIDisplay.MinYLimit_Edit, 'Enable', 'off');
         set(GUI.GUIDisplay.MaxYLimit_Edit, 'Enable', 'off');
         set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'Enable', 'off');
@@ -490,9 +515,11 @@ end
         max_extent_control = calc_max_control_x_extend(text_handles);
         
         field_size = [max_extent_control, 150, 10 -1];
-        for i = 1 : length(text_handles) - 1
+        for i = 1 : length(text_handles) - 2
             set(textBox{i}, 'Widths', field_size);
         end
+        
+        set(textBox{21}, 'Widths', field_size);
         
         field_size = [max_extent_control, 72, 2, 70, 10];
         set(YLimitBox, 'Widths', field_size);
@@ -507,7 +534,7 @@ end
         set(YLimitBox2, 'Widths', [field_size, 95]);
         
         uix.Empty( 'Parent', DisplayBox );
-        set(DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -50] );
+        set(DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -50] );
         
         %-------------------------------------------------------
         
@@ -551,6 +578,11 @@ end
         GUI.SavePeaks.Enable = 'off';
         GUI.SaveFiguresFile.Enable = 'off';
         %GUI.LoadPeaks.Enable = 'off';
+        
+        GUI.PlayStopForwMovieButton.ForegroundColor = [0 1 0];
+        GUI.PlayStopReverseMovieButton.ForegroundColor = [0 1 0];
+        GUI.PageDownButton.ForegroundColor = [0 0 1];
+        GUI.PageUpButton.ForegroundColor = [0 0 1];
     end
 %%
     function [GUI, TempBox, uicontrol_handle] = createGUITextLine(GUI, gui_struct, field_name, string_field_name, box_container, style, isOpenButton, callback_openButton)
@@ -701,31 +733,37 @@ end
         setECGYLim(0, right_limit2plot);                        
     end
 %%
-    function Mammal_popupmenu_Callback(src, ~)                
-        DATA.config_map('mammal') = src.String;        
+    function Mammal_popupmenu_Callback(src, ~)
+        if isfield(DATA, 'config_map')
+            DATA.config_map('mammal') = src.String;
+        end
     end
 %%
     function Integration_popupmenu_Callback(src, ~)
-        items = get(src, 'String');
-        index_selected = get(src, 'Value');        
-        DATA.integration_index = index_selected;        
-        DATA.config_map('integration_level') = items{index_selected};
+        if isfield(DATA, 'config_map')
+            items = get(src, 'String');
+            index_selected = get(src, 'Value');
+            DATA.integration_index = index_selected;
+            DATA.config_map('integration_level') = items{index_selected};
+        end
     end
 %%
     function PeakDetector_popupmenu_Callback(src, ~)
-        items = get(src, 'String');
-        index_selected = get(src, 'Value');
-        DATA.config_map('peak_detector') = items{index_selected};
-        DATA.peakDetector_index = index_selected;
-        
-        if get(GUI.AutoCalc_checkbox, 'Value')
-            try
-                RunAndPlotPeakDetector();        
-                set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', 1);
-            catch e
-                h_e = errordlg(['PeakDetector error: ' e.message], 'Input Error');
-                setLogo(h_e, 'M1');
-                return;
+        if isfield(DATA, 'config_map')
+            items = get(src, 'String');
+            index_selected = get(src, 'Value');
+            DATA.config_map('peak_detector') = items{index_selected};
+            DATA.peakDetector_index = index_selected;
+            
+            if get(GUI.AutoCalc_checkbox, 'Value')
+                try
+                    RunAndPlotPeakDetector();
+                    set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', 1);
+                catch e
+                    h_e = errordlg(['PeakDetector error: ' e.message], 'Input Error');
+                    setLogo(h_e, 'M1');
+                    return;
+                end
             end
         end
     end
@@ -1166,7 +1204,10 @@ end
                         GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
                         
                         set(GUI.GUIDisplay.FirstSecond, 'String', calcDuration(min(DATA.zoom_rect_limits), 0));
-                        set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(max(DATA.zoom_rect_limits) - min(DATA.zoom_rect_limits), 0));
+                        
+                        WindowSize_value = max(DATA.zoom_rect_limits) - min(DATA.zoom_rect_limits);
+                        GUI.GUIDisplay.WindowSize.String = calcDuration(WindowSize_value, 0);
+                        GUI.GUIDisplay.WindowSize.UserData = WindowSize_value;
                         
                         set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
                         set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
@@ -1199,7 +1240,11 @@ end
             set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
             set(GUI.Window, 'WindowScrollWheelFcn', @my_WindowScrollWheelFcn);
             set(GUI.Window, 'WindowKeyPressFcn', @my_WindowKeyPressFcn);
-            set(GUI.Window, 'WindowKeyReleaseFcn', @my_WindowKeyReleaseFcn);
+            set(GUI.Window, 'WindowKeyReleaseFcn', @my_WindowKeyReleaseFcn);                       
+            
+            GUI.timer_object = timer;
+            GUI.timer_object.ExecutionMode = 'fixedRate';
+            GUI.timer_object.StopFcn = @EnablePageUpDown;
         end
     end
 %%
@@ -1447,85 +1492,86 @@ end
 %%
     function config_edit_Callback(src, ~)
         
-        field_value = get(src, 'String');
-        numeric_field_value = str2double(field_value);
-        
-        if isnan(numeric_field_value)
-            h_e = errordlg('Please, enter numeric value.', 'Input Error');
-            setLogo(h_e, 'M1');
-            set(src, 'String', DATA.config_map(get(src, 'UserData')));
-            return;
-        elseif strcmp(get(src, 'UserData'), 'rp') && ~(numeric_field_value >= 0)
-            h_e = errordlg('The refractory period must be greater or equal to 0.', 'Input Error');
-            setLogo(h_e, 'M1');
-            set(src, 'String', DATA.config_map(get(src, 'UserData')));
-            return;
-        elseif (numeric_field_value <= 0) && ~(strcmp(get(src, 'UserData'), 'rp'))
-            h_e = errordlg('The value must be greater then 0.', 'Input Error');
-            setLogo(h_e, 'M1');
-            set(src, 'String', DATA.config_map(get(src, 'UserData')));
-            return;
-        end
-        if strcmp(get(src, 'UserData'), 'hcf') && (numeric_field_value > DATA.Fs/2)
-            h_e = errordlg('The upper cutoff frequency must be inferior to half of the sampling frequency.', 'Input Error');
-            setLogo(h_e, 'M1');
-            set(src, 'String', DATA.config_map(get(src, 'UserData')));
-            return;
-        end
-        
-        if strcmp(get(src, 'UserData'), 'bi')
-            if (numeric_field_value < 0 || numeric_field_value > 20000)
-                h_e = errordlg('The beating interval must be in the range of 0 - 20000.', 'Input Error');
+        if isfield(DATA, 'config_map')
+            field_value = get(src, 'String');
+            numeric_field_value = str2double(field_value);
+            
+            if isnan(numeric_field_value)
+                h_e = errordlg('Please, enter numeric value.', 'Input Error'); setLogo(h_e, 'M1');
+                set(src, 'String', DATA.config_map(get(src, 'UserData')));
+                return;
+            elseif strcmp(get(src, 'UserData'), 'rp') && ~(numeric_field_value >= 0)
+                h_e = errordlg('The refractory period must be greater or equal to 0.', 'Input Error');
+                setLogo(h_e, 'M1');
+                set(src, 'String', DATA.config_map(get(src, 'UserData')));
+                return;
+            elseif (numeric_field_value <= 0) && ~(strcmp(get(src, 'UserData'), 'rp'))
+                h_e = errordlg('The value must be greater then 0.', 'Input Error');
                 setLogo(h_e, 'M1');
                 set(src, 'String', DATA.config_map(get(src, 'UserData')));
                 return;
             end
-            if numeric_field_value <= DATA.config_map('ref_per')
-                h_e = errordlg('The beating interval must be greater than refractory period.', 'Input Error');
+            if strcmp(get(src, 'UserData'), 'hcf') && (numeric_field_value > DATA.Fs/2)
+                h_e = errordlg('The upper cutoff frequency must be inferior to half of the sampling frequency.', 'Input Error');
                 setLogo(h_e, 'M1');
                 set(src, 'String', DATA.config_map(get(src, 'UserData')));
                 return;
             end
-        end
-        
-%         if strcmp(get(src, 'UserData'), 'alpha') && (numeric_field_value < 0 || numeric_field_value > 20)
-%             h_e = errordlg('Alpha must be in the range of 0 - 20.', 'Input Error');
-%             setLogo(h_e, 'M1');
-%             set(src, 'String', DATA.config_map(get(src, 'UserData')));
-%             return;
-%         end
-        
-        if strcmp(get(src, 'UserData'), 'ref_per')
-            if (numeric_field_value < 0 || numeric_field_value > 20000)
-                h_e = errordlg('The refractory period must be in the range of 0 - 20000', 'Input Error');
-                setLogo(h_e, 'M1');
-                set(src, 'String', DATA.config_map(get(src, 'UserData')));
-                return;
-            elseif numeric_field_value > DATA.config_map('bi')
-                h_e = errordlg('The beating interval must be greater than refractory period.', 'Input Error');
-                setLogo(h_e, 'M1');
-                set(src, 'String', DATA.config_map(get(src, 'UserData')));
-                return;
-            end            
-        end
-        
-        if isfield(DATA, 'config_map') && ~isempty(DATA.config_map)
-            DATA.config_map(get(src, 'UserData')) = numeric_field_value;
-            DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
-            temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
-            if temp_custom_conf_fileID == -1
-                h_e = errordlg('Problems with creation of custom config file.', 'Input Error');
-                setLogo(h_e, 'M1');
-                return;
+            
+            if strcmp(get(src, 'UserData'), 'bi')
+                if (numeric_field_value < 0 || numeric_field_value > 20000)
+                    h_e = errordlg('The beating interval must be in the range of 0 - 20000.', 'Input Error');
+                    setLogo(h_e, 'M1');
+                    set(src, 'String', DATA.config_map(get(src, 'UserData')));
+                    return;
+                end
+                if numeric_field_value <= DATA.config_map('ref_per')
+                    h_e = errordlg('The beating interval must be greater than refractory period.', 'Input Error');
+                    setLogo(h_e, 'M1');
+                    set(src, 'String', DATA.config_map(get(src, 'UserData')));
+                    return;
+                end
             end
-            if get(GUI.AutoCalc_checkbox, 'Value')
-                try
-                    RunAndPlotPeakDetector();
-                    set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', 1);
-                catch e
-                    h_e = errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
+            
+            %         if strcmp(get(src, 'UserData'), 'alpha') && (numeric_field_value < 0 || numeric_field_value > 20)
+            %             h_e = errordlg('Alpha must be in the range of 0 - 20.', 'Input Error');
+            %             setLogo(h_e, 'M1');
+            %             set(src, 'String', DATA.config_map(get(src, 'UserData')));
+            %             return;
+            %         end
+            
+            if strcmp(get(src, 'UserData'), 'ref_per')
+                if (numeric_field_value < 0 || numeric_field_value > 20000)
+                    h_e = errordlg('The refractory period must be in the range of 0 - 20000', 'Input Error');
+                    setLogo(h_e, 'M1');
+                    set(src, 'String', DATA.config_map(get(src, 'UserData')));
+                    return;
+                elseif numeric_field_value > DATA.config_map('bi')
+                    h_e = errordlg('The beating interval must be greater than refractory period.', 'Input Error');
+                    setLogo(h_e, 'M1');
+                    set(src, 'String', DATA.config_map(get(src, 'UserData')));
+                    return;
+                end
+            end
+            
+            if isfield(DATA, 'config_map') && ~isempty(DATA.config_map)
+                DATA.config_map(get(src, 'UserData')) = numeric_field_value;
+                DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
+                temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
+                if temp_custom_conf_fileID == -1
+                    h_e = errordlg('Problems with creation of custom config file.', 'Input Error');
                     setLogo(h_e, 'M1');
                     return;
+                end
+                if get(GUI.AutoCalc_checkbox, 'Value')
+                    try
+                        RunAndPlotPeakDetector();
+                        set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', 1);
+                    catch e
+                        h_e = errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
+                        setLogo(h_e, 'M1');
+                        return;
+                    end
                 end
             end
         end
@@ -1681,7 +1727,10 @@ end
                     setRRIntYLim();
                     
                     set(GUI.GUIDisplay.FirstSecond, 'String', calcDuration(min(DATA.zoom_rect_limits), 0));
-                    set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(max(DATA.zoom_rect_limits)-min(DATA.zoom_rect_limits), 0));
+                    
+                    WindowSize_value = max(DATA.zoom_rect_limits)-min(DATA.zoom_rect_limits);
+                    GUI.GUIDisplay.WindowSize.String = calcDuration(WindowSize_value, 0);
+                    GUI.GUIDisplay.WindowSize.UserData = WindowSize_value;
                     
                     set(GUI.GUIDisplay.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
                     
@@ -1893,6 +1942,10 @@ end
             
             set_new_mammal(DATA.init_config_file_name);
 
+            reset_movie_buttons();
+            
+            GUI.GUIDisplay.Movie_Delay.String = 2;            
+            
             try
                 RunAndPlotPeakDetector();
             catch e
@@ -1901,6 +1954,18 @@ end
                 return;
             end
         end
+    end
+%%
+    function reset_movie_buttons()
+        GUI.PlayStopForwMovieButton.String = sprintf('\x25BA');
+        GUI.PlayStopForwMovieButton.ForegroundColor = [0 1 0];
+        GUI.PlayStopForwMovieButton.Value = 0;
+        GUI.PlayStopForwMovieButton.Enable = 'on';
+        
+        GUI.PlayStopReverseMovieButton.String = sprintf('\x25C4');
+        GUI.PlayStopReverseMovieButton.ForegroundColor = [0 1 0];
+        GUI.PlayStopReverseMovieButton.Value = 0;
+        GUI.PlayStopReverseMovieButton.Enable = 'on';
     end
 %%
     function my_WindowKeyPressFcn(~, ~, ~)
@@ -1912,6 +1977,13 @@ end
     end
 %%
     function my_WindowScrollWheelFcn(~, callbackdata, ~)
+        
+        if strcmp(GUI.timer_object.Running, 'on')
+            stop(GUI.timer_object);
+            reset_movie_buttons();
+            EnableDisableControls();
+            EnableMovieForwardReverse();
+        end
         
         hObj = hittest(GUI.Window);
         direction = 1;
@@ -1980,9 +2052,9 @@ end
                     set_RRIntPage_Length(RRIntPage_Length, 2);
                 case 'move'
                     if direction > 0
-                        page_down_pushbutton_Callback({}, 0);
+                        page_down_pushbutton_Callback({}, 0, '');
                     else
-                        page_up_pushbutton_Callback({}, 0);
+                        page_up_pushbutton_Callback({}, 0, '');
                     end
                 otherwise
             end
@@ -2040,7 +2112,7 @@ end
         uistack(GUI.quality_win(quality_win_num), 'bottom');        
     end
 %%
-    function my_WindowButtonUpFcn (src, callbackdata, handles)
+    function my_WindowButtonUpFcn (src, callbackdata, handles)        
         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
         refresh(GUI.Window);
         switch DATA.hObject
@@ -2141,6 +2213,13 @@ end
 %%
     function my_WindowButtonDownFcn(src, callbackdata, handles)
         
+        if strcmp(GUI.timer_object.Running, 'on')
+            stop(GUI.timer_object);
+            reset_movie_buttons();
+            EnableDisableControls();
+            EnableMovieForwardReverse();
+        end
+        
         prev_point = get(GUI.RRInt_Axes, 'CurrentPoint');
         DATA.prev_point = prev_point;
         curr_point = get(GUI.ECG_Axes, 'CurrentPoint');
@@ -2224,6 +2303,8 @@ end
         ChangePlot(xdata);
         set(GUI.red_rect_handle, 'XData', xdata);
         DATA.zoom_rect_limits = [xdata(1) xdata(2)];
+        GUI.GUIDisplay.FirstSecond.UserData = min(xdata);
+        GUI.GUIDisplay.WindowSize.UserData = max(xdata) - min(xdata);
         EnablePageUpDown();
         redraw_quality_rect();        
     end
@@ -2261,6 +2342,8 @@ end
         set(GUI.red_rect_handle, 'XData', xdata);
         DATA.zoom_rect_limits = [xdata(1) xdata(2)];
         EnablePageUpDown();
+        
+        GUI.GUIDisplay.FirstSecond.UserData = min(xdata);
         
         set_ticks = 0;
         if xdata(2) > prev_maxLim
@@ -2521,16 +2604,27 @@ end
     end
 %%
     function RRIntPage_Length_Callback(~, ~)
-        RRIntPage_Length = get(GUI.GUIDisplay.RRIntPage_Length, 'String');
-        [RRIntPage_Length, isInputNumeric] = calcDurationInSeconds(GUI.GUIDisplay.RRIntPage_Length, RRIntPage_Length, DATA.RRIntPage_Length);
-        set_RRIntPage_Length(RRIntPage_Length, isInputNumeric);
+        if isfield(DATA, 'RRIntPage_Length')
+            RRIntPage_Length = get(GUI.GUIDisplay.RRIntPage_Length, 'String');
+            [RRIntPage_Length, isInputNumeric] = calcDurationInSeconds(GUI.GUIDisplay.RRIntPage_Length, RRIntPage_Length, DATA.RRIntPage_Length);
+            set_RRIntPage_Length(RRIntPage_Length, isInputNumeric);
+        end
     end
 %%
-    function page_down_pushbutton_Callback(~, ~)
+    function page_down_pushbutton_Callback(~, ~, movie_offset)        
         xdata = get(GUI.red_rect_handle, 'XData');
         red_rect_length = max(xdata) - min(xdata);
-        right_border = min(xdata);
-        left_border = right_border - red_rect_length;
+        if ~isempty(movie_offset)
+            x_ofs = 0.25;
+        else
+            x_ofs = red_rect_length;
+        end
+        
+        left_border = min(xdata) - x_ofs;
+        right_border = max(xdata) - x_ofs;
+        
+%         right_border = min(xdata);
+%         left_border = right_border - red_rect_length;
         
         if left_border < 0
             left_border = 0;
@@ -2540,8 +2634,13 @@ end
             xdata = [left_border right_border right_border left_border left_border];
             set(GUI.red_rect_handle, 'XData', xdata);
             ChangePlot(xdata);
-            EnablePageUpDown();
+            if strcmp(GUI.timer_object.Running, 'off')
+                EnablePageUpDown();
+            end
+            EnableMovieForwardReverse();
             DATA.zoom_rect_limits = [xdata(1) xdata(2)];
+            
+            GUI.GUIDisplay.FirstSecond.UserData = left_border;
             
             set_ticks = 0;
             AllDataAxes_XLim = get(GUI.RRInt_Axes, 'XLim');
@@ -2564,21 +2663,39 @@ end
         end
     end
 %%
-    function page_up_pushbutton_Callback(~, ~)
+    function page_up_pushbutton_Callback(~, ~, movie_offset)        
         xdata = get(GUI.red_rect_handle, 'XData');
         red_rect_length = max(xdata) - min(xdata);
-        left_border = max(xdata);
-        right_border = left_border + red_rect_length;
+        
+        if ~isempty(movie_offset)
+            x_ofs = 0.25;
+%             left_border = min(xdata) + x_ofs;
+%             right_border = max(xdata) + x_ofs;            
+        else
+            x_ofs = red_rect_length;
+%             left_border = max(xdata);
+%             right_border = left_border + red_rect_length;
+        end
+                      
+        left_border = min(xdata) + x_ofs;
+        right_border = max(xdata) + x_ofs;
+                
         if right_border > DATA.maxRRTime
             left_border = DATA.maxRRTime - red_rect_length;
             right_border = DATA.maxRRTime;
         end
+                
         if left_border >= 0 && left_border < right_border && right_border <= DATA.maxRRTime
             xdata = [left_border right_border right_border left_border left_border];
             set(GUI.red_rect_handle, 'XData', xdata);
             ChangePlot(xdata);
-            EnablePageUpDown();
+            if strcmp(GUI.timer_object.Running, 'off')
+                EnablePageUpDown();
+            end
+            EnableMovieForwardReverse();
             DATA.zoom_rect_limits = [xdata(1) xdata(2)];
+            
+            GUI.GUIDisplay.FirstSecond.UserData = left_border;
             
             set_ticks = 0;
             AllDataAxes_XLim = get(GUI.RRInt_Axes, 'XLim');
@@ -2598,10 +2715,10 @@ end
             end
             setRRIntYLim();
             redraw_quality_rect();
-        end
+        end    
     end
 %%
-    function EnablePageUpDown()
+    function EnablePageUpDown(~, ~)
         xdata = get(GUI.red_rect_handle, 'XData');
         
         if ~isempty(xdata)
@@ -2616,6 +2733,128 @@ end
                 GUI.PageDownButton.Enable = 'on';
             end
         end
+    end
+%%
+    function play_stop_movie_pushbutton_Callback(~, ~)        
+        if GUI.PlayStopForwMovieButton.Value
+            GUI.PlayStopForwMovieButton.String = sprintf('\x25A0');
+            GUI.PlayStopForwMovieButton.ForegroundColor = [1 0 0];
+            
+            movie_delay = 0.25/str2double(GUI.GUIDisplay.Movie_Delay.String); % in seconds            
+            GUI.timer_object.Period = str2double(sprintf('%.3f', movie_delay)); 
+            GUI.timer_object.TimerFcn = {@page_up_pushbutton_Callback, 'movie_offset'};
+            start(GUI.timer_object);
+            
+            GUI.PlayStopReverseMovieButton.Enable = 'inactive';                                                       
+        else
+            GUI.PlayStopForwMovieButton.String = sprintf('\x25BA');
+            GUI.PlayStopForwMovieButton.ForegroundColor = [0 1 0];
+            
+            GUI.PlayStopReverseMovieButton.Enable = 'on';
+
+            stop(GUI.timer_object);
+        end
+        EnableMovieForwardReverse();
+        EnableDisableControls();
+    end
+%%
+    function play_stop_reverse_movie_pushbutton_Callback(~, ~)
+        if GUI.PlayStopReverseMovieButton.Value
+            GUI.PlayStopReverseMovieButton.String = sprintf('\x25A0');
+            GUI.PlayStopReverseMovieButton.ForegroundColor = [1 0 0];
+            
+            movie_delay = 0.25/str2double(GUI.GUIDisplay.Movie_Delay.String); % in seconds            
+            GUI.timer_object.Period = str2double(sprintf('%.3f', movie_delay)); 
+            
+            GUI.PlayStopForwMovieButton.Enable = 'inactive';
+                        
+            GUI.timer_object.TimerFcn = {@page_down_pushbutton_Callback, 'movie_offset'};
+            start(GUI.timer_object);
+        else
+            GUI.PlayStopReverseMovieButton.String = sprintf('\x25C4');
+            GUI.PlayStopReverseMovieButton.ForegroundColor = [0 1 0];
+            
+            GUI.PlayStopForwMovieButton.Enable = 'on';
+            
+            stop(GUI.timer_object);
+        end
+        EnableMovieForwardReverse();
+        EnableDisableControls();
+    end
+%%
+    function EnableMovieForwardReverse()
+        xdata = get(GUI.red_rect_handle, 'XData');
+        
+        if ~isempty(xdata)
+            if xdata(2) == DATA.maxRRTime
+                if isfield(GUI, 'timer_object')
+                    stop(GUI.timer_object);
+                end                
+                
+                GUI.PlayStopForwMovieButton.Enable = 'inactive';
+                GUI.PlayStopForwMovieButton.Value = 0;                
+                GUI.PlayStopForwMovieButton.String = sprintf('\x25BA');
+                GUI.PlayStopForwMovieButton.ForegroundColor = [0 1 0];
+                                
+                GUI.PlayStopReverseMovieButton.Enable = 'on';
+                GUI.PlayStopReverseMovieButton.Value = 0;                
+            elseif strcmp(GUI.timer_object.Running, 'off')
+                GUI.PlayStopForwMovieButton.Enable = 'on';                
+            end
+            if xdata(1) == 0
+                if isfield(GUI, 'timer_object')
+                    stop(GUI.timer_object);
+                end
+                
+                GUI.PlayStopForwMovieButton.Enable = 'on';
+                GUI.PlayStopForwMovieButton.Value = 0;
+                
+                GUI.PlayStopReverseMovieButton.Enable = 'inactive';
+                GUI.PlayStopReverseMovieButton.Value = 0;                
+                GUI.PlayStopReverseMovieButton.String = sprintf('\x25C4');
+                GUI.PlayStopReverseMovieButton.ForegroundColor = [0 1 0];                                                
+            elseif strcmp(GUI.timer_object.Running, 'off')                
+                GUI.PlayStopReverseMovieButton.Enable = 'on';
+            end            
+        end
+    end
+%%
+    function EnableDisableControls()
+        if strcmp(GUI.timer_object.Running, 'on')
+            set(findobj(GUI.RecordTab, 'Style', 'edit'), 'Enable', 'inactive');
+            set(findobj(GUI.RecordTab, 'Style', 'PushButton'), 'Enable', 'inactive');
+            set(findobj(GUI.RecordTab, 'Style', 'PopUpMenu'), 'Enable', 'inactive');
+            
+            set(findobj(GUI.ConfigParamTab, 'Style', 'edit'), 'Enable', 'inactive');
+            set(findobj(GUI.ConfigParamTab, 'Style', 'checkbox'), 'Enable', 'inactive');
+            
+            GUI.GUIDisplay.RRIntPage_Length.Enable = 'inactive';
+            GUI.GUIDisplay.Movie_Delay.Enable = 'inactive';
+            GUI.GUIDisplay.FirstSecond.Enable = 'inactive';
+            GUI.GUIDisplay.WindowSize.Enable = 'inactive';
+                                                            
+            set(findobj(GUI.CommandsButtons_Box, 'Enable', 'on'), 'Enable', 'inactive');
+            set(findobj(GUI.PageUpDownButtons_Box, 'Style', 'PushButton'), 'Enable', 'off');    
+            
+            set(GUI.FileMenu, 'Enable', 'off');
+        else
+            set(findobj(GUI.RecordTab, 'Style', 'edit'), 'Enable', 'on');
+            set(findobj(GUI.RecordTab, 'Style', 'PushButton'), 'Enable', 'on');
+            set(findobj(GUI.RecordTab, 'Style', 'PopUpMenu'), 'Enable', 'on');
+            
+            set(findobj(GUI.ConfigParamTab, 'Style', 'edit'), 'Enable', 'on');
+            set(findobj(GUI.ConfigParamTab, 'Style', 'checkbox'), 'Enable', 'on');
+            
+            set(findobj(GUI.CommandsButtons_Box, 'Enable', 'inactive'), 'Enable', 'on');
+            set(findobj(GUI.PageUpDownButtons_Box, 'Style', 'PushButton'), 'Enable', 'on');
+            
+            GUI.GUIDisplay.RRIntPage_Length.Enable = 'on';
+            GUI.GUIDisplay.Movie_Delay.Enable = 'on';
+            GUI.GUIDisplay.FirstSecond.Enable = 'on';
+            GUI.GUIDisplay.WindowSize.Enable = 'on';
+            
+            set(GUI.FileMenu, 'Enable', 'on');
+        end        
     end
 %%
     function Annotation_popupmenu_Callback( src, ~ )
@@ -2647,21 +2886,23 @@ end
 %%
     function PeakAdjustment_popupmenu_Callback(src, ~ )
         
-        items = get(src, 'String');
-        index_selected = get(src, 'Value');
-%         index_selected = get(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value');
-                
-        DATA.config_map('peak_adjustment') = items{index_selected};
-        
-        if index_selected == 1 % default
-            DATA.Adjust = 0;
-        elseif index_selected == 2 % local max
-            DATA.Adjust = 1;
-        elseif index_selected == 3 % local min
-            DATA.Adjust = -1;
-        end
-        if get(GUI.AutoCalc_checkbox, 'Value')
-            PeakAdjustment(DATA.qrs);
+        if isfield(DATA, 'config_map')
+            items = get(src, 'String');
+            index_selected = get(src, 'Value');
+            %         index_selected = get(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value');
+            
+            DATA.config_map('peak_adjustment') = items{index_selected};
+            
+            if index_selected == 1 % default
+                DATA.Adjust = 0;
+            elseif index_selected == 2 % local max
+                DATA.Adjust = 1;
+            elseif index_selected == 3 % local min
+                DATA.Adjust = -1;
+            end
+            if get(GUI.AutoCalc_checkbox, 'Value')
+                PeakAdjustment(DATA.qrs);
+            end
         end
     end
 %%
@@ -3149,8 +3390,105 @@ end
         delete(GUI.SaveFiguresWindow);
     end
 %%
+    function Movie_Delay_Callback(src, ~)
+        if ~isPositiveNumericValue(src.String)
+            src.String = src.UserData;
+        else
+            speed = int32(str2double(src.String));
+            if speed < 1
+                speed = 1;
+            elseif speed > 0.25/0.001
+                speed = 0.25/0.001; % min delay for timer is 1 milisecond
+            end
+            src.String = speed;
+        end
+        src.UserData = src.String;
+    end
+%%
+    function FirstSecond_Callback(~, ~)
+        if isfield(GUI, 'red_rect_handle')
+            xdata = get(GUI.red_rect_handle, 'XData');
+            
+            if ~isempty(xdata)
+                red_rect_length = max(xdata) - min(xdata);
+                screen_value = GUI.GUIDisplay.FirstSecond.String;
+                [firstSecond2Show, isInputNumeric] = calcDurationInSeconds(GUI.GUIDisplay.FirstSecond, screen_value, GUI.GUIDisplay.FirstSecond.UserData);
+                if isInputNumeric
+                    if firstSecond2Show < 0 || firstSecond2Show > DATA.maxRRTime - red_rect_length  % + 1
+                        set(GUI.GUIDisplay.FirstSecond, 'String', calcDuration(GUI.GUIDisplay.FirstSecond.UserData, 0));
+                        h_e = errordlg('The first second value must be grater than 0 and less than signal length!', 'Input Error'); setLogo(h_e, 'M1');
+                        return;
+                    end
+                    GUI.GUIDisplay.FirstSecond.UserData = firstSecond2Show;
+                    xdata = [firstSecond2Show firstSecond2Show+red_rect_length firstSecond2Show+red_rect_length firstSecond2Show firstSecond2Show];
+                    set(GUI.red_rect_handle, 'XData', xdata);
+                    ChangePlot(xdata);
+                    EnablePageUpDown();
+                    DATA.zoom_rect_limits = [xdata(1) xdata(2)];
+                    
+                    set_ticks = 0;
+                    AllDataAxes_XLim = get(GUI.RRInt_Axes, 'XLim');
+                    prev_minLim = min(AllDataAxes_XLim);
+                    prev_maxLim = max(AllDataAxes_XLim);
+                    
+                    if max(xdata) > prev_maxLim
+                        AllDataAxes_offset = xdata(2) - prev_maxLim;
+                        set_ticks = 1;
+                    elseif min(xdata) < prev_minLim
+                        AllDataAxes_offset = xdata(1) - prev_minLim;
+                        set_ticks = 1;
+                    end
+                    if set_ticks
+                        set(GUI.RRInt_Axes, 'XLim', AllDataAxes_XLim + AllDataAxes_offset);
+                        setAxesXTicks(GUI.RRInt_Axes);
+                    end
+                    setRRIntYLim();
+                    redraw_quality_rect();
+                end
+            end
+        end
+    end
+%%
+    function WindowSize_Callback(~, ~)
+        if isfield(GUI, 'red_rect_handle')
+            xdata = get(GUI.red_rect_handle, 'XData');
+            
+            if ~isempty(xdata)                
+                firstSecond2Show = min(xdata);                                
+                screen_value = GUI.GUIDisplay.WindowSize.String;
+                [MyWindowSize, isInputNumeric]  = calcDurationInSeconds(GUI.GUIDisplay.WindowSize, screen_value, GUI.GUIDisplay.WindowSize.UserData);
+                
+                if isInputNumeric
+                    if MyWindowSize <= 1 || (MyWindowSize + firstSecond2Show) > DATA.maxRRTime % || MyWindowSize > DATA.maxSignalLength
+                        set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(GUI.GUIDisplay.WindowSize.UserData, 0));
+                        h_e = errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error'); setLogo(h_e, 'M1');
+                        return;
+                    elseif MyWindowSize > DATA.RRIntPage_Length
+                        set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(GUI.GUIDisplay.WindowSize.UserData, 0));
+                        h_e = errordlg('The zoom window length must be smaller than display duration length!', 'Input Error'); setLogo(h_e, 'M1');
+                        return;
+                    end
+                    if abs(DATA.maxRRTime - MyWindowSize) <=  1 %0.0005                        
+                        set(GUI.GUIDisplay.FirstSecond, 'Enable', 'off');
+                    else                        
+                        set(GUI.GUIDisplay.FirstSecond, 'Enable', 'on');
+                    end
+                    GUI.GUIDisplay.WindowSize.UserData = MyWindowSize;
+                    
+                    xdata = [firstSecond2Show firstSecond2Show+MyWindowSize firstSecond2Show+MyWindowSize firstSecond2Show firstSecond2Show];
+                    set(GUI.red_rect_handle, 'XData', xdata);
+                    ChangePlot(xdata);
+                    EnablePageUpDown();
+                    DATA.zoom_rect_limits = [xdata(1) xdata(2)];
+                    setRRIntYLim();
+                    redraw_quality_rect();
+                end
+            end
+        end
+    end
+%%
     function cancel_button_Callback(~, ~)
-        delete( GUI.SaveFiguresWindow );
+        delete(GUI.SaveFiguresWindow);
     end
 %%
     function onPhysioZooHome( ~, ~ )
@@ -3165,6 +3503,9 @@ end
     function Exit_Callback( ~, ~ )
         % User wants to quit out of the application
         delete_temp_wfdb_files();
-        delete( GUI.Window );
+        if isfield(GUI, 'timer_object')
+            delete(GUI.timer_object);
+        end
+        delete(GUI.Window);
     end % onExit
 end

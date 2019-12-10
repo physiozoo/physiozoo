@@ -74,11 +74,12 @@ error(['Could not find the wfdb tool ''', tool_name, ...
    %% Helper function
     function escaped_path = escape_spaces(path)
         if ispc
-            escape_seq = '^ ';
+%             escape_seq = '^ ';
+            escaped_path = ['"' path '"'];
         else
             escape_seq = '\\ ';
-        end
-        escaped_path = regexprep(path, '\s+', escape_seq);
+            escaped_path = regexprep(path, '\s+', escape_seq);
+        end        
     end
 
 end

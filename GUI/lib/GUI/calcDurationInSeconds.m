@@ -1,3 +1,4 @@
+%%
 function [signalDurationInSec, isInputNumeric]  = calcDurationInSeconds(GUIFiled, NewFieldValue, OldFieldValue)
 duration = sscanf(NewFieldValue, '%d:%d:%d.%d');
 
@@ -5,7 +6,7 @@ isInputNumeric = true;
 
 if length(duration) == 1 && duration(1) > 0
     signalDuration = calcDuration(duration(1), 0);
-    set(GUIFiled,'String', signalDuration);
+    set(GUIFiled, 'String', signalDuration);
     signalDurationInSec = duration(1);
 elseif length(duration) == 3 && duration(1) >= 0 && duration(2) >= 0 && duration(3) >= 0
     signalDurationInSec = duration(1)*3600 + duration(2)*60 + duration(3);

@@ -1,3 +1,4 @@
+%%
 function setAxesXTicks(axes_handle)
 x_ticks_array = get(axes_handle, 'XTick');
 if max(x_ticks_array) - min(x_ticks_array) <= 2
@@ -5,5 +6,3 @@ if max(x_ticks_array) - min(x_ticks_array) <= 2
 else
     set(axes_handle, 'XTickLabel', arrayfun(@(x) calcDuration(x, 0, 1), x_ticks_array, 'UniformOutput', false));
 end
-
-

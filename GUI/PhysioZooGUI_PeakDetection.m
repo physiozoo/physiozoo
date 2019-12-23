@@ -95,10 +95,17 @@ end
         set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', '');
         set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', '');
         
+        set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'UserData', []);
+        set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'UserData', []);
+                        
         set(GUI.GUIDisplay.FirstSecond, 'String', '');
         set(GUI.GUIDisplay.WindowSize, 'String', '');
+        
         set(GUI.GUIDisplay.MinYLimit_Edit, 'String', '');
         set(GUI.GUIDisplay.MaxYLimit_Edit, 'String', '');
+        
+        set(GUI.GUIDisplay.MinYLimit_Edit, 'UserData', '');
+        set(GUI.GUIDisplay.MaxYLimit_Edit, 'UserData', '');
         
         GUI.AutoPeakWin_checkbox.Value = 1;
         set(GUI.GUIConfig.PeaksWindow, 'String', '');
@@ -139,9 +146,13 @@ end
         if isfield(GUI, 'timer_object')
             delete(GUI.timer_object);
         end
-        reset_movie_buttons();
         
+        reset_movie_buttons();
         GUI.GUIDisplay.Movie_Delay.String = 2;
+        
+        GUI.AutoScaleY_checkbox.Value = 1;
+        GUI.AutoScaleYLowAxes_checkbox.Value = 1;
+        Grid_checkbox_Callback();
     end
 %%
     function DATA = createData()
@@ -248,7 +259,7 @@ end
         % + File menu
         GUI.FileMenu = uimenu( GUI.Window, 'Label', 'File' );
         uimenu( GUI.FileMenu, 'Label', 'Open data file', 'Callback', @OpenFile_Callback, 'Accelerator', 'O');
-        GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load peaks', 'Callback', @OpenFile_Callback, 'Accelerator', 'P');
+        GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load peaks', 'Callback', @OpenFile_Callback, 'Accelerator', 'O');
         GUI.SavePeaks = uimenu( GUI.FileMenu, 'Label', 'Save peaks', 'Callback', @SavePeaks_Callback, 'Accelerator', 'S');
         GUI.OpenDataQuality = uimenu( GUI.FileMenu, 'Label', 'Open signal quality file', 'Callback', @OpenDataQuality_Callback, 'Accelerator', 'Q');
         GUI.SaveDataQuality = uimenu( GUI.FileMenu, 'Label', 'Save signal quality file', 'Callback', @SaveDataQuality_Callback, 'Accelerator', 'D');        
@@ -270,7 +281,7 @@ end
         Upper_Part_Box = uix.HBoxFlex('Parent', mainLayout, 'Spacing', DATA.Spacing); % Upper Part
         Low_Part_BoxPanel = uix.BoxPanel( 'Parent', mainLayout, 'Title', '  ', 'Padding', DATA.Padding); %Low Part
         
-        upper_part = 0.55;
+        upper_part = 0.7; % 0.8 0.55
         low_part = 1 - upper_part;
         set(mainLayout, 'Heights', [(-1)*upper_part, (-1)*low_part]  );
         
@@ -298,9 +309,9 @@ end
         
 %         set(temp_vbox_buttons, 'Heights', [-100, -35]); 
         
-        RecordTab = uix.Panel( 'Parent', RightLeft_TabPanel, 'Padding', DATA.Padding);
-        ConfigParamTab = uix.Panel( 'Parent', RightLeft_TabPanel, 'Padding', DATA.Padding);
-        DisplayTab = uix.Panel( 'Parent', RightLeft_TabPanel, 'Padding', DATA.Padding);
+        RecordTab = uix.Panel('Parent', RightLeft_TabPanel, 'Padding', DATA.Padding);
+        ConfigParamTab = uix.Panel('Parent', RightLeft_TabPanel, 'Padding', DATA.Padding);
+        DisplayTab = uix.Panel('Parent', RightLeft_TabPanel, 'Padding', DATA.Padding);
         
         RightLeft_TabPanel.TabTitles = {'Record', 'Configuration', 'Display'};
         RightLeft_TabPanel.TabWidth = 100;
@@ -308,14 +319,15 @@ end
         
         GUI.ECG_Axes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'GUI.ECG_Axes');
         GUI.RRInt_Axes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'GUI.RRInt_Axes');
+%         axis(GUI.ECG_Axes, 'square', 'equal');
         
         set(two_axes_box, 'Heights', [-1, 100]);
         
-        GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Compute', 'Enable', 'off');
-        GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', CommandsButtons_Box, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'Auto Compute', 'Value', 1);
+        GUI.AutoCompute_pushbutton = uicontrol('Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Compute', 'Enable', 'off');
+        GUI.AutoCalc_checkbox = uicontrol('Style', 'Checkbox', 'Parent', CommandsButtons_Box, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'Auto Compute', 'Value', 1);
         
-        GUI.RR_or_HR_plot_button = uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
-        GUI.Reset_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
+        GUI.RR_or_HR_plot_button = uicontrol('Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
+        GUI.Reset_pushbutton = uicontrol('Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
         set(CommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing); % [70, 25]                                                
                                 
         MovieStartStioHButtons_Box = uix.HButtonBox('Parent', play_box, 'Spacing', DATA.Spacing); % , 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom'        
@@ -487,30 +499,34 @@ end
         % Display Tab
         %         field_size = [110, 140, 10, -1];
         
-        uix.Empty( 'Parent', DisplayBox );
+        uix.Empty('Parent', DisplayBox);
         
         [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', 0);
         [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', 0);
         
         %         field_size = [110, 64, 4, 63, 10];
-        [GUI, YLimitBox, text_handles{18}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', '');
+        [GUI, YLimitBox, text_handles{18}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', []);
         
-        uix.Empty('Parent', DisplayBox );
+        uix.Empty('Parent', DisplayBox);
                 
         [GUI, textBox{19}, text_handles{19}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
-        [GUI, YLimitBox2, text_handles{20}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', '');
+        [GUI, YLimitBox2, text_handles{20}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', []);
         
-        uix.Empty('Parent', DisplayBox );
+        uix.Empty('Parent', DisplayBox);
         
         [GUI, textBox{21}, text_handles{21}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'Movie_Delay', 'Movie Speed:', 'n.u.', DisplayBox, @Movie_Delay_Callback, '', 2);        
         GUI.GUIDisplay.Movie_Delay.String = 2;
+        
+        uix.Empty('Parent', DisplayBox);
+        
+        GUI.Grid_checkbox = uicontrol('Style', 'Checkbox', 'Parent', DisplayBox, 'Callback', @Grid_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid', 'Value', 1);
                 
         set(GUI.GUIDisplay.FirstSecond, 'Enable', 'on');
         set(GUI.GUIDisplay.WindowSize, 'Enable', 'on');
-        set(GUI.GUIDisplay.MinYLimit_Edit, 'Enable', 'off');
-        set(GUI.GUIDisplay.MaxYLimit_Edit, 'Enable', 'off');
-        set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'Enable', 'off');
-        set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'Enable', 'off');
+        set(GUI.GUIDisplay.MinYLimit_Edit, 'Enable', 'inactive');
+        set(GUI.GUIDisplay.MaxYLimit_Edit, 'Enable', 'inactive');
+        set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'Enable', 'inactive');
+        set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'Enable', 'inactive');
         
         max_extent_control = calc_max_control_x_extend(text_handles);
         
@@ -527,14 +543,14 @@ end
         field_size = [max_extent_control, 72, 2, 70, 10];
         set(YLimitBox2, 'Widths', field_size);
         
-        GUI.AutoScaleY_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'off');
+        GUI.AutoScaleY_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
         set(YLimitBox, 'Widths', [field_size, 95]);
         
-        GUI.AutoScaleYLowAxes_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', YLimitBox2, 'Callback', @AutoScaleYLowAxes_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'off');
+        GUI.AutoScaleYLowAxes_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox2, 'Callback', @AutoScaleYLowAxes_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
         set(YLimitBox2, 'Widths', [field_size, 95]);
         
         uix.Empty( 'Parent', DisplayBox );
-        set(DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -50] );
+        set(DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7 -7 -40] );
         
         %-------------------------------------------------------
         
@@ -625,7 +641,7 @@ end
         uix.Empty( 'Parent', TempBox );
         
         if ~isempty(field_units)
-            uicontrol( 'Style', 'text', 'Parent', TempBox, 'String', field_units, 'FontSize', DATA.BigFontSize, 'HorizontalAlignment', 'left');
+            uicontrol('Style', 'text', 'Parent', TempBox, 'String', field_units, 'FontSize', DATA.BigFontSize, 'HorizontalAlignment', 'left');
         end
         
         %         set(TempBox, 'Widths', field_size);
@@ -950,7 +966,7 @@ end
                 
                 set(GUI.GUIRecord.RecordFileName_text, 'String', ECG_FileName);
                 
-                GUI.RawData_handle = line(DATA.tm, DATA.sig, 'Parent', GUI.ECG_Axes, 'Tag', 'RawData');
+                GUI.RawData_handle = line(DATA.tm, DATA.sig, 'Parent', GUI.ECG_Axes, 'Tag', 'RawData');                
                 
                 PathName = strrep(PathName, '\', '\\');
                 PathName = strrep(PathName, '_', '\_');
@@ -999,9 +1015,59 @@ end
         end
     end
 %%
+    function AutoScaleYLowAxes_pushbutton_Callback(src, ~)
+        if isfield(GUI, 'red_rect_handle')
+            if src.Value
+                setRRIntYLim();
+                GUI.GUIDisplay.MinYLimitLowAxes_Edit.Enable = 'inactive';
+                GUI.GUIDisplay.MaxYLimitLowAxes_Edit.Enable = 'inactive';
+            else
+                set_rectangles_YData();
+                GUI.GUIDisplay.MinYLimitLowAxes_Edit.Enable = 'on';
+                GUI.GUIDisplay.MaxYLimitLowAxes_Edit.Enable = 'on';
+            end
+            Grid_checkbox_Callback;            
+        end
+    end
+%%
+    function AutoScaleY_pushbutton_Callback(src, ~)
+        if isfield(GUI, 'red_rect_handle')
+            if src.Value
+                xdata = get(GUI.red_rect_handle, 'XData');
+                setECGYLim(xdata(1), xdata(2));
+                GUI.GUIDisplay.MinYLimit_Edit.UserData = GUI.GUIDisplay.MinYLimit_Edit.String;
+                GUI.GUIDisplay.MaxYLimit_Edit.UserData = GUI.GUIDisplay.MaxYLimit_Edit.String;
+                GUI.GUIDisplay.MinYLimit_Edit.Enable = 'inactive';
+                GUI.GUIDisplay.MaxYLimit_Edit.Enable = 'inactive';
+            else
+                GUI.GUIDisplay.MinYLimit_Edit.Enable = 'on';
+                GUI.GUIDisplay.MaxYLimit_Edit.Enable = 'on';
+            end
+            Grid_checkbox_Callback;
+            redraw_quality_rect();
+        end
+    end
+%%
+    function MinMaxYLimit_Edit_Callback(src, ~)                
+        
+        minLimit = str2double(GUI.GUIDisplay.MinYLimit_Edit.String);
+        maxLimit = str2double(GUI.GUIDisplay.MaxYLimit_Edit.String);
+        
+        if ~isnan(minLimit) && ~isnan(maxLimit) && minLimit < maxLimit
+                
+            src.UserData = src.String;
+            set(GUI.ECG_Axes, 'YLim', [minLimit maxLimit]);
+            redraw_quality_rect();
+        else
+            src.String = src.UserData;
+            h_e = errordlg('Please, enter correct values!', 'Input Error'); setLogo(h_e, 'M1');
+        end
+        Grid_checkbox_Callback;
+    end
+%%
     function setECGXLim(minLimit, maxLimit)
         set(GUI.ECG_Axes, 'XLim', [minLimit maxLimit]);
-        setAxesXTicks(GUI.ECG_Axes);
+        setXECGGrid(GUI.ECG_Axes, GUI.Grid_checkbox);
     end
 %%
     function setECGYLim(minLimit, maxLimit)
@@ -1018,23 +1084,30 @@ end
             set(GUI.ECG_Axes, 'YLim', [min_y_lim max_y_lim]);
         catch
         end
-        
-        set(GUI.GUIDisplay.MinYLimit_Edit, 'String', num2str(min_y_lim));
-        set(GUI.GUIDisplay.MaxYLimit_Edit, 'String', num2str(max_y_lim));
+        GUI.GUIDisplay.MinYLimit_Edit.UserData = GUI.GUIDisplay.MinYLimit_Edit.String;
+        GUI.GUIDisplay.MaxYLimit_Edit.UserData = GUI.GUIDisplay.MaxYLimit_Edit.String;
+        set(GUI.GUIDisplay.MinYLimit_Edit, 'String', min_y_lim);
+        set(GUI.GUIDisplay.MaxYLimit_Edit, 'String', max_y_lim);
     end
 %%
-    function setRRIntYLim()
+    function setRRIntYLim()                
+        if GUI.AutoScaleYLowAxes_checkbox.Value
+            [low_y_lim, hight_y_lim] = calc_auto_y_low_axes_lim();
+            set(GUI.RRInt_Axes, 'YLim', [low_y_lim hight_y_lim]);
+            
+            set_min_max_low_axes_y_lim_string(low_y_lim, hight_y_lim);                        
+        end
         
+        set_rectangles_YData();
+    end
+%%
+    function [low_y_lim, hight_y_lim] = calc_auto_y_low_axes_lim()
         xlim = get(GUI.RRInt_Axes, 'XLim');
         ylim = get(GUI.RRInt_Axes, 'YLim');
-%         xdata = get(GUI.RRInt_handle, 'XData');
-%         ydata = get(GUI.RRInt_handle, 'YData');
-        
-        %         current_y_data = ydata(xdata >= xlim(1) & xdata <= xlim(2));
         
         if isfield(DATA, 'rr_data_filtered') && ~isempty(DATA.rr_data_filtered)
             
-            current_y_data = DATA.rr_data_filtered(DATA.rr_time_filtered >= xlim(1) & DATA.rr_time_filtered <= xlim(2));                        
+            current_y_data = DATA.rr_data_filtered(DATA.rr_time_filtered >= xlim(1) & DATA.rr_time_filtered <= xlim(2));
             
             if length(current_y_data) < 2
                 min_y_lim = min(ylim);
@@ -1048,29 +1121,46 @@ end
                 max_y_lim = max(min_sig, max_sig) + delta;
             end
             
-            if (DATA.PlotHR == 1)
+            if DATA.PlotHR == 1
                 max_y_lim = 60 ./ max_y_lim;
-                min_y_lim = 60 ./ min_y_lim;            
+                min_y_lim = 60 ./ min_y_lim;
             end
             
             low_y_lim = min(min_y_lim, max_y_lim);
             hight_y_lim = max(min_y_lim, max_y_lim);
-                        
-            set(GUI.RRInt_Axes, 'YLim', [low_y_lim hight_y_lim]);
-            
-            set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', num2str(low_y_lim));
-            set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', num2str(hight_y_lim));
-            
-            if isfield(GUI, 'red_rect_handle') && any(isvalid(GUI.red_rect_handle))
-                set(GUI.red_rect_handle, 'YData', [low_y_lim low_y_lim hight_y_lim hight_y_lim low_y_lim]);
-            end
-            
-            if isfield(GUI, 'PinkLineHandle_AllDataAxes') && any(isvalid(GUI.PinkLineHandle_AllDataAxes))
-                for i = 1 : length(GUI.PinkLineHandle_AllDataAxes)
-                    set(GUI.PinkLineHandle_AllDataAxes(i), 'YData', [low_y_lim low_y_lim hight_y_lim hight_y_lim]);
-                end
-            end
         end
+    end
+%%
+        function set_rectangles_YData()
+            
+        ylim = get(GUI.RRInt_Axes, 'YLim'); 
+        low_y_lim = min(ylim);
+        hight_y_lim = max(ylim);
+        
+        if isfield(GUI, 'red_rect_handle') && any(isvalid(GUI.red_rect_handle))
+            set(GUI.red_rect_handle, 'YData', [low_y_lim low_y_lim hight_y_lim hight_y_lim low_y_lim]);
+        end
+        
+        if isfield(GUI, 'PinkLineHandle_AllDataAxes') && any(isvalid(GUI.PinkLineHandle_AllDataAxes))
+            for i = 1 : length(GUI.PinkLineHandle_AllDataAxes)
+                set(GUI.PinkLineHandle_AllDataAxes(i), 'YData', [low_y_lim low_y_lim hight_y_lim hight_y_lim]);
+            end
+        end        
+    end
+%%
+    function MinMaxYLimitLowAxes_Edit_Callback(src, ~)
+        minLimit = str2double(GUI.GUIDisplay.MinYLimitLowAxes_Edit.String);
+        maxLimit = str2double(GUI.GUIDisplay.MaxYLimitLowAxes_Edit.String);
+        
+        if ~isnan(minLimit) && ~isnan(maxLimit) && minLimit < maxLimit                        
+            src.UserData(DATA.PlotHR+1) = str2double(src.String);            
+            set(GUI.RRInt_Axes, 'YLim', [minLimit maxLimit]);
+        else
+            src.String = src.UserData(DATA.PlotHR+1);
+            h_e = errordlg('Please, enter correct values!', 'Input Error'); setLogo(h_e, 'M1');
+        end
+        Grid_checkbox_Callback;
+        set_rectangles_YData();
     end
 %%
     function clean_config_param_fields()
@@ -1146,8 +1236,8 @@ end
                         lcf = DATA.config_map('lcf');
                         hcf = DATA.config_map('hcf');
                         thr = DATA.config_map('thr');
-                        rp =  DATA.config_map('rp');
-                        ws =  DATA.config_map('ws');
+                        rp  = DATA.config_map('rp');
+                        ws  = DATA.config_map('ws');
                         
                         bpecg = mhrv.ecg.bpfilt(DATA.sig, DATA.Fs, lcf, hcf, [], 0);  % bpecg = prefilter2(ecg,fs,lcf,hcf,0);
                     end
@@ -1874,7 +1964,7 @@ end
         end
     end
 %%
-    function AutoCalc_checkbox_Callback( src, ~ )
+    function AutoCalc_checkbox_Callback(src, ~ )
         if get(src, 'Value') == 1
             GUI.AutoCompute_pushbutton.Enable = 'off';
         else
@@ -1885,7 +1975,6 @@ end
     function RR_or_HR_plot_button_Callback(~, ~)
         
         if isfield(DATA, 'sig') && ~isempty(DATA.sig)
-%             cla(GUI.RRInt_Axes); % RR_axes
             if(DATA.PlotHR == 1)
                 set(GUI.RR_or_HR_plot_button, 'String', 'Plot HR');
                 DATA.PlotHR = 0;
@@ -1898,11 +1987,25 @@ end
                 delete(GUI.RRInt_handle);
                 
                 plot_rr_data();
-                plot_red_rectangle(DATA.zoom_rect_limits);                
-                setRRIntYLim();
+                plot_red_rectangle(DATA.zoom_rect_limits);
+                [low_y_lim, hight_y_lim] = calc_auto_y_low_axes_lim();
+                
+                set(GUI.RRInt_Axes, 'YLim', [low_y_lim hight_y_lim]);                
+
+                set_min_max_low_axes_y_lim_string(low_y_lim, hight_y_lim);
+                
+                set_rectangles_YData();                
             catch
             end
         end
+    end
+%%
+    function set_min_max_low_axes_y_lim_string(low_y_lim, hight_y_lim)
+        GUI.GUIDisplay.MinYLimitLowAxes_Edit.String = num2str(low_y_lim);
+        GUI.GUIDisplay.MaxYLimitLowAxes_Edit.String = num2str(hight_y_lim);        
+        
+        GUI.GUIDisplay.MinYLimitLowAxes_Edit.UserData(DATA.PlotHR+1) = low_y_lim;
+        GUI.GUIDisplay.MaxYLimitLowAxes_Edit.UserData(DATA.PlotHR+1) = hight_y_lim;
     end
 %%
     function Reset_pushbutton_Callback(~, ~)
@@ -1940,11 +2043,20 @@ end
             GUI.Adjustment_Text.Visible = 'on';
             DATA.Adjust = 0;
             
+            GUI.Grid_checkbox.Value = 1;
             set_new_mammal(DATA.init_config_file_name);
 
-            reset_movie_buttons();
-            
+            reset_movie_buttons();            
             GUI.GUIDisplay.Movie_Delay.String = 2;            
+                        
+            GUI.AutoScaleY_checkbox.Value = 1;
+            GUI.AutoScaleYLowAxes_checkbox.Value = 1;
+
+            set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'UserData', []);
+            set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'UserData', []);
+            
+            set(GUI.GUIDisplay.MinYLimit_Edit, 'UserData', '');
+            set(GUI.GUIDisplay.MaxYLimit_Edit, 'UserData', '');
             
             try
                 RunAndPlotPeakDetector();
@@ -2381,7 +2493,9 @@ end
     function ChangePlot(xdata)                
         
         setECGXLim(xdata(1), xdata(2));
-        setECGYLim(xdata(1), xdata(2));
+        if GUI.AutoScaleY_checkbox.Value
+            setECGYLim(xdata(1), xdata(2));
+        end
         
         if xdata(2) - xdata(1) < 2        
             display_msec = 1;
@@ -2828,10 +2942,12 @@ end
             set(findobj(GUI.ConfigParamTab, 'Style', 'edit'), 'Enable', 'inactive');
             set(findobj(GUI.ConfigParamTab, 'Style', 'checkbox'), 'Enable', 'inactive');
             
-            GUI.GUIDisplay.RRIntPage_Length.Enable = 'inactive';
-            GUI.GUIDisplay.Movie_Delay.Enable = 'inactive';
-            GUI.GUIDisplay.FirstSecond.Enable = 'inactive';
-            GUI.GUIDisplay.WindowSize.Enable = 'inactive';
+            set(findobj(GUI.DisplayTab, 'Style', 'edit'), 'Enable', 'inactive');            
+            
+%             GUI.GUIDisplay.RRIntPage_Length.Enable = 'inactive';
+%             GUI.GUIDisplay.Movie_Delay.Enable = 'inactive';
+%             GUI.GUIDisplay.FirstSecond.Enable = 'inactive';
+%             GUI.GUIDisplay.WindowSize.Enable = 'inactive';
                                                             
             set(findobj(GUI.CommandsButtons_Box, 'Enable', 'on'), 'Enable', 'inactive');
             set(findobj(GUI.PageUpDownButtons_Box, 'Style', 'PushButton'), 'Enable', 'off');    
@@ -2845,13 +2961,15 @@ end
             set(findobj(GUI.ConfigParamTab, 'Style', 'edit'), 'Enable', 'on');
             set(findobj(GUI.ConfigParamTab, 'Style', 'checkbox'), 'Enable', 'on');
             
-            set(findobj(GUI.CommandsButtons_Box, 'Enable', 'inactive'), 'Enable', 'on');
-            set(findobj(GUI.PageUpDownButtons_Box, 'Style', 'PushButton'), 'Enable', 'on');
+            set(findobj(GUI.DisplayTab, 'Style', 'edit'), 'Enable', 'on');
             
-            GUI.GUIDisplay.RRIntPage_Length.Enable = 'on';
-            GUI.GUIDisplay.Movie_Delay.Enable = 'on';
-            GUI.GUIDisplay.FirstSecond.Enable = 'on';
-            GUI.GUIDisplay.WindowSize.Enable = 'on';
+            set(findobj(GUI.CommandsButtons_Box, 'Enable', 'inactive'), 'Enable', 'on');
+            set(findobj(GUI.PageUpDownButtons_Box, 'Style', 'PushButton'), 'Enable', 'on');                        
+            
+%             GUI.GUIDisplay.RRIntPage_Length.Enable = 'on';
+%             GUI.GUIDisplay.Movie_Delay.Enable = 'on';
+%             GUI.GUIDisplay.FirstSecond.Enable = 'on';
+%             GUI.GUIDisplay.WindowSize.Enable = 'on';
             
             set(GUI.FileMenu, 'Enable', 'on');
         end        
@@ -2888,8 +3006,7 @@ end
         
         if isfield(DATA, 'config_map')
             items = get(src, 'String');
-            index_selected = get(src, 'Value');
-            %         index_selected = get(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value');
+            index_selected = get(src, 'Value');            
             
             DATA.config_map('peak_adjustment') = items{index_selected};
             
@@ -2942,9 +3059,7 @@ end
             
             plot_rr_data();
             plot_red_rectangle(DATA.zoom_rect_limits);
-            setRRIntYLim();
-            %                 DATA.peaks_total = length(DATA.qrs);
-            %                 GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
+            setRRIntYLim();            
         end
     end
 %%
@@ -3459,9 +3574,9 @@ end
                 [MyWindowSize, isInputNumeric]  = calcDurationInSeconds(GUI.GUIDisplay.WindowSize, screen_value, GUI.GUIDisplay.WindowSize.UserData);
                 
                 if isInputNumeric
-                    if MyWindowSize <= 1 || (MyWindowSize + firstSecond2Show) > DATA.maxRRTime % || MyWindowSize > DATA.maxSignalLength
+                    if MyWindowSize <= 0 || (MyWindowSize + firstSecond2Show) > DATA.maxRRTime % || MyWindowSize > DATA.maxSignalLength
                         set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(GUI.GUIDisplay.WindowSize.UserData, 0));
-                        h_e = errordlg('The window size must be greater than 2 sec and less than signal length!', 'Input Error'); setLogo(h_e, 'M1');
+                        h_e = errordlg('The window size must be greater than 0 sec and less than signal length!', 'Input Error'); setLogo(h_e, 'M1');
                         return;
                     elseif MyWindowSize > DATA.RRIntPage_Length
                         set(GUI.GUIDisplay.WindowSize, 'String', calcDuration(GUI.GUIDisplay.WindowSize.UserData, 0));
@@ -3485,6 +3600,10 @@ end
                 end
             end
         end
+    end
+%%
+    function Grid_checkbox_Callback(~, ~)
+        setXECGGrid(GUI.ECG_Axes, GUI.Grid_checkbox);
     end
 %%
     function cancel_button_Callback(~, ~)

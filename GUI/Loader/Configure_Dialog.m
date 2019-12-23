@@ -203,6 +203,9 @@ if ~Channels.Time.No
         Channels.Time.Data = ((1:length(data))*(1/Channels.Time.Fs))';
      else
         status_enable = 1;
+        if data(1,1) > 10000000000
+            data(:,1) = data(:,1)/1000;
+        end
         Channels.Time.Data = data(:,1);
         Channels = Update_Fs(Channels,handles,cell2mat(ENABLE(status_enable)),'msg_1');
     end
@@ -1009,7 +1012,7 @@ CheckStatus(handles.pm_data_unit, eventdata, handles);
 
 %% --- added from pm_data_unit_Callback ----
 if false
-    Channels.Data.Scale_factor =  ScaleFactor('data',Channels.Data.Unit);
+    Channels.Data.Scale_factor = ScaleFactor('data',Channels.Data.Unit);
     if IsPlotData(hObject, [], handles)
         [Channels,err] = UpdateDataChannel(Channels,handles);
         AlarmStatus(err,handles,'msg_2');
@@ -1048,8 +1051,11 @@ end
         end
         switch Channels.Data.Type
             case 'electrography'
-                if Channels.Time.Fs ~= 1/(mean(diff(Channels.Time.Data)))%*Channels.Time.Scale_factor)
-                    Channels.Time.Fs = 1/(mean(diff(Channels.Time.Data)));%*Channels.Time.Scale_factor);
+                if Channels.Time.Fs ~= int32(1/(mean(diff(Channels.Time.Data))))%*Channels.Time.Scale_factor)
+                    if 1/(mean(diff(Channels.Time.Data))) < 1
+                        Channels.Time.Data = Channels.Time.Data / 1000;
+                    end
+                    Channels.Time.Fs = int32(1/(mean(diff(Channels.Time.Data))));%*Channels.Time.Scale_factor);
                     set(handles.ebFs,'string', num2str(Channels.Time.Fs),'enable',enable)
                     err = true;
                 else

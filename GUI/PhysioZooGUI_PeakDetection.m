@@ -153,6 +153,17 @@ end
         GUI.AutoScaleY_checkbox.Value = 1;
         GUI.AutoScaleYLowAxes_checkbox.Value = 1;
         Grid_checkbox_Callback();
+        GUI.RawSignal_checkbox.Value = 1;
+        GUI.FilteredSignal_checkbox.Value = 0;
+        GUI.GUIDisplay.FilterLevel_popupmenu.Value = 1;
+%         GUI.GUIDisplay.LowCutoffFr_Edit.String = 0.5;
+%         GUI.GUIDisplay.HightCutoffFr_Edit.String = 100;
+%         GUI.GUIDisplay.LowCutoffFr_Edit.UserData = 0.5;
+%         GUI.GUIDisplay.HightCutoffFr_Edit.UserData = 100;
+        GUI.FilterLevelBox.Visible = 'off';
+        GUI.CutoffFrBox.Visible = 'off';
+        
+        set_default_filter_level_user_data();
     end
 %%
     function DATA = createData()
@@ -520,7 +531,26 @@ end
         uix.Empty('Parent', DisplayBox);
         
         GUI.Grid_checkbox = uicontrol('Style', 'Checkbox', 'Parent', DisplayBox, 'Callback', @Grid_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid', 'Value', 1);
+        
+        uix.Empty('Parent', DisplayBox);
+        
+        GUI.RawSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', DisplayBox, 'Callback', @ShowRawSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show raw signal', 'Value', 1);
+        GUI.FilteredSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', DisplayBox, 'Callback', @ShowFilteredSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show filtered signal', 'Value', 0);
+
+        uix.Empty('Parent', DisplayBox);
+        
+        [GUI, textBox{22}, text_handles{22}] = createGUIPopUpMenuLine(GUI, 'GUIDisplay', 'FilterLevel_popupmenu', 'Filter level', DisplayBox,...
+                                               @FilterLevel_popupmenu_Callback, {'Weak'; 'Moderate'; 'Strong'});
                 
+        [GUI, CutoffFr, text_handles{23}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'LowCutoffFr_Edit'; 'HightCutoffFr_Edit'}, 'Cutoff Frequency:', 'Hz', DisplayBox, {@LowHightCutoffFr_Edit; @LowHightCutoffFr_Edit}, '', []);
+        set_default_filter_level_user_data();
+        
+        GUI.FilterLevelBox = textBox{22};
+        GUI.CutoffFrBox = CutoffFr;
+        
+        GUI.FilterLevelBox.Visible = 'off';
+        GUI.CutoffFrBox.Visible = 'off';
+        
         set(GUI.GUIDisplay.FirstSecond, 'Enable', 'on');
         set(GUI.GUIDisplay.WindowSize, 'Enable', 'on');
         set(GUI.GUIDisplay.MinYLimit_Edit, 'Enable', 'inactive');
@@ -531,26 +561,34 @@ end
         max_extent_control = calc_max_control_x_extend(text_handles);
         
         field_size = [max_extent_control, 150, 10 -1];
-        for i = 1 : length(text_handles) - 2
+        for i = 1 : length(text_handles) - 3
             set(textBox{i}, 'Widths', field_size);
         end
         
         set(textBox{21}, 'Widths', field_size);
+                
+        if DATA.SmallScreen
+            field_size = [max_extent_control, 150, -1];
+        else
+            field_size = [max_extent_control, 150, -1];
+        end                
+        set(textBox{22}, 'Widths', field_size);                                       
         
         field_size = [max_extent_control, 72, 2, 70, 10];
-        set(YLimitBox, 'Widths', field_size);
-        
-        field_size = [max_extent_control, 72, 2, 70, 10];
+        set(YLimitBox, 'Widths', field_size);        
         set(YLimitBox2, 'Widths', field_size);
-        
+                        
         GUI.AutoScaleY_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
         set(YLimitBox, 'Widths', [field_size, 95]);
         
         GUI.AutoScaleYLowAxes_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox2, 'Callback', @AutoScaleYLowAxes_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
         set(YLimitBox2, 'Widths', [field_size, 95]);
         
-        uix.Empty( 'Parent', DisplayBox );
-        set(DisplayBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7 -7 -7 -7 -40] );
+        field_size = [max_extent_control, 72, 2, 70, 10, -1];
+        set(CutoffFr, 'Widths', field_size);
+        
+%         uix.Empty( 'Parent', DisplayBox );
+        set(DisplayBox, 'Heights', [-2 -7 -7 -7 -2 -7 -7 -2 -7 -2 -7 -2 -7 -7 -2 -7 -7]);
         
         %-------------------------------------------------------
         
@@ -776,8 +814,7 @@ end
                     RunAndPlotPeakDetector();
                     set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', 1);
                 catch e
-                    h_e = errordlg(['PeakDetector error: ' e.message], 'Input Error');
-                    setLogo(h_e, 'M1');
+                    h_e = errordlg(['PeakDetector error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
                     return;
                 end
             end
@@ -966,7 +1003,7 @@ end
                 
                 set(GUI.GUIRecord.RecordFileName_text, 'String', ECG_FileName);
                 
-                GUI.RawData_handle = line(DATA.tm, DATA.sig, 'Parent', GUI.ECG_Axes, 'Tag', 'RawData');                
+                GUI.RawData_handle = line(DATA.tm, DATA.sig, 'Parent', GUI.ECG_Axes, 'Tag', 'RawData', 'Color', 'k');                
                 
                 PathName = strrep(PathName, '\', '\\');
                 PathName = strrep(PathName, '_', '\_');
@@ -1011,6 +1048,7 @@ end
                 GUI.GUIRecord.DataQualityFileName_text_pushbutton_handle.Enable = 'on';
                 
                 DATA.zoom_rect_limits = [0 DATA.firstZoom];
+                set_default_filter_level_user_data();
             end
         end
     end
@@ -1669,28 +1707,30 @@ end
 %%
     function Peaks_Window_edit_Callback(src, ~)
         
-        str_field_value = get(src, 'String');        
-        field_value = str2double(str_field_value);
-        
-        if field_value > 0 && field_value < 1000
-            DATA.peak_search_win = field_value;
+        if isfield(DATA, 'peak_search_win')
+            str_field_value = get(src, 'String');
+            field_value = str2double(str_field_value);
             
-            if DATA.Adjust % no default
-                PeakAdjustment(DATA.qrs_saved);
-            end
-            
-            DATA.config_map(get(src, 'UserData')) = field_value;
-            DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
-            temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
-            if temp_custom_conf_fileID == -1
-                h_e = errordlg('Problems with creation of custom config file.', 'Input Error');
+            if field_value > 0 && field_value < 1000
+                DATA.peak_search_win = field_value;
+                
+                if DATA.Adjust % no default
+                    PeakAdjustment(DATA.qrs_saved);
+                end
+                
+                DATA.config_map(get(src, 'UserData')) = field_value;
+                DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
+                temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
+                if temp_custom_conf_fileID == -1
+                    h_e = errordlg('Problems with creation of custom config file.', 'Input Error');
+                    setLogo(h_e, 'M1');
+                    return;
+                end
+            else
+                set(src, 'String', num2str(DATA.peak_search_win));
+                h_e = errordlg('The window length for peak detection must be greater than 0 and less than 1 sec.', 'Input Error');
                 setLogo(h_e, 'M1');
-                return;
-            end            
-        else
-            set(src, 'String', num2str(DATA.peak_search_win));
-            h_e = errordlg('The window length for peak detection must be greater than 0 and less than 1 sec.', 'Input Error');
-            setLogo(h_e, 'M1');
+            end
         end
     end
 %%
@@ -2011,6 +2051,8 @@ end
     function Reset_pushbutton_Callback(~, ~)
         
         if isfield(DATA, 'sig') && ~isempty(DATA.sig)
+                        
+             GUI.RawData_handle.Visible = 'on';
             
             if isfield(GUI, 'quality_win')
                 delete(GUI.quality_win);
@@ -2057,6 +2099,21 @@ end
             
             set(GUI.GUIDisplay.MinYLimit_Edit, 'UserData', '');
             set(GUI.GUIDisplay.MaxYLimit_Edit, 'UserData', '');
+            
+            GUI.RawSignal_checkbox.Value = 1;
+            GUI.FilteredSignal_checkbox.Value = 0;
+            GUI.GUIDisplay.FilterLevel_popupmenu.Value = 1;
+%             GUI.GUIDisplay.LowCutoffFr_Edit.String = 0.5;
+%             GUI.GUIDisplay.HightCutoffFr_Edit.String = 100;
+%             GUI.GUIDisplay.LowCutoffFr_Edit.UserData = 0.5;
+%             GUI.GUIDisplay.HightCutoffFr_Edit.UserData = 100;
+            GUI.FilterLevelBox.Visible = 'off';
+            GUI.CutoffFrBox.Visible = 'off';
+            set_default_filter_level_user_data();
+            try
+                delete(GUI.FilteredData_handle);
+            catch
+            end
             
             try
                 RunAndPlotPeakDetector();
@@ -3604,6 +3661,89 @@ end
 %%
     function Grid_checkbox_Callback(~, ~)
         setXECGGrid(GUI.ECG_Axes, GUI.Grid_checkbox);
+    end
+%%
+    function LowHightCutoffFr_Edit(src, ~)
+        lcf = GUI.GUIDisplay.LowCutoffFr_Edit.String;
+        hcf = GUI.GUIDisplay.HightCutoffFr_Edit.String;
+        
+        if isPositiveNumericValue(lcf) && isPositiveNumericValue(hcf) && str2double(lcf) < str2double(hcf) && str2double(hcf) < DATA.Fs/2
+            calc_plot_flitered_data();
+            src.UserData(GUI.GUIDisplay.FilterLevel_popupmenu.Value) = str2double(src.String);            
+        else
+            if str2double(hcf) >= DATA.Fs/2
+                error_str = 'The upper cutoff frequency must be inferior to half of the sampling frequency.';                
+            else           
+                error_str = 'Please, enter correct values!';                
+            end
+            h_e = errordlg(error_str, 'Input Error'); setLogo(h_e, 'M1');
+            src.String = src.UserData(GUI.GUIDisplay.FilterLevel_popupmenu.Value);
+        end
+    end
+%%
+    function set_default_filter_level_user_data()
+        GUI.GUIDisplay.LowCutoffFr_Edit.UserData = [0.5 1 2];
+        GUI.GUIDisplay.HightCutoffFr_Edit.UserData = [100 80 45];
+        if isfield(DATA, 'Fs') && DATA.Fs ~= 0
+            GUI.GUIDisplay.HightCutoffFr_Edit.UserData(1) = min(100, int32(DATA.Fs/2)-1);
+        end
+        GUI.GUIDisplay.LowCutoffFr_Edit.String = GUI.GUIDisplay.LowCutoffFr_Edit.UserData(1);
+        GUI.GUIDisplay.HightCutoffFr_Edit.String = GUI.GUIDisplay.HightCutoffFr_Edit.UserData(1);
+    end
+%%
+    function FilterLevel_popupmenu_Callback(src, ~)
+        GUI.GUIDisplay.LowCutoffFr_Edit.String = GUI.GUIDisplay.LowCutoffFr_Edit.UserData(src.Value);
+        GUI.GUIDisplay.HightCutoffFr_Edit.String = GUI.GUIDisplay.HightCutoffFr_Edit.UserData(src.Value);
+        calc_plot_flitered_data();
+    end
+%%
+    function ShowRawSignal_checkbox_Callback(src, ~)
+        if isfield(GUI, 'RawData_handle')
+            if src.Value
+                GUI.RawData_handle.Visible = 'on';
+                uistack(GUI.RawData_handle, 'top');
+            else
+                GUI.RawData_handle.Visible = 'off';
+            end
+        end
+    end
+%%
+    function ShowFilteredSignal_checkbox_Callback(src, ~)
+        if isfield(GUI, 'RawData_handle')
+            if src.Value
+                GUI.FilterLevelBox.Visible = 'on';
+                GUI.CutoffFrBox.Visible = 'on';
+                
+                if isfield(GUI, 'FilteredData_handle') && ishandle(GUI.FilteredData_handle) && isvalid(GUI.FilteredData_handle)
+                    GUI.FilteredData_handle.Visible = 'on';
+                else
+                    if isfield(DATA, 'sig')
+                        calc_plot_flitered_data();
+                    end
+                end
+            else
+                if isfield(GUI, 'FilteredData_handle') && ishandle(GUI.FilteredData_handle) && isvalid(GUI.FilteredData_handle)
+                    GUI.FilteredData_handle.Visible = 'off';
+                end
+                GUI.FilterLevelBox.Visible = 'off';
+                GUI.CutoffFrBox.Visible = 'off';
+            end
+        end
+    end
+%%
+    function calc_plot_flitered_data()
+        try
+            delete(GUI.FilteredData_handle);
+        catch
+        end
+        lcf = str2double(GUI.GUIDisplay.LowCutoffFr_Edit.String);
+        hcf = str2double(GUI.GUIDisplay.HightCutoffFr_Edit.String);
+        try
+            bpecg = mhrv.ecg.bpfilt(DATA.sig, DATA.Fs, lcf, hcf, [], 0);
+            GUI.FilteredData_handle = line(DATA.tm, bpecg, 'Parent', GUI.ECG_Axes, 'Tag', 'FilteredData', 'Color', 'b');
+        catch e
+            h_e = errordlg(['BP Filter error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
+        end
     end
 %%
     function cancel_button_Callback(~, ~)

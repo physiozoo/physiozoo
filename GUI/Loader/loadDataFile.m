@@ -80,7 +80,7 @@ switch ext(2:end)
     case {'dat'}  % WFDB ECG files
         FileName = [file_path,filesep,name];                                                                                                                       % build filename w/o ext, for WFDB
         try
-            header_info = wfdb_header(FileName);                                                                                   % parse WFDB header file
+            header_info = mhrv.wfdb.wfdb_header(FileName);                                                                                   % parse WFDB header file
         catch
             UniqueMap('MSG') = 'msg_9';
             close(waitbar_handle);
@@ -91,7 +91,7 @@ switch ext(2:end)
     case {'qrs','atr'}  % WFDB annotation files
         FileName = [file_path,filesep,name];                                                                                                                       % build filename w/o ext, for WFDB
         try
-            header_info = wfdb_header(FileName);                                                                                   % parse WFDB header file
+            header_info = mhrv.wfdb.wfdb_header(FileName);                                                                                   % parse WFDB header file
         catch
             UniqueMap('MSG') = 'msg_9';
             close(waitbar_handle);

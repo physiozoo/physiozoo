@@ -14,7 +14,7 @@ catch
 end
 
 %% -----------  Read data from WFDB file ------------------------
-sig = double(rdann(FileName, ext(2:end)));
+sig = double(mhrv.wfdb.rdann(FileName, ext(2:end)));
 data.data = sig(3:end);          
 
 %% --------------------Build Channels Information for Loader ---------------------------------------------

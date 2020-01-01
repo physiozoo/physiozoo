@@ -35,7 +35,7 @@ catch
 end
 
 %% -----------  Read data from WFDB file ------------------------
-    [tm, sig, Fs] = rdsamp(FileName, 1:header_info.N_channels, 'header_info', header_info);
+    [tm, sig, Fs] = mhrv.wfdb.rdsamp(FileName, 1:header_info.N_channels, 'header_info', header_info);
     data.data = [tm,sig];
 
 %% --------------------Build Channels Information for Loader ---------------------------------------------

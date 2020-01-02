@@ -1111,8 +1111,17 @@ end
     function setECGYLim(minLimit, maxLimit)
         sig = DATA.sig(DATA.tm >= minLimit & DATA.tm <= maxLimit);
         
-        min_sig = min(sig);
-        max_sig = max(sig);
+        if isfield(GUI, 'FilteredData_handle') && ishandle(GUI.FilteredData_handle) && isvalid(GUI.FilteredData_handle)...
+                && strcmp(GUI.FilteredData_handle.Visible,'on')
+            
+            filterd_sig = GUI.FilteredData_handle.YData(DATA.tm >= minLimit & DATA.tm <= maxLimit);
+            min_sig = min(min(sig), min(filterd_sig));
+            max_sig = max(max(sig), max(filterd_sig));
+        else
+            min_sig = min(sig);
+            max_sig = max(sig);
+        end
+                
         delta = (max_sig - min_sig)*0.1;
         
         min_y_lim = min(min_sig, max_sig) - delta;
@@ -3741,6 +3750,8 @@ end
         try
             bpecg = mhrv.ecg.bpfilt(DATA.sig, DATA.Fs, lcf, hcf, [], 0);
             GUI.FilteredData_handle = line(DATA.tm, bpecg, 'Parent', GUI.ECG_Axes, 'Tag', 'FilteredData', 'Color', 'b');
+            xdata = get(GUI.red_rect_handle, 'XData');
+            setECGYLim(xdata(1), xdata(2));
         catch e
             h_e = errordlg(['BP Filter error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
         end

@@ -94,3 +94,12 @@ If you want to adapt the HRV measures to other mammals you can create a new 'Con
    :align: center
 
 
+**Video Example**
+--------------------------------------------
+
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="//www.youtube.com/embed/JkE2FUSlq2g" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
+    <br/>

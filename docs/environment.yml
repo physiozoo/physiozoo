@@ -1,6 +1,7 @@
 name: physiozoo-docs
 dependencies:
   - python=3.6
+  - pip
   - pip:
     - sphinx
     - sphinx-autobuild

@@ -43,6 +43,9 @@ Examples sqi/
 Examples All/
 ExamplesTXT/Armond/
 ExamplesTXT/Uta/
+ExamplesTXT/SpO2/
+ExamplesTXT/Test Rhythms/
+Temp/
 
 tempYAML.yml
 
@@ -51,6 +54,7 @@ tempYAML.yml
 *.docx
 *.rar
 *.pdf
+*.ai
 
 
 ### Generated files ###

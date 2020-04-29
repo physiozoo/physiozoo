@@ -8,7 +8,6 @@ gui_basepath = fileparts(mfilename('fullpath'));
 % addpath(genpath([gui_basepath filesep 'mhrv']));
 basepath = fileparts(gui_basepath);
 
-
 Module3 = 0;
 
 if isdeployed
@@ -61,8 +60,8 @@ displayEndOfDemoMessage('');
         DATA.file_types_groups = {'txt'; 'mat'; 'qrs'; 'dat'; 'atr'};
         DATA.file_types_index = 1;
         
-        DATA.data_types = {'peak'; 'interval'; 'beating rate'; 'electrography'};
-        DATA.data_types_index = 1;
+%         DATA.data_types = {'peak'; 'interval'; 'beating rate'; 'electrography'; 'oxygen saturation'};
+%         DATA.data_types_index = 1;
         
         DATA.mammal = [];
         DATA.mammals = {'human (task force)', 'human', 'dog', 'rabbit', 'mouse', 'custom'};
@@ -70,12 +69,13 @@ displayEndOfDemoMessage('');
         DATA.mammal_index = 1;
         
         DATA.Integration = [];
-        DATA.integration_level = {'ecg'; 'electrogram'; 'ap'};
-        DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};
+        DATA.integration_level = {'ecg'; 'electrogram'; 'ap'; 'oximetry'};
+        DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'; 'Oximetry'};
 %         DATA.Integration = 'ECG';
         DATA.integration_index = 1;
         
-        DATA.Filters = {'Moving average', 'Range', 'Quotient', 'Combined filters', 'No filtering'};
+        DATA.Filters_ECG = {'Moving average', 'Range', 'Quotient', 'Combined filters', 'No filtering'};
+        DATA.Filters_SpO2 = {'Range', 'No filtering'};
         DATA.filter_index = 1;
         
         DATA.default_filter_level_index = 1;
@@ -88,6 +88,8 @@ displayEndOfDemoMessage('');
         DATA.filter_quotient = false;
         DATA.filter_ma = true;
         DATA.filter_range = false;
+        
+        DATA.filter_spo2_range = true;
         
         %         DEBUGGING MODE - Small Screen
         % DATA.screensize = [0 0 1250 800];
@@ -125,6 +127,8 @@ displayEndOfDemoMessage('');
         
         DATA.freq_yscale = 'linear';
         DATA.doCalc = false;
+        
+        DATA.SpO2NewSamplingFrequency = 1;
     end % createData
 %-------------------------------------------------------------------------%
 %%
@@ -178,6 +182,10 @@ displayEndOfDemoMessage('');
         DATA.timeRowsNames = [];
         DATA.timeDescriptions = [];
         
+        DATA.ODIData = [];
+        DATA.ODIRowsNames = [];
+        DATA.ODIDescriptions = [];
+        
         DATA.fd_arData = [];
         DATA.fd_ArRowsNames = [];
         
@@ -188,9 +196,14 @@ displayEndOfDemoMessage('');
         DATA.nonlinRowsNames = [];
         DATA.nonlinDescriptions = [];
         
+        DATA.CMData = [];
+        DATA.CMRowsNames = [];
+        DATA.CMDescriptions = [];
+        
         GUI.TimeParametersTableRowName = [];
         GUI.FrequencyParametersTableMethodRowName = [];
         GUI.NonLinearTableRowName = [];
+        GUI.CMTableRowName = [];
         
         DATA.flag = '';
         
@@ -252,7 +265,7 @@ displayEndOfDemoMessage('');
     end
 %%
     function clearStatTables()
-        GUI.TimeParametersTable.Data = []; %cell(1);
+        GUI.TimeParametersTable.Data = []; 
         GUI.TimeParametersTableData = [];
         GUI.TimeParametersTable.RowName = [];
         
@@ -269,6 +282,18 @@ displayEndOfDemoMessage('');
         GUI.NonLinearTableData = [];
         GUI.NonLinearTable.RowName = [];
         
+        GUI.CMTable.Data = [];
+        GUI.CMTableData = [];
+        GUI.CMTable.RowName = [];
+        
+        GUI.ODIParametersTable.Data = []; 
+        GUI.ODIParametersTableData = [];
+        GUI.ODIParametersTable.RowName = [];
+        
+        GUI.DSMParametersTableData = [];
+        GUI.DSMParametersTable.RowName=[];
+        GUI.DSMParametersTable.Data = [];
+        
         GUI.StatisticsTable.RowName = {''};
         GUI.StatisticsTable.Data = {''};
         GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};
@@ -276,13 +301,11 @@ displayEndOfDemoMessage('');
         DATA.TimeStat = [];
         DATA.FrStat = [];
         DATA.NonLinStat = [];
-        
-        %         DATA.TimeStat.hrv_time_metrics = [];
-        %         DATA.FrStat.hrv_fr_metrics = [];
-        %         DATA.NonLinStat.hrv_nonlin_metrics = [];
+        DATA.CMStat = [];                
         
         DATA.timeStatPartRowNumber = 0;
         DATA.frequencyStatPartRowNumber = 0;
+        DATA.NonLinearStatPartRowNumber = 0;
     end
 %% Open the window
     function GUI = createInterface()
@@ -463,17 +486,20 @@ displayEndOfDemoMessage('');
         
         %---------------------------------
         Analysis_Box = uix.HBoxFlex('Parent', Low_Part_BoxPanel, 'Spacing', DATA.Spacing);
-        GUI.Analysis_TabPanel = uix.TabPanel('Parent', Analysis_Box, 'Padding', DATA.Padding, 'TabWidth', 90, 'FontSize', BigFontSize);
+        GUI.Analysis_TabPanel = uix.TabPanel('Parent', Analysis_Box, 'Padding', DATA.Padding, 'TabWidth', 150, 'FontSize', BigFontSize);
         
         GUI.StatisticsTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
         GUI.TimeTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
         GUI.FrequencyTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
         GUI.NonLinearTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.FourthTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
         if Module3
             GUI.GroupSummaryTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
-            GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', 'Group'};
+            GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Stat1', 'Stat2', 'Stat3', 'Stat4', 'Group'};
+            GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on', 'on'};
         else
-            GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear'};
+            GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Stat1', 'Stat2', 'Stat3', 'Stat4'};
+            GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on'};
         end
         
         %-----------------------------------------
@@ -566,7 +592,7 @@ displayEndOfDemoMessage('');
         GUI.FilteringBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         a{7} = uicontrol( 'Style', 'text', 'Parent', GUI.FilteringBox, 'String', 'Preprocessing', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Filtering_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.FilteringBox, 'Callback', @Filtering_popupmenu_Callback, 'FontSize', SmallFontSize);
-        GUI.Filtering_popupmenu.String = DATA.Filters;
+        GUI.Filtering_popupmenu.String = DATA.Filters_ECG;
         uix.Empty( 'Parent', GUI.FilteringBox );
         
         GUI.FilteringLevelBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
@@ -576,14 +602,13 @@ displayEndOfDemoMessage('');
         GUI.FilteringLevel_popupmenu.Value = DATA.default_filter_level_index;
         uix.Empty( 'Parent', GUI.FilteringLevelBox );
         
-        DefaultMethodBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
-        a{9} = uicontrol( 'Style', 'text', 'Parent', DefaultMethodBox, 'String', 'Default frequency method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.DefaultMethod_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', DefaultMethodBox, 'Callback', @DefaultMethod_popupmenu_Callback, 'FontSize', SmallFontSize, 'TooltipString', 'Default frequency method to use to display under statistics');
+        GUI.DefaultMethodBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
+        a{9} = uicontrol( 'Style', 'text', 'Parent', GUI.DefaultMethodBox, 'String', 'Default frequency method', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.DefaultMethod_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.DefaultMethodBox, 'Callback', @DefaultMethod_popupmenu_Callback, 'FontSize', SmallFontSize, 'TooltipString', 'Default frequency method to use to display under statistics');
         GUI.DefaultMethod_popupmenu.String = DATA.frequency_methods;
         GUI.DefaultMethod_popupmenu.Value = 1;
-        uix.Empty( 'Parent', DefaultMethodBox );                
-        
-        
+        uix.Empty( 'Parent', GUI.DefaultMethodBox );                
+                
         GUI.Detrending_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.OptionsBox, 'Callback', @Detrending_checkbox_Callback, 'FontSize', DATA.BigFontSize, ...
             'String', 'Detrend NN time series', 'TooltipString', 'Enable or disable the detrending of the time series');
         
@@ -606,7 +631,7 @@ displayEndOfDemoMessage('');
         set( GUI.IntegrationBox, 'Widths', field_size );
         set( GUI.FilteringBox, 'Widths', field_size );
         set( GUI.FilteringLevelBox, 'Widths', field_size );
-        set( DefaultMethodBox, 'Widths', field_size );        
+        set( GUI.DefaultMethodBox, 'Widths', field_size );        
         
         if DATA.SmallScreen
             uix.Empty( 'Parent', GUI.OptionsBox );
@@ -898,7 +923,7 @@ displayEndOfDemoMessage('');
         GUI.FrequencyBox = uix.HBox( 'Parent', GUI.FrequencyTab, 'Spacing', DATA.Spacing);
         GUI.ParamFrequencyBox = uix.VBox( 'Parent', GUI.FrequencyBox, 'Spacing', DATA.Spacing);
         GUI.FrequencyParametersTable = uitable( 'Parent', GUI.ParamFrequencyBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
-        GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Welch', 'Values AR'};
+        GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Welch', 'Valxues AR'};
         uix.Empty( 'Parent', GUI.ParamFrequencyBox );
         set( GUI.ParamFrequencyBox, 'Heights', tables_field_size );
         
@@ -931,6 +956,17 @@ displayEndOfDemoMessage('');
         GUI.NonLinearAxes2 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
         GUI.NonLinearAxes3 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
         set( GUI.NonLinearBox, 'Widths', [-14 -24 -24 -24] );
+        %---------------------------
+        
+        GUI.FourthBox = uix.HBox( 'Parent', GUI.FourthTab, 'Spacing', DATA.Spacing);
+        GUI.ParamFourthBox = uix.VBox( 'Parent', GUI.FourthBox, 'Spacing', DATA.Spacing);
+        GUI.CMTable = uitable( 'Parent', GUI.ParamFourthBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
+        GUI.CMTable.ColumnName = {'    Measures Name    ', 'Values'};
+        uix.Empty( 'Parent', GUI.ParamFourthBox );
+        set( GUI.ParamFourthBox, 'Heights', tables_field_size );        
+        
+        GUI.FourthAxes1 = axes('Parent', uicontainer('Parent', GUI.FourthBox) );
+        set( GUI.FourthBox, 'Widths', [-14 -80] );
         %---------------------------
         GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticsTab, 'FontSize', SmallFontSize, 'ColumnWidth',{800 'auto'}, 'FontName', 'Calibri');    % 550
         GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};
@@ -1560,13 +1596,32 @@ displayEndOfDemoMessage('');
         signal_time = DATA.trr;
         signal_data = DATA.rri;
         
-        if (DATA.PlotHR == 0)
-            data =  signal_data;
-            yString = 'RR (sec)';
-        else
-            data =  60 ./ signal_data;
-            yString = 'HR (BPM)';
+        switch DATA.Integration
+            case 'oximetry'
+                data =  signal_data;
+                yString = 'SpO2 (percent)';
+            otherwise
+                if ~DATA.PlotHR
+                    data =  signal_data;
+                    yString = 'RR (sec)';
+                else
+                    data =  60 ./ signal_data;
+                    yString = 'HR (BPM)';
+                end
         end
+        
+%         if strcmp(DATA.Integration, 'oximetry')
+%             data =  signal_data;
+%             yString = 'SpO2 (percent)';
+%         else
+%             if (DATA.PlotHR == 0)
+%                 data =  signal_data;
+%                 yString = 'RR (sec)';
+%             else
+%                 data =  60 ./ signal_data;
+%                 yString = 'HR (BPM)';
+%             end
+%         end
         
         GUI.raw_data_handle = plot(ha, signal_time, data, 'b-', 'LineWidth', 2, 'DisplayName', 'Time series');
         hold(ha, 'on');
@@ -1922,7 +1977,22 @@ displayEndOfDemoMessage('');
                     close(waitbar_handle);
                     throw(MException('LoadFile:text', 'Please, choose another file type.'));
                 end                                
-                set_qrs_data(QRS_data, time_data);                
+                                
+                if strcmp(integration, 'oximetry')
+                    wb = waitbar(0, 'SpO2: Resampling ... ', 'Name', 'SpO2');
+                    setLogo(wb, 'M2');
+                    
+                    QRS_data = ResampSpO2(QRS_data, DATA.SamplingFrequency, wb);
+                    time_data = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(QRS_data)/DATA.SpO2NewSamplingFrequency;
+                    
+                    if isvalid(wb); close(wb); end
+                    
+                    if isempty(QRS_data)
+                        throw(MException('Load_Data_from_SingleFile:Data', 'Could not Resample SpO2 data.'));
+                    end                    
+                end
+                
+                set_qrs_data(QRS_data, time_data); 
             end
         end
     end
@@ -2063,7 +2133,31 @@ displayEndOfDemoMessage('');
                     close(waitbar_handle);
                 end
                 
-                reset_plot_Data();
+                if strcmp(DATA.Integration, 'oximetry')                                        
+                    if Module3
+                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations ', 'Hypoxic Burden', 'Complexity', 'Group'};
+                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'off', 'on'};
+                    else                        
+                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations ', 'Hypoxic Burden', 'Complexity'};
+                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'off'};
+                    end                    
+                else                    
+                    if Module3
+                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', '', 'Group'};
+                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'off', 'on'};
+                    else
+                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', ''};                        
+                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'off'};
+                    end                    
+                end
+                            
+                try
+                    reset_plot_Data();
+                catch e
+                    h_e = errordlg(['Load_Single_File: ' e.message], 'Input Error');
+                    setLogo(h_e, 'M2');
+                    return;
+                end
                 
                 if ~DATA.GroupsCalc
                     reset_plot_GUI();
@@ -2079,14 +2173,33 @@ displayEndOfDemoMessage('');
                         
                         set(GUI.RecordName_text, 'String', QRS_FileName);
                     end
-                    set(GUI.DataQualityMenu, 'Enable', 'on');
-                    set(GUI.SaveMeasures, 'Enable', 'on');
-                    set(GUI.SaveFiguresAsMenu, 'Enable', 'on');
+                    
+                    set(GUI.SaveMeasures, 'Enable', 'on');                    
                     set(GUI.SaveParamFileMenu, 'Enable', 'on');
-                    set(GUI.LoadConfigFile, 'Enable', 'on');
-                    %                 set(GUI.open_record_pushbutton_handle, 'Enable', 'on');
-                    set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
+                    set(GUI.LoadConfigFile, 'Enable', 'on');                    
+                    
                     set(GUI.open_config_pushbutton_handle, 'Enable', 'on');
+                    
+                    if strcmp(DATA.Integration, 'oximetry')
+                        GUI.SaveMeasures.Label = 'Save SpO2 measures';
+                        set(GUI.SaveFiguresAsMenu, 'Enable', 'off');
+                        set(GUI.DataQualityMenu, 'Enable', 'off');
+                        set(GUI.open_quality_pushbutton_handle, 'Enable', 'off');
+                        GUI.FilteringLevelBox.Visible = 'off';
+                        GUI.DefaultMethodBox.Visible = 'off';
+                        GUI.Detrending_checkbox.Visible = 'off';
+                        GUI.Filtering_popupmenu.String = DATA.Filters_SpO2;
+                    else
+                        GUI.SaveMeasures.Label = 'Save HRV measures';
+                        set(GUI.SaveFiguresAsMenu, 'Enable', 'on');
+                        set(GUI.DataQualityMenu, 'Enable', 'on');
+                        set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
+                        GUI.FilteringLevelBox.Visible = 'on';
+                        GUI.DefaultMethodBox.Visible = 'on';
+                        GUI.Detrending_checkbox.Visible = 'on';
+                        GUI.Filtering_popupmenu.String = DATA.Filters_ECG;
+                    end
+                    reset_defaults_extensions();
                 end
             end
         end
@@ -2144,6 +2257,12 @@ displayEndOfDemoMessage('');
         GUI.TimeParametersTableRowName = [GUI.TimeParametersTableRowName; GUI.FragParametersTableRowName];
         GUI.TimeParametersTableData = [GUI.TimeParametersTableData; GUI.FragParametersTableData];
         GUI.TimeParametersTable.Data = [GUI.TimeParametersTable.Data; GUI.FragParametersTable.Data];
+    end
+%%
+    function updateODIDSMStatistics()
+        GUI.FrequencyParametersTableRowName = [GUI.ODIParametersTableRowName; GUI.DSMParametersTableRowName];
+        GUI.FrequencyParametersTableData = [GUI.ODIParametersTableData; GUI.DSMParametersTableData];
+        GUI.FrequencyParametersTable.Data = [GUI.ODIParametersTable.Data; GUI.DSMParametersTable.Data];
     end
 %%
     function clear_statistics_plots()
@@ -2314,6 +2433,7 @@ displayEndOfDemoMessage('');
             catch e
                 h_e = errordlg(['Reset Plot: ' e.message], 'Input Error');
                 setLogo(h_e, 'M2');
+                rethrow(e);
             end
         end
     end % reset Data
@@ -2809,7 +2929,7 @@ displayEndOfDemoMessage('');
         end
         if isempty(who('DATA_Measure')) || isempty(DATA_Measure)
             reset_defaults_extensions();
-        end
+        end        
     end
 %%
     function reset_defaults_path()
@@ -2837,11 +2957,17 @@ displayEndOfDemoMessage('');
     end
 %%
     function reset_defaults_extensions()
-        DATA_Fig.export_figures = [1 1 1 1 1 1 1];
-        DATA_Fig.Ext = 'png';
         
-        DATA_Measure.measures = [1 1 1 1];
+        DATA_Fig.Ext = 'png';
         DATA_Measure.Ext_save = 'txt'; % mat
+        
+        if isfield(DATA, 'Integration') && strcmp(DATA.Integration, 'oximetry')
+            DATA_Measure.measures = [1 1];
+            DATA_Fig.export_figures = [];
+        else
+            DATA_Measure.measures = [1 1 1 1];
+            DATA_Fig.export_figures = [1 1 1 1 1 1 1];
+        end        
     end
 %%
     function Reset_pushbutton_Callback( ~, ~ )
@@ -2850,7 +2976,11 @@ displayEndOfDemoMessage('');
         reset_defaults_extensions();
         
         DATA.filter_index = 1;
-        set_filters(DATA.Filters{DATA.filter_index});
+        if strcmp(DATA.Integration, 'oximetry')
+            DATA.filter_spo2_range = true;
+        else
+            set_filters(DATA.Filters_ECG{DATA.filter_index});
+        end
         
         if isempty(DATA.mammal)
             mammal_index = 1;            
@@ -2914,15 +3044,34 @@ displayEndOfDemoMessage('');
         p.parse(varargin{:});
         filter_quotient = p.Results.filter_quotient;
         filter_ma = p.Results.filter_ma;
-        filter_range = p.Results.filter_range;
+        filter_range = p.Results.filter_range;                
         
         if ~isempty(DATA.rri)
             
-            [nni, tnn, ~] = mhrv.rri.filtrr(DATA.rri, DATA.trr, 'filter_quotient', filter_quotient, 'filter_ma', filter_ma, 'filter_range', filter_range);
+            if strcmp(DATA.Integration, 'oximetry')                                
+                
+%                 nni = ResampSpO2(DATA.rri, DATA.SamplingFrequency);
+%                 tnn = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(nni)/DATA.SpO2NewSamplingFrequency;
+                
+                if DATA.filter_spo2_range
+                    wb = waitbar(0, 'SpO2: Remove Abnormalities ... ', 'Name', 'SpO2 - Remove Abnormalities');
+                    setLogo(wb, 'M2');
+                    
+                    nni = RemovalAbnormalities(DATA.rri, wb);
+                    tnn = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(nni)/DATA.SpO2NewSamplingFrequency;                
+                    
+                    if isvalid(wb); close(wb); end
+                else
+                    nni = DATA.rri;
+                    tnn = DATA.trr;
+                end
+            else
+                [nni, tnn, ~] = mhrv.rri.filtrr(DATA.rri, DATA.trr, 'filter_quotient', filter_quotient, 'filter_ma', filter_ma, 'filter_range', filter_range);
+            end
             
             if isempty(nni)                
                 throw(MException('FiltCalcPlotSignalStat:FiltrrNoNNIntervalOutputted', 'No NN interval outputted'));
-            elseif length(DATA.rri) * 0.1 > length(nni)                
+            elseif ~strcmp(DATA.Integration, 'oximetry') && length(DATA.rri) * 0.1 > length(nni)                
                 throw(MException('FiltCalcPlotSignalStat:NotEnoughNNIntervals', 'Not enough NN intervals'));
             else  
                 DATA.nni = nni;
@@ -3121,9 +3270,11 @@ displayEndOfDemoMessage('');
                 GUI.FilteringLevel_popupmenu.Enable = 'on';
                 set_default_filters_threshoulds('filtrr.range.rr_max', DATA.default_filters_thresholds.range.rr_max);
                 set_default_filters_threshoulds('filtrr.range.rr_min', DATA.default_filters_thresholds.range.rr_min);
+                DATA.filter_spo2_range = true;
             elseif strcmp(Filter, 'No filtering')
                 GUI.FilteringLevel_popupmenu.String = DATA.FilterNoLevel;
                 GUI.FilteringLevel_popupmenu.Enable = 'inactive';
+                DATA.filter_spo2_range = false;
             elseif strcmp(Filter, 'Moving average')
                 GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
                 GUI.FilteringLevel_popupmenu.Enable = 'on';
@@ -3155,7 +3306,7 @@ displayEndOfDemoMessage('');
                 calc_filt_signal();
                 DATA.filter_index = index_selected;
                 
-                if index_selected == length(DATA.Filters)
+                if index_selected == length(DATA.Filters_ECG)
                     DATA.legend_handle.String{2} = 'Selected time series';
                 else
                     DATA.legend_handle.String{2} = 'Selected filtered time series';
@@ -3205,23 +3356,23 @@ displayEndOfDemoMessage('');
     end
 %%
     function set_filters(Filter)
-        if strcmp(Filter, DATA.Filters{5}) % No filtering
+        if strcmp(Filter, DATA.Filters_ECG{5}) % No filtering
             DATA.filter_quotient = false;
             DATA.filter_ma = false;
             DATA.filter_range = false;
-        elseif strcmp(Filter, DATA.Filters{1}) % Moving average
+        elseif strcmp(Filter, DATA.Filters_ECG{1}) % Moving average
             DATA.filter_quotient = false;
             DATA.filter_ma = true;
             DATA.filter_range = false;
-        elseif strcmp(Filter, DATA.Filters{2}) % Range
+        elseif strcmp(Filter, DATA.Filters_ECG{2}) % Range
             DATA.filter_quotient = false;
             DATA.filter_ma = false;
             DATA.filter_range = true;
-        elseif strcmp(Filter, DATA.Filters{3}) % Quotient
+        elseif strcmp(Filter, DATA.Filters_ECG{3}) % Quotient
             DATA.filter_quotient = true;
             DATA.filter_ma = false;
             DATA.filter_range = false;
-        elseif strcmp(Filter, DATA.Filters{4}) % Combined Filters
+        elseif strcmp(Filter, DATA.Filters_ECG{4}) % Combined Filters
             DATA.filter_quotient = false;
             DATA.filter_ma = true;
             DATA.filter_range = true;
@@ -3628,7 +3779,7 @@ displayEndOfDemoMessage('');
         legend_handle = legend(ax, 'show', 'Location', 'southeast', 'Orientation', 'horizontal');
         
         legend_handle.String{1} = 'Time series';
-        if DATA.filter_index == length(DATA.Filters)
+        if DATA.filter_index == length(DATA.Filters_ECG)
             legend_handle.String{2} = 'Selected time series';
         else
             legend_handle.String{2} = 'Selected filtered time series';            
@@ -3702,12 +3853,19 @@ displayEndOfDemoMessage('');
 %%
     function onSaveMeasures( ~, ~ )
         set_defaults_path();
-        GUIMeasuresNames = {'HRV Measures'; 'Power Spectral Density'; 'Multi Scale Entropy'; 'Preprocessed RR intervals'};
+        
+        if strcmp(DATA.Integration, 'oximetry')
+            GUIMeasuresNames = {'SpO2 Measures'; 'Preprocessed SpO2'};
+            figure_name = 'Save SpO2 Measures Options';
+        else
+            GUIMeasuresNames = {'HRV Measures'; 'Preprocessed RR intervals'; 'Multi Scale Entropy'; 'Power Spectral Density'};
+            figure_name = 'Save HRV Measures Options';
+        end
         
         main_screensize = DATA.screensize;
         
         GUI.SaveMeasuresWindow = figure( ...
-            'Name', 'Save HRV Measures Options', ...
+            'Name', figure_name, ...
             'NumberTitle', 'off', ...
             'MenuBar', 'none', ...
             'Toolbar', 'none', ...
@@ -3755,17 +3913,17 @@ displayEndOfDemoMessage('');
             else
                 DATA_Measure.Ext_save = 'txt';
             end
-            if DATA_Measure.measures(1)
+            if length(DATA_Measure.measures) >= 1 && DATA_Measure.measures(1)
                 onSaveResultsAsFile(res_name);
             end
-            if DATA_Measure.measures(2)
-                onSavePSDAsFile(res_name);
+            if length(DATA_Measure.measures) >= 2 && DATA_Measure.measures(2)                
+                onSaveFilteredDataFile(res_name);
             end
-            if DATA_Measure.measures(3)
+            if length(DATA_Measure.measures) >= 3 && DATA_Measure.measures(3)
                 onSaveMSEFile(res_name);
             end
-            if DATA_Measure.measures(4)
-                onSaveFilteredDataFile(res_name);
+            if length(DATA_Measure.measures) >= 4 && DATA_Measure.measures(4)
+                onSavePSDAsFile(res_name);
             end
         end
         delete( GUI.SaveMeasuresWindow );
@@ -3775,9 +3933,15 @@ displayEndOfDemoMessage('');
         
         if ~isequal(DIRS.ExportResultsDirectory, 0)
             
+            if strcmp(DATA.Integration, 'oximetry')
+                integ = '_SpO2';
+            else
+                integ = '_hrv';
+            end
+                        
             ext = ['.' DATA_Measure.Ext_save];
             full_file_name_hea = fullfile(DIRS.ExportResultsDirectory, [filename '_hea.txt']);
-            full_file_name_hrv = fullfile(DIRS.ExportResultsDirectory, [filename '_hrv' ext]);
+            full_file_name_hrv = fullfile(DIRS.ExportResultsDirectory, [filename integ ext]);
             
             button = 'Yes';
             if exist(full_file_name_hrv, 'file')
@@ -3788,10 +3952,20 @@ displayEndOfDemoMessage('');
                 if ~isempty(DATA.TimeStat) && ~isempty(DATA.FrStat) && ~isempty(DATA.NonLinStat)
                     
                     hrv_metrics_table = horzcat(DATA.TimeStat.hrv_time_metrics, DATA.FrStat.hrv_fr_metrics, DATA.NonLinStat.hrv_nonlin_metrics);
-                    hrv_metrics_table.Properties.Description = sprintf('HRV metrics for %s', DATA.DataFileName);
                     
-                    AllRowsNames = [DATA.TimeStat.RowsNames; DATA.FrStat.WelchWindowsData.RowsNames_NO_GreekLetters; DATA.FrStat.ArWindowsData.RowsNames_NO_GreekLetters; DATA.NonLinStat.RowsNames_NO_GreekLetters];
-                    statistics_params = [DATA.TimeStat.Data; DATA.FrStat.WelchWindowsData.Data; DATA.FrStat.ArWindowsData.Data; DATA.NonLinStat.Data];
+                    if strcmp(DATA.Integration, 'oximetry') && ~isempty(DATA.CMStat)
+                        hrv_metrics_table = horzcat(hrv_metrics_table, DATA.CMStat.SpO2_CM_metrics);
+                        title = 'SpO2 metrics for ';                        
+                    else
+                        title = 'HRV metrics for '; 
+                        DATA.CMStat.RowsNames = [];
+                        DATA.CMStat.Data = [];
+                    end                    
+                    
+                    hrv_metrics_table.Properties.Description = sprintf('%s%s', title, DATA.DataFileName);
+                    
+                    AllRowsNames = [DATA.TimeStat.RowsNames_NO_GreekLetters; DATA.FrStat.RowsNames_NO_GreekLetters; DATA.NonLinStat.RowsNames_NO_GreekLetters; DATA.CMStat.RowsNames];
+                    statistics_params = [DATA.TimeStat.Data; DATA.FrStat.Data; DATA.NonLinStat.Data; DATA.CMStat.Data];
                     
                     column_names = {'Description'};
                     for i = 1 : DATA.AnalysisParams.winNum
@@ -3805,7 +3979,7 @@ displayEndOfDemoMessage('');
 %                         fprintf(header_fileID, 'Mammal: %s\r\n', DATA.mammals{DATA.mammal_index});
                         fprintf(header_fileID, 'Mammal: %s\r\n', get(GUI.Mammal_popupmenu, 'String'));
                         fprintf(header_fileID, 'Integration level: %s\r\n', DATA.GUI_Integration{DATA.integration_index});
-                        fprintf(header_fileID, 'Preprocessing: %s\r\n', DATA.Filters{DATA.filter_index});
+                        fprintf(header_fileID, 'Preprocessing: %s\r\n', DATA.Filters_ECG{DATA.filter_index});
                         fprintf(header_fileID, 'Preprocessing level: %s\r\n', DATA.FilterLevel{DATA.filter_level_index});
                         fprintf(header_fileID, 'Window start: %s\r\n', calcDuration(DATA.AnalysisParams.segment_startTime));
                         fprintf(header_fileID, 'Window end: %s\r\n', calcDuration(DATA.AnalysisParams.segment_endTime));
@@ -3829,7 +4003,7 @@ displayEndOfDemoMessage('');
 %                         Mammal = DATA.mammals{ DATA.mammal_index};
                         Mammal = get(GUI.Mammal_popupmenu, 'String');                        
                         IntegrationLevel = DATA.GUI_Integration{DATA.integration_index};
-                        Preprocessing = DATA.Filters{DATA.filter_index};
+                        Preprocessing = DATA.Filters_ECG{DATA.filter_index};
                         PreprocessingLevel = DATA.FilterLevel{DATA.filter_level_index};
                         WindowStart = calcDuration(DATA.AnalysisParams.segment_startTime);
                         WindowEnd = calcDuration(DATA.AnalysisParams.segment_endTime);
@@ -4490,25 +4664,40 @@ displayEndOfDemoMessage('');
             
             hrv_time_metrics_tables = cell(batch_win_num, 1);
             
-            for i = 1 : batch_win_num
-                t0 = cputime;
-                
+            for i = 1 : batch_win_num                
+                start_time = tic;
                 try
                     nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
-                    
-                    waitbar(1 / 3, waitbar_handle, ['Calculating time measures for window ' num2str(i)]);
-                    setLogo(waitbar_handle, 'M2');
-                    % Time Domain metrics
-                    fprintf('[win % d: %.3f] >> mhrv: Calculating time-domain metrics...\n', i, cputime-t0);
-                    [hrv_td, pd_time] = mhrv.hrv.hrv_time(nni_window);
-                    % Heart rate fragmentation metrics
-                    fprintf('[win % d: %.3f] >> mhrv: Calculating fragmentation metrics...\n', i, cputime-t0);
-                    hrv_frag = mhrv.hrv.hrv_fragmentation(nni_window);
-                    
-                    DATA.TimeStat.PlotData{i} = pd_time;
+                                                            
+                    if strcmp(DATA.Integration, 'oximetry')
+                        waitbar(1 / 3, waitbar_handle, ['Calculating overal general measures for window ' num2str(i)]);
+                        setLogo(waitbar_handle, 'M2');                        
+                        hrv_td = OveralGeneralMeasures(nni_window);                        
+                        disp(['SpO2: Calculating overal general measures metrics: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);                        
+                        
+                        DATA.TimeStat.PlotData{i} = [];
+                        hrv_frag = [];
+                        fragData = [];
+                        fragRowsNames = [];
+                        fragDescriptions = [];
+                    else                        
+                        waitbar(1 / 3, waitbar_handle, ['Calculating time measures for window ' num2str(i)]);
+                        setLogo(waitbar_handle, 'M2');
+                                                
+                        % Time Domain metrics
+                        fprintf('[win % d: %.3f] >> mhrv: Calculating time-domain metrics...\n', i, toc(start_time));
+                        [hrv_td, pd_time] = mhrv.hrv.hrv_time(nni_window);
+                        % Heart rate fragmentation metrics
+                        fprintf('[win % d: %.3f] >> mhrv: Calculating fragmentation metrics...\n', i, toc(start_time));
+                        hrv_frag = mhrv.hrv.hrv_fragmentation(nni_window);
+                        
+                        DATA.TimeStat.PlotData{i} = pd_time;                        
+                        [fragData, fragRowsNames, fragDescriptions] = table2cell_StatisticsParam(hrv_frag);
+                    end
                     
                     [timeData, timeRowsNames, timeDescriptions] = table2cell_StatisticsParam(hrv_td);
-                    [fragData, fragRowsNames, fragDescriptions] = table2cell_StatisticsParam(hrv_frag);
+                    timeRowsNames_NO_GreekLetters = [timeRowsNames; fragRowsNames];
+                    timeRowsNames = cellfun(@(x) strrep(x, 'DI', sprintf('\x394I')), timeRowsNames, 'UniformOutput', false);
                     
                     if ~DATA.GroupsCalc
                         if i == DATA.active_window
@@ -4517,9 +4706,16 @@ displayEndOfDemoMessage('');
                             GUI.TimeParametersTableData = [timeDescriptions timeData];
                             GUI.TimeParametersTable.Data = [timeRowsNames timeData];
                             
-                            GUI.FragParametersTableRowName = fragRowsNames;
-                            GUI.FragParametersTableData = [fragDescriptions fragData];
-                            GUI.FragParametersTable.Data = [fragRowsNames fragData];
+                            
+                            if ~strcmp(DATA.Integration, 'oximetry')
+                                GUI.FragParametersTableRowName = fragRowsNames;
+                                GUI.FragParametersTableData = [fragDescriptions fragData];
+                                GUI.FragParametersTable.Data = [fragRowsNames fragData];
+                            else
+                                GUI.FragParametersTableRowName = [];
+                                GUI.FragParametersTableData = [];
+                                GUI.FragParametersTable.Data = [];
+                            end
                             
                             updateTimeStatistics();
                             plot_time_statistics_results(i);
@@ -4540,6 +4736,7 @@ displayEndOfDemoMessage('');
                 
                 if i == 1
                     DATA.TimeStat.RowsNames = [timeRowsNames; fragRowsNames];
+                    DATA.TimeStat.RowsNames_NO_GreekLetters = timeRowsNames_NO_GreekLetters;
                     DATA.TimeStat.Data = [[timeDescriptions; fragDescriptions] [timeData; fragData]];
                 else
                     DATA.TimeStat.Data = [DATA.TimeStat.Data [timeData; fragData]];
@@ -4553,7 +4750,12 @@ displayEndOfDemoMessage('');
             end
             % Create full table
             DATA.TimeStat.hrv_time_metrics = vertcat(hrv_time_metrics_tables{:});
-            DATA.TimeStat.hrv_time_metrics.Properties.Description = sprintf('HRV time metrics for %s', DATA.DataFileName);
+            if strcmp(DATA.Integration, 'oximetry')
+                descr_str = 'Oximetry time measures ';
+            else
+                descr_str = 'HRV time metrics for ';
+            end
+            DATA.TimeStat.hrv_time_metrics.Properties.Description = sprintf('%s%s', descr_str, DATA.DataFileName);
         end
     end
 %%
@@ -4573,43 +4775,45 @@ displayEndOfDemoMessage('');
             batch_overlap = DATA.AnalysisParams.segment_overlap/100;
             batch_win_num = DATA.AnalysisParams.winNum;
             
+            GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values Welch', 'Values AR'};
+            
             hrv_fr_metrics_tables = cell(batch_win_num, 1);
             
             for i = 1 : batch_win_num
                 
-                t0 = cputime;
+                t0 = tic;
                 
                 try
                     nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
                     tnn_window =  DATA.tnn(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
                     tnn_window = tnn_window - tnn_window(1);
-                    
-                    waitbar(2 / 3, waitbar_handle, ['Calculating frequency measures for window ' num2str(i)]);
-                    setLogo(waitbar_handle, 'M2');
-                    % Freq domain metrics
-                    fprintf('[win % d: %.3f] >> mhrv: Calculating frequency-domain metrics...\n', i, cputime-t0);
-                    
-                    if DATA.WinAverage
-                        window_minutes = mhrv.defaults.mhrv_get_default('hrv_freq.window_minutes');
-                        [ hrv_fd, ~, ~, pd_freq ] = mhrv.hrv.hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', window_minutes.value, 'time_intervals', tnn_window);
-                    else
-                        [ hrv_fd, ~, ~, pd_freq ] = mhrv.hrv.hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', [], 'time_intervals', tnn_window);
-                    end
-                    
-                    DATA.FrStat.PlotData{i} = pd_freq;
-                    
-                    %hrv_fd_lomb = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, '_lomb')), hrv_fd.Properties.VariableNames)));
-                    hrv_fd_ar = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, '_ar')), hrv_fd.Properties.VariableNames)));
-                    hrv_fd_welch = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, 'welch')), hrv_fd.Properties.VariableNames)));
-                    
-                    %[fd_lombData, fd_LombRowsNames, fd_lombDescriptions] = table2cell_StatisticsParam(hrv_fd_lomb);
-                    [fd_arData, fd_ArRowsNames, fd_ArDescriptions] = table2cell_StatisticsParam(hrv_fd_ar);
-                    [fd_welchData, fd_WelchRowsNames, fd_WelchDescriptions] = table2cell_StatisticsParam(hrv_fd_welch);
-                    fd_ArRowsNames_NO_GreekLetters = fd_ArRowsNames;
-                    fd_WelchRowsNames_NO_GreekLetters = fd_WelchRowsNames;
-                    
-                    fd_ArRowsNames = fix_fr_prop_var_names(fd_ArRowsNames);
-                    fd_WelchRowsNames = fix_fr_prop_var_names(fd_WelchRowsNames);
+                                        
+                        waitbar(2 / 3, waitbar_handle, ['Calculating frequency measures for window ' num2str(i)]);
+                        setLogo(waitbar_handle, 'M2');
+                        % Freq domain metrics
+                        fprintf('[win % d: %.3f] >> mhrv: Calculating frequency-domain metrics...\n', i, toc(t0));
+                        
+                        if DATA.WinAverage
+                            window_minutes = mhrv.defaults.mhrv_get_default('hrv_freq.window_minutes');
+                            [ hrv_fd, ~, ~, pd_freq ] = mhrv.hrv.hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', window_minutes.value, 'time_intervals', tnn_window);
+                        else
+                            [ hrv_fd, ~, ~, pd_freq ] = mhrv.hrv.hrv_freq(nni_window, 'methods', {'welch','ar'}, 'power_methods', {'welch','ar'}, 'window_minutes', [], 'time_intervals', tnn_window);
+                        end
+                        
+                        DATA.FrStat.PlotData{i} = pd_freq;
+                        
+                        %hrv_fd_lomb = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, '_lomb')), hrv_fd.Properties.VariableNames)));
+                        hrv_fd_ar = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, '_ar')), hrv_fd.Properties.VariableNames)));
+                        hrv_fd_welch = hrv_fd(:, find(cellfun(@(x) ~isempty(regexpi(x, 'welch')), hrv_fd.Properties.VariableNames)));
+                        
+                        %[fd_lombData, fd_LombRowsNames, fd_lombDescriptions] = table2cell_StatisticsParam(hrv_fd_lomb);
+                        [fd_arData, fd_ArRowsNames, fd_ArDescriptions] = table2cell_StatisticsParam(hrv_fd_ar);
+                        [fd_welchData, fd_WelchRowsNames, fd_WelchDescriptions] = table2cell_StatisticsParam(hrv_fd_welch);
+                        fd_ArRowsNames_NO_GreekLetters = fd_ArRowsNames;
+                        fd_WelchRowsNames_NO_GreekLetters = fd_WelchRowsNames;
+                        
+                        fd_ArRowsNames = fix_fr_prop_var_names(fd_ArRowsNames);
+                        fd_WelchRowsNames = fix_fr_prop_var_names(fd_WelchRowsNames);
                     
                     if ~DATA.GroupsCalc
                         if i == DATA.active_window
@@ -4638,12 +4842,16 @@ displayEndOfDemoMessage('');
                     DATA.FrStat.ArWindowsData.RowsNames_NO_GreekLetters = fd_ArRowsNames_NO_GreekLetters;
                     DATA.FrStat.WelchWindowsData.RowsNames_NO_GreekLetters = fd_WelchRowsNames_NO_GreekLetters;
                     
+                    DATA.FrStat.RowsNames_NO_GreekLetters = [fd_ArRowsNames_NO_GreekLetters; fd_WelchRowsNames_NO_GreekLetters];
+                    
                     DATA.FrStat.ArWindowsData.Data = [fd_ArDescriptions fd_arData];
-                    DATA.FrStat.WelchWindowsData.Data = [fd_WelchDescriptions fd_welchData];
+                    DATA.FrStat.WelchWindowsData.Data = [fd_WelchDescriptions fd_welchData];                                        
                 else
                     DATA.FrStat.ArWindowsData.Data = [DATA.FrStat.ArWindowsData.Data fd_arData];
                     DATA.FrStat.WelchWindowsData.Data = [DATA.FrStat.WelchWindowsData.Data fd_welchData];
                 end
+                
+                DATA.FrStat.Data = [DATA.FrStat.ArWindowsData.Data; DATA.FrStat.WelchWindowsData.Data];
                 
                 batch_window_start_time = batch_window_start_time + (1-batch_overlap) * batch_window_length;
             end
@@ -4654,7 +4862,7 @@ displayEndOfDemoMessage('');
                 DATA.frequencyStatPartRowNumber = rn;
             end
             % Create full table
-            DATA.FrStat.hrv_fr_metrics = vertcat(hrv_fr_metrics_tables{:});
+            DATA.FrStat.hrv_fr_metrics = vertcat(hrv_fr_metrics_tables{:});            
             DATA.FrStat.hrv_fr_metrics.Properties.Description = sprintf('HRV frequency metrics for %s', DATA.DataFileName);
         end
     end
@@ -4669,18 +4877,31 @@ displayEndOfDemoMessage('');
         hrv_nonlin_metrics_tables = cell(batch_win_num, 1);
         
         for i = 1 : batch_win_num
-            
-            t0 = cputime;
-            
+                        
+            start_time = tic;
             try
                 nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
                 
-                waitbar(3 / 3, waitbar_handle, ['Calculating nolinear measures for window ' num2str(i)]);
-                setLogo(waitbar_handle, 'M2');
-                fprintf('[win % d: %.3f] >> mhrv: Calculating nonlinear metrics...\n', i, cputime-t0);
-                [hrv_nl, pd_nl] = mhrv.hrv.hrv_nonlinear(nni_window);
-                
-                DATA.NonLinStat.PlotData{i} = pd_nl;
+                if strcmp(DATA.Integration, 'oximetry')
+                    
+                    fun_name = 'SpO2_HypoxicBurden';
+                    
+                    waitbar(3 / 3, waitbar_handle, ['Calculating hypoxic burden measures for window ' num2str(i)]);
+                    setLogo(waitbar_handle, 'M2');
+                                        
+                    hrv_nl = HypoxicBurdenMeasures(nni_window, DATA.ODI_begin, DATA.ODI_end); %ODI_begin, ODI_end
+                    disp(['Spo2: Calculating hypoxic burden metrics: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);                                            
+                    
+                    DATA.NonLinStat.PlotData{i} = [];
+                else                     
+                    fun_name = 'hrv.hrv_nonlinear';
+                    waitbar(3 / 3, waitbar_handle, ['Calculating nolinear measures for window ' num2str(i)]);
+                    setLogo(waitbar_handle, 'M2');
+                    fprintf('[win % d: %.3f] >> mhrv: Calculating nonlinear metrics...\n', i, toc(start_time));
+                    [hrv_nl, pd_nl] = mhrv.hrv.hrv_nonlinear(nni_window);
+                    
+                    DATA.NonLinStat.PlotData{i} = pd_nl;
+                end
                 
                 [nonlinData, nonlinRowsNames, nonlinDescriptions] = table2cell_StatisticsParam(hrv_nl);
                 nonlinRowsNames_NO_GreekLetters = nonlinRowsNames;
@@ -4689,7 +4910,7 @@ displayEndOfDemoMessage('');
                 nonlinRowsNames = cellfun(@(x) strrep(x, 'alpha2', sprintf('\x3b1\x2082')), nonlinRowsNames, 'UniformOutput', false);
                 nonlinRowsNames = cellfun(@(x) strrep(x, 'SD1', sprintf('SD\x2081')), nonlinRowsNames, 'UniformOutput', false);
                 nonlinRowsNames = cellfun(@(x) strrep(x, 'SD2', sprintf('SD\x2082')), nonlinRowsNames, 'UniformOutput', false);
-                
+                                
                 if ~DATA.GroupsCalc
                     if i == DATA.active_window
                         GUI.NonLinearTableRowName = nonlinRowsNames;
@@ -4698,10 +4919,11 @@ displayEndOfDemoMessage('');
                         
                         plot_nonlinear_statistics_results(i);
                     end
-                end
+                end                
             catch e
+                DATA.NonLinearStatPartRowNumber = 0;
                 close(waitbar_handle);
-                h_e = errordlg(['hrv_nonlinear: ' e.message], 'Input Error');
+                h_e = errordlg([fun_name ' : ' e.message], 'Input Error');
                 setLogo(h_e, 'M2');
                 rethrow(e);
             end
@@ -4723,12 +4945,170 @@ displayEndOfDemoMessage('');
         end
         if ~DATA.GroupsCalc
             updateMainStatisticsTable(DATA.timeStatPartRowNumber + DATA.frequencyStatPartRowNumber, DATA.NonLinStat.RowsNames, DATA.NonLinStat.Data);
-        end
+            [rn, ~] = size(DATA.NonLinStat.RowsNames);
+            DATA.NonLinearStatPartRowNumber = rn;
+        end                               
+        
         % Create full table
         DATA.NonLinStat.hrv_nonlin_metrics = vertcat(hrv_nonlin_metrics_tables{:});
-        DATA.NonLinStat.hrv_nonlin_metrics.Properties.Description = sprintf('HRV non linear metrics for %s', DATA.DataFileName);
+        if strcmp(DATA.Integration, 'oximetry')
+            descr_str = 'Oximetry hypoxic burden measures for ';
+        else
+            descr_str = 'HRV non linear metrics for ';
+        end
+        DATA.NonLinStat.hrv_nonlin_metrics.Properties.Description = sprintf('%s%s', descr_str, DATA.DataFileName);
     end
-
+%%
+    function calcComplexityStatistics(waitbar_handle)
+        batch_window_start_time = DATA.AnalysisParams.segment_startTime;
+        batch_window_length = DATA.AnalysisParams.activeWin_length;
+        batch_overlap = DATA.AnalysisParams.segment_overlap/100;
+        batch_win_num = DATA.AnalysisParams.winNum;
+        
+        SpO2_Complexity_metrics_tables = cell(batch_win_num, 1);
+        
+        for i = 1 : batch_win_num                       
+            start_time = tic;
+            try
+                nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
+                
+                if strcmp(DATA.Integration, 'oximetry')
+                                        
+                    waitbar(3 / 3, waitbar_handle, ['Calculating complexity measures for window ' num2str(i)]);
+                    setLogo(waitbar_handle, 'M2');
+                    
+                    SpO2_CM = ComplexityMeasures(nni_window);
+                    disp(['Spo2: Calculating complexity measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);                                                                
+                    
+%                     DATA.NonLinStat.PlotData{i} = [];                
+                end
+                
+                [CMData, CMRowsNames, CMDescriptions] = table2cell_StatisticsParam(SpO2_CM);
+%                 nonlinRowsNames_NO_GreekLetters = nonlinRowsNames;
+                
+                if ~DATA.GroupsCalc
+                    if i == DATA.active_window
+                        GUI.CMTableRowName = CMRowsNames;
+                        GUI.CMTableData = [CMDescriptions CMData];
+                        GUI.CMTable.Data = [CMRowsNames CMData];                        
+%                         plot_nonlinear_statistics_results(i);
+                    end
+                end
+            catch e
+                close(waitbar_handle);
+                h_e = errordlg(['SpO2_complexity: ' e.message], 'Input Error');
+                setLogo(h_e, 'M2');
+                rethrow(e);
+            end
+            
+            curr_win_table = SpO2_CM;
+            curr_win_table.Properties.RowNames{1} = sprintf('W%d', i);
+            
+            SpO2_Complexity_metrics_tables{i} = curr_win_table;
+            
+            if i == 1
+                DATA.CMStat.RowsNames = CMRowsNames;
+%                 DATA.NonLinStat.RowsNames_NO_GreekLetters = nonlinRowsNames_NO_GreekLetters;
+                DATA.CMStat.Data = [CMDescriptions CMData];
+            else
+                DATA.CMStat.Data = [DATA.CMStat.Data CMData];
+            end
+            
+            batch_window_start_time = batch_window_start_time + (1-batch_overlap) * batch_window_length;
+        end
+        if ~DATA.GroupsCalc
+            updateMainStatisticsTable(DATA.timeStatPartRowNumber + DATA.frequencyStatPartRowNumber + DATA.NonLinearStatPartRowNumber, DATA.CMStat.RowsNames, DATA.CMStat.Data);
+        end
+        % Create full table
+        DATA.CMStat.SpO2_CM_metrics = vertcat(SpO2_Complexity_metrics_tables{:});
+        if strcmp(DATA.Integration, 'oximetry')
+            descr_str = 'Oximetry complexity measures for ';       
+        end
+        DATA.CMStat.SpO2_CM_metrics.Properties.Description = sprintf('%s%s', descr_str, DATA.DataFileName);
+    end
+%%
+    function calcDesaturationsStatistics(waitbar_handle)
+        if isfield(DATA, 'AnalysisParams')
+            batch_window_start_time = DATA.AnalysisParams.segment_startTime;
+            batch_window_length = DATA.AnalysisParams.activeWin_length;
+            batch_overlap = DATA.AnalysisParams.segment_overlap/100;
+            batch_win_num = DATA.AnalysisParams.winNum;
+            
+            GUI.FrequencyParametersTable.ColumnName = {'                Measures Name                ', 'Values'};
+            
+            SpO2_desat_metrics_tables = cell(batch_win_num, 1);
+            
+            for i = 1 : batch_win_num                
+                start_time = tic;
+                try
+                    nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
+                                                            
+                    if strcmp(DATA.Integration, 'oximetry')
+                        waitbar(1 / 3, waitbar_handle, ['Calculating desaturations measures for window ' num2str(i)]);
+                        setLogo(waitbar_handle, 'M2');                        
+                        [SpO2_ODI, DATA.ODI_begin, DATA.ODI_end] = ODIMeasure(nni_window);                        
+                        SpO2_DSM = DesaturationsMeasures(nni_window, DATA.ODI_begin, DATA.ODI_end);                        
+                        
+                        disp(['Spo2: Calculating ODI and  desaturations measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);                                                                
+                        
+                        DATA.FrStat.PlotData{i} = [];                                                                                            
+                    end
+                    
+                    [ODIData, ODIRowsNames, ODIDescriptions] = table2cell_StatisticsParam(SpO2_ODI);
+                    [DSMData, DSMRowsNames, DSMDescriptions] = table2cell_StatisticsParam(SpO2_DSM);
+                    
+                    DSMRowsNames_NO_GreekLetters = DSMRowsNames;
+                    DSMRowsNames = cellfun(@(x) strrep(x, '_u', sprintf('\x3BC')), DSMRowsNames, 'UniformOutput', false);
+                    DSMRowsNames = cellfun(@(x) strrep(x, '_sd', sprintf('\x3C3')), DSMRowsNames, 'UniformOutput', false);
+                    DSMRowsNames = cellfun(@(x) strrep(x, '**2', sprintf('\x0B2')), DSMRowsNames, 'UniformOutput', false);
+                    
+                    if ~DATA.GroupsCalc
+                        if i == DATA.active_window
+                            
+                            GUI.ODIParametersTableRowName = ODIRowsNames;
+                            GUI.ODIParametersTableData = [ODIDescriptions ODIData];
+                            GUI.ODIParametersTable.Data = [ODIRowsNames ODIData];                                                        
+                            
+                            GUI.DSMParametersTableRowName = DSMRowsNames;
+                            GUI.DSMParametersTableData = [DSMDescriptions DSMData];
+                            GUI.DSMParametersTable.Data = [DSMRowsNames DSMData];                            
+                                                        
+                            updateODIDSMStatistics();
+%                             plot_time_statistics_results(i);
+                        end
+                    end
+                catch e
+                    DATA.frequencyStatPartRowNumber = 0;
+                    close(waitbar_handle);
+                    h_e = errordlg(['SPO2_ODI_DSM: ' e.message], 'Input Error');
+                    setLogo(h_e, 'M2');
+                    rethrow(e);
+                end
+                
+                curr_win_table = horzcat(SpO2_ODI, SpO2_DSM);
+                curr_win_table.Properties.RowNames{1} = sprintf('W%d', i);
+                
+                SpO2_desat_metrics_tables{i} = curr_win_table;
+                
+                if i == 1
+                    DATA.FrStat.RowsNames = [ODIRowsNames; DSMRowsNames];
+                    DATA.FrStat.RowsNames_NO_GreekLetters = [ODIRowsNames; DSMRowsNames_NO_GreekLetters];
+                    DATA.FrStat.Data = [[ODIDescriptions; DSMDescriptions] [ODIData; DSMData]];
+                else
+                    DATA.FrStat.Data = [DATA.FrStat.Data [ODIData; DSMData]];
+                end
+                batch_window_start_time = batch_window_start_time + (1-batch_overlap) * batch_window_length;
+            end
+            if ~DATA.GroupsCalc
+                updateMainStatisticsTable(DATA.timeStatPartRowNumber, DATA.FrStat.RowsNames, DATA.FrStat.Data);
+                [rn, ~] = size(DATA.FrStat.RowsNames);
+                DATA.frequencyStatPartRowNumber = rn;
+            end
+            % Create full table
+            DATA.FrStat.hrv_fr_metrics = vertcat(SpO2_desat_metrics_tables{:});                                    
+            DATA.FrStat.hrv_fr_metrics.Properties.Description = sprintf('Oximetry desaturations measures%s', DATA.DataFileName);
+        end
+    end
 %%
     function calcStatistics()
         if isfield(DATA, 'AnalysisParams')
@@ -4747,20 +5127,35 @@ displayEndOfDemoMessage('');
             
             try
                 calcTimeStatistics(waitbar_handle);
-            catch
+            catch e
+                disp(e);
                 waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
                 setLogo(waitbar_handle, 'M2');
             end
             try
-                calcFrequencyStatistics(waitbar_handle);
-            catch
+                if strcmp(DATA.Integration, 'oximetry')
+                    calcDesaturationsStatistics(waitbar_handle);
+                else
+                    calcFrequencyStatistics(waitbar_handle);
+                end
+            catch e
+                disp(e);
                 waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
                 setLogo(waitbar_handle, 'M2');
             end
             try
                 calcNonlinearStatistics(waitbar_handle);
-            catch
+            catch e
+                disp(e);
+            end            
+            if strcmp(DATA.Integration, 'oximetry')
+                try
+                    calcComplexityStatistics(waitbar_handle);
+                catch e
+                    disp(e);
+                end
             end
+            
             if ishandle(waitbar_handle)
                 close(waitbar_handle);
             end
@@ -4799,13 +5194,23 @@ displayEndOfDemoMessage('');
             GUI.TimeParametersTable.Data = [DATA.TimeStat.RowsNames DATA.TimeStat.Data(:, DATA.active_window + 1)];
             plot_time_statistics_results(DATA.active_window);
         end
-        if isfield(DATA, 'FrStat') && ~isempty(DATA.FrStat)&& isfield(DATA.FrStat, 'WelchWindowsData')
+        if isfield(DATA, 'FrStat') && ~isempty(DATA.FrStat) && isfield(DATA.FrStat, 'WelchWindowsData')
             GUI.FrequencyParametersTable.Data = [strrep(DATA.FrStat.WelchWindowsData.RowsNames,'_WELCH', '') DATA.FrStat.WelchWindowsData.Data(:, DATA.active_window + 1) DATA.FrStat.ArWindowsData.Data(:, DATA.active_window + 1)];
             plot_frequency_statistics_results(DATA.active_window);
         end
-        if isfield(DATA, 'NonLinStat') && ~isempty(DATA.NonLinStat)&& isfield(DATA.NonLinStat, 'RowsNames')
+        if isfield(DATA, 'NonLinStat') && ~isempty(DATA.NonLinStat) && isfield(DATA.NonLinStat, 'RowsNames')
             GUI.NonLinearTable.Data = [DATA.NonLinStat.RowsNames DATA.NonLinStat.Data(:, DATA.active_window + 1)];
             plot_nonlinear_statistics_results(DATA.active_window);
+        end
+        if strcmp(DATA.Integration, 'oximetry')
+            if isfield(DATA, 'FrStat') && ~isempty(DATA.FrStat) && isfield(DATA.FrStat, 'RowsNames')
+                GUI.FrequencyParametersTable.Data = [DATA.FrStat.RowsNames DATA.FrStat.Data(:, DATA.active_window + 1)];
+%                 plot_frequency_statistics_results(DATA.active_window);
+            end
+            if isfield(DATA, 'CMStat') && ~isempty(DATA.CMStat) && isfield(DATA.CMStat, 'RowsNames')
+                GUI.CMTable.Data = [DATA.CMStat.RowsNames DATA.CMStat.Data(:, DATA.active_window + 1)];
+%                 plot_nonlinear_statistics_results(DATA.active_window);
+            end                        
         end
     end
 %%

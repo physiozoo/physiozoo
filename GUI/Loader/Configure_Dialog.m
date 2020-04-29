@@ -192,7 +192,7 @@ if UniqueMap('IsHeader')
             end
             if localChannel.enable
                 Channels = Update_Channel_Info(Channels,iCh,localChannel,data,type,Config);
-            end
+            end            
         catch
         end
     end
@@ -707,6 +707,8 @@ switch type
             otherwise
                 scale_factor = 1;
         end
+    case 'percent'
+        scale_factor = 1;
     otherwise
         scale_factor = 1;
 end
@@ -898,7 +900,7 @@ end
             end
             switch lower(Channels.Data.Type)
                 case 'electrography'
-                      if Channels.Data.Scale_factor
+                    if Channels.Data.Scale_factor
                         Fs = 1;
                         Scale_factor = Channels.Data.Scale_factor;
                     else
@@ -921,12 +923,13 @@ end
                         Scale_factor = Channels.Data.Scale_factor;
                     else
                         Fs = Channels.Time.Fs;
-                       Scale_factor = 1;
+                        Scale_factor = 1;
                     end
                     dData = diff((data(:,Channels.Data.No)));
                     Channels.Data.Data = (dData/Fs)*Scale_factor;
                 case 'beating_rate'
                     Channels.Data.Data =60./data(:,Channels.Data.No)*Channels.Data.Scale_factor;
+                case 'oxygen_saturation'    
                 otherwise
             end
                  
@@ -965,6 +968,7 @@ end
                     Fs = 1;
                     Scale_factor = 1;
                     Channels.Time.Data = ((cumsum(Channels.Data.Data)/Fs)*Scale_factor)';
+                case 'oxygen_saturation'    
                 otherwise
             end
                  

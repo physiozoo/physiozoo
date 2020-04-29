@@ -5,12 +5,13 @@ data_type:
     interval: [second,millisecond,index]
     beating_rate: [bpm]
     peak: [second,millisecond,index]
-
+    oxygen_saturation: [percent]
 integration_level:
     - select
     - electrocardiogram
     - electrogram
     - action potential
+    - oximetry
 mammal:
     - select
     - dog
@@ -22,10 +23,11 @@ units:
     second: [s,sec,second]
     millisecond: [ms,msec,millisecond]
     volt: [v,volt]
-    millivolt: [mv,mvolt,millivolt]
+    millivolt: [mv,mvolt,millivolt,mV]
     microvolt: [uv,mkvolt,microvolt,mikrovolt]
     index: [index,ind,i]
     bpm: [bpm]
+    percent: [percent]
 alarm:
     msg_1: The sampling frequency Fs was re-computed to match the time axis that was entered
     msg_2: The set of channels selected do not match

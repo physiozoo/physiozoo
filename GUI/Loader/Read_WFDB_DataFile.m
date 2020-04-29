@@ -12,11 +12,21 @@ for iCh = 1 :  length(header_info.channel_info)
         Channel_Type = strsplit(Description{2},')');                     % get mammal and integration level from description
         Channel.name = Description{1};
         Channel.type = Channel_Type{1};
+        Channel_Enable = strsplit(Channel.type,',');
+%         Channel.enable = Channel_Enable{2};
+        switch Channel_Enable{2}
+            case 'enable'
+                Channel.enable = true;
+            otherwise
+                Channel.enable = false;
+        end
+        Channel.type = Channel_Enable{1};
     catch
         Channel.type = 'select';
         Channel.name = 'data';
+        Channel.enable = true;
     end
-    Channel.enable = 'yes';
+%     Channel.enable = 'yes';
     try
         Channel.unit = header_info.channel_info{iCh}.units;
     catch

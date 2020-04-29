@@ -87,7 +87,11 @@ end
 % If we have an annotation extension, load annotations instead of ECG data.
 if ~isempty(ann_ext)
     % Load annotations: indexes of normal beats
-    ann = rdann( rec_name, ann_ext, 'from', from_sample, 'to', to_sample, 'ann_types', '"N"');
+    if ispc
+        ann = rdann( rec_name, ann_ext, 'from', from_sample, 'to', to_sample, 'ann_types', 'N');
+    else
+        ann = rdann( rec_name, ann_ext, 'from', from_sample, 'to', to_sample, 'ann_types', '"N"');
+    end
 
     % Make sure we got annotations
     if (isempty(ann))

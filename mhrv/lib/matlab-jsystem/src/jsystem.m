@@ -59,8 +59,8 @@ pb.redirectErrorStream(false);
 % arguments. Otherwise, prefix the shell invocation.
 if (strcmpi(shell, 'noshell'))
     shellcmd = strsplit(cmd);
-else
-    shellcmd = [strsplit(shell), cmd];
+else            
+    shellcmd = [strsplit(shell), cmd];    
 
     % Setup path for process (only relevant if using a shell)
     if (~isempty(jsystem_path) && iscellstr(jsystem_path))

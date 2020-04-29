@@ -1,4 +1,4 @@
-function [ ann, ann_types ] = rdann( rec_name, ann_ext, varargin )
+function [ ann, ann_types, aux ] = rdann( rec_name, ann_ext, varargin )
 %Wrapper for WFDB's 'rdann' tool.  Reads annotation files in PhysioNet format
 %and returns them as a MATLAB vector.
 %
@@ -79,9 +79,15 @@ if (~isempty(out))
     out_parsed = textscan(out, '%*s %d %s %*[^\n]');
     ann = out_parsed{1};
     ann_types = out_parsed{2};
+    
+%     out_parsed = textscan(out, '%s %d %s %d %d %d %s');
+%     ann = out_parsed{2};
+%     ann_types = out_parsed{3};
+%     aux = out_parsed{7};
 else
     ann = [];
     ann_types = {};
+    aux = {};
 end
 
 % add 1 to all values because WFDB's indices are zero-based

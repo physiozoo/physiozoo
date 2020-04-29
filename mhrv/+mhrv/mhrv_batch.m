@@ -166,7 +166,7 @@ for rec_type_idx = 1:n_rec_types
     % Loop over each file in the record type and calculate it's metrics
     rec_type_tables = cell(nfiles, 1);
     rec_type_plot_datas = cell(nfiles, 1);
-    parfor file_idx = 1:nfiles
+    parfor file_idx = 1:nfiles % parfor
         % Extract the rec_name from the filename
         file = files(file_idx);
         [path, name, ~] = file_parts([file.folder filesep file.name]);
@@ -176,7 +176,7 @@ for rec_type_idx = 1:n_rec_types
         fprintf('-> Analyzing record %s\n', rec_name);
         try
             [curr_hrv, ~, curr_plot_datas] = mhrv.mhrv(rec_name, 'window_minutes', window_minutes,...
-                'ann_ext', rec_type_ann_ext, 'params', mhrv_params, 'transform_fn', rec_type_transform, 'plot', false);
+                'ann_ext', rec_type_ann_ext, 'params', mhrv_params, 'transform_fn', rec_type_transform, 'plot', false); % false
         catch e
             warning('Error analyzing record %s: %s\nSkipping...', rec_name, e.message);
             continue;

@@ -4,6 +4,14 @@ function [] = plot_hrv_freq_spectrum( ax, plot_data, varargin )
 %   plot_data: struct returned from hrv_freq.
 %
 
+%import mhrv.defaults.*
+%import mhrv.ecg.*
+%import mhrv.hrv.*
+%import mhrv.rri.*
+%import mhrv.util.*
+%import mhrv.wfdb.*
+%import mhrv.plots.*
+
 %% Input
 SUPPORTED_METHODS = {'Lomb', 'AR', 'Welch', 'FFT'};
 

@@ -9,6 +9,7 @@
 function signal = ResampSpO2(data, Fs, waitbar_handle)
 
 t0 = tic;
+t2 = tic;
 exe_file_path = fileparts(mfilename('fullpath'));
 executable_file = [exe_file_path filesep 'SpO2' filesep 'pzpy.exe'];
 
@@ -21,14 +22,18 @@ else
     waitbar(1 / 2, waitbar_handle, 'Writing data to the file', 'Name', 'SpO2');
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
+    disp(['ResampSpO2: write2file elapsed time: ', num2str(toc(t0))]);
     
+    t1 = tic;
     waitbar(2 / 2, waitbar_handle, 'Resampling Signal', 'Name', 'SpO2');
     command = ['"' executable_file '" file ' signal_file ' ResampSpO2 ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' ResampSpO2 ' func_args];
         
     signal = exec_pzpy(command);
     if isvalid(waitbar_handle); close(waitbar_handle); end
-    disp(['ResampSpO2 elapsed time: ', num2str(toc(t0))]);  
+    disp(['ResampSpO2: resampling elapsed time: ', num2str(toc(t1))]);  
+    
+    disp(['ResampSpO2: total elapsed time: ', num2str(toc(t2))]);  
     
     if isempty(signal)
         throw(MException('ResampSpO2:text', 'Can''t resample SpO2 signal'));

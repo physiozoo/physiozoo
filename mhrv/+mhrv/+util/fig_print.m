@@ -119,7 +119,9 @@ lgd = findall(fig_handle, 'type', 'legend');
 set(lgd, 'FontName', font, 'FontSize', font_size, 'FontWeight', font_weight);
 
 % Make sure output folder exists
-out_filename = regexprep(out_filename, ' ', '_'); % replace spaces in filename
+if ~ispc    
+    out_filename = regexprep(out_filename, ' ', '_'); % replace spaces in filename
+end
 [out_dir, ~, ~] = file_parts(out_filename);
 [~, ~, ~] = mkdir(out_dir);
 
@@ -128,7 +130,7 @@ print(fig_handle, out_filename, ['-d' output_format], ['-' renderer]);
 
 % Save .fig if requested
 if save_figure
-    savefig(fig_handle, out_filename);
+    savefig(fig_handle, out_filename);    
 end
 
 %% Clean up

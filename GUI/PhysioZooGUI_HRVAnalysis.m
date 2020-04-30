@@ -5149,13 +5149,13 @@ displayEndOfDemoMessage('');
             catch e
                 disp(e);
             end
-            if strcmp(DATA.Integration, 'oximetry')
-                try
-                    calcComplexityStatistics(waitbar_handle);
-                catch e
-                    disp(e);
-                end
-            end
+%             if strcmp(DATA.Integration, 'oximetry')
+%                 try
+%                     calcComplexityStatistics(waitbar_handle);
+%                 catch e
+%                     disp(e);
+%                 end
+%             end
             
             if ishandle(waitbar_handle)
                 close(waitbar_handle);

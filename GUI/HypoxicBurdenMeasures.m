@@ -42,7 +42,7 @@ else
     result_measures = exec_pzpy(command);
     %     toc
     
-    if ~isempty(result_measures)
+    if ~isempty(result_measures) && isstruct(result_measures)
         SpO2_HBM.Properties.Description = 'Measures of the hypoxic burden';
         
         SpO2_HBM.CA = result_measures.CA;

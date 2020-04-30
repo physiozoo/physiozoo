@@ -44,7 +44,7 @@ else
     result_measures = exec_pzpy(command);
     %     toc
     
-    if ~isempty(result_measures)
+    if ~isempty(result_measures) && isstruct(result_measures)
         SpO2_DSM.Properties.Description = 'Desaturations measures';
         
         SpO2_DSM.DL_u = result_measures.DL_u;

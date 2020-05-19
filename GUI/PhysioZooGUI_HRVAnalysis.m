@@ -11,11 +11,11 @@ basepath = fileparts(gui_basepath);
 Module3 = 0;
 
 if isdeployed
-    mhrv_init;
-    
     disp(['ctfroot: ', ctfroot]);
     disp(['pwd: ', pwd]);
     disp(['userpath: ', userpath]);
+    
+    mhrv_init;    
 end
 
 %myBackgroundColor = [0.9 1 1];
@@ -1608,20 +1608,7 @@ displayEndOfDemoMessage('');
                     data =  60 ./ signal_data;
                     yString = 'HR (BPM)';
                 end
-        end
-        
-        %         if strcmp(DATA.Integration, 'oximetry')
-        %             data =  signal_data;
-        %             yString = 'SpO2 (percent)';
-        %         else
-        %             if (DATA.PlotHR == 0)
-        %                 data =  signal_data;
-        %                 yString = 'RR (sec)';
-        %             else
-        %                 data =  60 ./ signal_data;
-        %                 yString = 'HR (BPM)';
-        %             end
-        %         end
+        end                
         
         GUI.raw_data_handle = plot(ha, signal_time, data, 'b-', 'LineWidth', 2, 'DisplayName', 'Time series');
         hold(ha, 'on');
@@ -2137,10 +2124,10 @@ displayEndOfDemoMessage('');
                 if strcmp(DATA.Integration, 'oximetry')
                     if Module3
                         GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations ', 'Hypoxic Burden', 'Complexity', 'Group'};
-                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'off', 'on'};
+                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on', 'on'};
                     else
                         GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations ', 'Hypoxic Burden', 'Complexity'};
-                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'off'};
+                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on'};
                     end
                 else
                     if Module3
@@ -5149,14 +5136,13 @@ displayEndOfDemoMessage('');
             catch e
                 disp(e);
             end
-%             if strcmp(DATA.Integration, 'oximetry')
-%                 try
-%                     calcComplexityStatistics(waitbar_handle);
-%                 catch e
-%                     disp(e);
-%                 end
-%             end
-            
+            if strcmp(DATA.Integration, 'oximetry')
+                try
+                    calcComplexityStatistics(waitbar_handle);
+                catch e
+                    disp(e);
+                end
+            end          
             if ishandle(waitbar_handle)
                 close(waitbar_handle);
             end

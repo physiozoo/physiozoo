@@ -69,6 +69,8 @@ end
         
         DATA.rr_data_filtered = [];
         DATA.rr_time_filtered = [];
+        
+        DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');        
     end
 %%
     function clean_gui()
@@ -160,9 +162,11 @@ end
         GUI.GUIRecord.Config_text_pushbutton_handle.Enable = 'off';
         GUI.GUIRecord.DataQualityFileName_text_pushbutton_handle.Enable = 'off';
         GUI.GUIRecord.RhythmsFileName_text_pushbutton_handle.Enable = 'off';
-        
-        GUI.PeaksTable.Data(:, 2) = {0};
-        GUI.RhythmsTable.Data(:, 2:6) = {0};
+                
+        GUI.RhythmsTable.Data = {};
+        GUI.RhythmsTable.RowName = {};
+        DATA.Rhythms_file_name = '';
+        set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
         
         DATA.Action = 'move';
         
@@ -234,50 +238,97 @@ end
         DATA.GUI_Annotation = {'Peak'; 'Signal quality'; 'Rhythms'};
         DATA.GUI_Class = {'A'; 'B'; 'C'};
         DATA.Adjustment_type = {'Default'; 'Local max'; 'Local min'};
-        DATA.Rhythms_Type = {'AB'; 'AFIB'; 'AFL'; 'SVTA'; 'B'; 'T'; 'IVR'; 'VFL'; 'VT'; 'SBR'; 'BII'; 'NOD'; 'P'; 'PREX'; 'N'};
+        DATA.Rhythms_Type = {'AB'; 'AFIB'; 'AFL'; 'SVTA';...
+            'B'; 'T'; 'IVR'; 'VFL'; 'VT';...
+            'SBR'; 'BII'; 'NOD';...
+            'P'; 'PREX';...
+            'J'; 'PAT'; 'AT'; 'VTS'; 'AIVRS'; 'IVRS'; 'AIVR'}; % 'N'
         
         %         rec_colors = lines(5);
         %         DATA.quality_color = {rec_colors(5, :); rec_colors(3, :); rec_colors(2, :)};
         
         DATA.quality_color = {[140 228 140]/255; [255 220 169]/255; [255 200 200]/255};
         
-        DATA.rhythms_color = {[41 202 255]/255; ...
-            [249 68 255]/255; ...
-            [25 4 255]/255; ... % 88 66 255
-            [255 48 6]/255; ... % 40 255 76
-            [255 0 0]/255; ... % 255 27 50
-            
-            [101 196 255]/255; ...
-            [255 128 242]/255; ...
-            [97 83 255]/255; ... % 158 126 255
-            [255 119 82]/255; ... % 100 255 147
-            [255 79 79]/255; ... % 255 93 87
-            
-            [139 199 255]/255; ...
-            [255 166 237]/255; ...
-            [170 162 255]/255; ... % 196 164 255
-            [255 150 124]/255; ... % 138 255 185
-            [255 158 158]/255}; % 255 142 125
+        %         DATA.rhythms_color = {[41 202 255]/255; ...
+        %             [249 68 255]/255; ...
+        %             [25 4 255]/255; ... % 88 66 255
+        %             [255 48 6]/255; ... % 40 255 76
+        %             [255 0 0]/255; ... % 255 27 50
+        %
+        %             [101 196 255]/255; ...
+        %             [255 128 242]/255; ...
+        %             [97 83 255]/255; ... % 158 126 255
+        %             [255 119 82]/255; ... % 100 255 147
+        %             [255 79 79]/255; ... % 255 93 87
+        %
+        %             [139 199 255]/255; ...
+        %             [255 166 237]/255; ...
+        %             [170 162 255]/255; ... % 196 164 255
+        %             [255 150 124]/255; ... % 138 255 185
+        %             [255 158 158]/255; ...
+        %
+        %             [139 199 255]/255; ...
+        %             [139 199 255]/255; ...
+        %             [139 199 255]/255; ... % 196 164 255
+        %             [139 199 255]/255; ... % 138 255 185
+        %             [139 199 255]/255;...
+        %
+        %             [139 199 255]/255; ... % 138 255 185
+        %             [139 199 255]/255}; % 255 142 125
         
+        DATA.rhythms_color = {[240 124 0]/255; ...
+            [255 227 18]/255; ...
+            [242 146 129]/255; ... % 88 66 255
+            [255 197 7]/255; ... % 40 255 76
+            
+            [255 68 168]/255; ... % 255 27 50
+            [209 17 164]/255; ...
+            [112 25 86]/255; ...
+            [203 13 255]/255; ... % 158 126 255
+            [147 16 235]/255; ... % 100 255 147
+            
+            [89 106 255]/255; ... % 255 93 87
+            [29 21 255]/255; ...
+            [46 11 173]/255; ...
+            
+            [15 255 255]/255; ... % 196 164 255
+            [3 188 255]/255; ... % 138 255 185
+            
+            [67 143 36]/255; ...
+            [46 230 18]/255; ...
+            [145 186 149]/255; ...
+            [76 235 139]/255; ... % 196 164 255
+            
+            [149 230 106]/255; ... % 138 255 185
+            [127 235 199]/255;...
+            [33 237 196]/255}; % 255 142 125
         
         
         DATA.rhythms_tooltip = {'Atrial bigeminy'; ...
             'Atrial fibrillation'; ...
             'Atrial flutter'; ...
-            'Ventricular bigeminy'; ...
-            '2° heart block'; ...
+            'Supraventricular tachyarrhythmia'; ...
             
+            'Ventricular bigeminy'; ...
+            'Ventricular trigeminy'; ...
             'Idioventricular rhythm'; ...
-            'Normal sinus rhythm'; ...
-            'Nodal (A-V junctional) rhythm'; ...
-            'Paced rhythm'; ...
-            'Pre-excitation (WPW)'; ...
+            'Ventricular flutter'; ...
+            'Ventricular tachycardia'; ...
             
             'Sinus bradycardia'; ...
-            'Supraventricular tachyarrhythmia'; ...
-            'Ventricular trigeminy'; ...
-            'Ventricular flutter'; ...
-            'Ventricular tachycardia'};
+            '2° heart block'; ...
+            'Nodal (A-V junctional) rhythm'; ...
+            
+            'Paced rhythm'; ...
+            'Pre-excitation (WPW)'...;
+            
+            ''; ...
+            ''; ...
+            ''; ...
+            ''; ...
+            ''; ...
+            ''; ...
+            ''};
         
         DATA.temp_rec_name4wfdb = 'temp_ecg_wfdb';
         
@@ -727,31 +778,11 @@ end
         %--------------------------------------------------------------------------
         
         Rhythms_Part_Box = uix.VBox('Parent', RhythmsTab, 'Spacing', DATA.Spacing);
-        GUI.RhythmsTable = uitable('Parent', Rhythms_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{250 'auto'}, 'FontName', 'Calibri');
-        GUI.RhythmsTable.ColumnName = {'Description'; 'Min'; 'Max'; 'Median'; 'Q1'; 'Q3'};
-        GUI.RhythmsTable.Data = {''};
-        GUI.RhythmsTable.RowName = DATA.Rhythms_Type;
-        
-        GUI.RhythmsTable.Data(1, 1) = {'Atrial bigeminy'};
-        GUI.RhythmsTable.Data(2, 1) = {'Atrial fibrillation'};
-        GUI.RhythmsTable.Data(3, 1) = {'Atrial flutter'};
-        GUI.RhythmsTable.Data(4, 1) = {'Ventricular bigeminy'};
-        GUI.RhythmsTable.Data(5, 1) = {'2° heart block'};
-        
-        GUI.RhythmsTable.Data(6, 1) = {'Idioventricular rhythm'};
-        GUI.RhythmsTable.Data(7, 1) = {'Normal sinus rhythm'};
-        GUI.RhythmsTable.Data(8, 1) = {'Nodal (A-V junctional) rhythm'};
-        GUI.RhythmsTable.Data(9, 1) = {'Paced rhythm'};
-        GUI.RhythmsTable.Data(10, 1) = {'Pre-excitation (WPW)'};
-        
-        GUI.RhythmsTable.Data(11, 1) = {'Sinus bradycardia'};
-        GUI.RhythmsTable.Data(12, 1) = {'Supraventricular tachyarrhythmia'};
-        GUI.RhythmsTable.Data(13, 1) = {'Ventricular trigeminy'};
-        GUI.RhythmsTable.Data(14, 1) = {'Ventricular flutter'};
-        GUI.RhythmsTable.Data(15, 1) = {'Ventricular tachycardia'};
-        
-        GUI.RhythmsTable.Data(:, 2:6) = {0};
-        
+        GUI.RhythmsTable = uitable('Parent', Rhythms_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{250 'auto' 'auto' 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
+        GUI.RhythmsTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Median (sec)'; 'Q1 (sec)'; 'Q3 (sec)'; 'Burden (%)'; 'Nb events'};
+        GUI.RhythmsTable.Data = {};
+        GUI.RhythmsTable.RowName = {}; 
+                                
         %--------------------------------------------------------------------------
         
         set(findobj(Upper_Part_Box,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
@@ -791,7 +822,7 @@ end
         GUI.PlayStopForwMovieButton.ForegroundColor = [0 1 0];
         GUI.PlayStopReverseMovieButton.ForegroundColor = [0 1 0];
         GUI.PageDownButton.ForegroundColor = [0 0 1];
-        GUI.PageUpButton.ForegroundColor = [0 0 1];        
+        GUI.PageUpButton.ForegroundColor = [0 0 1];
     end
 %%
     function [GUI, TempBox, uicontrol_handle] = createGUITextLine(GUI, gui_struct, field_name, string_field_name, box_container, style, isOpenButton, callback_openButton)
@@ -1158,7 +1189,7 @@ end
                 
                 set(GUI.GUIRecord.RecordFileName_text, 'String', ECG_FileName);
                 
-                GUI.RawData_handle = line(DATA.tm, DATA.sig, 'Parent', GUI.ECG_Axes, 'Tag', 'RawData', 'Color', 'k');
+                GUI.RawData_handle = line(DATA.tm, DATA.sig, 'Parent', GUI.ECG_Axes, 'Tag', 'RawData', 'Color', [75 75 75]/255);
                 
                 PathName = strrep(PathName, '\', '\\');
                 PathName = strrep(PathName, '_', '\_');
@@ -2247,14 +2278,14 @@ end
                 DATA.peaks_bad_quality = 0;
             end
             
+            DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
+            
             if isfield(GUI, 'rhythms_win')
                 delete(GUI.rhythms_win);
                 
                 GUI = rmfield(GUI, 'rhythms_win');
                 
-                DATA.rhythms_win_num = 0;
-                %                 DATA.peaks_total = 0;
-                %                 DATA.peaks_bad_quality = 0;
+                DATA.rhythms_win_num = 0;                
             end
             
             if isfield(GUI, 'PinkLineHandle_AllDataAxes')
@@ -2273,7 +2304,7 @@ end
             set(GUI.GUIRecord.PeaksFileName_text, 'String', '');
             set(GUI.GUIRecord.DataQualityFileName_text, 'String', '');
             set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
-                        
+            
             GUI.GUIRecord.Annotation_popupmenu.Value = 1;
             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
             GUI.Class_Text.Visible = 'off';
@@ -2311,7 +2342,11 @@ end
             reset_rhythm_button();
             Rhythms_ToggleButton_Reset();
             GUI.RhythmsHBox.Visible = 'off';
-            GUI.RhythmsTable.Data(:, 2:6) = {0};
+                        
+            GUI.RhythmsTable.Data = {};
+            GUI.RhythmsTable.RowName = {};
+            DATA.Rhythms_file_name = '';
+            set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
             
             GUI.RawSignal_checkbox.Value = 1;
             GUI.FilteredSignal_checkbox.Value = 0;
@@ -2454,12 +2489,63 @@ end
         end
     end
 %%
+    function need2drawPatch = need2drawRhythm(xlim, rhythms_struct)
+        min_xLim = min(xlim);
+        max_xLim = max(xlim);
+        r_start = rhythms_struct.rhythm_range(1);
+        r_end = rhythms_struct.rhythm_range(2);
+        
+        if (min_xLim < r_start && min_xLim < r_end && max_xLim < r_start && max_xLim < r_end) || ...
+                (min_xLim > r_start && min_xLim > r_end && max_xLim > r_start && max_xLim > r_end)
+            need2drawPatch = false;
+        else
+            need2drawPatch = true;
+        end
+    end
+%%
     function redraw_rhythms_rect()
         ylim = get(GUI.ECG_Axes, 'YLim');
+        xlim = get(GUI.ECG_Axes, 'XLim');
         
-        if isfield(GUI, 'rhythms_win')
-            for i = 1 : DATA.rhythms_win_num
-                set(GUI.rhythms_win(i), 'YData', [min(ylim) min(ylim) max(ylim) max(ylim)]);
+        if isfield(DATA, 'Rhythms_Map')
+            rhythms_starts =  DATA.Rhythms_Map.keys();
+            for i = 1 : length(rhythms_starts)
+                
+                rhythms_struct = DATA.Rhythms_Map(rhythms_starts{i});
+                
+                need2drawPatch = need2drawRhythm(xlim, rhythms_struct);
+                if need2drawPatch
+                    if ~rhythms_struct.rhythm_plotted
+                        
+                        rhythms_struct.rhythm_handle = plot_rhythms_rect(rhythms_struct.rhythm_range, 0, rhythms_struct.rhythm_class_ind);
+                        rhythms_struct.rhythm_plotted = true;
+                        DATA.Rhythms_Map(rhythms_starts{i}) = rhythms_struct;
+                        
+                        if isfield(GUI, 'rhythms_win')
+                            curr_rhythms_num = length(GUI.rhythms_win);
+                        else
+                            curr_rhythms_num = 0;
+                        end
+                        GUI.rhythms_win(curr_rhythms_num + 1) = rhythms_struct.rhythm_handle;
+                    end
+                    if isgraphics(rhythms_struct.rhythm_handle, 'patch')
+                        set(rhythms_struct.rhythm_handle, 'YData', [min(ylim) min(ylim) max(ylim) max(ylim)]);
+                    end
+                else
+                    if rhythms_struct.rhythm_plotted
+                        delete(rhythms_struct.rhythm_handle);
+                        rhythms_struct.rhythm_plotted = false;
+                        
+                        reset_rhythm_button();
+                        
+                        DATA.Rhythms_Map(rhythms_starts{i}) = rhythms_struct;
+                        
+                        [is_member, win_ind] = ismember(rhythms_struct.rhythm_handle, GUI.rhythms_win);
+                        if is_member
+                            GUI.rhythms_win(win_ind)= [];
+                        end
+                    end
+                end
             end
         end
     end
@@ -2483,11 +2569,25 @@ end
                 end
                 ylim = get(GUI.RRInt_Axes, 'YLim');
                 f = [1 2 3 4];
-                v = [DATA_QualityAnnotations_Data(i,1) min(ylim); DATA_QualityAnnotations_Data(i,2) min(ylim); DATA_QualityAnnotations_Data(i,2) max(ylim); DATA_QualityAnnotations_Data(i,1) max(ylim)];
                 
-                GUI.RhythmsHandle_AllDataAxes(prev_rhythms_win_num + i) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.rhythms_color{class_ind}, 'EdgeColor', DATA.rhythms_color{class_ind}, ...
+                rhythm_start = DATA_QualityAnnotations_Data(i,1);
+                rhythm_end = DATA_QualityAnnotations_Data(i,2);
+                
+                v = [rhythm_start min(ylim); rhythm_end min(ylim); rhythm_end max(ylim); rhythm_start max(ylim)];
+                
+                patch_handle = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.rhythms_color{class_ind}, 'EdgeColor', DATA.rhythms_color{class_ind}, ...
                     'LineWidth', 1, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.85, 'UserData', class_ind, 'Parent', GUI.RRInt_Axes, 'Tag', 'RRIntRhythms');
-                uistack(GUI.RhythmsHandle_AllDataAxes(prev_rhythms_win_num + i), 'bottom');
+                uistack(patch_handle, 'bottom');
+                
+                GUI.RhythmsHandle_AllDataAxes(prev_rhythms_win_num + i) = patch_handle;
+                
+                if isKey(DATA.Rhythms_Map, rhythm_start)
+                    rhythms_struct = DATA.Rhythms_Map(rhythm_start);
+                    rhythms_struct.low_axes_patch_handle = patch_handle;
+                    DATA.Rhythms_Map(rhythm_start) = rhythms_struct;
+                else
+                    disp('The key not in the map');
+                end
             end
         end
     end
@@ -2533,18 +2633,18 @@ end
         uistack(GUI.quality_win(quality_win_num), 'bottom');
     end
 %%
-    function plot_rhythms_rect(rhythms_range, rhythms_win_num, rhythms_class)
+    function patch_handle = plot_rhythms_rect(rhythms_range, rhythms_win_num, rhythms_class)
         
         ylim = get(GUI.ECG_Axes, 'YLim');
         
         v = [min(rhythms_range) min(ylim); max(rhythms_range) min(ylim); max(rhythms_range) max(ylim); min(rhythms_range) max(ylim)];
         f = [1 2 3 4];
         
-        GUI.rhythms_win(rhythms_win_num) = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.rhythms_color{rhythms_class}, 'EdgeColor', DATA.rhythms_color{rhythms_class}, ...
+        patch_handle = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.rhythms_color{rhythms_class}, 'EdgeColor', DATA.rhythms_color{rhythms_class}, ...
             'LineWidth', 1, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.5, 'UserData', rhythms_class, 'Parent', GUI.ECG_Axes, 'Tag', 'DataRhythms', ...
             'Visible', 'on'); % 'FaceAlpha', 0.1
-        
-        uistack(GUI.rhythms_win(rhythms_win_num), 'bottom');
+        %         GUI.rhythms_win(rhythms_win_num)
+        uistack(patch_handle, 'bottom'); % GUI.rhythms_win(rhythms_win_num)
     end
 %%
     function reset_rhythm_button()
@@ -2600,22 +2700,37 @@ end
                 try
                     rhythms_range = get(GUI.rhythms_rect_handle, 'XData');
                     
-                    
                     delete(GUI.rhythms_rect_handle);
                     
                     if min(rhythms_range) ~= max(rhythms_range)
                         DATA.rhythms_win_num = DATA.rhythms_win_num + 1;
                         classes = get(GUI.GUIRecord.Rhythms_popupmenu, 'String');
                         rhythms_class = GUI.GUIRecord.Rhythms_popupmenu.Value;
-                        plot_rhythms_rect(rhythms_range, DATA.rhythms_win_num, rhythms_class);
+                        rhythms_handle = plot_rhythms_rect(rhythms_range, 0, rhythms_class); % DATA.rhythms_win_num
+                        
+                        rhythms_struct.rhythm_type = classes{rhythms_class};
+                        rhythms_struct.rhythm_range = [min(rhythms_range) max(rhythms_range)];
+                        rhythms_struct.rhythm_class_ind = rhythms_class;
+                        rhythms_struct.rhythm_plotted = true;
+                        rhythms_struct.rhythm_handle = rhythms_handle;
+                                                
+                        DATA.Rhythms_Map(min(rhythms_range)) = rhythms_struct;
+                        
+                        if isfield(GUI, 'rhythms_win')
+                            curr_rhythms_num = length(GUI.rhythms_win);
+                        else
+                            curr_rhythms_num = 0;
+                        end
+                        GUI.rhythms_win(curr_rhythms_num + 1) = rhythms_handle;
+                        
                         plot_rhythms_line([min(rhythms_range) max(rhythms_range)], {classes{rhythms_class}});
                         update_rhythm_button(rhythms_class);
                         
-                        Select_Rhythms_Win(rhythms_range);
+                        Update_Rhytms_Stat_Table();
                     end
                     set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
                 catch e
-                    disp(['delete rhythms:' e.message]);
+                    disp(['select_rhythms_win:' e.message]);
                 end
             otherwise
         end
@@ -2645,10 +2760,10 @@ end
                     setptr(GUI.Window, 'eraser');
                     DATA.hObject = 'delete_current_rhythms_win';
                     r_w = hittest(GUI.Window);
-                    update_rhythm_button(r_w.UserData);                                       
+                    update_rhythm_button(r_w.UserData);
                 elseif isfield(GUI, 'rhythms_win') && ismember(hittest(GUI.Window), GUI.rhythms_win)
                     r_w = hittest(GUI.Window);
-                    update_rhythm_button(r_w.UserData);                    
+                    update_rhythm_button(r_w.UserData);
                 elseif hittest(GUI.Window) == GUI.red_rect_handle  % || get(hittest(GUI.Window), 'Parent') == GUI.RRInt_Axes  % GUI.red_rect_handle
                     try
                         xdata = get(GUI.red_rect_handle, 'XData');
@@ -2722,21 +2837,32 @@ end
                 if isfield(GUI, 'rhythms_win') && ~isempty(GUI.rhythms_win)
                     [is_member, win_ind] = ismember(hittest(GUI.Window), GUI.rhythms_win);
                     
-                    red_peaks_x_data = GUI.red_peaks_handle.XData;
-                    rhythms_range = get(GUI.rhythms_win(win_ind), 'XData');
-                    peak_ind = find(red_peaks_x_data >= min(rhythms_range) & red_peaks_x_data <= max(rhythms_range));
-                    
-                    %                     DATA.peaks_bad_quality = DATA.peaks_bad_quality - length(peak_ind);
-                    %                     GUI.PeaksTable.Data(4, 2) = {DATA.peaks_bad_quality/DATA.peaks_total*100};
-                    
-                    if is_member
-                        delete(GUI.rhythms_win(win_ind));
-                        GUI.rhythms_win(win_ind) = [];
-                        DATA.rhythms_win_num = DATA.rhythms_win_num - 1;
-                        
-                        delete(GUI.RhythmsHandle_AllDataAxes(win_ind));
-                        GUI.RhythmsHandle_AllDataAxes(win_ind) = [];
-                        reset_rhythm_button();
+                    if is_member                        
+                        rhythms_range = get(GUI.rhythms_win(win_ind), 'XData');                        
+                                                
+                        try                            
+                            delete(GUI.rhythms_win(win_ind));
+                            GUI.rhythms_win(win_ind) = [];
+                            DATA.rhythms_win_num = DATA.rhythms_win_num - 1;
+                            
+                            if isKey(DATA.Rhythms_Map, min(rhythms_range))
+                                rhythms_struct = DATA.Rhythms_Map(min(rhythms_range));
+                                
+                                low_axes_patch_handle = rhythms_struct.low_axes_patch_handle;
+                                delete(low_axes_patch_handle);
+                                
+                                [is_member, low_axes_patch_ind] = ismember(low_axes_patch_handle, GUI.RhythmsHandle_AllDataAxes);
+                                if is_member
+                                    delete(GUI.RhythmsHandle_AllDataAxes(low_axes_patch_ind));
+                                    GUI.RhythmsHandle_AllDataAxes(low_axes_patch_ind) = [];
+                                    reset_rhythm_button();
+                                end
+                                DATA.Rhythms_Map.remove(min(rhythms_range));
+                                Update_Rhytms_Stat_Table();
+                            end
+                        catch e
+                            disp(e);
+                        end
                     end
                 end
             case 'delete_current_quality_win'
@@ -3049,19 +3175,41 @@ end
         end
     end
 %%
-    function Select_Rhythms_Win(rhythms_range)
-        xlim = get(GUI.ECG_Axes, 'XLim');
+    function Update_Rhytms_Stat_Table()
         
-        if min(rhythms_range) >= xlim(1) || max(rhythms_range) <= xlim(2)
+        GUI.RhythmsTable.Data = {};
+        GUI.RhythmsTable.RowName = {};
+        
+        if isfield(DATA, 'Rhythms_Map') && length(DATA.Rhythms_Map) > 0
             
-            max(rhythms_range)-min(rhythms_range)
+            if ~(isfield(DATA, 'Rhythms_Stat') && length(Rhythms_Stat) > 0)
+                Rhythms_Stat = containers.Map();
+            end
             
-            red_peaks_x_data = GUI.red_peaks_handle.XData;
-            peak_ind = find(red_peaks_x_data >= min(rhythms_range) & red_peaks_x_data <= max(rhythms_range));
-            %             DATA.peaks_bad_quality = DATA.peaks_bad_quality + length(peak_ind);
-            %             GUI.PeaksTable.Data(4, 2) = {DATA.peaks_bad_quality/DATA.peaks_total*100};
-        else
-            disp('Not in range!');
+            rhythms_values = DATA.Rhythms_Map.values();
+            for i = 1 : length(DATA.Rhythms_Map)
+                rh_class = rhythms_values{i}.rhythm_type;
+                rh_length = max(rhythms_values{i}.rhythm_range) - min(rhythms_values{i}.rhythm_range);
+                if isKey(Rhythms_Stat, rh_class)
+                    val = Rhythms_Stat(rh_class);
+                    Rhythms_Stat(rhythms_values{i}.rhythm_type) = [val rh_length];
+                else
+                    Rhythms_Stat(rh_class) = rh_length;
+                end
+            end
+            
+            rh_class = Rhythms_Stat.keys();
+            rhythms_class_lengths = Rhythms_Stat.values();
+            
+            GUI.RhythmsTable.RowName = rh_class;
+            
+            for i = 1 : length(rh_class)
+                [is_member, class_ind] = ismember(rh_class{i}, DATA.Rhythms_Type);
+                if is_member
+                    stat_res = sumstat(rhythms_class_lengths{i}, DATA.tm(end));
+                    GUI.RhythmsTable.Data(i, :) = [DATA.rhythms_tooltip(class_ind), stat_res];
+                end
+            end            
         end
     end
 %%
@@ -3553,7 +3701,7 @@ end
         [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...
             '*.txt','Text Files (*.txt)';...
             '*.mat','MAT-files (*.mat)';...
-%             '*.atr; *.qrs','WFDB Files (*.atr; *.qrs)',...
+            %             '*.atr; *.qrs','WFDB Files (*.atr; *.qrs)',...
             },...
             'Choose Rhytms File Name',...
             [DIRS.analyzedDataDirectory, filesep, file_name, '.', EXT]);
@@ -3566,16 +3714,11 @@ end
             
             full_file_name = [results_folder_name, filename];
             
-            if isfield(GUI, 'rhythms_win') && DATA.rhythms_win_num
-                
-                for i = 1 : length(GUI.rhythms_win)
-                    
-                    if isvalid(GUI.rhythms_win(i))
-                        rhythms_range{i} = get(GUI.rhythms_win(i), 'XData');
-                        rhythms_number = get(GUI.rhythms_win(i), 'UserData');
-                        class{i, 1} = DATA.Rhythms_Type{rhythms_number};
-                        rhythms(i, :) = [min(rhythms_range{i}) max(rhythms_range{i})];
-                    end
+            if isfield(DATA, 'Rhythms_Map') && length(DATA.Rhythms_Map) > 0 && DATA.rhythms_win_num
+                rhythms_values = DATA.Rhythms_Map.values();
+                for i = 1 : length(DATA.Rhythms_Map)
+                    class{i, 1} = rhythms_values{i}.rhythm_type;
+                    rhythms(i, :) = rhythms_values{i}.rhythm_range;
                 end
             else
                 class{1, 1} = DATA.Rhythms_Type{1};
@@ -3600,13 +3743,13 @@ end
                     fprintf(header_fileID, '%.6f\t%.6f\t%s\n', rhythms(i, 1), rhythms(i, 2), class{i, 1});
                 end
                 fclose(header_fileID);
-%             elseif strcmpi(ExtensionFileName, 'atr') || strcmpi(ExtensionFileName, 'qrs')
-%                 [~, filename_noExt, ~] = fileparts(full_file_name);
-%                 
-%                 Rhythms_annotations_for_wfdb = reshape(rhythms', [size(rhythms, 1) * size(rhythms, 2), 1]);
-%                 rhythms_class_for_wfdb = reshape([class class]', [2*size(class, 1), 1])';
-%                 
-%                 mhrv.wfdb.wrann([results_folder_name filename_noExt], 'atr', int64(Rhythms_annotations_for_wfdb*DATA.Fs), 'fs', DATA.Fs, 'aux', rhythms_class_for_wfdb);
+                %             elseif strcmpi(ExtensionFileName, 'atr') || strcmpi(ExtensionFileName, 'qrs')
+                %                 [~, filename_noExt, ~] = fileparts(full_file_name);
+                %
+                %                 Rhythms_annotations_for_wfdb = reshape(rhythms', [size(rhythms, 1) * size(rhythms, 2), 1]);
+                %                 rhythms_class_for_wfdb = reshape([class class]', [2*size(class, 1), 1])';
+                %
+                %                 mhrv.wfdb.wrann([results_folder_name filename_noExt], 'atr', int64(Rhythms_annotations_for_wfdb*DATA.Fs), 'fs', DATA.Fs, 'aux', rhythms_class_for_wfdb);
             else
                 h_e = errordlg('Please, choose only *.mat, *.txt, *.atr or *.qrs file .', 'Input Error');
                 setLogo(h_e, 'M1');
@@ -3727,7 +3870,7 @@ end
         [Rhythms_FileName, PathName] = uigetfile( ...
             {'*.txt','Text Files (*.txt)'; ...
             '*.mat','MAT-files (*.mat)';...
-%             '*.atr; *.qrs','WFDB Files (*.atr; *.qrs)',...
+            %             '*.atr; *.qrs','WFDB Files (*.atr; *.qrs)',...
             }, ...
             'Open Rhythms File', [DIRS.analyzedDataDirectory filesep '*.' EXT]);
         
@@ -3738,6 +3881,19 @@ end
             EXT = ExtensionFileName;
             DIRS.analyzedDataDirectory = PathName;
             
+            if isfield(DATA, 'Rhythms_file_name') && ~isempty(DATA.Rhythms_file_name)
+                if strcmp(DATA.Rhythms_file_name, [PathName, RhythmsFileName])
+                    choice = questdlg(['The file "' RhythmsFileName '" already loaded. Do you want to open the same rhythm file?'], ...
+                        'Same Rhythm file', 'Open', 'Cancel', 'Cancel');
+                    
+                    switch choice
+                        case 'Open'
+                        case 'Cancel'
+                            return;
+                    end
+                end
+            end
+                             
             DATA.Rhythms_file_name = [PathName, RhythmsFileName];
             
             if strcmpi(ExtensionFileName, 'mat')
@@ -3779,9 +3935,13 @@ end
                     
                     tline1 = fgetl(fileID);
                     tline2 = fgetl(fileID);
+                    %                     tline3 = fgetl(fileID);
                     type_line = strsplit(tline2, ': ');
+                    %                     source_line = strsplit(tline3, ': ');
                     
                     if strcmp(tline1, '---') && strcmp(type_line{1}, 'type') && strcmp(type_line{2}, 'rhythms annotation')
+                        %                         if strcmp(source_line{1}, 'source file') && strcmp(source_line{2}, 'rhythms annotation')
+                        %                         end
                         if ~isempty(rhythms_data{1}) && ~isempty(rhythms_data{2}) && ~isempty(rhythms_data{3})
                             DATA_RhythmsAnnotations_Data = [cell2mat(rhythms_data(1)) cell2mat(rhythms_data(2))];
                             class = rhythms_data(3);
@@ -3800,11 +3960,11 @@ end
                 else
                     return;
                 end
-%             elseif strcmpi(ExtensionFileName, 'atr') || strcmpi(ExtensionFileName, 'qrs')                
-%                 [rhythms_data, class] = mhrv.wfdb.rdann([PathName RhythmsFileName], ExtensionFileName);
-%                 rhythms_data = double(rhythms_data)/DATA.Fs;
-%                 DATA_RhythmsAnnotations_Data = [rhythms_data(1:2:end), rhythms_data(2:2:end)];
-%                 DATA_RhythmsClass = class(1:2:end);
+                %             elseif strcmpi(ExtensionFileName, 'atr') || strcmpi(ExtensionFileName, 'qrs')
+                %                 [rhythms_data, class] = mhrv.wfdb.rdann([PathName RhythmsFileName], ExtensionFileName);
+                %                 rhythms_data = double(rhythms_data)/DATA.Fs;
+                %                 DATA_RhythmsAnnotations_Data = [rhythms_data(1:2:end), rhythms_data(2:2:end)];
+                %                 DATA_RhythmsClass = class(1:2:end);
             else
                 h_e = errordlg('Please, choose only *.mat, *.txt, *.qrs or *.atr file.', 'Input Error');
                 setLogo(h_e, 'M1');
@@ -3812,7 +3972,7 @@ end
             end
             
             set(GUI.GUIRecord.RhythmsFileName_text, 'String', Rhythms_FileName);
-                        
+            
             GUI.GUIRecord.Annotation_popupmenu.Value = 3;
             Annotation_popupmenu_Callback();
             
@@ -3820,11 +3980,15 @@ end
                 rhythms_win_num = DATA.rhythms_win_num + 1;
             else
                 rhythms_win_num = 1;
+                DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
             end
             
             waitbar_handle = waitbar(0, 'Loadind', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
             
             rhythms_annotations_num = length(DATA_RhythmsClass);
+            
+            Rhythms_Data = [];
+            RhythmsClass = {};
             
             for i = 1 : rhythms_annotations_num
                 [is_member, class_ind] = ismember(DATA_RhythmsClass{i}, DATA.Rhythms_Type);
@@ -3833,18 +3997,33 @@ end
                 end
                 if DATA_RhythmsAnnotations_Data(i, 1) ~= DATA_RhythmsAnnotations_Data(i, 2)
                     
-                    waitbar(i / rhythms_annotations_num, waitbar_handle, ['Ploting rhythms for ' num2str(i) ' annotation']); setLogo(waitbar_handle, 'M1');
-                    
-                    plot_rhythms_rect(DATA_RhythmsAnnotations_Data(i, :), rhythms_win_num, class_ind);
-                    DATA.rhythms_win_num = DATA.rhythms_win_num + 1;
-                    rhythms_win_num = rhythms_win_num + 1;
-                    Select_Rhythms_Win(DATA_RhythmsAnnotations_Data(i, :));
+                    if ~isKey(DATA.Rhythms_Map, DATA_RhythmsAnnotations_Data(i, 1))
+                        waitbar(i / rhythms_annotations_num, waitbar_handle, ['Ploting rhythms for ' num2str(i) ' annotation']); setLogo(waitbar_handle, 'M1');
+                        
+                        rhythms_struct.rhythm_type = DATA_RhythmsClass{i};
+                        rhythms_struct.rhythm_range = DATA_RhythmsAnnotations_Data(i, :);
+                        rhythms_struct.rhythm_class_ind = class_ind;
+                        rhythms_struct.rhythm_plotted = false;
+                        
+                        DATA.Rhythms_Map(DATA_RhythmsAnnotations_Data(i, 1)) = rhythms_struct;
+                        
+                        %                     plot_rhythms_rect(DATA_RhythmsAnnotations_Data(i, :), rhythms_win_num, class_ind);
+                        DATA.rhythms_win_num = DATA.rhythms_win_num + 1;
+                        %                     rhythms_win_num = rhythms_win_num + 1;
+                        %                     Update_Rhytms_Stat_Table(DATA_RhythmsAnnotations_Data(i, :));
+                        
+                        Rhythms_Data = [Rhythms_Data; DATA_RhythmsAnnotations_Data(i, :)];
+                        RhythmsClass = [RhythmsClass; DATA_RhythmsClass{i}];
+                    end
                 end
             end
+            redraw_rhythms_rect();
             if isvalid(waitbar_handle)
                 close(waitbar_handle);
             end
-            plot_rhythms_line(DATA_RhythmsAnnotations_Data, DATA_RhythmsClass);    
+%             plot_rhythms_line(DATA_RhythmsAnnotations_Data, DATA_RhythmsClass);
+            plot_rhythms_line(Rhythms_Data, RhythmsClass);
+            Update_Rhytms_Stat_Table();
         end
     end
 %%

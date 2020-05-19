@@ -69,9 +69,11 @@ cfg_dir_ = [basepath_ filesep 'cfg'];
 bin_dir_ = [basepath_ filesep 'bin'];
 
 % Add them to matlab's path including subfolders
-addpath(basepath_);
-addpath(genpath(lib_dir_));
-addpath(genpath(cfg_dir_));
+if ~isdeployed
+    addpath(basepath_);
+    addpath(genpath(lib_dir_));
+    addpath(genpath(cfg_dir_));
+end
 
 %% Load default toolbox parameters
 mhrv.defaults.mhrv_load_defaults('--clear');

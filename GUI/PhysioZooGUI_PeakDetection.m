@@ -2791,18 +2791,18 @@ end
                         point1 = get(GUI.RRInt_Axes, 'CurrentPoint');
                         if point1(1,1) < max(xdata) && point1(1,1) > min(xdata)
                             setptr(GUI.Window, 'hand');
-                            DATA.hObject = 'zoom_rect_move';
+                            DATA.hObject = 'zoom_rect_move';                            
                         else
                             setptr(GUI.Window, 'arrow');
-                            DATA.hObject = 'overall';
+                            DATA.hObject = 'jump2time';                            
                         end
                     end
                 else
                     setptr(GUI.Window, 'arrow');
-                    DATA.hObject = 'overall';
+                    DATA.hObject = 'overall';                    
                 end
             case 'window_move'
-                Window_Move('normal');
+                Window_Move('normal', []);
             case 'drag_del_rect'
                 draw_rect_to_del_peaks(GUI.del_rect_handle);
             case 'right_resize_move'
@@ -2904,7 +2904,16 @@ end
                     case 'normal'
                         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'window_move'}); % move zoom rectangle
                     case 'open'
-                        Window_Move('open'); % double-click: show all data
+                        Window_Move('open', []); % double-click: show all data
+                    otherwise
+                end
+            case 'jump2time'
+                switch get(GUI.Window, 'selectiontype')
+                    case 'open'                        
+                        cp = get(GUI.RRInt_Axes, 'CurrentPoint');
+                        xdata = get(GUI.red_rect_handle, 'XData');
+                        xofs = cp(1,1) - xdata(1, 1);
+                        Window_Move('normal', xofs);
                     otherwise
                 end
             otherwise
@@ -2951,12 +2960,14 @@ end
         redraw_rhythms_rect();
     end
 %%
-    function Window_Move(type)
+    function Window_Move(type, xofs)
         
         xdata = get(GUI.red_rect_handle, 'XData');
         xdata_saved = xdata;
         point1 = get(GUI.RRInt_Axes, 'CurrentPoint');
-        xofs = point1(1,1) - DATA.prev_point(1, 1);
+        if isempty(xofs)
+            xofs = point1(1,1) - DATA.prev_point(1, 1);
+        end
         DATA.prev_point = point1(1, 1);
         
         min_XLim = 0;
@@ -3305,10 +3316,7 @@ end
         end
         
         left_border = min(xdata) - x_ofs;
-        right_border = max(xdata) - x_ofs;
-        
-        %         right_border = min(xdata);
-        %         left_border = right_border - red_rect_length;
+        right_border = max(xdata) - x_ofs;                
         
         if left_border < 0
             left_border = 0;
@@ -3353,13 +3361,9 @@ end
         red_rect_length = max(xdata) - min(xdata);
         
         if ~isempty(movie_offset)
-            x_ofs = 0.25;
-            %             left_border = min(xdata) + x_ofs;
-            %             right_border = max(xdata) + x_ofs;
+            x_ofs = 0.25;            
         else
-            x_ofs = red_rect_length;
-            %             left_border = max(xdata);
-            %             right_border = left_border + red_rect_length;
+            x_ofs = red_rect_length;            
         end
         
         left_border = min(xdata) + x_ofs;

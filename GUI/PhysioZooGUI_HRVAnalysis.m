@@ -306,6 +306,7 @@ displayEndOfDemoMessage('');
         DATA.timeStatPartRowNumber = 0;
         DATA.frequencyStatPartRowNumber = 0;
         DATA.NonLinearStatPartRowNumber = 0;
+        DATA.ComplexityStatPartRowNumber = 0;
     end
 %% Open the window
     function GUI = createInterface()
@@ -493,13 +494,14 @@ displayEndOfDemoMessage('');
         GUI.FrequencyTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
         GUI.NonLinearTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
         GUI.FourthTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.FifthTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
         if Module3
             GUI.GroupSummaryTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
-            GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Stat1', 'Stat2', 'Stat3', 'Stat4', 'Group'};
-            GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on', 'on'};
+            GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Stat1', 'Stat2', 'Stat3', 'Stat4', 'Stat5', 'Group'};
+            GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on', 'on', 'on'};
         else
-            GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Stat1', 'Stat2', 'Stat3', 'Stat4'};
-            GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on'};
+            GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Stat1', 'Stat2', 'Stat3', 'Stat4', 'Stat5'};
+            GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on', 'on'};
         end
         
         %-----------------------------------------
@@ -963,10 +965,21 @@ displayEndOfDemoMessage('');
         GUI.CMTable = uitable( 'Parent', GUI.ParamFourthBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
         GUI.CMTable.ColumnName = {'    Measures Name    ', 'Values'};
         uix.Empty( 'Parent', GUI.ParamFourthBox );
-        set( GUI.ParamFourthBox, 'Heights', tables_field_size );
+        set(GUI.ParamFourthBox, 'Heights', tables_field_size );
         
         GUI.FourthAxes1 = axes('Parent', uicontainer('Parent', GUI.FourthBox) );
-        set( GUI.FourthBox, 'Widths', [-14 -80] );
+        set(GUI.FourthBox, 'Widths', [-14 -80] );
+        %---------------------------
+        
+        GUI.FifthBox = uix.HBox( 'Parent', GUI.FifthTab, 'Spacing', DATA.Spacing);
+        GUI.ParamFifthBox = uix.VBox( 'Parent', GUI.FifthBox, 'Spacing', DATA.Spacing);
+        GUI.PMTable = uitable('Parent', GUI.ParamFifthBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
+        GUI.PMTable.ColumnName = {'    Measures Name    ', 'Values'};
+        uix.Empty( 'Parent', GUI.ParamFifthBox );
+        set(GUI.ParamFifthBox, 'Heights', tables_field_size );
+        
+        GUI.FifthAxes1 = axes('Parent', uicontainer('Parent', GUI.FifthBox) );
+        set(GUI.FifthBox, 'Widths', [-14 -80] );
         %---------------------------
         GUI.StatisticsTable = uitable( 'Parent', GUI.StatisticsTab, 'FontSize', SmallFontSize, 'ColumnWidth',{800 'auto'}, 'FontName', 'Calibri');    % 550
         GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};
@@ -2123,19 +2136,19 @@ displayEndOfDemoMessage('');
                 
                 if strcmp(DATA.Integration, 'oximetry')
                     if Module3
-                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations ', 'Hypoxic Burden', 'Complexity', 'Group'};
-                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on', 'on'};
+                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations', 'Hypoxic Burden', 'Complexity', 'Periodicity', 'Group'};
+                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on', 'on', 'on'};
                     else
-                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations ', 'Hypoxic Burden', 'Complexity'};
-                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on'};
+                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations', 'Hypoxic Burden', 'Complexity', 'Periodicity'};
+                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on', 'on'};
                     end
                 else
                     if Module3
-                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', '', 'Group'};
-                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'off', 'on'};
+                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', '', '', 'Group'};
+                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'off', 'off', 'on'};
                     else
-                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', ''};
-                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'off'};
+                        GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', '', ''};
+                        GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'off', 'off'};
                     end
                 end
                 
@@ -4658,7 +4671,7 @@ displayEndOfDemoMessage('');
                     nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
                     
                     if strcmp(DATA.Integration, 'oximetry')
-                        waitbar(1 / 3, waitbar_handle, ['Calculating overal general measures for window ' num2str(i)]);
+                        waitbar(1 / 5, waitbar_handle, ['Calculating overal general measures for window ' num2str(i)]);
                         setLogo(waitbar_handle, 'M2');
                         hrv_td = OveralGeneralMeasures(nni_window);
                         disp(['SpO2: Calculating overal general measures metrics: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
@@ -4874,7 +4887,7 @@ displayEndOfDemoMessage('');
                     
                     fun_name = 'SpO2_HypoxicBurden';
                     
-                    waitbar(3 / 3, waitbar_handle, ['Calculating hypoxic burden measures for window ' num2str(i)]);
+                    waitbar(3 / 5, waitbar_handle, ['Calculating hypoxic burden measures for window ' num2str(i)]);
                     setLogo(waitbar_handle, 'M2');
                     
                     hrv_nl = HypoxicBurdenMeasures(nni_window, DATA.ODI_begin, DATA.ODI_end); %ODI_begin, ODI_end
@@ -4962,7 +4975,7 @@ displayEndOfDemoMessage('');
                 
                 if strcmp(DATA.Integration, 'oximetry')
                     
-                    waitbar(3 / 3, waitbar_handle, ['Calculating complexity measures for window ' num2str(i)]);
+                    waitbar(4 / 5, waitbar_handle, ['Calculating complexity measures for window ' num2str(i)]);
                     setLogo(waitbar_handle, 'M2');
                     
                     SpO2_CM = ComplexityMeasures(nni_window);
@@ -4984,6 +4997,7 @@ displayEndOfDemoMessage('');
                 end
             catch e
                 close(waitbar_handle);
+                DATA.ComplexityStatPartRowNumber = 0;
                 h_e = errordlg(['SpO2_complexity: ' e.message], 'Input Error');
                 setLogo(h_e, 'M2');
                 rethrow(e);
@@ -5006,6 +5020,8 @@ displayEndOfDemoMessage('');
         end
         if ~DATA.GroupsCalc
             updateMainStatisticsTable(DATA.timeStatPartRowNumber + DATA.frequencyStatPartRowNumber + DATA.NonLinearStatPartRowNumber, DATA.CMStat.RowsNames, DATA.CMStat.Data);
+            [rn, ~] = size(DATA.CMStat.RowsNames);
+            DATA.ComplexityStatPartRowNumber = rn;
         end
         % Create full table
         DATA.CMStat.SpO2_CM_metrics = vertcat(SpO2_Complexity_metrics_tables{:});
@@ -5032,7 +5048,7 @@ displayEndOfDemoMessage('');
                     nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
                     
                     if strcmp(DATA.Integration, 'oximetry')
-                        waitbar(1 / 3, waitbar_handle, ['Calculating desaturations measures for window ' num2str(i)]);
+                        waitbar(2 / 5, waitbar_handle, ['Calculating desaturations measures for window ' num2str(i)]);
                         setLogo(waitbar_handle, 'M2');
                         [SpO2_ODI, DATA.ODI_begin, DATA.ODI_end] = ODIMeasure(nni_window);
                         SpO2_DSM = DesaturationsMeasures(nni_window, DATA.ODI_begin, DATA.ODI_end);
@@ -5098,6 +5114,69 @@ displayEndOfDemoMessage('');
         end
     end
 %%
+    function calcPeriodicityMeasuresStatistics(waitbar_handle)
+        batch_window_start_time = DATA.AnalysisParams.segment_startTime;
+        batch_window_length = DATA.AnalysisParams.activeWin_length;
+        batch_overlap = DATA.AnalysisParams.segment_overlap/100;
+        batch_win_num = DATA.AnalysisParams.winNum;
+        
+        SpO2_PeriodicityMeasures_tables = cell(batch_win_num, 1);
+        
+        for i = 1 : batch_win_num
+            start_time = tic;
+            try
+                nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
+                
+                if strcmp(DATA.Integration, 'oximetry')
+                    
+                    waitbar(5 / 5, waitbar_handle, ['Calculating periodicity measures for window ' num2str(i)]);
+                    setLogo(waitbar_handle, 'M2');
+                    
+                    SpO2_PM = PeriodicityMeasures(nni_window);
+                    disp(['Spo2: Calculating periodicity measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);                                        
+                end
+                
+                [PMData, PMRowsNames, PMDescriptions] = table2cell_StatisticsParam(SpO2_PM);                
+                
+                if ~DATA.GroupsCalc
+                    if i == DATA.active_window
+                        GUI.PMTableRowName = PMRowsNames;
+                        GUI.PMTableData = [PMDescriptions PMData];
+                        GUI.PMTable.Data = [PMRowsNames PMData];                       
+                    end
+                end
+            catch e
+                close(waitbar_handle);
+                h_e = errordlg(['SpO2_PeriodicityMeasures: ' e.message], 'Input Error');
+                setLogo(h_e, 'M2');
+                rethrow(e);
+            end
+            
+            curr_win_table = SpO2_PM;
+            curr_win_table.Properties.RowNames{1} = sprintf('W%d', i);
+            
+            SpO2_PeriodicityMeasures_tables{i} = curr_win_table;
+            
+            if i == 1
+                DATA.PMStat.RowsNames = PMRowsNames;                
+                DATA.PMStat.Data = [PMDescriptions PMData];
+            else
+                DATA.PMStat.Data = [DATA.PMStat.Data PMData];
+            end
+            
+            batch_window_start_time = batch_window_start_time + (1-batch_overlap) * batch_window_length;
+        end
+        if ~DATA.GroupsCalc
+            updateMainStatisticsTable(DATA.timeStatPartRowNumber + DATA.frequencyStatPartRowNumber + DATA.NonLinearStatPartRowNumber + DATA.ComplexityStatPartRowNumber, DATA.PMStat.RowsNames, DATA.PMStat.Data);
+        end
+        % Create full table
+        DATA.PMStat.SpO2_PM_metrics = vertcat(SpO2_PeriodicityMeasures_tables{:});
+        if strcmp(DATA.Integration, 'oximetry')
+            descr_str = 'Oximetry periodicity measures for ';
+        end
+        DATA.PMStat.SpO2_PM_metrics.Properties.Description = sprintf('%s%s', descr_str, DATA.DataFileName);
+    end
+%%
     function calcStatistics()
         if isfield(DATA, 'AnalysisParams')
             GUI.StatisticsTable.ColumnName = {'Description'};
@@ -5142,7 +5221,14 @@ displayEndOfDemoMessage('');
             end
             if strcmp(DATA.Integration, 'oximetry')
                 try
-                    calcComplexityStatistics(waitbar_handle);
+                    calcComplexityStatistics(waitbar_handle);                    
+                catch e
+                    disp(e);
+                    waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                    setLogo(waitbar_handle, 'M2');
+                end
+                try                    
+                    calcPeriodicityMeasuresStatistics(waitbar_handle);
                 catch e
                     disp(e);
                 end

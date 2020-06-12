@@ -32,20 +32,16 @@ else
     command = ['"' executable_file '" file ' signal_file ' ComplexityMeasures ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' ComplexityMeasures ' func_args];
     
-    %     tic
-    %     result_measures = exec_pzpy(command);
-    %     toc
-    
-    result_measures.ApEn = NaN;
-    result_measures.LZ = NaN;
-    result_measures.CTM = NaN;
-    
+    tic
+    result_measures = exec_pzpy(command);
+    toc
+        
     if ~isempty(result_measures)
         SpO2_CM.Properties.Description = 'Complexity measures';
         
-        SpO2_CM.ApEn = result_measures.ApEn;
-        SpO2_CM.Properties.VariableUnits{'ApEn'} = 'nu';
-        SpO2_CM.Properties.VariableDescriptions{'ApEn'} = 'Approximate entropy';
+        SpO2_CM.DFA = result_measures.DFA; % ApEn
+        SpO2_CM.Properties.VariableUnits{'DFA'} = 'nu';
+        SpO2_CM.Properties.VariableDescriptions{'DFA'} = 'Detrended Fluctuation Analysis';
         
         SpO2_CM.LZ = result_measures.LZ;
         SpO2_CM.Properties.VariableUnits{'LZ'} = 'nu';
@@ -53,7 +49,7 @@ else
         
         SpO2_CM.CTM = result_measures.CTM;
         SpO2_CM.Properties.VariableUnits{'CTM'} = 'nu';
-        SpO2_CM.Properties.VariableDescriptions{'CTM'} = 'Central tendency measure with radius 0.25';
+        SpO2_CM.Properties.VariableDescriptions{'CTM'} = 'Central Tendency Measure';        
     else
         throw(MException('ComplexityMeasures:text', 'Can''t calculate complexity measures.'));
     end

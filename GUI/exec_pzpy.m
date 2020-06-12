@@ -4,7 +4,7 @@ function result = exec_pzpy(command)
 
 if(res ~= 0)
 %     error('pzpy error: %s\n%s', error, out);
-    errordlg(['pzpy error: ', error, '\n', out], 'Input Error');
+    h_e = errordlg(['pzpy error: ', error, '\n', out], 'Input Error');
     setLogo(h_e, 'M2');
     result = [];
 else

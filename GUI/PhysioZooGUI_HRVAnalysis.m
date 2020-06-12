@@ -5135,6 +5135,10 @@ displayEndOfDemoMessage('');
                 calcNonlinearStatistics(waitbar_handle);
             catch e
                 disp(e);
+                if strcmp(DATA.Integration, 'oximetry')
+                    waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
+                    setLogo(waitbar_handle, 'M2');
+                end
             end
             if strcmp(DATA.Integration, 'oximetry')
                 try

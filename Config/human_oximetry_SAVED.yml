@@ -1,0 +1,101 @@
+# Human parameter values of the SpO2 toolbox
+---
+parameters_type:
+    mammal: human
+    integration_level: oximetry
+
+# SpO2 Signal filtering
+filtSpO2:
+    MedianSpO2:
+        enable:
+            value: true
+            description: Whether to enable range-based filtering
+            name: Enable range filter
+            units: boolean
+        FilterLength:
+            value: 12
+            description: The length of the filter
+            name: Filter Length
+            units: sec
+    ResampSpO2:
+        enable:
+            value: true
+            description: Whether to enable resampling
+            name: Enable resampling
+            units: boolean
+        Original_fs:
+            value: 1
+            description: The original frequency
+            name: Original Fs
+            units: Hz
+    RemovalAbnormalities:
+        enable:
+            value: true
+            description: Whether to enable removal of the abnormalities
+            name: Enable removal of the abnormalities
+            units: boolean
+        Range_min:
+            value: 50
+            description: Minimal value to remove samples
+            name: Range min
+            units: '%'
+        Range_max:
+            value: 100
+            description: Maximal value to remove samples
+            name: Range max
+            units: '%'
+
+OveralGeneralMeasures:
+    ZC_Baseline:
+        value: 77
+        description: Baseline for calculating number of zero-crossing points
+        name: ZC_Baseline
+        units: '%'
+    Percentile:
+        value: 0.01
+        description: Percentile to perform
+        name: Percentile
+        units: n.u.
+    M_Threshold:
+        value: 2
+        description: Percentage of the signal M_Threshold % below median oxygen saturation
+        name: M_Threshold
+        units: n.u.
+    DI_Window:
+        value: 12
+        description: Len of window to calculate DelTa Index
+        name: DI_Window
+        units: sec
+
+ODIMeasures:
+    ODI_Threshold:
+        value: 3
+        description: Threshold to compute Oxygen Desaturation Index
+        name: ODI_Threshold
+        units: '%'
+
+HypoxicBurdenMeasures:
+    CT_Threshold:
+        value: 90
+        description: Percentage of the time spent below the ''CT_Threshold'' % oxygen saturation level
+        name: CT_Threshold
+        units: '%'
+    CA_Baseline:
+        value: 77
+        description: Baseline to compute the CA feature
+        name: CA_Baseline
+        units: n.u.
+
+ComplexityMeasures:
+    CTM_Threshold:
+        value: 0.25
+        description: Radius of Central Tendency Measure
+        name: CTM_Threshold
+        units: n.u.
+
+PeriodicityMeasures:
+    d_PRSA:
+        value: 10
+        description: Fragment duration of PRSA
+        name: d_PRSA
+        units: sec

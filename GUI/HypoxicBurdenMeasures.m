@@ -53,17 +53,17 @@ else
         SpO2_HBM.Properties.VariableUnits{'CT'} = '%';
         SpO2_HBM.Properties.VariableDescriptions{'CT'} = 'Percentage of the time spent below the 90% oxygen saturation level';
         
-        SpO2_HBM.CDL = result_measures.CDL;
-        SpO2_HBM.Properties.VariableUnits{'CDL'} = 'sec';
-        SpO2_HBM.Properties.VariableDescriptions{'CDL'} = 'Cumulative duration of desaturations normalized by the total recording time';
+        SpO2_HBM.POD = result_measures.POD; % CDL
+        SpO2_HBM.Properties.VariableUnits{'POD'} = 'sec'; % CDL
+        SpO2_HBM.Properties.VariableDescriptions{'POD'} = 'Cumulative duration of desaturations normalized by the total recording time'; % CDL
         
-        SpO2_HBM.CAmax = result_measures.CAmax;
-        SpO2_HBM.Properties.VariableUnits{'CAmax'} = '%*sec';
-        SpO2_HBM.Properties.VariableDescriptions{'CAmax'} = 'Cumulative area of desaturations under max value as baseline and normalized by the total recording time';
+        SpO2_HBM.AODmax = result_measures.AODmax; % CAmax
+        SpO2_HBM.Properties.VariableUnits{'AODmax'} = '%*sec'; % CAmax
+        SpO2_HBM.Properties.VariableDescriptions{'AODmax'} = 'Cumulative area of desaturations under max value as baseline and normalized by the total recording time'; % CAmax
         
-        SpO2_HBM.CA100 = result_measures.CA100;
-        SpO2_HBM.Properties.VariableUnits{'CA100'} = '%*sec';
-        SpO2_HBM.Properties.VariableDescriptions{'CA100'} = 'Cumulative area of desaturations under the 100% SpO2 level as baseline and normalized by the total recording time';
+        SpO2_HBM.AOD100 = result_measures.AOD100;% CA100
+        SpO2_HBM.Properties.VariableUnits{'AOD100'} = '%*sec'; % CA100
+        SpO2_HBM.Properties.VariableDescriptions{'AOD100'} = 'Cumulative area of desaturations under the 100% SpO2 level as baseline and normalized by the total recording time'; % CA100
     else
         throw(MException('HypoxicBurdenMeasures:text', 'Can''t calculate hypoxic burden measures.'));
     end

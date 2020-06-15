@@ -42,27 +42,27 @@ else
         SpO2_PM.Properties.Description = 'Periodicity measures';
         
         SpO2_PM.PRSAc = result_measures.PRSAc; 
-        SpO2_PM.Properties.VariableUnits{'PRSAc'} = 'nu';
+        SpO2_PM.Properties.VariableUnits{'PRSAc'} = '%';
         SpO2_PM.Properties.VariableDescriptions{'PRSAc'} = 'PRSA capacity';
         
         SpO2_PM.PRSAad = result_measures.PRSAad;
-        SpO2_PM.Properties.VariableUnits{'PRSAad'} = 'nu';
+        SpO2_PM.Properties.VariableUnits{'PRSAad'} = '%';
         SpO2_PM.Properties.VariableDescriptions{'PRSAad'} = 'PRSA amplitude difference';
         
         SpO2_PM.PRSAos = result_measures.PRSAos;
-        SpO2_PM.Properties.VariableUnits{'PRSAos'} = 'nu';
+        SpO2_PM.Properties.VariableUnits{'PRSAos'} = '%/sec';
         SpO2_PM.Properties.VariableDescriptions{'PRSAos'} = 'PRSA overall slope';
         
         SpO2_PM.PRSAsb = result_measures.PRSAsb;
-        SpO2_PM.Properties.VariableUnits{'PRSAsb'} = 'nu';
+        SpO2_PM.Properties.VariableUnits{'PRSAsb'} = '%/sec';
         SpO2_PM.Properties.VariableDescriptions{'PRSAsb'} = 'PRSA slope before the anchor point';
         
         SpO2_PM.PRSAsa = result_measures.PRSAsa;
-        SpO2_PM.Properties.VariableUnits{'PRSAsa'} = 'nu';
+        SpO2_PM.Properties.VariableUnits{'PRSAsa'} = '%/sec';
         SpO2_PM.Properties.VariableDescriptions{'PRSAsa'} = 'PRSA slope after the anchor point';
         
         SpO2_PM.AC = result_measures.AC;
-        SpO2_PM.Properties.VariableUnits{'AC'} = 'nu';
+        SpO2_PM.Properties.VariableUnits{'AC'} = '%**2';
         SpO2_PM.Properties.VariableDescriptions{'AC'} = 'Autocorrelation';
     else
         throw(MException('PeriodicityMeasures:text', 'Can''t calculate periodicity measures.'));

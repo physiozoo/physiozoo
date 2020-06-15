@@ -40,7 +40,7 @@ else
         SpO2_CM.Properties.Description = 'Complexity measures';
         
         SpO2_CM.DFA = result_measures.DFA; % ApEn
-        SpO2_CM.Properties.VariableUnits{'DFA'} = 'nu';
+        SpO2_CM.Properties.VariableUnits{'DFA'} = '%';
         SpO2_CM.Properties.VariableDescriptions{'DFA'} = 'Detrended Fluctuation Analysis';
         
         SpO2_CM.LZ = result_measures.LZ;

@@ -223,6 +223,14 @@ displayEndOfDemoMessage('');
         
         DATA.quality_class_ind = [];
         DATA.config_file_name = '';
+        
+        DATA.CMStat.Data = [];
+        DATA.PMStat.Data = [];
+        
+        DATA.CMStat.RowsNames = [];
+        DATA.PMStat.RowsNames_NO_GreekLetters = [];
+        
+        GUI.Analysis_TabPanel.Selection = 1;
     end
 %%
     function clean_gui()
@@ -3965,8 +3973,8 @@ displayEndOfDemoMessage('');
                     
                     hrv_metrics_table.Properties.Description = sprintf('%s%s', title, DATA.DataFileName);
                     
-                    AllRowsNames = [DATA.TimeStat.RowsNames_NO_GreekLetters; DATA.FrStat.RowsNames_NO_GreekLetters; DATA.NonLinStat.RowsNames_NO_GreekLetters; DATA.CMStat.RowsNames];
-                    statistics_params = [DATA.TimeStat.Data; DATA.FrStat.Data; DATA.NonLinStat.Data; DATA.CMStat.Data];
+                    AllRowsNames = [DATA.TimeStat.RowsNames_NO_GreekLetters; DATA.FrStat.RowsNames_NO_GreekLetters; DATA.NonLinStat.RowsNames_NO_GreekLetters; DATA.CMStat.RowsNames; DATA.PMStat.RowsNames_NO_GreekLetters];
+                    statistics_params = [DATA.TimeStat.Data; DATA.FrStat.Data; DATA.NonLinStat.Data; DATA.CMStat.Data; DATA.PMStat.Data];
                     
                     column_names = {'Description'};
                     for i = 1 : DATA.AnalysisParams.winNum
@@ -5138,6 +5146,9 @@ displayEndOfDemoMessage('');
                 
                 [PMData, PMRowsNames, PMDescriptions] = table2cell_StatisticsParam(SpO2_PM);                
                 
+                PMRowsNames_NO_GreekLetters = PMRowsNames;
+                PMRowsNames = cellfun(@(x) strrep(x, '**2', sprintf('\x0B2')), PMRowsNames, 'UniformOutput', false);
+                
                 if ~DATA.GroupsCalc
                     if i == DATA.active_window
                         GUI.PMTableRowName = PMRowsNames;
@@ -5158,7 +5169,8 @@ displayEndOfDemoMessage('');
             SpO2_PeriodicityMeasures_tables{i} = curr_win_table;
             
             if i == 1
-                DATA.PMStat.RowsNames = PMRowsNames;                
+                DATA.PMStat.RowsNames = PMRowsNames;     
+                DATA.PMStat.RowsNames_NO_GreekLetters = PMRowsNames_NO_GreekLetters;
                 DATA.PMStat.Data = [PMDescriptions PMData];
             else
                 DATA.PMStat.Data = [DATA.PMStat.Data PMData];

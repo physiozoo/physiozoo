@@ -59,11 +59,11 @@ else
         
         SpO2_HBM.AODmax = result_measures.AODmax; % CAmax
         SpO2_HBM.Properties.VariableUnits{'AODmax'} = '%*sec'; % CAmax
-        SpO2_HBM.Properties.VariableDescriptions{'AODmax'} = 'Cumulative area of desaturations under max value as baseline and normalized by the total recording time'; % CAmax
+        SpO2_HBM.Properties.VariableDescriptions{'AODmax'} = 'Cumulative area of desaturations under max value as baseline'; % CAmax  and normalized by the total recording time
         
         SpO2_HBM.AOD100 = result_measures.AOD100;% CA100
         SpO2_HBM.Properties.VariableUnits{'AOD100'} = '%*sec'; % CA100
-        SpO2_HBM.Properties.VariableDescriptions{'AOD100'} = 'Cumulative area of desaturations under the 100% SpO2 level as baseline and normalized by the total recording time'; % CA100
+        SpO2_HBM.Properties.VariableDescriptions{'AOD100'} = 'Cumulative area of desaturations using 100% as baseline'; % CA100 Cumulative area of desaturations under the 100% SpO2 level as baseline
     else
         throw(MException('HypoxicBurdenMeasures:text', 'Can''t calculate hypoxic burden measures.'));
     end

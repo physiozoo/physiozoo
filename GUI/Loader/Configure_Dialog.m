@@ -169,7 +169,7 @@ Channels.Time.Name = 'time';
 Channels.Data.Enable = 0;
 Channels.Data.No =  Data_Size;
 Channels.Data.Scale_factor = 1;
-Channels.Data.Data = data(:,Channels.Data.No);
+Channels.Data.Data = [];%  Changed 080720 data(:,Channels.Data.No);
 Channels.Data.Unit = 'select';
 Channels.Data.Type = 'select';
 Channels.Data.Name = 'data';
@@ -801,7 +801,13 @@ function Channels = Update_Channel_Info(Channels,iCh,localChannel,data,type,Conf
 Channels.(type).No = iCh;
 Channels.(type).Unit = Update_Unit(Config,lower(localChannel.unit));
 Channels.(type).Scale_factor =  ScaleFactor(lower(type),Channels.(type).Unit);
-Channels.(type).Data = data(:,iCh);
+switch type
+    case 'Data'
+        Channels.(type).Data = [Channels.(type).Data,data(:,iCh)];
+    otherwise
+        Channels.(type).Data = data(:,iCh);
+end
+
 Channels.(type).Enable = 1;
 Channels.(type).Type = replace(strtrim(lower(localChannel.type)),' ','_');
 Channels.(type).Name = lower(localChannel.name);
@@ -907,7 +913,8 @@ end
                         Fs = Channels.Time.Fs;
                         Scale_factor = 1;
                     end
-                    Channels.Data.Data = (data(:,Channels.Data.No)/Fs)*Scale_factor;
+%                   Channels.Data.Data = (data(:,Channels.Data.No)/Fs)*Scale_factor; Added Eugene 29.06.2020
+                    Channels.Data.Data = (Channels.Data.Data/Fs)*Scale_factor;
                 case {'data','interval'}
                     if Channels.Data.Scale_factor
                         Fs = 1;
@@ -916,7 +923,7 @@ end
                         Fs = Channels.Time.Fs;
                         Scale_factor = 1;
                     end
-                    Channels.Data.Data = (data(:,Channels.Data.No)/Fs)*Scale_factor;
+                      Channels.Data.Data = (data(:,Channels.Data.No)/Fs)*Scale_factor;
                 case 'peak'
                     if Channels.Data.Scale_factor
                         Fs = 1;

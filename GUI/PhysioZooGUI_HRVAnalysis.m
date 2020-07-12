@@ -2402,8 +2402,15 @@ displayEndOfDemoMessage('');
             set_default_values();
             
             try
-                % Only for calc min and max bounderies for plotting
-                FiltSignal('filter_quotient', false, 'filter_ma', true, 'filter_range', false);
+%                 try
+                    % Only for calc min and max bounderies for plotting
+                    FiltSignal('filter_quotient', false, 'filter_ma', true, 'filter_range', false);
+%                 catch e                    
+%                     DATA.nni = DATA.rri;
+%                     DATA.tnn = DATA.trr;
+%                     h_e = warndlg(['filtrr error: ', e.message], 'Warning');
+%                     setLogo(h_e, 'M2');
+%                 end
                 
                 DATA.filter_ma_nni = DATA.nni;
                 DATA.filter_ma_tnn = DATA.tnn;

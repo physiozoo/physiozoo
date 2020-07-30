@@ -5,6 +5,8 @@ y_lim = get(axes_handle, 'YLim');
 
 if max(y_lim) - min(y_lim) > 5
     axes_handle.YTickMode = 'auto';
+    axes_handle.YTickLabelMode = 'auto';
+%     axes_handle.YLimMode = 'auto';
     
     axes_handle.YGrid = 'off';
     grid_checkbox_handle.Enable = 'off';

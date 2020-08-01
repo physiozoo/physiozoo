@@ -75,10 +75,45 @@ end
         DATA.amp_counter = [];
     end
 %%
+    function clean_gui_low_part()
+        
+        cla(GUI.RRInt_Axes); % RR_axes                
+        
+        if isfield(GUI, 'PinkLineHandle_AllDataAxes')
+            delete(GUI.PinkLineHandle_AllDataAxes);
+            GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
+        end
+        
+        if isfield(GUI, 'RhythmsHandle_AllDataAxes')
+            delete(GUI.RhythmsHandle_AllDataAxes);
+            GUI = rmfield(GUI, 'RhythmsHandle_AllDataAxes');
+        end
+        set(GUI.GUIRecord.PeaksFileName_text, 'String', '');
+        
+        set(GUI.GUIDisplay.RRIntPage_Length, 'String', '');
+        set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', '');
+        set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', '');
+        
+        set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'UserData', []);
+        set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'UserData', []);
+        
+        GUI.SavePeaks.Enable = 'off';
+        GUI.AutoScaleYLowAxes_checkbox.Value = 1;
+        
+%         GUI.PeaksTable.Data = {''};
+        DATA.peaks_added = 0;
+        DATA.peaks_deleted = 0;
+        DATA.peaks_total = 0;        
+        DATA.peaks_file_name = '';
+        DATA.qrs = [];
+        DATA.qrs_saved = [];
+        GUI.PeaksTable.Data(:, 2) = {0};                              
+    end
+%%
     function clean_gui(clear_sm_files_names)
         
         cla(GUI.ECG_Axes); % RawData_axes
-        cla(GUI.RRInt_Axes); % RR_axes
+%         cla(GUI.RRInt_Axes); % RR_axes
         
         if isfield(GUI, 'quality_win')
             delete(GUI.quality_win);
@@ -90,29 +125,29 @@ end
             GUI = rmfield(GUI, 'rhythms_win');
         end
         
-        if isfield(GUI, 'PinkLineHandle_AllDataAxes')
-            delete(GUI.PinkLineHandle_AllDataAxes);
-            GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
-        end
-        
-        if isfield(GUI, 'RhythmsHandle_AllDataAxes')
-            delete(GUI.RhythmsHandle_AllDataAxes);
-            GUI = rmfield(GUI, 'RhythmsHandle_AllDataAxes');
-        end
+%         if isfield(GUI, 'PinkLineHandle_AllDataAxes')
+%             delete(GUI.PinkLineHandle_AllDataAxes);
+%             GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
+%         end
+%         
+%         if isfield(GUI, 'RhythmsHandle_AllDataAxes')
+%             delete(GUI.RhythmsHandle_AllDataAxes);
+%             GUI = rmfield(GUI, 'RhythmsHandle_AllDataAxes');
+%         end
         
         set(GUI.GUIRecord.RecordFileName_text, 'String', '');
-        set(GUI.GUIRecord.PeaksFileName_text, 'String', '');
+%         set(GUI.GUIRecord.PeaksFileName_text, 'String', '');
         set(GUI.GUIRecord.DataQualityFileName_text, 'String', '');
         set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
         set(GUI.GUIRecord.Config_text, 'String', '');
         set(GUI.GUIRecord.TimeSeriesLength_text, 'String', '');
         
-        set(GUI.GUIDisplay.RRIntPage_Length, 'String', '');
-        set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', '');
-        set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', '');
-        
-        set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'UserData', []);
-        set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'UserData', []);
+%         set(GUI.GUIDisplay.RRIntPage_Length, 'String', '');
+%         set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', '');
+%         set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', '');
+%         
+%         set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'UserData', []);
+%         set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'UserData', []);
         
         set(GUI.GUIDisplay.FirstSecond, 'String', '');
         set(GUI.GUIDisplay.WindowSize, 'String', '');
@@ -124,26 +159,31 @@ end
         set(GUI.GUIDisplay.MaxYLimit_Edit, 'UserData', '');
         
         GUI.AutoPeakWin_checkbox.Value = 1;
-        set(GUI.GUIConfig.PeaksWindow, 'String', '');
+%         set(GUI.GUIConfig.PeaksWindow, 'String', '');
         
         GUI.GUIRecord.Annotation_popupmenu.Value = 1;
         
-        GUI.GUIRecord.Class_popupmenu.Visible = 'off';
-        GUI.Class_Text.Visible = 'off';
-        GUI.GUIRecord.Class_popupmenu.Value = 3;
+%         GUI.GUIRecord.Class_popupmenu.Visible = 'off';
+%         GUI.Class_Text.Visible = 'off';
+%         GUI.GUIRecord.Class_popupmenu.Value = 3;
+%         
+%         GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
+%         GUI.Rhythms_Text.Visible = 'off';
+%         GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
         
-        GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
-        GUI.Rhythms_Text.Visible = 'off';
-        GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
+%         GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
+%         GUI.Adjustment_Text.Visible = 'on';
+%         GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
         
-        GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
-        GUI.Adjustment_Text.Visible = 'on';
+        GUI.Adjustment_Text.String = 'Peak adjustmen';
         GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
+        GUI.GUIRecord.PeakAdjustment_popupmenu.String = DATA.Adjustment_type;
+        GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @PeakAdjustment_popupmenu_Callback;
         
-        set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
-        set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
-        set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
-        set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
+%         set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
+%         set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
+%         set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
+%         set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
         
         title(GUI.ECG_Axes, '');
         
@@ -152,7 +192,7 @@ end
         
         GUI.LoadConfigurationFile.Enable = 'off';
         GUI.SaveConfigurationFile.Enable = 'off';
-        GUI.SavePeaks.Enable = 'off';
+%         GUI.SavePeaks.Enable = 'off';
         
         GUI.SaveRhythms.Enable = 'off';
         GUI.OpenRhythms.Enable = 'off';
@@ -172,6 +212,8 @@ end
         set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
         
         DATA.Action = 'move';
+        setptr(GUI.Window, 'arrow');
+        DATA.hObject = 'overall';
         
         set(GUI.Window, 'WindowButtonMotionFcn', '');
         set(GUI.Window, 'WindowButtonUpFcn', '');
@@ -187,7 +229,7 @@ end
         GUI.GUIDisplay.Movie_Delay.String = 2;
         
         GUI.AutoScaleY_checkbox.Value = 1;
-        GUI.AutoScaleYLowAxes_checkbox.Value = 1;
+%         GUI.AutoScaleYLowAxes_checkbox.Value = 1;
         GridX_checkbox_Callback();
         %         GridY_checkbox_Callback();
 %         GUI.RawSignal_checkbox.Value = 1;
@@ -226,6 +268,9 @@ end
             GUI = rmfield(GUI, 'FilteredData_handle');
         catch
         end
+        GUI.GUIDir.FileName2Split.String = '';
+        GUI.GUIDir.Split_Sec.String = DATA.Small_File_Length_Sec;
+        GUI.GUIDir.Split_Sec.UserData = DATA.Small_File_Length_Sec;
     end
 %%
     function DATA = createData()
@@ -583,25 +628,49 @@ end
         GUI.DisplayTab = DisplayTab;
         
         %-------------------------------------------------------
-        % Directory Tab
+        % Folder Tab
         
-        [GUI, textBox{1}, text_handles{1}] = createGUITextLine(GUI, 'GUIDir', 'DirName_text', 'Directory name:', DirBox, 'text', 1, @OpenDir_Callback);
-        
+        [GUI, textBox{1}, text_handles{1}] = createGUITextLine(GUI, 'GUIDir', 'DirName_text', 'Directory name:', DirBox, 'text', 1, @OpenDir_Callback);        
         GUI.GUIDir.DirName_text_pushbutton_handle.Enable = 'on';
         
         textBox{2} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);
-        text_handles{2} = uicontrol('Style', 'text', 'Parent', textBox{2}, 'String', 'File list:', 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.GUIDir.FileList = uicontrol('Style', 'listbox', 'Parent', textBox{2}, 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+        text_handles{2} = uicontrol('Style', 'text', 'Parent', textBox{2}, 'String', 'File list:', ...
+                                    'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.GUIDir.FileList = uicontrol('Style', 'listbox', 'Parent', textBox{2}, 'FontSize', ...
+                                        DATA.SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.GUIDir.FileList.Callback = @FileList_listbox_callback;
         uix.Empty('Parent', textBox{2});
         
+        uix.Empty('Parent', DirBox);
+        
+        textBox{3} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);
+        text_handles{3} = uicontrol('Style', 'text', 'Parent', textBox{3}, 'String', 'Split file ', ...
+                                    'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.GUIDir.FileName2Split = uicontrol('Style', 'text', 'Parent', textBox{3}, 'FontSize', DATA.SmallFontSize, 'String', '', 'HorizontalAlignment', 'left');
+        uicontrol('Style', 'text', 'Parent', textBox{3}, 'String', 'to', ...
+                  'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');  
+                                                                                                
+        textBox{4} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);
+        text_handles{4} = uicontrol('Style', 'text', 'Parent', textBox{4}, 'String', 'Sections of ', ...
+                                    'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.GUIDir.Split_Sec = uicontrol('Style', 'edit', 'Parent', textBox{4}, 'Callback', @Split_Sec_Callback, ...
+                  'FontSize', DATA.SmallFontSize, 'Tag', 'Split_sec', 'UserData', DATA.Small_File_Length_Sec, 'String', DATA.Small_File_Length_Sec);
+        uicontrol('Style', 'text', 'Parent', textBox{4}, 'String', 'sec', ...
+                  'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');              
+        
+        textBox{5} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);                      
+        uix.Empty('Parent', textBox{5});
+        uicontrol('Style', 'PushButton', 'Parent', textBox{5}, 'Callback', @SplitFile_Button_Callback, ...
+                  'FontSize', DATA.SmallFontSize, 'String', 'Split');
+        uix.Empty('Parent', textBox{5});              
+              
         uix.Empty('Parent', DirBox);
         
         
         max_extent_control = calc_max_control_x_extend(text_handles);
         
         field_size = [max_extent_control, 200, 25];
-        for i =  1 : 2
+        for i =  1 : 5
             set(textBox{i}, 'Widths', field_size);
         end
         
@@ -610,7 +679,7 @@ end
         %             set(DirBox, 'Heights', [hf * ones(1, 2), -4] );
         %         else
         %             hf = -1;
-        set(DirBox, 'Heights', [-1, -5, -5]);
+        set(DirBox, 'Heights', [-0.9, -7, -0.7, -0.7, -0.7, -0.7, -7]);
         %         end
         
         %-------------------------------------------------------
@@ -632,25 +701,25 @@ end
         [GUI, textBox{9}, text_handles{9}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'PeakDetector_popupmenu', 'Peak detector', RecordBox, @PeakDetector_popupmenu_Callback, DATA.GUI_PeakDetector);
         [GUI, textBox{10}, text_handles{10}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Annotation_popupmenu', 'Annotation', RecordBox, @Annotation_popupmenu_Callback, DATA.GUI_Annotation);
         [GUI, textBox{11}, text_handles{11}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'PeakAdjustment_popupmenu', 'Peak adjustment', RecordBox, @PeakAdjustment_popupmenu_Callback, DATA.Adjustment_type);
-        [GUI, textBox{12}, text_handles{12}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Class_popupmenu', 'Class', RecordBox, @Class_popupmenu_Callback, DATA.GUI_Class);
-        [GUI, textBox{13}, text_handles{13}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Rhythms_popupmenu', 'Rhythms', RecordBox, @Rhythms_popupmenu_Callback, DATA.Rhythms_Type);
+%         [GUI, textBox{12}, text_handles{12}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Class_popupmenu', 'Class', RecordBox, @Class_popupmenu_Callback, DATA.GUI_Class);
+%         [GUI, textBox{13}, text_handles{13}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Rhythms_popupmenu', 'Rhythms', RecordBox, @Rhythms_popupmenu_Callback, DATA.Rhythms_Type);
                 
         GUI.Adjust_textBox = textBox{11};
-        GUI.Class_textBox = textBox{12};
-        GUI.Rhythms_textBox = textBox{13};
-        
-        GUI.GUIRecord.Class_popupmenu.Visible = 'off';
-        GUI.GUIRecord.Class_popupmenu.Value = 3;
-        GUI.Class_Text = text_handles{12};
-        GUI.Class_Text.Visible = 'off';
-        
-        GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
-        GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
-        GUI.Rhythms_Text = text_handles{13};
-        GUI.Rhythms_Text.Visible = 'off';
-        
         GUI.Adjustment_Text = text_handles{11};
         GUI.Adjustment_Text.Visible = 'on';
+        
+%         GUI.Class_textBox = textBox{12};
+%         GUI.Rhythms_textBox = textBox{13};
+        
+%         GUI.GUIRecord.Class_popupmenu.Visible = 'off';
+%         GUI.GUIRecord.Class_popupmenu.Value = 3;
+%         GUI.Class_Text = text_handles{12};
+%         GUI.Class_Text.Visible = 'off';
+        
+%         GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
+%         GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
+%         GUI.Rhythms_Text = text_handles{13};
+%         GUI.Rhythms_Text.Visible = 'off';                
         
         max_extent_control = calc_max_control_x_extend(text_handles);
         
@@ -665,7 +734,7 @@ end
             field_size1 = [max_extent_control, -0.4, -0.55]; % + 5 % -0.45, -0.5
         end
         
-        for i = 7 : 13
+        for i = 7 : 11 % 13
             set(textBox{i}, 'Widths', field_size1);
         end
         
@@ -686,7 +755,7 @@ end
                 'Tooltip', DATA.rhythms_tooltip{i}, 'Callback', @Rhythms_ToggleButton_Callback, 'Value', 0, 'UserData', i);
         end
         if DATA.SmallScreen
-            set(Rhythms_grid, 'Widths', 34*ones(1, 3), 'Heights', -1*ones(1, length(DATA.Rhythms_Type)/3)); % 60
+            set(Rhythms_grid, 'Widths', 34*ones(1, 3), 'Heights', -1*ones(1, length(DATA.Rhythms_Type)/3)); % 34
         else
             set(Rhythms_grid, 'Widths', 39*ones(1, 3), 'Heights', -1*ones(1, length(DATA.Rhythms_Type)/3)); % 60
         end
@@ -696,10 +765,10 @@ end
         if DATA.SmallScreen
             hf = -0.1; % -0.45
             %             uix.Empty( 'Parent', RecordBox);
-            set(RecordBox, 'Heights', [hf * ones(1, 13), -1]);
+            set(RecordBox, 'Heights', [hf * ones(1, 11), -1]);
         else
-            hf = -0.155;
-            set(RecordBox, 'Heights', [hf * ones(1, 13), -1]);
+            hf = -0.12; % -0.155
+            set(RecordBox, 'Heights', [hf * ones(1, 11), -1]);
         end
         
         load_config_name_button_position = get(GUI.GUIRecord.Config_text_pushbutton_handle, 'Position');
@@ -711,9 +780,9 @@ end
         set(GUI.GUIRecord.RhythmsFileName_text_pushbutton_handle, 'Position', updated_position);
         
         GUI.Adjust_textBox_position = get(GUI.Adjust_textBox, 'Position');
-        GUI.Class_textBox_position = get(GUI.Class_textBox, 'Position');
-        GUI.Rhythms_textBox_position = get(GUI.Rhythms_textBox, 'Position');        
-        GUI.RhythmsHBox_position = get(GUI.RhythmsHBox, 'Position');
+%         GUI.Class_textBox_position = get(GUI.Class_textBox, 'Position');
+%         GUI.Rhythms_textBox_position = get(GUI.Rhythms_textBox, 'Position');        
+%         GUI.RhythmsHBox_position = get(GUI.RhythmsHBox, 'Position');
                 
         
 %         set(GUI.RhythmsHBox, 'Position', GUI.Class_textBox_position);
@@ -776,7 +845,7 @@ end
         
         
         
-        set(GUI.ConfigBox, 'Heights', [-15 * ones(1, 8)   -0.5 -15 * ones(1, 6) -0.5 -15 * ones(1, 3)  -0.5 -15 -15 -50]);
+        set(GUI.ConfigBox, 'Heights', [-15 * ones(1, 8)   -0.5 -15 * ones(1, 6) -0.5 -15 * ones(1, 3)  -0.5 -15 -15 -150]);
         %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)   -1 -7 * ones(1, 6) -1 -7 * ones(1, 4)  -8 -7 -7 ] );
         %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)    -7 * ones(1, 6) -7 * ones(1, 4)  -7 -7 ] );
         %-------------------------------------------------------
@@ -866,7 +935,7 @@ end
         field_size = [max_extent_control, 46, 2, 46, 20, -1];
         set(CutoffFr, 'Widths', field_size);
         
-        set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6 -3 -3 -6     -6 -2 -7 -6 -45]);
+        set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6 -3 -3 -6     -6 -2 -7 -6 -52]);
         
         %-------------------------------------------------------
         
@@ -946,8 +1015,8 @@ end
     function [GUI, TempBox, uicontrol_handle] = createGUITextLine(GUI, gui_struct, field_name, string_field_name, box_container, style, isOpenButton, callback_openButton)
         
         TempBox = uix.HBox( 'Parent', box_container, 'Spacing', DATA.Spacing);
-        uicontrol_handle = uicontrol( 'Style', 'text', 'Parent', TempBox, 'String', string_field_name, 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.(gui_struct).(field_name) = uicontrol( 'Style', style, 'Parent', TempBox, 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+        uicontrol_handle = uicontrol('Style', 'text', 'Parent', TempBox, 'String', string_field_name, 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.(gui_struct).(field_name) = uicontrol('Style', style, 'Parent', TempBox, 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
         
         if isOpenButton
             button_field_name = [field_name '_pushbutton_handle'];
@@ -1197,12 +1266,15 @@ end
                         else
                             clear_sm_files_names = false;
                         end
+                        clean_gui_low_part();
                         clean_gui(clear_sm_files_names);
                         clean_config_param_fields();
                         delete_temp_wfdb_files();
                         
                         DATA.DataFileName = DataFileName;
                         DATA.rec_name = [PathName, DATA.DataFileName];
+                        
+                        GUI.GUIDir.FileName2Split.String = DATA.DataFileName;
                         
                         mammal = data.General.mammal;
                         if strcmpi(mammal, 'custom')
@@ -1257,7 +1329,7 @@ end
                                 isM2 = 1;
                                 return;
                             case 'Peak detection module'
-                                if isfield(DATA, 'Mammal')
+                                if isfield(DATA, 'Mammal') && ~isempty(DATA.Mammal)
                                     isM2 = 0;
                                     try
                                         load_peaks(ECG_FileName, PathName, DataFileMap);
@@ -1266,21 +1338,31 @@ end
                                         end
                                         return;
                                     catch e
+                                        clean_gui_low_part();
                                         if isvalid(waitbar_handle)
                                             close(waitbar_handle);
                                         end
                                         h_e = errordlg(['load_peaks error: ' e.message], 'Input Error');
                                         setLogo(h_e, 'M1');
-                                        return;
+                                        if nargin < 3
+                                            return;
+                                        else
+                                            throw(MException('OpenFile:LoadPeaks', 'Load Peaks failed'));
+                                        end                                        
                                     end
                                 else
                                     isM2 = 0;
+                                    clean_gui_low_part();
                                     h_e = errordlg('Please, load ECG file first.', 'Input Error');
                                     setLogo(h_e, 'M1');
                                     if isvalid(waitbar_handle)
                                         close(waitbar_handle);
                                     end
-                                    return;
+                                    if nargin < 3
+                                            return;
+                                    else
+                                        throw(MException('OpenFile:NoECGFile', 'Please, load ECG file first'));
+                                    end                                    
                                 end
                             case 'Cancel'
                                 isM2 = 1;
@@ -1344,7 +1426,7 @@ end
                 title(GUI.ECG_Axes, TitleName, 'FontWeight', 'normal', 'FontSize', 11);
                 
 % -----------------------------------------------------                
-                DATA.firstZoom = min(60, max(DATA.tm)); % secz
+                DATA.firstZoom = min(60, max(DATA.tm)); % sec
                 DATA.zoom_rect_limits = [0 DATA.firstZoom];
 % -----------------------------------------------------                  
                 
@@ -1390,9 +1472,9 @@ end
                 
                 table_data = cell(ch_no, 2);
                 table_data(1, 1) = {data.Data.Names{1}};
-                table_data(1, 2) = {true};
+                table_data(1, 2) = {true};                                
                 
-                [~, ch_no] = size(DATA.sig);                
+%                 [~, ch_no] = size(DATA.sig);                
                 for i = 2 : ch_no
 %                     GUI.ChISignal_checkbox(i-1) = uicontrol('Style', 'Checkbox', 'Parent', GUI.ChannelsBox, 'Callback', @ShowChISignal_checkbox_Callback, 'FontSize', DATA.SmallFontSize);
 %                     GUI.ChISignal_checkbox(i-1).String = ['Show ''' data.Data.Names{i} ''' channel'];
@@ -1400,130 +1482,139 @@ end
 %                     GUI.ChISignal_checkbox(i-1).Value = 0;
 %                     GUI.ChISignal_checkbox(i-1).UserData = i-1;
 %                     GUI.ChISignal_checkbox(i-1).BackgroundColor = myUpBackgroundColor;
-                    
+
                     table_data(i, 1) = {data.Data.Names{i}};
                     table_data(i, 2) = {false};
                 end
                 
-                
                 GUI.ChannelsTable.Data = table_data;
                 
+                GUI.GUIDir.Split_Sec.String = min(max(DATA.tm), DATA.Small_File_Length_Sec);
+                GUI.GUIDir.Split_Sec.UserData = GUI.GUIDir.Split_Sec.String;
+                
                 % Split huge file to small files
-                if max(DATA.tm) > DATA.Small_File_Length_Sec %3600
-                    answer = questdlg('This is a very long file. Would you like to split it to a smaller files?', ...
-                        'Huge file', ...
-                        'Split', 'Cancel', 'Split');
-                    if strcmp(answer, 'Split')
-                        if isdeployed
-                            res_parh = [userpath filesep 'PhysioZoo' filesep 'Results'];
-                        else
-                            res_parh = [fileparts(basepath) filesep 'Results'];
+                if nargin ~= 3
+                    if max(DATA.tm)*0.9 > str2double(GUI.GUIDir.Split_Sec.String) %DATA.Small_File_Length_Sec %3600
+                        answer = questdlg('This is a very long file. Would you like to split it to a smaller files?', ...
+                            'Huge file', ...
+                            'Split', 'No', 'Split');
+                        if strcmp(answer, 'Split')
+                            SplitFile_Button_Callback();
+                            %                         if isdeployed
+                            %                             res_parh = [userpath filesep 'PhysioZoo' filesep 'Results'];
+                            %                         else
+                            %                             res_parh = [fileparts(basepath) filesep 'Results'];
+                            %                         end
+                            %
+                            %                         small_files_folder = [res_parh, filesep, DataFileName];
+                            %
+                            %                         if ~isfolder(small_files_folder)
+                            %                             warning('off');
+                            %                             mkdir(small_files_folder);
+                            %                             warning('on');
+                            %                         end
+                            %
+                            %                         small_files_folder = uigetdir(small_files_folder, 'Choose folder for small files');
+                            %                         if small_files_folder == 0
+                            %                             return;
+                            %                         end
+                            %                         GUI.GUIDir.DirName_text.String = small_files_folder;
+                            %
+                            %                         Mammal = DATA.Mammal;
+                            %                         Fs = DATA.Fs;
+                            %                         Integration_level = DATA.Integration_From_Files{DATA.integration_index};
+                            %
+                            % %                         Channels{1}.name = 'Time';
+                            % %                         Channels{1}.enable = 'yes';
+                            % %                         Channels{1}.type = 'time';
+                            % %                         Channels{1}.unit = 'sec';
+                            %
+                            % %                         for j = 2 : ch_no + 1
+                            %                         for j = 1 : ch_no
+                            %                             Channels{j}.name = ['Data_' num2str(j)];
+                            %                             Channels{j}.enable = 'yes';
+                            %                             Channels{j}.type = 'electrography';
+                            %                             Channels{j}.unit = 'mV';
+                            %                         end
+                            %
+                            %                         waitbar_handle = waitbar(0, 'Saving', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+                            %
+                            %                         sm_files_num = ceil(max(DATA.tm)/DATA.Small_File_Length_Sec);
+                            %
+                            %                         file_list = cell(1, sm_files_num);
+                            %
+                            %                         minLimit = 0;
+                            %                         maxLimit = DATA.Small_File_Length_Sec;
+                            %
+                            %                         for i = 1 : sm_files_num
+                            %
+                            %                             file_name = ['part_' num2str(i) '_ecg.mat'];
+                            %                             full_file_name = [small_files_folder filesep file_name];
+                            %
+                            %                             file_list{1, i} = file_name;
+                            %
+                            %                             Data = DATA.sig(DATA.tm >= minLimit & DATA.tm < maxLimit, :);
+                            %                             Time = DATA.tm(DATA.tm >= minLimit & DATA.tm < maxLimit, :);
+                            %
+                            % %                             Data = [Time, Data];
+                            %
+                            %                             waitbar(i / sm_files_num, waitbar_handle, ['Saving file number ' num2str(i)]); setLogo(waitbar_handle, 'M1');
+                            %                             save(full_file_name, 'Data', 'Mammal', 'Fs', 'Integration_level', 'Channels');
+                            %
+                            %                             minLimit = maxLimit;
+                            %                             maxLimit = min(maxLimit + DATA.Small_File_Length_Sec, max(DATA.tm));
+                            %                         end
+                            %
+                            %                         if isvalid(waitbar_handle)
+                            %                             close(waitbar_handle);
+                            %                         end
+                            %
+                            %                         GUI.GUIDir.FileList.String = file_list;
+                            %
+                            %                         if ~isempty(DATA.qrs)
+                            %                             Channels={};
+                            % %                             Channels{1}.name = 'Time';
+                            % %                             Channels{1}.enable = 'yes';
+                            % %                             Channels{1}.type = 'time';
+                            % %                             Channels{1}.unit = 'sec';
+                            %
+                            %                             Channels{1}.name = 'interval';
+                            %                             Channels{1}.enable = 'yes';
+                            %                             Channels{1}.type = 'peak';
+                            %                             Channels{1}.unit = 'index';
+                            %
+                            %                             qrs = double(DATA.qrs(~isnan(DATA.qrs)));
+                            %                             rr_time = qrs/DATA.Fs;
+                            %
+                            %                             minLimit_rr = 0;
+                            %                             maxLimit_rr = min(DATA.Small_File_Length_Sec, max(rr_time));
+                            %
+                            %                             time_samples = 0;
+                            %                             for i = 1 : sm_files_num
+                            %
+                            %                                 full_file_name_peaks_ind = [small_files_folder filesep 'part_' num2str(i) '_Peaks.mat'];
+                            %
+                            %                                 ecg_time = DATA.tm(DATA.tm >= minLimit_rr & DATA.tm < maxLimit_rr, :);
+                            %                                 Data = DATA.qrs(rr_time >= minLimit_rr & rr_time <= maxLimit_rr, :);
+                            %
+                            %                                 if i > 1
+                            %                                     time_samples = time_samples + ecg_time_length;
+                            %                                     Data = Data - time_samples;
+                            %                                     ecg_time_length = numel(ecg_time);
+                            %                                 else
+                            %                                     ecg_time_length = numel(ecg_time);
+                            %                                 end
+                            %
+                            %                                 save(full_file_name_peaks_ind, 'Data', 'Mammal', 'Fs', 'Integration_level', 'Channels');
+                            %
+                            %                                 minLimit_rr = maxLimit_rr;
+                            %                                 maxLimit_rr = min(maxLimit_rr + DATA.Small_File_Length_Sec, max(rr_time));
+                            %                             end
+                            %                         end
+                            %                         GUI.RightLeft_TabPanel.Selection = 2;
+                            %                         GUI.GUIDir.FileList.Value = 1;
+                            %                         FileList_listbox_callback(GUI.GUIDir.FileList);
                         end
-                        
-                        small_files_folder = [res_parh, filesep, DataFileName];
-                        
-                        if ~isfolder(small_files_folder)
-                            warning('off');
-                            mkdir(small_files_folder);
-                            warning('on');
-                        end
-                        
-                        small_files_folder = uigetdir(small_files_folder, 'Choose folder for small files');
-                        if small_files_folder == 0
-                            return;
-                        end
-                        GUI.GUIDir.DirName_text.String = small_files_folder;
-                        
-                        Mammal = DATA.Mammal;
-                        Fs = DATA.Fs;
-                        Integration_level = DATA.Integration_From_Files{DATA.integration_index};
-                        
-%                         Channels{1}.name = 'Time';
-%                         Channels{1}.enable = 'yes';
-%                         Channels{1}.type = 'time';
-%                         Channels{1}.unit = 'sec';
-                        
-%                         for j = 2 : ch_no + 1
-                        for j = 1 : ch_no
-                            Channels{j}.name = ['Data_' num2str(j)];
-                            Channels{j}.enable = 'yes';
-                            Channels{j}.type = 'electrography';
-                            Channels{j}.unit = 'mV';
-                        end
-                                    
-                        waitbar_handle = waitbar(0, 'Saving', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
-                        
-                        sm_files_num = ceil(max(DATA.tm)/DATA.Small_File_Length_Sec);
-                        
-                        file_list = cell(1, sm_files_num);
-                        
-                        minLimit = 0;
-                        maxLimit = DATA.Small_File_Length_Sec;
-                                                                                                
-                        for i = 1 : sm_files_num
-                            
-                            file_name = ['part_' num2str(i) '_ecg.mat'];
-                            full_file_name = [small_files_folder filesep file_name];                                                        
-                                                        
-                            file_list{1, i} = file_name;
-                            
-                            Data = DATA.sig(DATA.tm >= minLimit & DATA.tm < maxLimit, :);
-                            Time = DATA.tm(DATA.tm >= minLimit & DATA.tm < maxLimit, :);                                                                                                                    
-                            
-%                             Data = [Time, Data];
-                            
-                            waitbar(i / sm_files_num, waitbar_handle, ['Saving file ' num2str(i) '.']); setLogo(waitbar_handle, 'M1');
-                            save(full_file_name, 'Data', 'Mammal', 'Fs', 'Integration_level', 'Channels');
-                            
-                            minLimit = maxLimit;
-                            maxLimit = min(maxLimit + DATA.Small_File_Length_Sec, max(DATA.tm));                                                        
-                        end
-                        
-                        if isvalid(waitbar_handle)
-                            close(waitbar_handle);
-                        end
-                        
-                        GUI.GUIDir.FileList.String = file_list;
-                        
-                        if ~isempty(DATA.qrs)
-                            Channels={};
-%                             Channels{1}.name = 'Time';
-%                             Channels{1}.enable = 'yes';
-%                             Channels{1}.type = 'time';
-%                             Channels{1}.unit = 'sec';
-                            
-                            Channels{1}.name = 'interval';
-                            Channels{1}.enable = 'yes';
-                            Channels{1}.type = 'peak';
-                            Channels{1}.unit = 'index';
-                            
-                            qrs = double(DATA.qrs(~isnan(DATA.qrs)));                            
-                            rr_time = qrs/DATA.Fs;                                                                                                            
-                            
-                            minLimit_rr = 0;
-                            maxLimit_rr = min(DATA.Small_File_Length_Sec, max(rr_time));
-                                                        
-                            time_samples = 0;
-                            for i = 1 : sm_files_num
-                                
-                                full_file_name_peaks_ind = [small_files_folder filesep 'part_' num2str(i) '_Peaks.mat'];
-                                                                                  
-                                ecg_time = DATA.tm(DATA.tm >= minLimit_rr & DATA.tm < maxLimit_rr, :);
-                                Data = DATA.qrs(rr_time >= minLimit_rr & rr_time < maxLimit_rr, :);                                                                                                
-                                if i > 1
-                                    time_samples = time_samples + numel(ecg_time);
-                                    Data = Data - time_samples;
-                                end
-                                
-                                save(full_file_name_peaks_ind, 'Data', 'Mammal', 'Fs', 'Integration_level', 'Channels');
-                                
-                                minLimit_rr = maxLimit_rr;
-                                maxLimit_rr = min(maxLimit_rr + DATA.Small_File_Length_Sec, max(rr_time));                                                                
-                            end
-                        end     
-                        GUI.RightLeft_TabPanel.Selection = 2;
-                        GUI.GUIDir.FileList.Value = 1;
-                        FileList_listbox_callback(GUI.GUIDir.FileList);
                     end
                 end
             end
@@ -1857,6 +1948,15 @@ end
                         GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
                         uistack(GUI.red_peaks_handle, 'top');  % bottom
                         
+% ---------------------------                                                
+                        if DATA.amp_counter(1) > 0
+                            coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(1));
+                        else
+                            coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
+                        end
+                        GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData / coeff;
+% ---------------------------                        
+                        
                         plot_rr_data();
                         plot_red_rectangle(DATA.zoom_rect_limits);
                         GUI.PeaksTable.Data(:, 2) = {0};
@@ -1938,7 +2038,8 @@ end
                 GUI.RRInt_handle = line(rr_time, rr_data, 'Parent', GUI.RRInt_Axes, 'Marker', '*', 'MarkerSize', 2, 'Tag', 'RRInt');
                 
                 DATA.maxRRTime = max(DATA.tm);
-                DATA.RRIntPage_Length = DATA.maxRRTime;
+%                 DATA.RRIntPage_Length = DATA.maxRRTime;
+                DATA.RRIntPage_Length = max(rr_time);
                 ylabel(GUI.RRInt_Axes, yString);
                 
                 if length(rr_data) == 1
@@ -2343,7 +2444,8 @@ end
                 catch e
                     h_e = errordlg(['onOpenFile error: ' e.message], 'Input Error');
                     setLogo(h_e, 'M1');
-                    return;
+                    rethrow(e);
+%                     return;
                 end
             else
                 h_e = errordlg(['on Load Peaks error: ' 'Please, choose another file type.'], 'Input Error');
@@ -2368,21 +2470,29 @@ end
                 end
                 DATA.qrs = double(DATA.qrs);
                 GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
-                uistack(GUI.red_peaks_handle, 'bottom');
+                uistack(GUI.red_peaks_handle, 'top');
+                
+%  ---------------------------                                                
+                if DATA.amp_counter(1) > 0
+                    coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(1));
+                else
+                    coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
+                end
+                GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData / coeff;
+% ---------------------------                   
                 
                 if isfield(GUI, 'RRInt_handle') && ishandle(GUI.RRInt_handle) && isvalid(GUI.RRInt_handle)
                     delete(GUI.RRInt_handle);
                 end
                 try
-                    delete(GUI.red_rect_handle);
-                    delete(GUI.RRInt_handle);
-                    
-                    plot_rr_data();
-                    
+%                     delete(GUI.red_rect_handle);
+%                     delete(GUI.RRInt_handle);
+                                                            
                     if isfield(GUI, 'red_rect_handle') && ishandle(GUI.red_rect_handle) && isvalid(GUI.red_rect_handle)
                         delete(GUI.red_rect_handle);
                     end
                     
+                    plot_rr_data();
                     plot_red_rectangle(DATA.zoom_rect_limits);
                     
                     set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
@@ -2400,7 +2510,16 @@ end
                     set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
                     set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
                     set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
-                catch
+                                        
+                    set(GUI.Window, 'WindowScrollWheelFcn', @my_WindowScrollWheelFcn);
+                    set(GUI.Window, 'WindowKeyPressFcn', @my_WindowKeyPressFcn);
+                    set(GUI.Window, 'WindowKeyReleaseFcn', @my_WindowKeyReleaseFcn);
+                    
+                    GUI.timer_object = timer;
+                    GUI.timer_object.ExecutionMode = 'fixedRate';
+                    GUI.timer_object.StopFcn = @EnablePageUpDown;
+                catch e
+                    disp(e.message);
                 end
             else
                 h_e = errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
@@ -2568,7 +2687,7 @@ end
                 
                 set_rectangles_YData();
             catch e
-                disp(e.mesage);
+%                 disp(e.message);
             end
         end
     end
@@ -2639,22 +2758,27 @@ end
             set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
             
             GUI.GUIRecord.Annotation_popupmenu.Value = 1;
-            GUI.GUIRecord.Class_popupmenu.Visible = 'off';
-            GUI.Class_Text.Visible = 'off';
-            GUI.GUIRecord.Class_popupmenu.Value = 3;
+%             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
+%             GUI.Class_Text.Visible = 'off';
+%             GUI.GUIRecord.Class_popupmenu.Value = 3;
             
-            GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
-            GUI.Rhythms_Text.Visible = 'off';
-            GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
+%             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
+%             GUI.Rhythms_Text.Visible = 'off';
+%             GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
             
-            GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
-            GUI.Adjustment_Text.Visible = 'on';
-            GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
             
-            set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
-            set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
-            set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
-            set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
+%             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
+%             GUI.Adjustment_Text.Visible = 'on';
+            GUI.Adjustment_Text.String = 'Peak adjustmen';            
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;            
+            GUI.GUIRecord.PeakAdjustment_popupmenu.String = DATA.Adjustment_type;            
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @PeakAdjustment_popupmenu_Callback;
+            
+            
+%             set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
+%             set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
+%             set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
+%             set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
             DATA.Adjust = 0;
             
             GUI.GridX_checkbox.Value = 1;
@@ -2701,7 +2825,8 @@ end
                 GUI = rmfield(GUI, 'FilteredData_handle');
             catch
             end
-                                    
+            GUI.GUIDir.Split_Sec.String = DATA.Small_File_Length_Sec;
+            GUI.GUIDir.Split_Sec.UserData = DATA.Small_File_Length_Sec;
             try
                 RunAndPlotPeakDetector();
             catch e
@@ -3026,8 +3151,13 @@ end
                     
                     if min(quality_range) ~= max(quality_range)
                         DATA.quality_win_num = DATA.quality_win_num + 1;
-                        classes = get(GUI.GUIRecord.Class_popupmenu, 'String');
-                        quality_class = GUI.GUIRecord.Class_popupmenu.Value;
+                        
+%                         classes = get(GUI.GUIRecord.Class_popupmenu, 'String');
+%                         quality_class = GUI.GUIRecord.Class_popupmenu.Value;
+                        
+                        classes = get(GUI.GUIRecord.PeakAdjustment_popupmenu, 'String');
+                        quality_class = GUI.GUIRecord.PeakAdjustment_popupmenu.Value;
+                        
                         plot_quality_rect(quality_range, DATA.quality_win_num, quality_class);
                         plot_quality_line([min(quality_range) max(quality_range)], {classes{quality_class}});
                     end
@@ -3043,8 +3173,13 @@ end
                     
                     if min(rhythms_range) ~= max(rhythms_range)
                         DATA.rhythms_win_num = DATA.rhythms_win_num + 1;
-                        classes = get(GUI.GUIRecord.Rhythms_popupmenu, 'String');
-                        rhythms_class = GUI.GUIRecord.Rhythms_popupmenu.Value;
+                        
+%                         classes = get(GUI.GUIRecord.Rhythms_popupmenu, 'String');
+%                         rhythms_class = GUI.GUIRecord.Rhythms_popupmenu.Value;
+                        
+                        classes = get(GUI.GUIRecord.PeakAdjustment_popupmenu, 'String');
+                        rhythms_class = GUI.GUIRecord.PeakAdjustment_popupmenu.Value;
+                                                
                         rhythms_handle = plot_rhythms_rect(rhythms_range, 0, rhythms_class); % DATA.rhythms_win_num
                         
                         rhythms_struct.rhythm_type = classes{rhythms_class};
@@ -3076,6 +3211,12 @@ end
     end
 %%
     function my_WindowButtonMotionFcn(src, callbackdata, type)
+%         type
+%         if isfield(DATA, 'hObject')
+%             DATA.hObject
+%         else
+%             'NO'
+%         end
         switch type
             case 'init'
                 reset_rhythm_button();
@@ -3895,59 +4036,76 @@ end
         index_selected = get(GUI.GUIRecord.Annotation_popupmenu, 'Value');
         
         if index_selected == 1
-            GUI.GUIRecord.Class_popupmenu.Visible = 'off';
-            GUI.Class_Text.Visible = 'off';
             
-            GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
-            GUI.Rhythms_Text.Visible = 'off';
+            GUI.Adjustment_Text.String = 'Peak adjustmen';
+            GUI.GUIRecord.PeakAdjustment_popupmenu.String = DATA.Adjustment_type;
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @PeakAdjustment_popupmenu_Callback;
             
-            GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
-            GUI.Adjustment_Text.Visible = 'on';
-            
-            set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
-%             set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
-%             set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
-            
-            set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
+%             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
+%             GUI.Class_Text.Visible = 'off';
+%             
+%             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
+%             GUI.Rhythms_Text.Visible = 'off';
+%             
+%             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
+%             GUI.Adjustment_Text.Visible = 'on';
+%             
+%             set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
+% %             set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
+% %             set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
+%             
+%             set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
             GUI.RhythmsHBox.Visible = 'off';
         elseif index_selected == 2
                         
-            GUI.GUIRecord.Class_popupmenu.Visible = 'on';
-            GUI.Class_Text.Visible = 'on';
             
-            GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
-            GUI.Rhythms_Text.Visible = 'off';
+            GUI.Adjustment_Text.String = 'Class';            
+            GUI.GUIRecord.PeakAdjustment_popupmenu.String = DATA.GUI_Class;
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @Class_popupmenu_Callback;
             
-            GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'off';
-            GUI.Adjustment_Text.Visible = 'off';
-            
-%             set(GUI.Adjust_textBox, 'Position', GUI.Class_textBox_position);
-            set(GUI.Class_textBox, 'Position', GUI.Adjust_textBox_position);
-%             set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
-            
-%             set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
+%             GUI.GUIRecord.Class_popupmenu.Visible = 'on';
+%             GUI.Class_Text.Visible = 'on';
+%             
+%             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
+%             GUI.Rhythms_Text.Visible = 'off';
+%             
+%             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'off';
+%             GUI.Adjustment_Text.Visible = 'off';
+%             
+% %             set(GUI.Adjust_textBox, 'Position', GUI.Class_textBox_position);
+%             set(GUI.Class_textBox, 'Position', GUI.Adjust_textBox_position);
+% %             set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
+%             
+% %             set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
             GUI.RhythmsHBox.Visible = 'off';
         else
-            GUI.GUIRecord.Class_popupmenu.Visible = 'off';
-            GUI.Class_Text.Visible = 'off';
             
-            GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'off';
-            GUI.Adjustment_Text.Visible = 'off';
             
-%             set(GUI.Adjust_textBox, 'Position', GUI.Rhythms_textBox_position);
-%             set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
-            set(GUI.Rhythms_textBox, 'Position', GUI.Adjust_textBox_position);
+            GUI.Adjustment_Text.String = 'Rhythms';
+            GUI.GUIRecord.PeakAdjustment_popupmenu.String = DATA.Rhythms_Type;
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @Rhythms_popupmenu_Callback;
             
-            GUI.GUIRecord.Rhythms_popupmenu.Visible = 'on';
-            GUI.Rhythms_Text.Visible = 'on';            
+%             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
+%             GUI.Class_Text.Visible = 'off';
+%             
+%             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'off';
+%             GUI.Adjustment_Text.Visible = 'off';
+%             
+% %             set(GUI.Adjust_textBox, 'Position', GUI.Rhythms_textBox_position);
+% %             set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
+%             set(GUI.Rhythms_textBox, 'Position', GUI.Adjust_textBox_position);
+%             
+%             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'on';
+%             GUI.Rhythms_Text.Visible = 'on';            
             GUI.RhythmsHBox.Visible = 'on';
-            
-            set(GUI.RhythmsHBox, 'Position', [GUI.Class_textBox_position(1) GUI.Class_textBox_position(1) GUI.RhythmsHBox_position(3) GUI.RhythmsHBox_position(4)]);
-            
-            
-            
+%             
+%             set(GUI.RhythmsHBox, 'Position', [GUI.Class_textBox_position(1) GUI.Class_textBox_position(1) GUI.RhythmsHBox_position(3) GUI.RhythmsHBox_position(4)]);
+%             
             Rhythms_ToggleButton_Reset();
-            GUI.rhythms_legend(GUI.GUIRecord.Rhythms_popupmenu.Value).Value = 1;            
+%             GUI.rhythms_legend(GUI.GUIRecord.Rhythms_popupmenu.Value).Value = 1;            
         end
     end
 %%
@@ -4010,6 +4168,15 @@ end
             DATA.qrs = double(DATA.qrs);
             GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
             uistack(GUI.red_peaks_handle, 'top');
+            
+%  ---------------------------                                                
+            if DATA.amp_counter(1) > 0
+                coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(1));
+            else
+                coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
+            end
+            GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData / coeff;
+% ---------------------------               
             
             delete(GUI.red_rect_handle);
             delete(GUI.RRInt_handle);
@@ -4911,6 +5078,9 @@ end
             if src.Value
                 if isfield(GUI, 'FilteredData_handle') && ishandle(GUI.FilteredData_handle) && isvalid(GUI.FilteredData_handle)
                     GUI.FilteredData_handle.Visible = 'on';
+                    if strcmp(GUI.RawChannelsData_handle(1).Visible, 'off')
+                        GUI.red_peaks_handle.Visible = 'on';
+                    end
                 else
                     if isfield(DATA, 'sig')
                         try
@@ -4926,6 +5096,9 @@ end
             else
                 if isfield(GUI, 'FilteredData_handle') && ishandle(GUI.FilteredData_handle) && isvalid(GUI.FilteredData_handle)
                     GUI.FilteredData_handle.Visible = 'off';
+                    if strcmp(GUI.RawChannelsData_handle(1).Visible, 'off')
+                        GUI.red_peaks_handle.Visible = 'off';
+                    end
                 end
                 GUI.FilterLevelBox.Visible = 'off';
                 GUI.CutoffFrBox.Visible = 'off';
@@ -4946,6 +5119,16 @@ end
             GUI.FilteredData_handle = line(DATA.tm, bpecg, 'Parent', GUI.ECG_Axes, 'Tag', 'FilteredData', 'Color', 'b');
             xdata = get(GUI.red_rect_handle, 'XData');
             setECGYLim(xdata(1), xdata(2));
+            
+% ---------------------------
+            if DATA.amp_counter(1) > 0
+                coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(1));
+            else
+                coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
+            end
+            GUI.FilteredData_handle.YData = GUI.FilteredData_handle.YData / coeff;
+% ---------------------------
+            
         catch e
             h_e = errordlg(['BP Filter error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
             rethrow(e);
@@ -4957,7 +5140,9 @@ end
             GUI.rhythms_legend(i).Value = 0;
         end
         src.Value = 1;
-        GUI.GUIRecord.Rhythms_popupmenu.Value = src.UserData;
+%         GUI.GUIRecord.Rhythms_popupmenu.Value = src.UserData;
+        
+        GUI.GUIRecord.PeakAdjustment_popupmenu.Value = src.UserData;                
     end
 %%
     function Rhythms_ToggleButton_Reset()
@@ -4966,7 +5151,7 @@ end
         end
     end
 %%
-    function OpenDir_Callback(src, ~)
+    function OpenDir_Callback(~, ~)
                 
         basepath = fileparts(fileparts(mfilename('fullpath')));
         
@@ -4985,7 +5170,10 @@ end
         end
         GUI.GUIDir.FileList.Value = 1;
         GUI.GUIDir.FileList.String = files_list_names;
-        
+        clearData();
+        clean_gui(true);
+        clean_gui_low_part();        
+%         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
     end
 %%
     function FileList_listbox_callback(src, ~)
@@ -4998,17 +5186,23 @@ end
         FileName = peaks_file_name;
         PathName = [GUI.GUIDir.DirName_text.String filesep]; 
         
-        GUI.AutoCalc_checkbox.Value = 0;
-        GUI.AutoCompute_pushbutton.Enable = 'on';
-        OpenFile_Callback([], [], fullFileName_ecg);   
-        
-        if exist([PathName, FileName], 'file')            
-            load_peaks(FileName, PathName, struct([]));
-        else
-            GUI.AutoCalc_checkbox.Value = 1;
-            GUI.AutoCompute_pushbutton.Enable = 'off';
-            RunAndPlotPeakDetector();
+        saved_val_AutoCalc_checkbox= GUI.AutoCalc_checkbox.Value;
+        saved_val_AutoCompute_pushbutton = GUI.AutoCompute_pushbutton.Enable;
+        try
+            GUI.AutoCalc_checkbox.Value = 0;
+            GUI.AutoCompute_pushbutton.Enable = 'on';
+            OpenFile_Callback([], [], fullFileName_ecg);
+            if exist([PathName, FileName], 'file')                
+                load_peaks(FileName, PathName, struct([]));                
+            else                
+                RunAndPlotPeakDetector();
+            end
+        catch e
+            h_e = errordlg(['load_peaks: ', e.message], 'Input Error'); setLogo(h_e, 'M1');
+%             disp(e.message);
         end
+        GUI.AutoCalc_checkbox.Value = saved_val_AutoCalc_checkbox;
+        GUI.AutoCompute_pushbutton.Enable = saved_val_AutoCompute_pushbutton;
     end
 %%
     function ChannelsTableEditCallback(~, callbackdata)  
@@ -5021,7 +5215,7 @@ end
                     if ch_num == 1
                         GUI.red_peaks_handle.Visible = 'on';
                         if GUI.FilteredSignal_checkbox.Value
-                            GUI.FilteredData_handle.Visible = 'on';
+                            GUI.FilteredDatta_handle.Visible = 'on';
                         end
                     end
                 catch
@@ -5031,8 +5225,12 @@ end
                 line_handle.Visible = 'off';
                 try
                     if ch_num == 1
-                        GUI.red_peaks_handle.Visible = 'off';
-                        GUI.FilteredData_handle.Visible = 'off';
+                        if GUI.FilteredSignal_checkbox.Value
+                            GUI.red_peaks_handle.Visible = 'on';
+                        else
+                            GUI.red_peaks_handle.Visible = 'off';
+                        end                        
+%                         GUI.FilteredData_handle.Visible = 'off';
                     end
                 catch
                 end
@@ -5115,6 +5313,146 @@ end
                 redraw_quality_rect();
                 redraw_rhythms_rect();
             end
+        end
+    end
+%%
+    function SplitFile_Button_Callback(~, ~)   
+        if isfield(DATA, 'DataFileName') && ~isempty(DATA.DataFileName)
+            
+        Small_File_Length_Sec = str2double(GUI.GUIDir.Split_Sec.String);
+            
+        basepath = fileparts(mfilename('fullpath'));
+        if isdeployed
+            res_parh = [userpath filesep 'PhysioZoo' filesep 'Results'];
+        else
+            res_parh = [fileparts(basepath) filesep 'Results'];
+        end
+        
+        small_files_folder = [res_parh, filesep, DATA.DataFileName];
+        
+        if ~isfolder(small_files_folder)
+            warning('off');
+            mkdir(small_files_folder);
+            warning('on');
+        end
+        
+        small_files_folder = uigetdir(small_files_folder, 'Choose folder for small files');
+        if small_files_folder == 0
+            return;
+        end
+        GUI.GUIDir.DirName_text.String = small_files_folder;
+        
+        Mammal = DATA.Mammal;
+        Fs = DATA.Fs;
+        Integration_level = DATA.Integration_From_Files{DATA.integration_index};
+        
+        %                         Channels{1}.name = 'Time';
+        %                         Channels{1}.enable = 'yes';
+        %                         Channels{1}.type = 'time';
+        %                         Channels{1}.unit = 'sec';
+        
+        %                         for j = 2 : ch_no + 1
+        [~, ch_no] = size(DATA.sig); 
+        for j = 1 : ch_no
+            Channels{j}.name = ['Data_' num2str(j)];
+            Channels{j}.enable = 'yes';
+            Channels{j}.type = 'electrography';
+            Channels{j}.unit = 'mV';
+        end
+        
+        waitbar_handle = waitbar(0, 'Saving', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+        
+%         sm_files_num = ceil(max(DATA.tm)/DATA.Small_File_Length_Sec);
+        sm_files_num = ceil(max(DATA.tm)/Small_File_Length_Sec);
+        
+        file_list = cell(1, sm_files_num);
+        
+        minLimit = 0;
+        maxLimit = Small_File_Length_Sec;
+        
+        for i = 1 : sm_files_num
+            
+            file_name = ['part_' num2str(i) '_ecg.mat'];
+            full_file_name = [small_files_folder filesep file_name];
+            
+            file_list{1, i} = file_name;
+            
+            Data = DATA.sig(DATA.tm >= minLimit & DATA.tm < maxLimit, :);
+            Time = DATA.tm(DATA.tm >= minLimit & DATA.tm < maxLimit, :);
+            
+            %                             Data = [Time, Data];
+            
+            waitbar(i / sm_files_num, waitbar_handle, ['Saving file number ' num2str(i)]); setLogo(waitbar_handle, 'M1');
+            save(full_file_name, 'Data', 'Mammal', 'Fs', 'Integration_level', 'Channels');
+            
+            minLimit = maxLimit;
+            maxLimit = min(maxLimit + Small_File_Length_Sec, max(DATA.tm));
+        end
+        
+        if isvalid(waitbar_handle)
+            close(waitbar_handle);
+        end
+        
+        GUI.GUIDir.FileList.String = file_list;
+        GUI.GUIDir.FileList.Value = 1;
+        
+        if ~isempty(DATA.qrs)
+            Channels={};
+            %                             Channels{1}.name = 'Time';
+            %                             Channels{1}.enable = 'yes';
+            %                             Channels{1}.type = 'time';
+            %                             Channels{1}.unit = 'sec';
+            
+            Channels{1}.name = 'interval';
+            Channels{1}.enable = 'yes';
+            Channels{1}.type = 'peak';
+            Channels{1}.unit = 'index';
+            
+            qrs = double(DATA.qrs(~isnan(DATA.qrs)));
+            rr_time = qrs/DATA.Fs;
+            
+            minLimit_rr = 0;
+            maxLimit_rr = min(Small_File_Length_Sec, max(rr_time));
+            
+            time_samples = 0;
+            for i = 1 : sm_files_num
+                
+                full_file_name_peaks_ind = [small_files_folder filesep 'part_' num2str(i) '_Peaks.mat'];
+                
+                ecg_time = DATA.tm(DATA.tm >= minLimit_rr & DATA.tm < maxLimit_rr, :);
+                Data = DATA.qrs(rr_time >= minLimit_rr & rr_time <= maxLimit_rr, :);
+                
+                if i > 1
+                    time_samples = time_samples + ecg_time_length;
+                    Data = Data - time_samples;
+                    if Data(1) == 0
+                        Data(1) = 1;
+                    end
+                    ecg_time_length = numel(ecg_time);
+                else
+                    ecg_time_length = numel(ecg_time);
+                end
+                
+                save(full_file_name_peaks_ind, 'Data', 'Mammal', 'Fs', 'Integration_level', 'Channels');
+                
+                minLimit_rr = maxLimit_rr;
+                maxLimit_rr = min(maxLimit_rr + Small_File_Length_Sec, max(rr_time));
+            end
+        end
+        GUI.RightLeft_TabPanel.Selection = 2;
+        GUI.GUIDir.FileList.Value = 1;
+        FileList_listbox_callback(GUI.GUIDir.FileList);
+        end
+    end
+%%
+    function Split_Sec_Callback(src, ~)
+        newVal = str2double(src.String);
+        isnumeric = isPositiveNumericValue(src.String);
+        if isnumeric && newVal > 0 && newVal <= max(DATA.tm)            
+            src.UserData = newVal;
+        else
+            src.String = src.UserData;
+            h_e = errordlg('Please, check your input!', 'Input Error'); setLogo(h_e, 'M1');
         end
     end
 %%

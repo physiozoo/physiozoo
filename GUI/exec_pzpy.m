@@ -9,5 +9,6 @@ if(res ~= 0)
     result = [];
 else
     out = strrep(out, 'null', '" "');
-    result = matlab.internal.webservices.fromJSON(out);
+    out = strrep(out, '''', '"');
+    result = jsondecode(out);
 end

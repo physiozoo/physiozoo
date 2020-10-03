@@ -1,0 +1,167 @@
+# Human parameter values of the mhrv toolbox
+---
+parameters_type:
+    mammal: human
+    integration_level: oximetry
+   
+# RR Interval filtering
+filtrr:
+    range:
+        enable:
+            value: false
+            description: Whether to enable range-based filtering
+            name: Enable range filter
+            units: boolean
+        rr_min:
+            value: 0.28
+            description: Minimal allowed RR interval duration
+            name: RR min
+            units: sec
+        rr_max:
+            value: 2.4
+            description: Maximal allowed RR interval duration
+            name: RR max
+            units: sec
+    moving_average:
+        enable:
+            value: true
+            description: Whether to enable moving average-based filtering
+            name: Enable moving average filter
+            units: boolean
+        win_length:
+            value: 10
+            description: Length in samples of the moving average filter
+            name: MA filter length
+            units: n.u.
+        win_threshold:
+            value: 20
+            description: Threshold percantage above/below the moving average filter value
+            name: MA filter threshold
+            units: '%'
+    quotient:
+        enable:
+            value: false
+            description: Whether to enable quotient filter
+            name: Enable quotient filter
+            units: boolean
+        rr_max_change:
+            value: 20
+            description: Maximal allowed change between adjacent RR intervals
+            name: RR max change
+            units: '%'
+    detrending:
+        lambda:
+            value: 10
+            description: Regularization parameter
+            name: Lambda
+            units: n.u.
+        enable:
+            value: false
+            description: Enable or disable the detrending of the time series
+            name: Detrend NN time series
+            units: boolean            
+
+# Time-domain HRV parameters
+hrv_time:
+    pnn_thresh_ms:
+        value: 50
+        description: Threshold value for PNNx
+        name: PNN Threshold
+        units: ms
+
+# Frequency-domain HRV parameters
+hrv_freq:    
+    vlf_band:
+        value: [0.0033, 0.046]
+        description: VLF frequency band range
+        name: VLF Band
+        units: Hz
+    lf_band:
+        value: [0.046,  0.158]
+        description: LF frequency band range
+        name: LF Band
+        units: Hz
+    hf_band:
+        value: [0.158,   0.588]
+        description: HF frequency band range
+        name: HF Band
+        units: Hz    
+    window_minutes:
+        value: 5
+        description: Duration of winodow for spectral averaging
+        name: Spectral window length
+        units: min
+    welch_overlap:
+        value: 50
+        description: Percent overlap between windows when using welch method
+        name: Welch overlap
+        units: '%'
+    ar_order:
+        value: 20
+        description: Order of AR model to fit
+        name: AR order
+        units: n.u.
+    beta_band:
+        value: [0.0033, 0.046]
+        description: Frequency range for log-log slope calculation (beta)
+        name: Beta band
+        units: Hz 
+    
+# DFA Parameters
+dfa:
+    n_min:
+        value: 4
+        description: Minimal DFA box size
+        name: n_min
+        units: n.u.
+    n_max:
+        value: 128
+        description: Maximal DFA box size
+        name: n_max
+        units: n.u.
+    n_incr:
+        value: 1
+        description: DFA box size increment
+        name: n_incr
+        units: n.u.
+    alpha1_range:
+        value: [4, 15]
+        description: Box size range for alpha1 slope calculation
+        name: Alpha1 range
+        units: n.u.
+    alpha2_range:
+        value: [16, 128]
+        description: Box size range for alpha2 slope calculation
+        name: Alpha2 range
+        units: n.u.
+
+# MSE Parameters
+mse:
+    mse_max_scale:
+        value: 15
+        description: Maximal scale value for MSE calculation
+        name: MSE max scale
+        units: n.u.
+    sampen_r:
+        value: 0.2
+        description: Sample entropy template match threshold
+        name: SampEn r
+        units: n.u.
+    sampen_m:
+        value: 2
+        description: Sample entropy template length
+        name: SampEn m
+        units: n.u.
+    normalize_std:
+        value: true
+        description: Whether to normalize the signal to std=1 before calculating MSE.
+        name: Normalize Standard Deviation
+        units: boolean
+
+
+#    mse_metrics:
+#        value: false
+#        description: Whether to output each MSE value as a metric
+#        name: Output MSE metrics
+#        units: boolean
+

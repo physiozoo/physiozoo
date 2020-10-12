@@ -2274,14 +2274,27 @@ displayEndOfDemoMessage('');
                         set(GUI.FourthBox, 'Widths', [-14 -80] );
                         %---------------------------
                         
-                        GUI.FifthBox = uix.HBox( 'Parent', GUI.FifthTab, 'Spacing', DATA.Spacing);
-                        GUI.ParamFifthBox = uix.VBox( 'Parent', GUI.FifthBox, 'Spacing', DATA.Spacing);
+                        GUI.FifthBox = uix.HBox('Parent', GUI.FifthTab, 'Spacing', DATA.Spacing);
+                        
+                        GUI.ParamFifthBox = uix.VBox('Parent', GUI.FifthBox, 'Spacing', DATA.Spacing);
                         GUI.PMTable = uitable('Parent', GUI.ParamFifthBox, 'FontSize', DATA.SmallFontSize, 'FontName', 'Calibri');
                         GUI.PMTable.ColumnName = {'    Measures Name    ', 'Values'};
-                        uix.Empty( 'Parent', GUI.ParamFifthBox );
+                        uix.Empty('Parent', GUI.ParamFifthBox );
                         set(GUI.ParamFifthBox, 'Heights', tables_field_size );
                         
-                        GUI.FifthAxes1 = axes('Parent', uicontainer('Parent', GUI.FifthBox) );
+                        
+                        vert_box = uix.VBox('Parent', GUI.FifthBox, 'Spacing', DATA.Spacing);
+                        hor_box = uix.HBox('Parent', vert_box, 'Spacing', DATA.Spacing);
+                        
+                        uix.Empty('Parent', hor_box);
+                        GUI.freq_yscale_Button = uicontrol('Style', 'ToggleButton', 'Parent', hor_box, 'Callback', @PSD_pushbutton_Callback, 'FontSize', DATA.BigFontSize, 'Value', 1, 'String', 'Log');
+%                         uix.Empty('Parent', hor_box);
+                        set(hor_box, 'Widths', [-1 100]); % [-30 100 -45]                                           
+                        
+                        GUI.FifthAxes1 = axes('Parent', uicontainer('Parent', vert_box));
+                        
+                        set(vert_box, 'Heights', [-7 -93]);
+                        
                         set(GUI.FifthBox, 'Widths', [-14 -80] );
                         %---------------------------
                     end
@@ -2505,6 +2518,18 @@ displayEndOfDemoMessage('');
         cla(GUI.NonLinearAxes3);
     end
 %%
+    function plot_desaturations_results(active_window)
+        
+        clear_frequency_statistics_results();
+        plot_data = DATA.FrStat.PlotData{active_window};
+        
+        if ~isempty(plot_data)
+            plot_oximetry_desat_hist(GUI.FrequencyAxes1, plot_data)            
+        end
+        box(GUI.FrequencyAxes1, 'off');
+%         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
+    end
+%%
     function plot_general_statistics_results(active_window)
         
         clear_time_statistics_results();
@@ -2513,7 +2538,7 @@ displayEndOfDemoMessage('');
         if ~isempty(plot_data)
             plot_oximetry_time_hist(GUI.TimeAxes1, plot_data)            
         end
-        box(GUI.FifthAxes1, 'off' );
+        box(GUI.TimeAxes1, 'off' );
 %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
     end
 %%
@@ -4762,7 +4787,7 @@ displayEndOfDemoMessage('');
         end
     end
 %%
-    function PSD_pushbutton_Callback( src, ~ )
+    function PSD_pushbutton_Callback(src, ~)
         if get(src, 'Value')
             set(src, 'String', 'Log');
             DATA.freq_yscale = 'linear';
@@ -4770,8 +4795,11 @@ displayEndOfDemoMessage('');
             set(src, 'String', 'Linear');
             DATA.freq_yscale = 'log';
         end
-        if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
-            mhrv.plots.plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale, 'clear', true);
+        if ~strcmp(DATA.Integration, 'oximetry')
+            if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
+                mhrv.plots.plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale, 'clear', true);
+            end
+        else
         end
     end
 %%
@@ -5407,7 +5435,7 @@ displayEndOfDemoMessage('');
                                                 
                         disp(['Spo2: Calculating ODI and  desaturations measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                         
-                        DATA.FrStat.PlotData{i} = [];
+                        DATA.FrStat.PlotData{i} = diff(new_ind_array, 1, 2);
                     end
                     
                     [ODIData, ODIRowsNames, ODIDescriptions] = table2cell_StatisticsParam(SpO2_ODI);
@@ -5430,7 +5458,9 @@ displayEndOfDemoMessage('');
                             GUI.DSMParametersTable.Data = [DSMRowsNames DSMData];
                             
                             updateODIDSMStatistics();
-                            %                             plot_time_statistics_results(i);
+                            
+                            plot_desaturations_results(i);
+                            
                         end
                     end
                 catch e
@@ -5651,8 +5681,9 @@ displayEndOfDemoMessage('');
         end
         
         if strcmp(DATA.Integration, 'oximetry')
-            if isfield(DATA, 'FrStat') && ~isempty(DATA.FrStat) && isfield(DATA.FrStat, 'RowsNames')
-                GUI.FrequencyParametersTable.Data = [DATA.FrStat.RowsNames DATA.FrStat.Data(:, DATA.active_window + 1)];
+            if isfield(DATA, 'PMStat') && ~isempty(DATA.PMStat) && isfield(DATA.PMStat, 'RowsNames')
+%                 GUI.FrequencyParametersTable.Data = [DATA.FrStat.RowsNames DATA.FrStat.Data(:, DATA.active_window + 1)];
+                GUI.PMStat.Data = [DATA.PMStat.RowsNames DATA.PMStat.Data(:, DATA.active_window + 1)];
                 plot_periodicity_statistics_results(DATA.active_window);
             end
             if isfield(DATA, 'CMStat') && ~isempty(DATA.CMStat) && isfield(DATA.CMStat, 'RowsNames')

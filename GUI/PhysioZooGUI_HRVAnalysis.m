@@ -178,33 +178,47 @@ displayEndOfDemoMessage('');
         DATA.TimeStat.PlotData = [];
         DATA.FrStat.PlotData = [];
         DATA.NonLinStat.PlotData = [];
+                
+%         DATA.GeneralStat.PlotData = [];
+        DATA.CMStat.PlotData = [];
+        DATA.PMStat.PlotData = [];
         
-        DATA.timeData = [];
-        DATA.timeRowsNames = [];
-        DATA.timeDescriptions = [];
+%         DATA.timeData = [];
+%         DATA.timeRowsNames = [];
+%         DATA.timeDescriptions = [];
         
-        DATA.ODIData = [];
-        DATA.ODIRowsNames = [];
-        DATA.ODIDescriptions = [];
+%         DATA.ODIData = [];
+%         DATA.ODIRowsNames = [];
+%         DATA.ODIDescriptions = [];
         
-        DATA.fd_arData = [];
-        DATA.fd_ArRowsNames = [];
+%         DATA.fd_arData = [];
+%         DATA.fd_ArRowsNames = [];
         
-        DATA.fd_welchData = [];
-        DATA.fd_WelchRowsNames = [];
+%         DATA.fd_welchData = [];
+%         DATA.fd_WelchRowsNames = [];
         
-        DATA.nonlinData = [];
-        DATA.nonlinRowsNames = [];
-        DATA.nonlinDescriptions = [];
+%         DATA.nonlinData = [];
+%         DATA.nonlinRowsNames = [];
+%         DATA.nonlinDescriptions = [];
         
-        DATA.CMData = [];
-        DATA.CMRowsNames = [];
-        DATA.CMDescriptions = [];
+%         DATA.CMData = [];
+%         DATA.CMRowsNames = [];
+%         DATA.CMDescriptions = [];
         
+%         DATA.CMStat.Data = [];
+%         DATA.PMStat.Data = [];
+%         
+%         DATA.CMStat.RowsNames = [];
+%         DATA.PMStat.RowsNames_NO_GreekLetters = [];
+
         GUI.TimeParametersTableRowName = [];
-        GUI.FrequencyParametersTableMethodRowName = [];
+%         GUI.FrequencyParametersTableMethodRowName = [];
+        GUI.FrequencyParametersTableRowName = [];
         GUI.NonLinearTableRowName = [];
         GUI.CMTableRowName = [];
+        GUI.ODIParametersTableRowName = [];
+        GUI.DSMParametersTableRowName = [];
+        GUI.PMTableRowName = [];
         
         DATA.flag = '';
         
@@ -224,13 +238,7 @@ displayEndOfDemoMessage('');
         
         DATA.quality_class_ind = [];
         DATA.config_file_name = '';
-        
-        DATA.CMStat.Data = [];
-        DATA.PMStat.Data = [];
-        
-        DATA.CMStat.RowsNames = [];
-        DATA.PMStat.RowsNames_NO_GreekLetters = [];
-        
+                        
         GUI.Analysis_TabPanel.Selection = 1;
         
         DATA.default_filters_thresholds = [];
@@ -268,8 +276,17 @@ displayEndOfDemoMessage('');
         set(GUI.Config_text, 'String', '');
         set(GUI.Mammal_popupmenu, 'String', '');
         
-        set(GUI.freq_yscale_Button, 'String', 'Log');
-        set(GUI.freq_yscale_Button, 'Value', 1);
+        try
+            set(GUI.freq_yscale_Button, 'String', 'Log');
+            set(GUI.freq_yscale_Button, 'Value', 1);
+        catch
+        end
+        
+        try
+            set(GUI.oxim_per_log_Button, 'String', 'Log');
+            set(GUI.oxim_per_log_Button, 'Value', 1);
+        catch
+        end
         
         GUI.PageDownButton.Enable = 'off';
         GUI.PageUpButton.Enable = 'on';
@@ -304,7 +321,7 @@ displayEndOfDemoMessage('');
         GUI.FrequencyParametersTable.Data = [];
         GUI.FrequencyParametersTableData = [];
         GUI.FrequencyParametersTable.RowName = [];
-        GUI.FrequencyParametersTableMethodRowName = [];
+%         GUI.FrequencyParametersTableMethodRowName = [];
         
         GUI.NonLinearTable.Data = [];
         GUI.NonLinearTableData = [];
@@ -325,6 +342,11 @@ displayEndOfDemoMessage('');
             GUI.DSMParametersTable.RowName=[];
             GUI.DSMParametersTable.Data = [];
         end
+        if isfield(GUI, 'PMTable') && ishandle(GUI.PMTable) && isvalid(GUI.PMTable)
+            GUI.PMTable.Data = [];
+            GUI.PMTableData = [];
+            GUI.PMTable.RowName = [];
+        end 
         GUI.StatisticsTable.RowName = {''};
         GUI.StatisticsTable.Data = {''};
         GUI.StatisticsTable.ColumnName = {'Description'; 'Values'};
@@ -332,8 +354,11 @@ displayEndOfDemoMessage('');
         DATA.TimeStat = [];
         DATA.FrStat = [];
         DATA.NonLinStat = [];
-        DATA.CMStat = [];
         
+%         DATA.GeneralStat = [];
+        DATA.CMStat = [];
+        DATA.PMStat = [];
+                
         DATA.timeStatPartRowNumber = 0;
         DATA.frequencyStatPartRowNumber = 0;
         DATA.NonLinearStatPartRowNumber = 0;
@@ -2285,13 +2310,15 @@ displayEndOfDemoMessage('');
                         
                         vert_box = uix.VBox('Parent', GUI.FifthBox, 'Spacing', DATA.Spacing);
                         hor_box = uix.HBox('Parent', vert_box, 'Spacing', DATA.Spacing);
+                        HorAxesBox = uix.HBox( 'Parent', vert_box, 'Spacing', DATA.Spacing);
                         
                         uix.Empty('Parent', hor_box);
-                        GUI.freq_yscale_Button = uicontrol('Style', 'ToggleButton', 'Parent', hor_box, 'Callback', @PSD_pushbutton_Callback, 'FontSize', DATA.BigFontSize, 'Value', 1, 'String', 'Log');
-%                         uix.Empty('Parent', hor_box);
-                        set(hor_box, 'Widths', [-1 100]); % [-30 100 -45]                                           
+                        GUI.oxim_per_log_Button = uicontrol('Style', 'ToggleButton', 'Parent', hor_box, 'Callback', @PSD_pushbutton_Callback, 'FontSize', DATA.BigFontSize, 'Value', 1, 'String', 'Log');
+                        uix.Empty('Parent', hor_box);
+                        set(hor_box, 'Widths', [-30 100 -45]); %   [-1 100]                                         
                         
-                        GUI.FifthAxes1 = axes('Parent', uicontainer('Parent', vert_box));
+                        GUI.FifthAxes1 = axes('Parent', uicontainer('Parent', HorAxesBox));
+                        GUI.FifthAxes2 = axes('Parent', uicontainer('Parent', HorAxesBox));
                         
                         set(vert_box, 'Heights', [-7 -93]);
                         
@@ -2480,6 +2507,11 @@ displayEndOfDemoMessage('');
         clear_time_statistics_results();
         clear_frequency_statistics_results();
         clear_nonlinear_statistics_results();
+        try
+            clear_periodicity_statistics_results();
+            clear_complexity_statistics_results();
+        catch
+        end
     end
 %%
     function clear_time_statistics_results()
@@ -2490,10 +2522,18 @@ displayEndOfDemoMessage('');
 %%
     function clear_periodicity_statistics_results()
         grid(GUI.FifthAxes1, 'off');
-        legend(GUI.FifthAxes1, 'off')
+        grid(GUI.FifthAxes2, 'off');
+        legend(GUI.FifthAxes1, 'off');
+        legend(GUI.FifthAxes2, 'off');
         cla(GUI.FifthAxes1);
+        cla(GUI.FifthAxes2);
     end
-
+%%
+    function clear_complexity_statistics_results()
+        grid(GUI.FourthAxes1, 'off');        
+        legend(GUI.FourthAxes1, 'off');        
+        cla(GUI.FourthAxes1);        
+    end
 %%
     function clear_frequency_statistics_results()
         grid(GUI.FrequencyAxes1, 'off');
@@ -2502,6 +2542,7 @@ displayEndOfDemoMessage('');
         legend(GUI.FrequencyAxes2, 'off');
         cla(GUI.FrequencyAxes1);
         cla(GUI.FrequencyAxes2);
+        xlim(GUI.FrequencyAxes1, 'auto');
     end
 %%
     function clear_nonlinear_statistics_results()
@@ -2533,7 +2574,7 @@ displayEndOfDemoMessage('');
     function plot_general_statistics_results(active_window)
         
         clear_time_statistics_results();
-        plot_data = DATA.GeneralStat.PlotData{active_window};
+        plot_data = DATA.TimeStat.PlotData{active_window};
         
         if ~isempty(plot_data)
             plot_oximetry_time_hist(GUI.TimeAxes1, plot_data)            
@@ -2545,10 +2586,10 @@ displayEndOfDemoMessage('');
     function plot_periodicity_statistics_results(active_window)
         
         clear_periodicity_statistics_results();
-        plot_data = DATA.PeriodicityStat.PlotData{active_window};
+        plot_data = DATA.PMStat.PlotData{active_window};
         
         if ~isempty(plot_data)
-            plot_spo2_psd_graph(GUI.FifthAxes1, plot_data);
+            plot_spo2_psd_graph(GUI.FifthAxes1, plot_data, DATA.freq_yscale);
         end
         box(GUI.FifthAxes1, 'off' );
 %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
@@ -2735,8 +2776,16 @@ displayEndOfDemoMessage('');
             GUI.RawDataSlider.Enable = enable_slider;
             
             try
-                set(GUI.freq_yscale_Button, 'String', 'Log');
-                set(GUI.freq_yscale_Button, 'Value', 1);
+%                 set(GUI.freq_yscale_Button, 'String', 'Log');
+%                 set(GUI.freq_yscale_Button, 'Value', 1);
+                
+                if strcmp(DATA.Integration, 'oximetry')
+                    set(GUI.oxim_per_log_Button, 'String', 'Log');
+                    set(GUI.oxim_per_log_Button, 'Value', 1);
+                else
+                    set(GUI.freq_yscale_Button, 'String', 'Log');
+                    set(GUI.freq_yscale_Button, 'Value', 1);
+                end
                 
                 set(GUI.segment_startTime, 'String', calcDuration(DATA.DEFAULT_AnalysisParams.segment_startTime, 0));
                 set(GUI.segment_endTime, 'String', calcDuration(DATA.DEFAULT_AnalysisParams.segment_endTime, 0));
@@ -4257,13 +4306,15 @@ displayEndOfDemoMessage('');
                     
                     hrv_metrics_table = horzcat(DATA.TimeStat.hrv_time_metrics, DATA.FrStat.hrv_fr_metrics, DATA.NonLinStat.hrv_nonlin_metrics);
                     
-                    if strcmp(DATA.Integration, 'oximetry') && ~isempty(DATA.CMStat)
-                        hrv_metrics_table = horzcat(hrv_metrics_table, DATA.CMStat.SpO2_CM_metrics);
+                    if strcmp(DATA.Integration, 'oximetry') && ~isempty(DATA.CMStat) && ~isempty(DATA.PMStat)
+                        hrv_metrics_table = horzcat(hrv_metrics_table, DATA.CMStat.SpO2_CM_metrics, DATA.PMStat.SpO2_PM_metrics);
                         title = 'SpO2 metrics for ';
                     else
                         title = 'HRV metrics for ';
                         DATA.CMStat.RowsNames = [];
                         DATA.CMStat.Data = [];
+                        DATA.PMStat.RowsNames = [];
+                        DATA.PMStat.Data = [];
                     end
                     
                     hrv_metrics_table.Properties.Description = sprintf('%s%s', title, DATA.DataFileName);
@@ -4800,6 +4851,9 @@ displayEndOfDemoMessage('');
                 mhrv.plots.plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale, 'clear', true);
             end
         else
+            if ~isempty(DATA.PMStat.PlotData{DATA.active_window})
+                plot_spo2_psd_graph(GUI.FifthAxes1, DATA.PMStat.PlotData{DATA.active_window}, DATA.freq_yscale);
+            end
         end
     end
 %%
@@ -5014,7 +5068,7 @@ displayEndOfDemoMessage('');
                         hrv_td = OverallGeneralMeasures(nni_window);
                         disp(['SpO2: Calculating overal general measures metrics: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                         
-                        DATA.GeneralStat.PlotData{i} = nni_window;
+                        DATA.TimeStat.PlotData{i} = nni_window;
                         hrv_frag = [];
                         fragData = [];
                         fragRowsNames = [];
@@ -5333,7 +5387,7 @@ displayEndOfDemoMessage('');
                     SpO2_CM = ComplexityMeasures(nni_window);
                     disp(['Spo2: Calculating complexity measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                     
-                    %                     DATA.NonLinStat.PlotData{i} = [];
+                    DATA.CMStat.PlotData{i} = [];
                 end
                 
                 [CMData, CMRowsNames, CMDescriptions] = table2cell_StatisticsParam(SpO2_CM);
@@ -5520,7 +5574,7 @@ displayEndOfDemoMessage('');
                     setLogo(waitbar_handle, 'M2');
                     
                     [SpO2_PRSA, pd_periodicity] = PeriodicityMeasures(nni_window);
-                    DATA.PeriodicityStat.PlotData{i} = pd_periodicity;
+                    DATA.PMStat.PlotData{i} = pd_periodicity;
                     
 %                     SpO2_PRSA = PRSAMeasures(nni_window);
                     disp(['Spo2: Calculating PRSA measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);                                        
@@ -5671,10 +5725,19 @@ displayEndOfDemoMessage('');
                 plot_general_statistics_results(DATA.active_window);
             end
         end
-        if isfield(DATA, 'FrStat') && ~isempty(DATA.FrStat) && isfield(DATA.FrStat, 'WelchWindowsData')
-            GUI.FrequencyParametersTable.Data = [strrep(DATA.FrStat.WelchWindowsData.RowsNames,'_WELCH', '') DATA.FrStat.WelchWindowsData.Data(:, DATA.active_window + 1) DATA.FrStat.ArWindowsData.Data(:, DATA.active_window + 1)];
-            plot_frequency_statistics_results(DATA.active_window);
+        
+        if ~strcmp(DATA.Integration, 'oximetry')
+            if isfield(DATA, 'FrStat') && ~isempty(DATA.FrStat) && isfield(DATA.FrStat, 'WelchWindowsData')
+                GUI.FrequencyParametersTable.Data = [strrep(DATA.FrStat.WelchWindowsData.RowsNames,'_WELCH', '') DATA.FrStat.WelchWindowsData.Data(:, DATA.active_window + 1) DATA.FrStat.ArWindowsData.Data(:, DATA.active_window + 1)];
+                plot_frequency_statistics_results(DATA.active_window);
+            end
+        else
+            if isfield(DATA, 'FrStat') && ~isempty(DATA.FrStat) && isfield(DATA.FrStat, 'RowsNames')
+                GUI.FrequencyParametersTable.Data = [DATA.FrStat.RowsNames DATA.FrStat.Data(:, DATA.active_window + 1)];
+                plot_desaturations_results(DATA.active_window);
+            end
         end
+        
         if isfield(DATA, 'NonLinStat') && ~isempty(DATA.NonLinStat) && isfield(DATA.NonLinStat, 'RowsNames')
             GUI.NonLinearTable.Data = [DATA.NonLinStat.RowsNames DATA.NonLinStat.Data(:, DATA.active_window + 1)];
             plot_nonlinear_statistics_results(DATA.active_window);
@@ -5682,8 +5745,7 @@ displayEndOfDemoMessage('');
         
         if strcmp(DATA.Integration, 'oximetry')
             if isfield(DATA, 'PMStat') && ~isempty(DATA.PMStat) && isfield(DATA.PMStat, 'RowsNames')
-%                 GUI.FrequencyParametersTable.Data = [DATA.FrStat.RowsNames DATA.FrStat.Data(:, DATA.active_window + 1)];
-                GUI.PMStat.Data = [DATA.PMStat.RowsNames DATA.PMStat.Data(:, DATA.active_window + 1)];
+                GUI.PMTable.Data = [DATA.PMStat.RowsNames DATA.PMStat.Data(:, DATA.active_window + 1)];
                 plot_periodicity_statistics_results(DATA.active_window);
             end
             if isfield(DATA, 'CMStat') && ~isempty(DATA.CMStat) && isfield(DATA.CMStat, 'RowsNames')

@@ -2559,15 +2559,29 @@ displayEndOfDemoMessage('');
         cla(GUI.NonLinearAxes3);
     end
 %%
+    function plot_complexity_results(active_window)
+        
+        clear_complexity_statistics_results();
+        plot_data = DATA.CMStat.PlotData{active_window};
+        
+        if ~isempty(plot_data)            
+            plot_oximetry_dfa(GUI.FourthAxes1, plot_data)            
+        end
+        box(GUI.FourthAxes1, 'off');       
+%         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
+    end
+%%
     function plot_desaturations_results(active_window)
         
         clear_frequency_statistics_results();
         plot_data = DATA.FrStat.PlotData{active_window};
         
         if ~isempty(plot_data)
-            plot_oximetry_desat_hist(GUI.FrequencyAxes1, plot_data)            
+            plot_oximetry_desat_hist(GUI.FrequencyAxes1, plot_data.des_length);
+            plot_oximetry_desaturation_depths(GUI.FrequencyAxes2, plot_data.des_depth);
         end
         box(GUI.FrequencyAxes1, 'off');
+        box(GUI.FrequencyAxes2, 'off');
 %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
     end
 %%
@@ -2629,15 +2643,20 @@ displayEndOfDemoMessage('');
         plot_data = DATA.NonLinStat.PlotData{active_window};
         
         if ~isempty(plot_data)
-            mhrv.plots.plot_dfa_fn(GUI.NonLinearAxes1, plot_data.dfa);
-            mhrv.plots.plot_mse(GUI.NonLinearAxes3, plot_data.mse);
-            mhrv.plots.plot_poincare_ellipse(GUI.NonLinearAxes2, plot_data.poincare);
+            if ~strcmp(DATA.Integration, 'oximetry')
+                mhrv.plots.plot_dfa_fn(GUI.NonLinearAxes1, plot_data.dfa);
+                mhrv.plots.plot_mse(GUI.NonLinearAxes3, plot_data.mse);
+                mhrv.plots.plot_poincare_ellipse(GUI.NonLinearAxes2, plot_data.poincare);
+            else
+                plot_oximetry_CA(GUI.NonLinearAxes1, plot_data);
+            end
         end
         box(GUI.NonLinearAxes1, 'off' );
         box(GUI.NonLinearAxes2, 'off' );
         box(GUI.NonLinearAxes3, 'off' );
         setAllowAxesZoom(DATA.zoom_handle, [GUI.NonLinearAxes1, GUI.NonLinearAxes2, GUI.NonLinearAxes3], false);
     end
+
 %%
     function set_default_analysis_params()
         DATA.DEFAULT_AnalysisParams.segment_startTime = 0;
@@ -5299,7 +5318,7 @@ displayEndOfDemoMessage('');
                     hrv_nl = HypoxicBurdenMeasures(nni_window, ODI_begin, ODI_end); %ODI_begin, ODI_end
                     disp(['Spo2: Calculating hypoxic burden metrics: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                     
-                    DATA.NonLinStat.PlotData{i} = [];
+                    DATA.NonLinStat.PlotData{i} = nni_window;
                 else
                     fun_name = 'hrv.hrv_nonlinear';
                     waitbar(3 / 3, waitbar_handle, ['Calculating nolinear measures for window ' num2str(i)]);
@@ -5387,7 +5406,8 @@ displayEndOfDemoMessage('');
                     SpO2_CM = ComplexityMeasures(nni_window);
                     disp(['Spo2: Calculating complexity measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                     
-                    DATA.CMStat.PlotData{i} = [];
+                    [~, ~, plot_data] = oximetry_dfa(nni_window);
+                    DATA.CMStat.PlotData{i} = plot_data;
                 end
                 
                 [CMData, CMRowsNames, CMDescriptions] = table2cell_StatisticsParam(SpO2_CM);
@@ -5398,7 +5418,7 @@ displayEndOfDemoMessage('');
                         GUI.CMTableRowName = CMRowsNames;
                         GUI.CMTableData = [CMDescriptions CMData];
                         GUI.CMTable.Data = [CMRowsNames CMData];
-                        %                         plot_nonlinear_statistics_results(i);
+                        plot_complexity_results(i);
                     end
                 end
             catch e
@@ -5488,8 +5508,16 @@ displayEndOfDemoMessage('');
                         DATA.DesaturationsRegions = [DATA.DesaturationsRegions; new_ind_array];
                                                 
                         disp(['Spo2: Calculating ODI and  desaturations measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
-                        
-                        DATA.FrStat.PlotData{i} = diff(new_ind_array, 1, 2);
+                                                
+                        desat_intervals_depth = zeros(1, length(ODI_begin));
+                        for index = 1 : length(ODI_begin)
+                            desat_intervals_depth(index) = ...
+                                max(nni_window(ODI_begin(index) : ODI_end(index))) - min(nni_window(ODI_begin(index) : ODI_end(index)));
+                        end
+
+                        des_pd.des_length = diff(new_ind_array, 1, 2);
+                        des_pd.des_depth = desat_intervals_depth;
+                        DATA.FrStat.PlotData{i} = des_pd;
                     end
                     
                     [ODIData, ODIRowsNames, ODIDescriptions] = table2cell_StatisticsParam(SpO2_ODI);
@@ -5750,7 +5778,7 @@ displayEndOfDemoMessage('');
             end
             if isfield(DATA, 'CMStat') && ~isempty(DATA.CMStat) && isfield(DATA.CMStat, 'RowsNames')
                 GUI.CMTable.Data = [DATA.CMStat.RowsNames DATA.CMStat.Data(:, DATA.active_window + 1)];
-                %                 plot_nonlinear_statistics_results(DATA.active_window);
+                plot_complexity_results(DATA.active_window);
             end
         end
     end

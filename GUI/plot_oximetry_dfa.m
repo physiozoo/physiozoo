@@ -15,7 +15,7 @@ hold(ax, 'on');
 grid(ax, 'on');
 axis(ax, 'tight');
 
-xlabel(ax, 'log_2(n)'); ylabel(ax, 'F(n)');
+xlabel(ax, 'log_2(n)'); ylabel(ax, 'DFA(n)');
 set(ax, 'XTick', 2.^(1:15)); % Set ticks at powers of two
 
 legend(ax, 'DFA', 'Location', 'northwest');

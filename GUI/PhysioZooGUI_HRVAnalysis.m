@@ -279,6 +279,7 @@ displayEndOfDemoMessage('');
         try
             set(GUI.freq_yscale_Button, 'String', 'Log');
             set(GUI.freq_yscale_Button, 'Value', 1);
+            set(GUI.freq_yscale_Button, 'Visible', 'on');
         catch
         end
         
@@ -1007,15 +1008,19 @@ displayEndOfDemoMessage('');
         
         GUI.NonLinearBox = uix.HBox( 'Parent', GUI.NonLinearTab, 'Spacing', DATA.Spacing);
         GUI.ParamNonLinearBox = uix.VBox( 'Parent', GUI.NonLinearBox, 'Spacing', DATA.Spacing);
+        
+        GUI.NonLinearAxesBox = uix.HBox( 'Parent', GUI.NonLinearBox, 'Spacing', DATA.Spacing);
+        
         GUI.NonLinearTable = uitable( 'Parent', GUI.ParamNonLinearBox, 'FontSize', SmallFontSize, 'FontName', 'Calibri');
         GUI.NonLinearTable.ColumnName = {'    Measures Name    ', 'Values'};
         uix.Empty( 'Parent', GUI.ParamNonLinearBox );
         set( GUI.ParamNonLinearBox, 'Heights', tables_field_size );
         
-        GUI.NonLinearAxes1 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
-        GUI.NonLinearAxes2 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
-        GUI.NonLinearAxes3 = axes('Parent', uicontainer('Parent', GUI.NonLinearBox) );
-        set( GUI.NonLinearBox, 'Widths', [-14 -24 -24 -24] );
+        GUI.NonLinearAxes1 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox) );
+        GUI.NonLinearAxes2 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox) );
+        GUI.NonLinearAxes3 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox) );
+        set(GUI.NonLinearAxesBox, 'Widths', [-24 -24 -24]); % -14 -24 -24 -24
+        set(GUI.NonLinearBox, 'Widths', [-1 -3]);
 %         %---------------------------
 %         
 %         GUI.FourthBox = uix.HBox( 'Parent', GUI.FourthTab, 'Spacing', DATA.Spacing);
@@ -1698,7 +1703,12 @@ displayEndOfDemoMessage('');
                 
         for i = 1 : length(DATA.DesaturationsRegions)
            for j = DATA.DesaturationsRegions(i, 1) : DATA.DesaturationsRegions(i, 2)
-               color_data(j, :, :) = [1 0 0];
+               if mod(i, 2) == 0
+                   my_color = [1 0 1];
+               else
+                   my_color = [1 0 0];
+               end
+               color_data(j, :, :) = my_color;
            end
         end        
     end
@@ -2323,6 +2333,8 @@ displayEndOfDemoMessage('');
                         set(vert_box, 'Heights', [-7 -93]);
                         
                         set(GUI.FifthBox, 'Widths', [-14 -80] );
+                        set(findobj(GUI.FourthTab, 'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
+                        set(findobj(GUI.FifthTab, 'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
                         %---------------------------
                     end
                     GUI.FourthParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+2);
@@ -2343,6 +2355,18 @@ displayEndOfDemoMessage('');
                     
                     set(findobj(GUI.Advanced_TabPanel, 'Type', 'uicontainer'), 'BackgroundColor', myUpBackgroundColor);
                     set(findobj(GUI.Advanced_TabPanel, 'Type', 'uipanel'), 'BackgroundColor', myUpBackgroundColor);                    
+                                        
+% -----------------------
+                    try
+                        delete(GUI.NonLinearAxesBox);                        
+                    catch
+                    end
+
+                    GUI.NonLinearAxesBox = uix.HBox( 'Parent', GUI.NonLinearBox, 'Spacing', DATA.Spacing);
+                    GUI.NonLinearAxes1 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox));
+                    set(GUI.NonLinearBox, 'Widths', [-1 -3]);     
+                    set(findobj(GUI.NonLinearTab, 'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
+% -----------------------
                     
                     wb = waitbar(0, 'SpO2: Resampling ... ', 'Name', 'SpO2'); setLogo(wb, 'M2');
                     
@@ -2365,6 +2389,20 @@ displayEndOfDemoMessage('');
                     end
                     GUI.Advanced_TabPanel.TabTitles = {'Filtering', 'Time', 'Frequency', 'NonLinear'};
                     GUI.Advanced_TabPanel.FontSize = DATA.SmallFontSize - 1;
+                    
+% % -----------------------
+                    try
+                        delete(GUI.NonLinearAxesBox);                        
+                    catch
+                    end
+                    GUI.NonLinearAxesBox = uix.HBox( 'Parent', GUI.NonLinearBox, 'Spacing', DATA.Spacing);
+                    GUI.NonLinearAxes1 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox));
+                    GUI.NonLinearAxes2 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox));
+                    GUI.NonLinearAxes3 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox));
+                    set(GUI.NonLinearAxesBox, 'Widths', [-24 -24 -24]);
+                    set(GUI.NonLinearBox, 'Widths', [-1 -3]);  
+                    set(findobj(GUI.NonLinearTab, 'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
+% % -----------------------
                 end
                 
                 
@@ -2546,17 +2584,20 @@ displayEndOfDemoMessage('');
     end
 %%
     function clear_nonlinear_statistics_results()
-        grid(GUI.NonLinearAxes1, 'off');
-        grid(GUI.NonLinearAxes2, 'off');
-        grid(GUI.NonLinearAxes3, 'off');
-        
-        legend(GUI.NonLinearAxes1, 'off');
-        legend(GUI.NonLinearAxes2, 'off');
-        legend(GUI.NonLinearAxes3, 'off');
-        
-        cla(GUI.NonLinearAxes1);
-        cla(GUI.NonLinearAxes2);
-        cla(GUI.NonLinearAxes3);
+        try
+            grid(GUI.NonLinearAxes1, 'off');
+            grid(GUI.NonLinearAxes2, 'off');
+            grid(GUI.NonLinearAxes3, 'off');
+            
+            legend(GUI.NonLinearAxes1, 'off');
+            legend(GUI.NonLinearAxes2, 'off');
+            legend(GUI.NonLinearAxes3, 'off');
+            
+            cla(GUI.NonLinearAxes1);
+            cla(GUI.NonLinearAxes2);
+            cla(GUI.NonLinearAxes3);
+        catch
+        end
     end
 %%
     function plot_complexity_results(active_window)
@@ -2576,9 +2617,17 @@ displayEndOfDemoMessage('');
         clear_frequency_statistics_results();
         plot_data = DATA.FrStat.PlotData{active_window};
         
-        if ~isempty(plot_data)
+        if ~isempty(plot_data.des_length)
+            GUI.FrequencyAxes1.Visible = 'on';
             plot_oximetry_desat_hist(GUI.FrequencyAxes1, plot_data.des_length);
+        else
+            GUI.FrequencyAxes1.Visible = 'off';
+        end
+        if ~isempty(plot_data.des_depth)
+            GUI.FrequencyAxes2.Visible = 'on';
             plot_oximetry_desaturation_depths(GUI.FrequencyAxes2, plot_data.des_depth);
+        else
+            GUI.FrequencyAxes2.Visible = 'off';
         end
         box(GUI.FrequencyAxes1, 'off');
         box(GUI.FrequencyAxes2, 'off');
@@ -2593,7 +2642,7 @@ displayEndOfDemoMessage('');
         if ~isempty(plot_data)
             plot_oximetry_time_hist(GUI.TimeAxes1, plot_data)            
         end
-        box(GUI.TimeAxes1, 'off' );
+        box(GUI.TimeAxes1, 'off');
 %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
     end
 %%
@@ -2617,7 +2666,7 @@ displayEndOfDemoMessage('');
         if ~isempty(plot_data)
             mhrv.plots.plot_hrv_time_hist(GUI.TimeAxes1, plot_data, 'clear', true);
         end
-        box(GUI.TimeAxes1, 'off' );
+        box(GUI.TimeAxes1, 'off');
         setAllowAxesZoom(DATA.zoom_handle, GUI.TimeAxes1, false);
     end
 %%
@@ -2627,12 +2676,15 @@ displayEndOfDemoMessage('');
         
         plot_data = DATA.FrStat.PlotData{active_window};
         
+        GUI.FrequencyAxes1.Visible = 'on';
+        GUI.FrequencyAxes2.Visible = 'on';
+        
         if ~isempty(plot_data)
             mhrv.plots.plot_hrv_freq_spectrum(GUI.FrequencyAxes1, plot_data, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
             mhrv.plots.plot_hrv_freq_beta(GUI.FrequencyAxes2, plot_data);
         end
-        box(GUI.FrequencyAxes1, 'off' );
-        box(GUI.FrequencyAxes2, 'off' );
+        box(GUI.FrequencyAxes1, 'off');
+        box(GUI.FrequencyAxes2, 'off');
         setAllowAxesZoom(DATA.zoom_handle, GUI.FrequencyAxes2, false);
     end
 %%
@@ -2651,10 +2703,13 @@ displayEndOfDemoMessage('');
                 plot_oximetry_CA(GUI.NonLinearAxes1, plot_data);
             end
         end
-        box(GUI.NonLinearAxes1, 'off' );
-        box(GUI.NonLinearAxes2, 'off' );
-        box(GUI.NonLinearAxes3, 'off' );
-        setAllowAxesZoom(DATA.zoom_handle, [GUI.NonLinearAxes1, GUI.NonLinearAxes2, GUI.NonLinearAxes3], false);
+        try
+            box(GUI.NonLinearAxes1, 'off');
+            box(GUI.NonLinearAxes2, 'off');
+            box(GUI.NonLinearAxes3, 'off');
+            setAllowAxesZoom(DATA.zoom_handle, [GUI.NonLinearAxes1, GUI.NonLinearAxes2, GUI.NonLinearAxes3], false);
+        catch
+        end
     end
 
 %%
@@ -2801,9 +2856,11 @@ displayEndOfDemoMessage('');
                 if strcmp(DATA.Integration, 'oximetry')
                     set(GUI.oxim_per_log_Button, 'String', 'Log');
                     set(GUI.oxim_per_log_Button, 'Value', 1);
+                    set(GUI.freq_yscale_Button, 'Visible', 'off');
                 else
                     set(GUI.freq_yscale_Button, 'String', 'Log');
                     set(GUI.freq_yscale_Button, 'Value', 1);
+                    set(GUI.freq_yscale_Button, 'Visible', 'on');
                 end
                 
                 set(GUI.segment_startTime, 'String', calcDuration(DATA.DEFAULT_AnalysisParams.segment_startTime, 0));

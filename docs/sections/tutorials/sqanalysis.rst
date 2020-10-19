@@ -1,4 +1,4 @@
-Signal quality annotation
+Signal quality annotations
 ==========
 
 In this tutorial you will learn how to perform signal quality annotations within the **PhysioZoo** ``Peak detection`` module and how to use these for your analysis in order to provide contextual information.

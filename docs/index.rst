@@ -22,7 +22,9 @@ PhysioZoo documentation
    sections/tutorials/pzloader.rst
    sections/tutorials/pzformats.rst
    sections/tutorials/configfiles.rst
-
+   sections/tutorials/rhythms_annotations.rst
+   sections/tutorials/multilead_visualization.rst
+   
 mhrv toolbox documentation
 ==============================
 

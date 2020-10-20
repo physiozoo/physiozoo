@@ -44,7 +44,7 @@ else
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
     
-    command = ['"' executable_file '" file ' signal_file ' OveralGeneralMeasures ' func_args];
+    command = ['"' executable_file '" ' signal_file ' OveralGeneralMeasures ' func_args];
     %command = ['"' executable_file '" vector ' jsonencode(data) ' OveralGeneralMeasures ' func_args];
     
     %     tic

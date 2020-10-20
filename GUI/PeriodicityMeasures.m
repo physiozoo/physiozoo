@@ -33,13 +33,13 @@ else
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
        
-    command1 = ['"' executable_file '" file ' signal_file ' PRSAMeasures ' func_args];    
+    command1 = ['"' executable_file '" ' signal_file ' prsa_periodicity ' func_args];    
     
     tic
     result_measures = exec_pzpy(command1);
     toc
     
-    command2 = ['"' executable_file '" file ' signal_file ' PSDMeasures ' ];
+    command2 = ['"' executable_file '" ' signal_file ' psd_periodicity ' ];
     
     tic
     result_measures_2 = exec_pzpy(command2);
@@ -98,7 +98,7 @@ else
     pd_data = comp_fft(data);
     
     
-%     command = ['"' executable_file '" file ' signal_file ' SpectralPlot '];
+%     command = ['"' executable_file '" ' signal_file ' SpectralPlot '];
 %     tic
 %     result_measures = exec_pzpy(command);
 %     toc

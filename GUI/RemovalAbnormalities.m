@@ -22,7 +22,7 @@ else
     dlmwrite(signal_file, data, '\n');
     
     waitbar(2 / 2, waitbar_handle, 'Remove Abnormalities', 'Name', 'SpO2 - Remove Abnormalities');
-    command = ['"' executable_file '" file ' signal_file ' SetRange ' func_args];
+    command = ['"' executable_file '" ' signal_file ' set_range ' func_args];
     %  command = ['"' executable_file '" vector ' jsonencode(data) ' RemovalAbnormalities ' func_args];
     
     signal = exec_pzpy(command);

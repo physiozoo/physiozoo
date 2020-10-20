@@ -29,7 +29,7 @@ else
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
     
-    command = ['"' executable_file '" file ' signal_file ' PSDMeasures ' func_args];
+    command = ['"' executable_file '" ' signal_file ' psd_periodicity ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' ComplexityMeasures ' func_args];
     
     tic

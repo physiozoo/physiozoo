@@ -33,7 +33,7 @@ else
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
     
-    command = ['"' executable_file '" file ' signal_file ' PRSAMeasures ' func_args];
+    command = ['"' executable_file '" ' signal_file ' prsa_periodicity ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' PRSAMeasures ' func_args];
     
     tic

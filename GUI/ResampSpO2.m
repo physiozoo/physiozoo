@@ -27,7 +27,7 @@ else
     
     t1 = tic;
     waitbar(2 / 2, waitbar_handle, 'Resampling Signal', 'Name', 'SpO2');
-    command = ['"' executable_file '" file ' signal_file ' ResampSpO2 ' func_args];
+    command = ['"' executable_file '" ' signal_file ' resamp_spo2 ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' ResampSpO2 ' func_args];
         
     signal = exec_pzpy(command);

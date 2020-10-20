@@ -2367,18 +2367,24 @@ displayEndOfDemoMessage('');
                     set(GUI.NonLinearBox, 'Widths', [-1 -3]);     
                     set(findobj(GUI.NonLinearTab, 'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
 % -----------------------
-                    
-                    wb = waitbar(0, 'SpO2: Resampling ... ', 'Name', 'SpO2'); setLogo(wb, 'M2');
-                    
-                    DATA.rri = ResampSpO2(DATA.rri, wb);
+                    DATA.SpO2NewSamplingFrequency = mhrv.defaults.mhrv_get_default('filtSpO2.ResampSpO2.Original_fs', 'value');                 
                     time_data = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(DATA.rri)/DATA.SpO2NewSamplingFrequency;
                     
-                    if isvalid(wb); close(wb); end
-                    
-                    if isempty(DATA.rri)
-                        throw(MException('Load_Data_from_SingleFile:Data', 'Could not Resample SpO2 data.'));
+                    if DATA.SamplingFrequency ~= DATA.SpO2NewSamplingFrequency
+
+                        wb = waitbar(0, 'SpO2: Resampling ... ', 'Name', 'SpO2'); setLogo(wb, 'M2');
+
+                        DATA.rri = ResampSpO2(DATA.rri, wb);
+                        
+                        if isvalid(wb); close(wb); end
+
+                        if isempty(DATA.rri)
+                            throw(MException('Load_Data_from_SingleFile:Data', 'Could not Resample SpO2 data.'));
+                        end
                     end
+
                     set_qrs_data(DATA.rri, time_data);
+
                 else
                     if Module3
                         GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', 'Group'};
@@ -2535,11 +2541,11 @@ displayEndOfDemoMessage('');
         GUI.TimeParametersTable.Data = [GUI.TimeParametersTable.Data; GUI.FragParametersTable.Data];
     end
 %%
-    function updateODIDSMStatistics()
-        GUI.FrequencyParametersTableRowName = [GUI.ODIParametersTableRowName; GUI.DSMParametersTableRowName];
-        GUI.FrequencyParametersTableData = [GUI.ODIParametersTableData; GUI.DSMParametersTableData];
-        GUI.FrequencyParametersTable.Data = [GUI.ODIParametersTable.Data; GUI.DSMParametersTable.Data];
-    end
+%     function updateODIDSMStatistics()
+%         GUI.FrequencyParametersTableRowName = [GUI.ODIParametersTableRowName; GUI.DSMParametersTableRowName];
+%         GUI.FrequencyParametersTableData = [GUI.ODIParametersTableData; GUI.DSMParametersTableData];
+%         GUI.FrequencyParametersTable.Data = [GUI.ODIParametersTable.Data; GUI.DSMParametersTable.Data];
+%     end
 %%
     function clear_statistics_plots()
         clear_time_statistics_results();
@@ -2617,13 +2623,13 @@ displayEndOfDemoMessage('');
         clear_frequency_statistics_results();
         plot_data = DATA.FrStat.PlotData{active_window};
         
-        if ~isempty(plot_data.des_length)
+        if ~isempty(plot_data.des_length) && sum(plot_data.des_length) > 0
             GUI.FrequencyAxes1.Visible = 'on';
             plot_oximetry_desat_hist(GUI.FrequencyAxes1, plot_data.des_length);
         else
             GUI.FrequencyAxes1.Visible = 'off';
         end
-        if ~isempty(plot_data.des_depth)
+        if ~isempty(plot_data.des_depth) && sum(plot_data.des_depth) > 0
             GUI.FrequencyAxes2.Visible = 'on';
             plot_oximetry_desaturation_depths(GUI.FrequencyAxes2, plot_data.des_depth);
         else
@@ -5541,26 +5547,16 @@ displayEndOfDemoMessage('');
                         
                         prev_ind_num = length(DATA.nni4calc(DATA.tnn <= batch_window_start_time));
                                                 
-                        [SpO2_ODI, ODI_begin, ODI_end] = ODIMeasure(nni_window);
+%                         [SpO2_ODI, ODI_begin, ODI_end] = ODIMeasure(nni_window);
+                        
+                                                                        
+                        [SpO2_DSM, ODI_begin, ODI_end] = DesaturationsMeasures(nni_window);
                         
                         DATA.ODI_begin = ODI_begin + prev_ind_num;
-                        DATA.ODI_end = ODI_end + prev_ind_num;
-                        
-%                         if i > 1
-%                             samples_num = samples_num + ind_num;
-%                             new_ind_array = [DATA.ODI_begin, DATA.ODI_end]+samples_num;
-%                             ind_num = length(nni_window);
-%                         else
-%                             new_ind_array = [DATA.ODI_begin, DATA.ODI_end];
-%                             ind_num = length(nni_window);
-%                         end
+                        DATA.ODI_end = ODI_end + prev_ind_num;                        
                         
                         new_ind_array = [DATA.ODI_begin, DATA.ODI_end];
-                                                
-%                         SpO2_DSM = DesaturationsMeasures(nni_window, DATA.ODI_begin, DATA.ODI_end);
-                        SpO2_DSM = DesaturationsMeasures(nni_window, ODI_begin, ODI_end);
                         
-%                         DATA.DesaturationsRegionsCell{1, i} = [DATA.ODI_begin DATA.ODI_end];
                         DATA.DesaturationsRegionsCell{1, i} = [ODI_begin ODI_end];
                         DATA.DesaturationsRegions = [DATA.DesaturationsRegions; new_ind_array];
                                                 
@@ -5577,7 +5573,7 @@ displayEndOfDemoMessage('');
                         DATA.FrStat.PlotData{i} = des_pd;
                     end
                     
-                    [ODIData, ODIRowsNames, ODIDescriptions] = table2cell_StatisticsParam(SpO2_ODI);
+%                     [ODIData, ODIRowsNames, ODIDescriptions] = table2cell_StatisticsParam(SpO2_ODI);
                     [DSMData, DSMRowsNames, DSMDescriptions] = table2cell_StatisticsParam(SpO2_DSM);
                     
                     DSMRowsNames_NO_GreekLetters = DSMRowsNames;
@@ -5588,15 +5584,15 @@ displayEndOfDemoMessage('');
                     if ~DATA.GroupsCalc
                         if i == DATA.active_window
                             
-                            GUI.ODIParametersTableRowName = ODIRowsNames;
-                            GUI.ODIParametersTableData = [ODIDescriptions ODIData];
-                            GUI.ODIParametersTable.Data = [ODIRowsNames ODIData];
+%                             GUI.ODIParametersTableRowName = ODIRowsNames;
+%                             GUI.ODIParametersTableData = [ODIDescriptions ODIData];
+%                             GUI.ODIParametersTable.Data = [ODIRowsNames ODIData];
                             
-                            GUI.DSMParametersTableRowName = DSMRowsNames;
-                            GUI.DSMParametersTableData = [DSMDescriptions DSMData];
-                            GUI.DSMParametersTable.Data = [DSMRowsNames DSMData];
+                            GUI.FrequencyParametersTableRowName = DSMRowsNames;
+                            GUI.FrequencyParametersTableData = [DSMDescriptions DSMData];
+                            GUI.FrequencyParametersTable.Data = [DSMRowsNames DSMData];
                             
-                            updateODIDSMStatistics();
+%                             updateODIDSMStatistics();
                             
                             plot_desaturations_results(i);
                             
@@ -5610,17 +5606,21 @@ displayEndOfDemoMessage('');
                     rethrow(e);
                 end
                 
-                curr_win_table = horzcat(SpO2_ODI, SpO2_DSM);
+                curr_win_table = SpO2_DSM;
                 curr_win_table.Properties.RowNames{1} = sprintf('W%d', i);
                 
                 SpO2_desat_metrics_tables{i} = curr_win_table;
                 
                 if i == 1
-                    DATA.FrStat.RowsNames = [ODIRowsNames; DSMRowsNames];
-                    DATA.FrStat.RowsNames_NO_GreekLetters = [ODIRowsNames; DSMRowsNames_NO_GreekLetters];
-                    DATA.FrStat.Data = [[ODIDescriptions; DSMDescriptions] [ODIData; DSMData]];
+%                     DATA.FrStat.RowsNames = [ODIRowsNames; DSMRowsNames];
+                    DATA.FrStat.RowsNames = DSMRowsNames;
+%                     DATA.FrStat.RowsNames_NO_GreekLetters = [ODIRowsNames; DSMRowsNames_NO_GreekLetters];
+                    DATA.FrStat.RowsNames_NO_GreekLetters = DSMRowsNames_NO_GreekLetters;
+%                     DATA.FrStat.Data = [[ODIDescriptions; DSMDescriptions] [ODIData; DSMData]];
+                    DATA.FrStat.Data = [DSMDescriptions DSMData];
                 else
-                    DATA.FrStat.Data = [DATA.FrStat.Data [ODIData; DSMData]];
+%                     DATA.FrStat.Data = [DATA.FrStat.Data [ODIData; DSMData]];
+                    DATA.FrStat.Data = [DATA.FrStat.Data DSMData];
                 end
                 batch_window_start_time = batch_window_start_time + (1-batch_overlap) * batch_window_length;
             end

@@ -41,7 +41,7 @@
 % - TD_u: Mean of time between two consecutive desaturation events.
 % - TD_sd: Standard deviation of time between 2 consecutive desaturation events.
 
-function SpO2_DSM = DesaturationsMeasures(data, ODI_begin, ODI_end)
+function [SpO2_DSM, ODI_begin, ODI_end] = DesaturationsMeasures(data, ODI_begin, ODI_end)
 
 t0 = tic;
 SpO2_DSM = table;
@@ -53,17 +53,24 @@ if ~exist(executable_file, 'file')
     error('Could not find the "pzpy.exe"');
 else
     
-    if length(ODI_end) == 1
-        ODI_end = ones(1, 1)*ODI_end;
-        ODI_begin = ones(1, 1)*ODI_begin;
-    end
+    ODI_Threshold = mhrv.defaults.mhrv_get_default('ODIMeasures.ODI_Threshold', 'value');
+
+    func_args = zip_args({'ODI_Threshold'}, {ODI_Threshold});
     
-    func_args = zip_args({'end', 'begin'}, {ODI_end, ODI_begin});
+    
+    
+%     
+%     if length(ODI_end) == 1
+%         ODI_end = ones(1, 1)*ODI_end;
+%         ODI_begin = ones(1, 1)*ODI_begin;
+%     end
+    
+%     func_args = zip_args({'end', 'begin'}, {ODI_end, ODI_begin});
     
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
     
-    command = ['"' executable_file '" file ' signal_file ' DesaturationsMeasures ' func_args];
+    command = ['"' executable_file '" ' signal_file ' desaturation ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' DesaturationsMeasures ' func_args];
     
     %     tic
@@ -72,6 +79,14 @@ else
     
     if ~isempty(result_measures) && isstruct(result_measures)
         SpO2_DSM.Properties.Description = 'Desaturations measures';
+        
+        
+        SpO2_DSM.ODIxx = result_measures.ODI;
+        SpO2_DSM.Properties.VariableUnits{'ODIxx'} = 'Event/h';
+        SpO2_DSM.Properties.VariableDescriptions{'ODIxx'} = 'The oxygen desaturation index';
+        
+        ODI_begin = result_measures.begin;
+        ODI_end = result_measures.end;
         
         SpO2_DSM.DL_u = result_measures.DL_u;
         SpO2_DSM.Properties.VariableUnits{'DL_u'} = 'sec';

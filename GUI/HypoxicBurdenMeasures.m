@@ -4,7 +4,7 @@
 % Parameters:
 % 	Signal: The SpO2 time series.
 % 	Desaturations: Pandas Dataframe containing 2 columns, begin and end. Begin is the list of indices of beginning of each desaturation event, end is the indices of the end of those events. Typically, the dataframe returned by the API ODIMeasures can be entered here.
-% 	CT_Threshold: Percentage of the time spent below the “CT_Threshold” % oxygen saturation level. Typically use CT90. Default value is 90.
+% 	CT_Threshold: Percentage of the time spent below the ï¿½CT_Thresholdï¿½ % oxygen saturation level. Typically use CT90. Default value is 90.
 % 	CA_Baseline: Baseline to compute the CA feature. (mean of the signal)
 %
 % Returns:
@@ -19,7 +19,7 @@
 % - signal: The SpO2 time series.
 % - begin: list of indices of beginning of each desaturation event. Typically, the list returned by the API odi_measure can be entered here.
 % - end is the indices of the end of those events. Typically, the list returned by the API odi_measure can be entered here.
-% - CT_Threshold: Percentage of the time spent below the “ct_threshold” % oxygen saturation level. Typically use CT90. Default value is 90.
+% - CT_Threshold: Percentage of the time spent below the ï¿½ct_thresholdï¿½ % oxygen saturation level. Typically use CT90. Default value is 90.
 % - CA_Baseline: Baseline to compute the CA feature. Default value is mean of the signal.
 % Returns:
 % HypoxicBurdenMeasuresResults containing the following fields:
@@ -48,7 +48,7 @@ else
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
     
-    command = ['"' executable_file '" file ' signal_file ' HypoxicBurdenMeasures ' func_args];
+    command = ['"' executable_file '" ' signal_file ' hypoxic_burden ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' HypoxicBurdenMeasures ' func_args];
     
     %     tic

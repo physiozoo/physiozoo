@@ -8,6 +8,6 @@ for index = 1 : length(values_x)
     result(index) = calc_CA(signal, values_x(index));
 end
 
-plot(values_x, result, 'Parent', ax);
+plot(values_x, result, 'Parent', ax, 'LineWidth', 2);
 xlabel(ax, 'Baseline (%)'); ylabel(ax, 'CA (sec*%)');
 

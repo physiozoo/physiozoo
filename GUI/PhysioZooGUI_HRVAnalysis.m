@@ -1641,7 +1641,7 @@ displayEndOfDemoMessage('');
         window_size_in_data_points = data_points_number();
         
         if window_size_in_data_points < 350
-            set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 4, 'MarkerEdgeColor', [180 74 255]/255, 'MarkerFaceColor', [1, 1, 1]);
+            set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 2, 'MarkerEdgeColor', [180 74 255]/255, 'MarkerFaceColor', [1, 1, 1]); % 4
         else
             set(GUI.raw_data_handle, 'Marker', 'none');
         end
@@ -1656,8 +1656,7 @@ displayEndOfDemoMessage('');
         end
         
         GUI.all_data_handle = line(DATA.trr, data, 'Color', 'b', 'Parent', ha, 'Marker', '*', 'MarkerSize', 2, 'DisplayName', 'Hole time series'); % 'LineWidth', 1.5
-        
-        
+                
         set(ha, 'XLim', [0 DATA.RRIntPage_Length]);
         
         % PLot red rectangle
@@ -2298,14 +2297,21 @@ displayEndOfDemoMessage('');
                         
                         tables_field_size = [-85 -15];
                         
-                        GUI.FourthBox = uix.HBox( 'Parent', GUI.FourthTab, 'Spacing', DATA.Spacing);
+                        GUI.FourthBox = uix.HBox('Parent', GUI.FourthTab, 'Spacing', DATA.Spacing);
                         GUI.ParamFourthBox = uix.VBox( 'Parent', GUI.FourthBox, 'Spacing', DATA.Spacing);
                         GUI.CMTable = uitable( 'Parent', GUI.ParamFourthBox, 'FontSize', DATA.SmallFontSize, 'FontName', 'Calibri');
                         GUI.CMTable.ColumnName = {'    Measures Name    ', 'Values'};
                         uix.Empty( 'Parent', GUI.ParamFourthBox );
                         set(GUI.ParamFourthBox, 'Heights', tables_field_size );
                         
-                        GUI.FourthAxes1 = axes('Parent', uicontainer('Parent', GUI.FourthBox) );
+                        fourth_hor_plots_boxes = uix.HBox('Parent', GUI.FourthBox, 'Spacing', DATA.Spacing);
+                        
+                        uix.Empty('Parent', fourth_hor_plots_boxes);
+                        GUI.FourthAxes1 = axes('Parent', uicontainer('Parent', fourth_hor_plots_boxes) );
+                        uix.Empty('Parent', fourth_hor_plots_boxes);
+                        
+                        set(fourth_hor_plots_boxes, 'Widths', [-1 -1.5 -1] );
+                        
                         set(GUI.FourthBox, 'Widths', [-14 -80] );
                         %---------------------------
                         
@@ -2363,13 +2369,15 @@ displayEndOfDemoMessage('');
                     end
 
                     GUI.NonLinearAxesBox = uix.HBox( 'Parent', GUI.NonLinearBox, 'Spacing', DATA.Spacing);
+                    uix.Empty( 'Parent', GUI.NonLinearAxesBox );
                     GUI.NonLinearAxes1 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox));
-                    set(GUI.NonLinearBox, 'Widths', [-1 -3]);     
+                    uix.Empty( 'Parent', GUI.NonLinearAxesBox );
+                    set(GUI.NonLinearAxesBox, 'Widths', [-1 -1.5 -1]);
+                    set(GUI.NonLinearBox, 'Widths', [-1 -3]);  % [-1 -3]   
                     set(findobj(GUI.NonLinearTab, 'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
 % -----------------------
                     DATA.SpO2NewSamplingFrequency = mhrv.defaults.mhrv_get_default('filtSpO2.ResampSpO2.Original_fs', 'value');                 
-                    time_data = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(DATA.rri)/DATA.SpO2NewSamplingFrequency;
-                    
+                                        
                     if DATA.SamplingFrequency ~= DATA.SpO2NewSamplingFrequency
 
                         wb = waitbar(0, 'SpO2: Resampling ... ', 'Name', 'SpO2'); setLogo(wb, 'M2');
@@ -2383,6 +2391,7 @@ displayEndOfDemoMessage('');
                         end
                     end
 
+                    time_data = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(DATA.rri)/DATA.SpO2NewSamplingFrequency;
                     set_qrs_data(DATA.rri, time_data);
 
                 else

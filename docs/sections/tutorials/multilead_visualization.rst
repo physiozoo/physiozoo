@@ -7,7 +7,7 @@ In this tutorial you will learn how to visualize several ECG channels within the
 **Introduction**
 ----------------------
 
-**PhysioZoo** allows you to visualize several ECG channels in parallel. TThis can be use to facilitate the review of Holter recordings for example. This tutorial will show how to display several channels in parallel.
+**PhysioZoo** allows you to visualize several ECG channels in parallel. This can be use to facilitate the review of Holter recordings for example. This tutorial will show how to display several channels in parallel.
 
 
 **Displaying several leads**

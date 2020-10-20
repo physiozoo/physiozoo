@@ -55,4 +55,4 @@ An other option is to use a .txt file which will contain the following header:
 |	      enable: yes
 |	---
 |	
-| Following this header, the user shall place the samples in 3 distinct columns, separated by a space. The user is invited to open the 'multi-lead.txt' example to visualize the structure of the file. 
+| Following this header, the user shall place the samples in 3 distinct columns, separated by a space. The user is invited to open the 'multi-lead.txt' example to visualize the file structure. 

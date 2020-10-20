@@ -1,34 +1,34 @@
-Multi-lead visualization
+Multi-channel visualization
 ==========
 
-In this tutorial you will learn how to visualize several ECG leads within the **PhysioZoo** ``Peak detection`` module. 
+In this tutorial you will learn how to visualize several ECG channels within the **PhysioZoo** ``Peak detection`` module. 
 
 
 **Introduction**
 ----------------------
 
-**PhysioZoo** allows you to visualize several ECG leads in parallel. This can be use to facilitate the review of Holter recordings for example. This tutorial will show how to display several leads in parallel.
+**PhysioZoo** allows you to visualize several ECG channels in parallel. This can be use to facilitate the review of Holter recordings for example. This tutorial will show how to display several leads in parallel.
 
 
-**Displaying several leads**
+**Displaying several channels**
 ----------------------------
-To display several leads of an ECG, follow these steps:
+To display several channels of an ECG, follow these steps:
 
-	1. Select the multi-lead ECG example: File-> Open data file-> physiozoo\\ExamplesTXT\\multi-lead\\multi-lead.txt.
+	1. Select the multi-channel ECG example: File-> Open data file-> physiozoo\\ExamplesTXT\\multi-lead\\multi-lead.txt.
 
-	2. On the right panel, select the desired leads to be displayed. By default, only lead 1 is selected. 
+	2. On the right panel, select the desired leads to be displayed. By default, only channel 1 is selected. 
 
-.. image:: ../../_static/multi-lead.png
+.. image:: ../../_static/multi-channel.png
    :align: center
 
    
 **Frequently asked questions**
 ----------------------------
 
-**What is the format of the files to be loaded to PhysioZoo to display several leads ?**
+**What is the format of the files to be loaded to PhysioZoo to display several channels ?**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If recordings are provided in .mat format then each column will represent a different lead. 
+If recordings are provided in .mat format then each column will represent a different channel. 
 
 An other option is to use a .txt file which will contain the following header: 
 
@@ -40,12 +40,12 @@ An other option is to use a .txt file which will contain the following header:
 |	Channels:
 |	
 |	    - type:   electrography
-|	      name:   **Lead name**
+|	      name:   **Channel name**
 |	      unit:   **Units (usually mV)**
 |	      enable: yes
 |	 
 |	    - type:   electrography
-|	      name:   **Lead name**
+|	      name:   **Channel name**
 |	      unit:   **Units (usually mV)**
 |	      enable: yes
 |	

@@ -7,7 +7,7 @@ In this tutorial you will learn how to perform rhythms annotations from raw ECG 
 **Introduction**
 ----------------------
 
-**PhysioZoo** enables you to annotate and load rhythm annotations i.e. timestamped rhythm annotations marking the beginning and the end of a given rhythm. For example, rhythm annotations may have been produced by an original automated analysis machine (e.g. Holter ECG software) that you which to review and edit. The heart rhythms for which annotations exist in **PhysioZoo** are: 
+**PhysioZoo** enables you to annotate and load rhythm annotations i.e. timestamped rhythm annotations marking the beginning and the end of a given rhythm. For example, rhythm annotations may have been produced by an original automated analysis machine (e.g. Holter ECG software) that you which to review and edit. The heart rhythms for wish annotations exist in **PhysioZoo** are: 
 
 .. raw:: html
 

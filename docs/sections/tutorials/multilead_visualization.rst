@@ -25,7 +25,7 @@ To display several leads of an ECG, follow these steps:
 **Frequently asked questions**
 ----------------------------
 
-**What is the format of the files to be loaded to PhysioZoo to display several leada ?**
+**What is the format of the files to be loaded to PhysioZoo to display several leads ?**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If recordings are provided in .mat format then each column will represent a different lead. 

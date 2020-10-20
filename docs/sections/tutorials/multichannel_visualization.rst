@@ -18,7 +18,7 @@ To display several channels of an ECG, follow these steps:
 
 	2. On the right panel, select the desired leads to be displayed. By default, only channel 1 is selected. 
 
-.. image:: ../../_static/multi-channel.png
+.. image:: ../../_static/multi-lead.png
    :align: center
 
    

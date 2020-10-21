@@ -1887,13 +1887,18 @@ displayEndOfDemoMessage('');
                     end
                     
                     if isvalid(DATA.legend_handle)
+                        if strcmp(DATA.Integration, 'oximetry')
+                            quality_string = 'ventilation';
+                        else
+                            quality_string = 'Bad quality';
+                        end
                         if DATA.Detrending
                             if length(DATA.legend_handle.String) < 4 %
-                                legend([GUI.raw_data_handle, GUI.only_filtered_handle, GUI.filtered_handle GUI.PinkLineHandle(1)], [DATA.legend_handle.String 'Bad quality']);
+                                legend([GUI.raw_data_handle, GUI.only_filtered_handle, GUI.filtered_handle GUI.PinkLineHandle(1)], [DATA.legend_handle.String quality_string]);
                             end
                         else
                             if length(DATA.legend_handle.String) < 3 %
-                                legend([GUI.raw_data_handle, GUI.filtered_handle GUI.PinkLineHandle(1)], [DATA.legend_handle.String 'Bad quality']);
+                                legend([GUI.raw_data_handle, GUI.filtered_handle GUI.PinkLineHandle(1)], [DATA.legend_handle.String quality_string]);
                             end
                         end
                     end

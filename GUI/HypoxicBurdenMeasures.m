@@ -37,9 +37,13 @@ SpO2_HBM = table;
 exe_file_path = fileparts(mfilename('fullpath'));
 executable_file = [exe_file_path filesep 'SpO2' filesep 'pzpy.exe'];
 
-if ~exist(executable_file, 'file')
-    error('Could not find the "pzpy.exe"');
-else
+result_measures = [];
+
+% if ~exist(executable_file, 'file')
+%     error('Could not find the "pzpy.exe"');
+% else
+if ~all(isnan(data)) && exist(executable_file, 'file')
+    
     CT_Threshold = mhrv.defaults.mhrv_get_default('HypoxicBurdenMeasures.CT_Threshold', 'value');
     CA_Baseline = mhrv.defaults.mhrv_get_default('HypoxicBurdenMeasures.CA_Baseline', 'value');
     
@@ -51,34 +55,43 @@ else
     command = ['"' executable_file '" ' signal_file ' hypoxic_burden ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' HypoxicBurdenMeasures ' func_args];
     
-    %     tic
+    tic
     result_measures = exec_pzpy(command);
-    %     toc
-    
-    if ~isempty(result_measures) && isstruct(result_measures)
-        SpO2_HBM.Properties.Description = 'Measures of the hypoxic burden';
-        
-        SpO2_HBM.CAxx = result_measures.CA;
-        SpO2_HBM.Properties.VariableUnits{'CAxx'} = '%*sec';
-        SpO2_HBM.Properties.VariableDescriptions{'CAxx'} = 'Integral of SpO2 below the xx SpO2 level normalized by the total recording time';
-        
-        SpO2_HBM.CTxx = result_measures.CT;
-        SpO2_HBM.Properties.VariableUnits{'CTxx'} = '%';
-        SpO2_HBM.Properties.VariableDescriptions{'CTxx'} = 'Cumulative time below the xx% oxygen saturation level'; %'Percentage of the time spent below the 90% oxygen saturation level';
-        
-        SpO2_HBM.PODxx = result_measures.POD; % CDL % POD
-        SpO2_HBM.Properties.VariableUnits{'PODxx'} = 'sec'; % CDL % POD
-        SpO2_HBM.Properties.VariableDescriptions{'PODxx'} = 'Time of oxygen desaturation event, normalized by the total recording time'; % CDL % POD
-        
-        SpO2_HBM.AODmax = result_measures.AODmax; % CAmax
-        SpO2_HBM.Properties.VariableUnits{'AODmax'} = '%*sec'; % CAmax
-        SpO2_HBM.Properties.VariableDescriptions{'AODmax'} = 'The area under the oxygen desaturation event curve, using the maximum SpO2 value as baseline and normalized by the total recording time'; % CAmax  and normalized by the total recording time
-        
-        SpO2_HBM.AOD100 = result_measures.AOD100;% CA100
-        SpO2_HBM.Properties.VariableUnits{'AOD100'} = '%*sec'; % CA100
-        SpO2_HBM.Properties.VariableDescriptions{'AOD100'} = 'Cumulative area of desaturations under the 100% SpO2 level as baseline and normalized by the total recording time'; % CA100 Cumulative area of desaturations under the 100% SpO2 level as baseline
-    else
-        throw(MException('HypoxicBurdenMeasures:text', 'Can''t calculate hypoxic burden measures.'));
-    end
-    %     disp(['HypoxicBurdenMeasures elapsed time: ', num2str(toc(t0))]);
+    toc
 end
+
+if isempty(result_measures)
+    result_measures.CA = NaN;
+    result_measures.CT = NaN;
+    result_measures.POD = NaN;
+    result_measures.AODmax = NaN;
+    result_measures.AOD100 = NaN;
+end
+
+%     if ~isempty(result_measures) && isstruct(result_measures)
+SpO2_HBM.Properties.Description = 'Measures of the hypoxic burden';
+
+SpO2_HBM.CAxx = result_measures.CA;
+SpO2_HBM.Properties.VariableUnits{'CAxx'} = '%*sec';
+SpO2_HBM.Properties.VariableDescriptions{'CAxx'} = 'Integral of SpO2 below the xx SpO2 level normalized by the total recording time';
+
+SpO2_HBM.CTxx = result_measures.CT;
+SpO2_HBM.Properties.VariableUnits{'CTxx'} = '%';
+SpO2_HBM.Properties.VariableDescriptions{'CTxx'} = 'Cumulative time below the xx% oxygen saturation level'; %'Percentage of the time spent below the 90% oxygen saturation level';
+
+SpO2_HBM.PODxx = result_measures.POD; % CDL % POD
+SpO2_HBM.Properties.VariableUnits{'PODxx'} = 'sec'; % CDL % POD
+SpO2_HBM.Properties.VariableDescriptions{'PODxx'} = 'Time of oxygen desaturation event, normalized by the total recording time'; % CDL % POD
+
+SpO2_HBM.AODmax = result_measures.AODmax; % CAmax
+SpO2_HBM.Properties.VariableUnits{'AODmax'} = '%*sec'; % CAmax
+SpO2_HBM.Properties.VariableDescriptions{'AODmax'} = 'The area under the oxygen desaturation event curve, using the maximum SpO2 value as baseline and normalized by the total recording time'; % CAmax  and normalized by the total recording time
+
+SpO2_HBM.AOD100 = result_measures.AOD100;% CA100
+SpO2_HBM.Properties.VariableUnits{'AOD100'} = '%*sec'; % CA100
+SpO2_HBM.Properties.VariableDescriptions{'AOD100'} = 'Cumulative area of desaturations under the 100% SpO2 level as baseline and normalized by the total recording time'; % CA100 Cumulative area of desaturations under the 100% SpO2 level as baseline
+%     else
+%         throw(MException('HypoxicBurdenMeasures:text', 'Can''t calculate hypoxic burden measures.'));
+%     end
+        disp(['HypoxicBurdenMeasures elapsed time: ', num2str(toc(t0))]);
+% end

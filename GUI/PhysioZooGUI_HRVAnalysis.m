@@ -1700,7 +1700,9 @@ displayEndOfDemoMessage('');
             color_data(i, 1, :) = [0 0 1];
         end
                 
-        for i = 1 : length(DATA.DesaturationsRegions)
+        [DesReg_number, ~] = size(DATA.DesaturationsRegions);
+        
+        for i = 1 : DesReg_number
            for j = DATA.DesaturationsRegions(i, 1) : DATA.DesaturationsRegions(i, 2)
                if mod(i, 2) == 0
                    my_color = [1 0 1];
@@ -1724,7 +1726,7 @@ displayEndOfDemoMessage('');
                 data(end) = NaN;
                 yString = 'SpO2 (percent)';
                 color_data = create_color_array4oximetry();
-                GUI.raw_data_handle = patch(signal_time, data, color_data, 'EdgeColor', 'flat', 'LineWidth', 3.5, 'Parent', ha, 'DisplayName', 'Time series');
+                GUI.raw_data_handle = patch(signal_time, data, color_data, 'EdgeColor', 'flat', 'LineWidth', 2.5, 'Parent', ha, 'DisplayName', 'Time series');
             otherwise
                 if ~DATA.PlotHR
                     data =  signal_data;
@@ -2605,17 +2607,17 @@ displayEndOfDemoMessage('');
 %%
     function clear_nonlinear_statistics_results()
         try
-            grid(GUI.NonLinearAxes1, 'off');
-            grid(GUI.NonLinearAxes2, 'off');
-            grid(GUI.NonLinearAxes3, 'off');
-            
-            legend(GUI.NonLinearAxes1, 'off');
-            legend(GUI.NonLinearAxes2, 'off');
-            legend(GUI.NonLinearAxes3, 'off');
-            
             cla(GUI.NonLinearAxes1);
+            grid(GUI.NonLinearAxes1, 'off');
+            legend(GUI.NonLinearAxes1, 'off');
+            
             cla(GUI.NonLinearAxes2);
-            cla(GUI.NonLinearAxes3);
+            grid(GUI.NonLinearAxes2, 'off');
+            legend(GUI.NonLinearAxes2, 'off');
+            
+            cla(GUI.NonLinearAxes3);                                    
+            grid(GUI.NonLinearAxes3, 'off');                        
+            legend(GUI.NonLinearAxes3, 'off');                                    
         catch
         end
     end
@@ -2625,8 +2627,11 @@ displayEndOfDemoMessage('');
         clear_complexity_statistics_results();
         plot_data = DATA.CMStat.PlotData{active_window};
         
-        if ~isempty(plot_data)            
+        if ~all(isnan(plot_data.fn))
+            GUI.FourthAxes1.Visible = 'on';
             plot_oximetry_dfa(GUI.FourthAxes1, plot_data)            
+        else            
+            GUI.FourthAxes1.Visible = 'off';
         end
         box(GUI.FourthAxes1, 'off');       
 %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
@@ -2659,8 +2664,11 @@ displayEndOfDemoMessage('');
         clear_time_statistics_results();
         plot_data = DATA.TimeStat.PlotData{active_window};
         
-        if ~isempty(plot_data)
+        if ~all(isnan(plot_data))
+            GUI.TimeAxes1.Visible = 'on';
             plot_oximetry_time_hist(GUI.TimeAxes1, plot_data)            
+        else
+            GUI.TimeAxes1.Visible = 'off';
         end
         box(GUI.TimeAxes1, 'off');
 %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
@@ -2672,7 +2680,20 @@ displayEndOfDemoMessage('');
         plot_data = DATA.PMStat.PlotData{active_window};
         
         if ~isempty(plot_data)
-            plot_spo2_psd_graph(GUI.FifthAxes1, plot_data, DATA.freq_yscale);
+            if ~all(isnan(plot_data.y))
+                GUI.FifthAxes1.Visible = 'on';
+                GUI.FifthAxes2.Visible = 'on';
+                GUI.oxim_per_log_Button.Visible = 'on';
+                plot_spo2_psd_graph(GUI.FifthAxes1, plot_data, DATA.freq_yscale);
+            else
+                GUI.FifthAxes1.Visible = 'off';
+                GUI.FifthAxes2.Visible = 'off';
+                GUI.oxim_per_log_Button.Visible = 'off';
+            end
+        else
+            GUI.FifthAxes1.Visible = 'off';
+            GUI.FifthAxes2.Visible = 'off';
+            GUI.oxim_per_log_Button.Visible = 'off';
         end
         box(GUI.FifthAxes1, 'off' );
 %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
@@ -2714,13 +2735,17 @@ displayEndOfDemoMessage('');
         
         plot_data = DATA.NonLinStat.PlotData{active_window};
         
-        if ~isempty(plot_data)
-            if ~strcmp(DATA.Integration, 'oximetry')
-                mhrv.plots.plot_dfa_fn(GUI.NonLinearAxes1, plot_data.dfa);
-                mhrv.plots.plot_mse(GUI.NonLinearAxes3, plot_data.mse);
-                mhrv.plots.plot_poincare_ellipse(GUI.NonLinearAxes2, plot_data.poincare);
-            else
+        %         if ~isempty(plot_data)
+        if ~strcmp(DATA.Integration, 'oximetry') && ~isempty(plot_data)
+            mhrv.plots.plot_dfa_fn(GUI.NonLinearAxes1, plot_data.dfa);
+            mhrv.plots.plot_mse(GUI.NonLinearAxes3, plot_data.mse);
+            mhrv.plots.plot_poincare_ellipse(GUI.NonLinearAxes2, plot_data.poincare);
+        else
+            if ~all(isnan(plot_data))
+                GUI.NonLinearAxes1.Visible = 'on';
                 plot_oximetry_CA(GUI.NonLinearAxes1, plot_data);
+            else
+                GUI.NonLinearAxes1.Visible = 'off';
             end
         end
         try
@@ -5472,53 +5497,68 @@ displayEndOfDemoMessage('');
         
         for i = 1 : batch_win_num
             start_time = tic;
-            try
-                nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
+            
+            nni_window =  DATA.nni4calc(DATA.tnn >= batch_window_start_time & DATA.tnn <= batch_window_start_time + batch_window_length);
+            
+%             if ~all(isnan(nni_window))
                 
-                if strcmp(DATA.Integration, 'oximetry')
-                    
-                    waitbar(4 / 5, waitbar_handle, ['Calculating complexity measures for window ' num2str(i)]);
-                    setLogo(waitbar_handle, 'M2');
+                try                    
+                    waitbar(4 / 5, waitbar_handle, ['Calculating complexity measures for window ' num2str(i)]); setLogo(waitbar_handle, 'M2');
                     
                     SpO2_CM = ComplexityMeasures(nni_window);
                     disp(['Spo2: Calculating complexity measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                     
                     [~, ~, plot_data] = oximetry_dfa(nni_window);
                     DATA.CMStat.PlotData{i} = plot_data;
-                end
-                
-                [CMData, CMRowsNames, CMDescriptions] = table2cell_StatisticsParam(SpO2_CM);
-                %                 nonlinRowsNames_NO_GreekLetters = nonlinRowsNames;
-                
-                if ~DATA.GroupsCalc
-                    if i == DATA.active_window
-                        GUI.CMTableRowName = CMRowsNames;
-                        GUI.CMTableData = [CMDescriptions CMData];
-                        GUI.CMTable.Data = [CMRowsNames CMData];
-                        plot_complexity_results(i);
+                    
+                    [CMData, CMRowsNames, CMDescriptions] = table2cell_StatisticsParam(SpO2_CM);
+                    %                 nonlinRowsNames_NO_GreekLetters = nonlinRowsNames;
+                    
+                    if ~DATA.GroupsCalc
+                        if i == DATA.active_window
+                            GUI.CMTableRowName = CMRowsNames;
+                            GUI.CMTableData = [CMDescriptions CMData];
+                            GUI.CMTable.Data = [CMRowsNames CMData];
+                            plot_complexity_results(i);
+                        end
                     end
+                catch e
+                    close(waitbar_handle);
+                    DATA.ComplexityStatPartRowNumber = 0;
+                    h_e = errordlg(['SpO2_complexity: ' e.message], 'Input Error'); setLogo(h_e, 'M2');
+                    rethrow(e);
                 end
-            catch e
-                close(waitbar_handle);
-                DATA.ComplexityStatPartRowNumber = 0;
-                h_e = errordlg(['SpO2_complexity: ' e.message], 'Input Error');
-                setLogo(h_e, 'M2');
-                rethrow(e);
-            end
-            
-            curr_win_table = SpO2_CM;
-            curr_win_table.Properties.RowNames{1} = sprintf('W%d', i);
-            
-            SpO2_Complexity_metrics_tables{i} = curr_win_table;
-            
-            if i == 1
-                DATA.CMStat.RowsNames = CMRowsNames;
-                %                 DATA.NonLinStat.RowsNames_NO_GreekLetters = nonlinRowsNames_NO_GreekLetters;
-                DATA.CMStat.Data = [CMDescriptions CMData];
-            else
-                DATA.CMStat.Data = [DATA.CMStat.Data CMData];
-            end
-            
+                
+                curr_win_table = SpO2_CM;
+                curr_win_table.Properties.RowNames{1} = sprintf('W%d', i);
+                
+                SpO2_Complexity_metrics_tables{i} = curr_win_table;
+                
+                if i == 1
+                    DATA.CMStat.RowsNames = CMRowsNames;                    
+                    DATA.CMStat.Data = [CMDescriptions CMData];
+                else
+%                     if isempty(DATA.CMStat.RowsNames)
+%                         DATA.CMStat.RowsNames = CMRowsNames;
+%                     end
+%                         DATA.CMStat.Data = [CMDescriptions CMData];
+%                     else
+                        DATA.CMStat.Data = [DATA.CMStat.Data CMData];
+%                     end
+                end
+%             else
+%                 DATA.CMStat.PlotData{i} = [];
+%                 curr_win_table = [];
+%                 curr_win_table.Properties.RowNames{1} = sprintf('W%d', i);
+%                 SpO2_Complexity_metrics_tables{i} = curr_win_table;
+%                 
+%                 if ~isfield(DATA.CMStat, 'Data')
+%                     DATA.CMStat.RowsNames = [];
+%                     DATA.CMStat.Data = [];
+%                 else
+%                     DATA.CMStat.Data = [DATA.CMStat.Data []];
+%                 end
+%             end
             batch_window_start_time = batch_window_start_time + (1-batch_overlap) * batch_window_length;
         end
         if ~DATA.GroupsCalc
@@ -5574,7 +5614,7 @@ displayEndOfDemoMessage('');
                         DATA.DesaturationsRegionsCell{1, i} = [ODI_begin ODI_end];
                         DATA.DesaturationsRegions = [DATA.DesaturationsRegions; new_ind_array];
                                                 
-                        disp(['Spo2: Calculating ODI and  desaturations measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
+                        disp(['Spo2: Calculating desaturations measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                                                 
                         desat_intervals_depth = zeros(1, length(ODI_begin));
                         for index = 1 : length(ODI_begin)
@@ -5615,8 +5655,7 @@ displayEndOfDemoMessage('');
                 catch e
                     DATA.frequencyStatPartRowNumber = 0;
                     close(waitbar_handle);
-                    h_e = errordlg(['SPO2_ODI_DSM: ' e.message], 'Input Error');
-                    setLogo(h_e, 'M2');
+                    h_e = errordlg(['SPO2_DSM: ' e.message], 'Input Error'); setLogo(h_e, 'M2');
                     rethrow(e);
                 end
                 
@@ -5744,8 +5783,7 @@ displayEndOfDemoMessage('');
                 calcTimeStatistics(waitbar_handle);
             catch e
                 disp(e);
-                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-                setLogo(waitbar_handle, 'M2');
+                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
             end
             try
                 if strcmp(DATA.Integration, 'oximetry')
@@ -5755,16 +5793,14 @@ displayEndOfDemoMessage('');
                 end
             catch e
                 disp(e);
-                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-                setLogo(waitbar_handle, 'M2');
+                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
             end
             try
                 calcNonlinearStatistics(waitbar_handle);
             catch e
                 disp(e);
                 if strcmp(DATA.Integration, 'oximetry')
-                    waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-                    setLogo(waitbar_handle, 'M2');
+                    waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
                 end
             end
             if strcmp(DATA.Integration, 'oximetry')
@@ -5772,8 +5808,7 @@ displayEndOfDemoMessage('');
                     calcComplexityStatistics(waitbar_handle);                    
                 catch e
                     disp(e);
-                    waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
-                    setLogo(waitbar_handle, 'M2');
+                    waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
                 end
                 try                    
                     calcPeriodicityMeasuresStatistics(waitbar_handle);

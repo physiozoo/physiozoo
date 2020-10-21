@@ -41,7 +41,7 @@
 % - TD_u: Mean of time between two consecutive desaturation events.
 % - TD_sd: Standard deviation of time between 2 consecutive desaturation events.
 
-function [SpO2_DSM, ODI_begin, ODI_end] = DesaturationsMeasures(data, ODI_begin, ODI_end)
+function [SpO2_DSM, ODI_begin, ODI_end] = DesaturationsMeasures(data)
 
 t0 = tic;
 SpO2_DSM = table;
@@ -49,23 +49,17 @@ SpO2_DSM = table;
 exe_file_path = fileparts(mfilename('fullpath'));
 executable_file = [exe_file_path filesep 'SpO2' filesep 'pzpy.exe'];
 
-if ~exist(executable_file, 'file')
-    error('Could not find the "pzpy.exe"');
-else
+result_measures = [];
+
+% if ~exist(executable_file, 'file')
+%     error('Could not find the "pzpy.exe"');
+% else
+
+if ~all(isnan(data)) && exist(executable_file, 'file')
     
     ODI_Threshold = mhrv.defaults.mhrv_get_default('ODIMeasures.ODI_Threshold', 'value');
-
+    
     func_args = zip_args({'ODI_Threshold'}, {ODI_Threshold});
-    
-    
-    
-%     
-%     if length(ODI_end) == 1
-%         ODI_end = ones(1, 1)*ODI_end;
-%         ODI_begin = ones(1, 1)*ODI_begin;
-%     end
-    
-%     func_args = zip_args({'end', 'begin'}, {ODI_end, ODI_begin});
     
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
@@ -73,78 +67,103 @@ else
     command = ['"' executable_file '" ' signal_file ' desaturation ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' DesaturationsMeasures ' func_args];
     
-    %     tic
+    tic
     result_measures = exec_pzpy(command);
-    %     toc
-    
-    if ~isempty(result_measures) && isstruct(result_measures)
-        SpO2_DSM.Properties.Description = 'Desaturations measures';
-        
-        
-        SpO2_DSM.ODIxx = result_measures.ODI;
-        SpO2_DSM.Properties.VariableUnits{'ODIxx'} = 'Event/h';
-        SpO2_DSM.Properties.VariableDescriptions{'ODIxx'} = 'The oxygen desaturation index';
-        
-        ODI_begin = result_measures.begin;
-        ODI_end = result_measures.end;
-        
-        SpO2_DSM.DL_u = result_measures.DL_u;
-        SpO2_DSM.Properties.VariableUnits{'DL_u'} = 'sec';
-        SpO2_DSM.Properties.VariableDescriptions{'DL_u'} = 'Mean of desaturation length';
-        
-        SpO2_DSM.DL_sd = result_measures.DL_sd;
-        SpO2_DSM.Properties.VariableUnits{'DL_sd'} = 'sec**2';
-        SpO2_DSM.Properties.VariableDescriptions{'DL_sd'} = 'Standard deviation of desaturation length';
-        
-        SpO2_DSM.DA100_u = result_measures.DA100_u;
-        SpO2_DSM.Properties.VariableUnits{'DA100_u'} = '%*sec'; %'%';
-        SpO2_DSM.Properties.VariableDescriptions{'DA100_u'} = 'Mean of desaturation area under the 100% SpO2 level as baseline';
-        
-        SpO2_DSM.DA100_sd = result_measures.DA100_sd;
-        SpO2_DSM.Properties.VariableUnits{'DA100_sd'} = '(%*sec)**2'; %'%';
-        SpO2_DSM.Properties.VariableDescriptions{'DA100_sd'} = 'Standard deviation of desaturation area under the 100% SpO2 level as baseline';
-        
-        SpO2_DSM.DAmax_u = result_measures.DAmax_u;
-        SpO2_DSM.Properties.VariableUnits{'DAmax_u'} = '%*sec';
-        SpO2_DSM.Properties.VariableDescriptions{'DAmax_u'} = 'Mean of desaturation area';
-        
-        SpO2_DSM.DAmax_sd = result_measures.DAmax_sd;
-        SpO2_DSM.Properties.VariableUnits{'DAmax_sd'} = '(%*sec)**2';
-        SpO2_DSM.Properties.VariableDescriptions{'DAmax_sd'} = 'Standard deviation of desaturation area';
-        
-        SpO2_DSM.DD100_u = result_measures.DD100_u;
-        SpO2_DSM.Properties.VariableUnits{'DD100_u'} = '%'; %'%*sec';
-        SpO2_DSM.Properties.VariableDescriptions{'DD100_u'} = 'Mean of desaturations depth using 100% SpO2 level as baseline';
-        
-        SpO2_DSM.DD100_sd = result_measures.DD100_sd;
-        SpO2_DSM.Properties.VariableUnits{'DD100_sd'} = '%**2'; %'(%*sec)**2';
-        SpO2_DSM.Properties.VariableDescriptions{'DD100_sd'} = 'Standard deviation of desaturations depth using 100% SpO2 level as baseline';
-        
-        SpO2_DSM.DDmax_u = result_measures.DDmax_u;
-        SpO2_DSM.Properties.VariableUnits{'DDmax_u'} = '%';
-        SpO2_DSM.Properties.VariableDescriptions{'DDmax_u'} = 'Mean of desaturation depth';
-        
-        SpO2_DSM.DDmax_sd = result_measures.DDmax_sd;
-        SpO2_DSM.Properties.VariableUnits{'DDmax_sd'} = '%**2';
-        SpO2_DSM.Properties.VariableDescriptions{'DDmax_sd'} = 'Standard deviation of desaturations depth';
-        
-        SpO2_DSM.DS_u = result_measures.DS_u;
-        SpO2_DSM.Properties.VariableUnits{'DS_u'} = '%/sec';
-        SpO2_DSM.Properties.VariableDescriptions{'DS_u'} = 'Mean of the desaturation slope';
-        
-        SpO2_DSM.DS_sd = result_measures.DS_sd;
-        SpO2_DSM.Properties.VariableUnits{'DS_sd'} = '(%/sec)**2';
-        SpO2_DSM.Properties.VariableDescriptions{'DS_sd'} = 'Standard deviation of the desaturation slope';
-        
-        SpO2_DSM.TD_u = result_measures.TD_u;
-        SpO2_DSM.Properties.VariableUnits{'TD_u'} = 'sec';
-        SpO2_DSM.Properties.VariableDescriptions{'TD_u'} = 'Mean of time between two consecutive desaturation events';
-        
-        SpO2_DSM.TD_sd = result_measures.TD_sd;
-        SpO2_DSM.Properties.VariableUnits{'TD_sd'} = 'sec**2';
-        SpO2_DSM.Properties.VariableDescriptions{'TD_sd'} = 'Standard deviation of time between 2 consecutive desaturation events';
-    else
-        throw(MException('DesaturationsMeasures:text', 'Can''t calculate desaturations measures.'));
-    end
-    disp(['DesaturationsMeasures elapsed time: ', num2str(toc(t0))]);
+    toc
 end
+
+if isempty(result_measures)
+    result_measures.ODI = NaN;
+    result_measures.DL_u = NaN;
+    result_measures.DL_sd = NaN;
+    result_measures.DA100_u = NaN;
+    result_measures.DA100_sd = NaN;
+    
+    result_measures.DAmax_u = NaN;
+    result_measures.DAmax_sd = NaN;
+    result_measures.DD100_u = NaN;
+    result_measures.DD100_sd = NaN;
+    result_measures.DDmax_u = NaN;
+    
+    result_measures.DDmax_sd = NaN;
+    result_measures.DS_u = NaN;
+    result_measures.DS_sd = NaN;
+    result_measures.TD_u = NaN;
+    result_measures.TD_sd = NaN;
+    
+    result_measures.begin = [];
+    result_measures.end = [];
+end
+
+% if ~isempty(result_measures) && isstruct(result_measures)
+SpO2_DSM.Properties.Description = 'Desaturations measures';
+
+SpO2_DSM.ODIxx = result_measures.ODI;
+SpO2_DSM.Properties.VariableUnits{'ODIxx'} = 'Event/h';
+SpO2_DSM.Properties.VariableDescriptions{'ODIxx'} = 'The oxygen desaturation index';
+
+ODI_begin = result_measures.begin;
+ODI_end = result_measures.end;
+
+SpO2_DSM.DL_u = result_measures.DL_u;
+SpO2_DSM.Properties.VariableUnits{'DL_u'} = 'sec';
+SpO2_DSM.Properties.VariableDescriptions{'DL_u'} = 'Mean of desaturation length';
+
+SpO2_DSM.DL_sd = result_measures.DL_sd;
+SpO2_DSM.Properties.VariableUnits{'DL_sd'} = 'sec**2';
+SpO2_DSM.Properties.VariableDescriptions{'DL_sd'} = 'Standard deviation of desaturation length';
+
+SpO2_DSM.DA100_u = result_measures.DA100_u;
+SpO2_DSM.Properties.VariableUnits{'DA100_u'} = '%*sec'; %'%';
+SpO2_DSM.Properties.VariableDescriptions{'DA100_u'} = 'Mean of desaturation area under the 100% SpO2 level as baseline';
+
+SpO2_DSM.DA100_sd = result_measures.DA100_sd;
+SpO2_DSM.Properties.VariableUnits{'DA100_sd'} = '(%*sec)**2'; %'%';
+SpO2_DSM.Properties.VariableDescriptions{'DA100_sd'} = 'Standard deviation of desaturation area under the 100% SpO2 level as baseline';
+
+
+SpO2_DSM.DAmax_u = result_measures.DAmax_u;
+SpO2_DSM.Properties.VariableUnits{'DAmax_u'} = '%*sec';
+SpO2_DSM.Properties.VariableDescriptions{'DAmax_u'} = 'Mean of desaturation area';
+
+SpO2_DSM.DAmax_sd = result_measures.DAmax_sd;
+SpO2_DSM.Properties.VariableUnits{'DAmax_sd'} = '(%*sec)**2';
+SpO2_DSM.Properties.VariableDescriptions{'DAmax_sd'} = 'Standard deviation of desaturation area';
+
+SpO2_DSM.DD100_u = result_measures.DD100_u;
+SpO2_DSM.Properties.VariableUnits{'DD100_u'} = '%'; %'%*sec';
+SpO2_DSM.Properties.VariableDescriptions{'DD100_u'} = 'Mean of desaturations depth using 100% SpO2 level as baseline';
+
+SpO2_DSM.DD100_sd = result_measures.DD100_sd;
+SpO2_DSM.Properties.VariableUnits{'DD100_sd'} = '%**2'; %'(%*sec)**2';
+SpO2_DSM.Properties.VariableDescriptions{'DD100_sd'} = 'Standard deviation of desaturations depth using 100% SpO2 level as baseline';
+
+SpO2_DSM.DDmax_u = result_measures.DDmax_u;
+SpO2_DSM.Properties.VariableUnits{'DDmax_u'} = '%';
+SpO2_DSM.Properties.VariableDescriptions{'DDmax_u'} = 'Mean of desaturation depth';
+
+
+SpO2_DSM.DDmax_sd = result_measures.DDmax_sd;
+SpO2_DSM.Properties.VariableUnits{'DDmax_sd'} = '%**2';
+SpO2_DSM.Properties.VariableDescriptions{'DDmax_sd'} = 'Standard deviation of desaturations depth';
+
+SpO2_DSM.DS_u = result_measures.DS_u;
+SpO2_DSM.Properties.VariableUnits{'DS_u'} = '%/sec';
+SpO2_DSM.Properties.VariableDescriptions{'DS_u'} = 'Mean of the desaturation slope';
+
+SpO2_DSM.DS_sd = result_measures.DS_sd;
+SpO2_DSM.Properties.VariableUnits{'DS_sd'} = '(%/sec)**2';
+SpO2_DSM.Properties.VariableDescriptions{'DS_sd'} = 'Standard deviation of the desaturation slope';
+
+SpO2_DSM.TD_u = result_measures.TD_u;
+SpO2_DSM.Properties.VariableUnits{'TD_u'} = 'sec';
+SpO2_DSM.Properties.VariableDescriptions{'TD_u'} = 'Mean of time between two consecutive desaturation events';
+
+SpO2_DSM.TD_sd = result_measures.TD_sd;
+SpO2_DSM.Properties.VariableUnits{'TD_sd'} = 'sec**2';
+SpO2_DSM.Properties.VariableDescriptions{'TD_sd'} = 'Standard deviation of time between 2 consecutive desaturation events';
+% else
+%     throw(MException('DesaturationsMeasures:text', 'Can''t calculate desaturations measures.'));
+% end
+disp(['DesaturationsMeasures elapsed time: ', num2str(toc(t0))]);
+% end

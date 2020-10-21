@@ -33,9 +33,13 @@ SpO2_CM = table;
 exe_file_path = fileparts(mfilename('fullpath'));
 executable_file = [exe_file_path filesep 'SpO2' filesep 'pzpy.exe'];
 
-if ~exist(executable_file, 'file')
-    error('Could not find the "pzpy.exe"');
-else
+result_measures = [];
+
+if ~all(isnan(data)) && exist(executable_file, 'file')
+    
+    %     if exist(executable_file, 'file')
+    %         error('Could not find the "pzpy.exe"');
+    %     else
     CTM_Threshold = mhrv.defaults.mhrv_get_default('ComplexityMeasures.CTM_Threshold', 'value');
     DFA_Window = mhrv.defaults.mhrv_get_default('ComplexityMeasures.DFA_Window', 'value');
     M_Sampen = mhrv.defaults.mhrv_get_default('ComplexityMeasures.M_Sampen', 'value');
@@ -52,31 +56,39 @@ else
     tic
     result_measures = exec_pzpy(command);
     toc
-        
-    if ~isempty(result_measures)
-        SpO2_CM.Properties.Description = 'Complexity measures';
-        
-        SpO2_CM.DFA = result_measures.DFA; % ApEn
-        SpO2_CM.Properties.VariableUnits{'DFA'} = '%';
-        SpO2_CM.Properties.VariableDescriptions{'DFA'} = 'Detrended Fluctuation Analysis';
-        
-        SpO2_CM.LZ = result_measures.LZ;
-        SpO2_CM.Properties.VariableUnits{'LZ'} = 'nu';
-        SpO2_CM.Properties.VariableDescriptions{'LZ'} = 'Lempel-Ziv complexity';
-        
-        SpO2_CM.CTMxx = result_measures.CTM;
-        SpO2_CM.Properties.VariableUnits{'CTMxx'} = 'nu';
-        SpO2_CM.Properties.VariableDescriptions{'CTMxx'} = 'Central Tendency Measure with radius 0.25';     
-        
-        SpO2_CM.SampEn = result_measures.SampEn;
-        SpO2_CM.Properties.VariableUnits{'SampEn'} = 'nu';
-        SpO2_CM.Properties.VariableDescriptions{'SampEn'} = 'Sample Entropy.';
-        
-        SpO2_CM.ApEn = result_measures.ApEn;
-        SpO2_CM.Properties.VariableUnits{'ApEn'} = 'nu';
-        SpO2_CM.Properties.VariableDescriptions{'ApEn'} = 'Approximate Entropy';
-    else
-        throw(MException('ComplexityMeasures:text', 'Can''t calculate complexity measures.'));
-    end
-    %     disp(['ComplexityMeasures elapsed time: ', num2str(toc(t0))]);
 end
+
+if isempty(result_measures)
+    result_measures.DFA = NaN;
+    result_measures.LZ = NaN;
+    result_measures.CTM = NaN;
+    result_measures.SampEn = NaN;
+    result_measures.ApEn = NaN;
+end
+
+SpO2_CM.Properties.Description = 'Complexity measures';
+
+SpO2_CM.DFA = result_measures.DFA; % ApEn
+SpO2_CM.Properties.VariableUnits{'DFA'} = '%';
+SpO2_CM.Properties.VariableDescriptions{'DFA'} = 'Detrended Fluctuation Analysis';
+
+SpO2_CM.LZ = result_measures.LZ;
+SpO2_CM.Properties.VariableUnits{'LZ'} = 'nu';
+SpO2_CM.Properties.VariableDescriptions{'LZ'} = 'Lempel-Ziv complexity';
+
+SpO2_CM.CTMxx = result_measures.CTM;
+SpO2_CM.Properties.VariableUnits{'CTMxx'} = 'nu';
+SpO2_CM.Properties.VariableDescriptions{'CTMxx'} = 'Central Tendency Measure with radius 0.25';
+
+SpO2_CM.SampEn = result_measures.SampEn;
+SpO2_CM.Properties.VariableUnits{'SampEn'} = 'nu';
+SpO2_CM.Properties.VariableDescriptions{'SampEn'} = 'Sample Entropy.';
+
+SpO2_CM.ApEn = result_measures.ApEn;
+SpO2_CM.Properties.VariableUnits{'ApEn'} = 'nu';
+SpO2_CM.Properties.VariableDescriptions{'ApEn'} = 'Approximate Entropy';
+
+%     else
+%         throw(MException('ComplexityMeasures:text', 'Can''t calculate complexity measures.'));
+%     end
+disp(['ComplexityMeasures elapsed time: ', num2str(toc(t0))]);

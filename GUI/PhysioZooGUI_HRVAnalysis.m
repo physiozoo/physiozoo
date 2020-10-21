@@ -2470,8 +2470,8 @@ displayEndOfDemoMessage('');
                     if strcmp(DATA.Integration, 'oximetry')
                         GUI.SaveMeasures.Label = 'Save SpO2 measures';
                         set(GUI.SaveFiguresAsMenu, 'Enable', 'off');
-                        set(GUI.DataQualityMenu, 'Enable', 'off');
-                        set(GUI.open_quality_pushbutton_handle, 'Enable', 'off');
+                        set(GUI.DataQualityMenu, 'Enable', 'on');
+                        set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
                         GUI.FilteringLevelBox.Visible = 'on';
                         GUI.DefaultMethodBox.Visible = 'off';
                         GUI.Detrending_checkbox.Visible = 'off';

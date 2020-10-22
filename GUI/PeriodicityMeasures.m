@@ -50,7 +50,8 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
     result_measures_2 = exec_pzpy(command2);
     toc
     
-    pd_data = comp_fft(data);
+    pd_data.fft = comp_fft(data);
+    pd_data.PRSA_window = calc_PRSA(data, 10);
 else
     pd_data = [];
 end

@@ -2680,15 +2680,19 @@ displayEndOfDemoMessage('');
         plot_data = DATA.PMStat.PlotData{active_window};
         
         if ~isempty(plot_data)
-            if ~all(isnan(plot_data.y))
-                GUI.FifthAxes1.Visible = 'on';
-                GUI.FifthAxes2.Visible = 'on';
+            if ~all(isnan(plot_data.fft.y))
+                GUI.FifthAxes1.Visible = 'on';                
                 GUI.oxim_per_log_Button.Visible = 'on';
-                plot_spo2_psd_graph(GUI.FifthAxes1, plot_data, DATA.freq_yscale);
+                plot_spo2_psd_graph(GUI.FifthAxes1, plot_data.fft, DATA.freq_yscale);                
             else
-                GUI.FifthAxes1.Visible = 'off';
-                GUI.FifthAxes2.Visible = 'off';
+                GUI.FifthAxes1.Visible = 'off';                
                 GUI.oxim_per_log_Button.Visible = 'off';
+            end
+            if ~isempty(plot_data.PRSA_window)
+                GUI.FifthAxes2.Visible = 'on';
+                plot_oximetry_PRSA(GUI.FifthAxes2, plot_data.PRSA_window);
+            else
+                GUI.FifthAxes2.Visible = 'off';
             end
         else
             GUI.FifthAxes1.Visible = 'off';

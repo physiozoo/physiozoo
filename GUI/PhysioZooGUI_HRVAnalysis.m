@@ -75,7 +75,7 @@ displayEndOfDemoMessage('');
         DATA.integration_index = 1;
         
         DATA.Filters_ECG = {'Moving average', 'Range', 'Quotient', 'Combined filters', 'No filtering'};
-        DATA.Filters_SpO2 = {'Range', 'Median', 'No filtering'};
+        DATA.Filters_SpO2 = {'Range', 'Median', 'Block Data', 'DFilter', 'No filtering'};
         DATA.filter_index = 1;
         
         DATA.default_filter_level_index = 1;
@@ -91,6 +91,8 @@ displayEndOfDemoMessage('');
         
         DATA.filter_spo2_range = true;
         DATA.filter_spo2_median = false;
+        DATA.filter_spo2_block = false;
+        DATA.filter_spo2_dfilter = false;
         
         %         DEBUGGING MODE - Small Screen
         % DATA.screensize = [0 0 1250 800];
@@ -129,7 +131,7 @@ displayEndOfDemoMessage('');
         DATA.freq_yscale = 'linear';
         DATA.doCalc = false;
         
-        DATA.SpO2NewSamplingFrequency = 1;
+%         DATA.SpO2NewSamplingFrequency = 1;
     end % createData
 %-------------------------------------------------------------------------%
 %%
@@ -137,6 +139,9 @@ displayEndOfDemoMessage('');
         % All signal (Intervals)
         DATA.trr = [];
         DATA.rri = [];
+        
+%         DATA.trr_saved = [];
+%         DATA.rri_saved = [];
         
         % All Filtered Signal (Intervals)
         DATA.tnn = [];
@@ -296,6 +301,14 @@ displayEndOfDemoMessage('');
                 delete(GUI.raw_data_handle);
         end
         
+        if isfield(GUI, 'filtered_handle') && ishandle(GUI.filtered_handle) && isvalid(GUI.filtered_handle)
+                delete(GUI.filtered_handle);
+        end
+        
+        if isfield(GUI, 'only_filtered_handle') && ishandle(GUI.only_filtered_handle) && isvalid(GUI.only_filtered_handle)
+                delete(GUI.only_filtered_handle);
+        end
+                
         if isfield(GUI, 'FourthTab') && ishandle(GUI.FourthTab) && isvalid(GUI.FourthTab)
             delete(GUI.FourthTab);
         end
@@ -307,7 +320,12 @@ displayEndOfDemoMessage('');
         end
         if isfield(GUI, 'FifthParamTab') && ishandle(GUI.FifthParamTab) && isvalid(GUI.FifthParamTab)
             delete(GUI.FifthParamTab);
-        end                        
+        end     
+        
+        GUI.quality_vent_text.String = 'Signal quality file name';
+        GUI.DataQualityMenu.Label = 'Open signal quality file';
+        
+        GUI.ShowFilteredData.Value = 1;
     end
 %%
     function clearStatTables()
@@ -491,7 +509,7 @@ displayEndOfDemoMessage('');
         GUI.UpLeft_TabPanel = uix.TabPanel('Parent', temp_panel_left, 'Padding', DATA.Padding, 'TabWidth', 60, 'FontSize', BigFontSize, 'SelectionChangedFcn', @TabChange_Callback);
         GUI.UpCentral_TabPanel = uix.CardPanel('Parent', temp_panel_right, 'Padding', DATA.Padding);
         MainCommandsButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
-        BlueRectButtons_Box = uix.HButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
+        BlueRectButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
         PageUpDownButtons_Box = uix.HButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding+10, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
         
         set(temp_vbox_buttons, 'Heights', [-100, -35, -20]); % -15
@@ -531,9 +549,13 @@ displayEndOfDemoMessage('');
         GUI.Reset_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', MainCommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
         set( MainCommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing  );
         
+        
+        GUI.ShowFilteredData = uicontrol( 'Style', 'Checkbox', 'Parent', BlueRectButtons_Box, 'Callback', @ShowFilteredData_checkbox_Callback, 'FontSize', BigFontSize-1.5, 'String', 'Show filtered data', 'Value', 1);
+        
+        
         GUI.BlueRectFocusButton = uicontrol( 'Style', 'PushButton', 'Parent', BlueRectButtons_Box, 'Callback', @blue_rect_focus_pushbutton_Callback, 'FontSize', BigFontSize, 'Visible', 'on');
         if DATA.SmallScreen
-            set( BlueRectButtons_Box, 'ButtonSize', [80, 25], 'Spacing', DATA.Spacing  );
+            set( BlueRectButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing  );
         else
             set( BlueRectButtons_Box, 'ButtonSize', [105, 25], 'Spacing', DATA.Spacing  );
         end
@@ -626,6 +648,8 @@ displayEndOfDemoMessage('');
         %         uix.Empty( 'Parent', GUI.DataQualityBox );
         GUI.open_quality_pushbutton_handle = uicontrol( 'Style', 'PushButton', 'Parent', GUI.DataQualityBox, 'Callback', @onOpenDataQualityFile, 'FontSize', SmallFontSize, 'String', '...', 'Enable', 'off');
         
+        GUI.quality_vent_text = a{2};
+        
         GUI.ConfigFileNameBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         a{3} = uicontrol( 'Style', 'text', 'Parent', GUI.ConfigFileNameBox, 'String', 'Config file name', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Config_text = uicontrol( 'Style', 'text', 'Parent', GUI.ConfigFileNameBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
@@ -675,11 +699,7 @@ displayEndOfDemoMessage('');
         
         max_extent_control = calc_max_control_x_extend(a);
         field_size = [max_extent_control + 5, -1, 1];
-        
-        %         set( GUI.RecordNameBox, 'Widths', field_size  );
-        %         set( GUI.DataQualityBox, 'Widths', field_size );
-        %         set( GUI.ConfigFileNameBox, 'Widths', field_size );
-        
+                        
         set( GUI.DataLengthBox, 'Widths', field_size );
         
         if DATA.SmallScreen
@@ -1313,11 +1333,8 @@ displayEndOfDemoMessage('');
             uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Detrending', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
             [GUI, filt_deternding_keys_length, max_extent_control(4), handles_boxes_4] = FillParamFields(GUI.FilteringParamBox, containers.Map(detrending_range_keys, values(defaults_map, detrending_range_keys)), GUI, DATA, myUpBackgroundColor);
             uix.Empty( 'Parent', GUI.FilteringParamBox );
-            
-            %         GUI.Detrending_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.FilteringParamBox, 'Callback', @Detrending_checkbox_Callback, 'FontSize', DATA.BigFontSize, ...
-            %             'String', defaults_map('filtrr.detrending.enable').name, 'Value', defaults_map('filtrr.detrending.enable').value, 'TooltipString', defaults_map('filtrr.detrending.enable').description);
-            %
-            GUI.Detrending_checkbox.Value = defaults_map('filtrr.detrending.enable').value;
+                        
+%             GUI.Detrending_checkbox.Value = defaults_map('filtrr.detrending.enable').value;
             
             uix.Empty( 'Parent', GUI.FilteringParamBox );
             
@@ -1654,7 +1671,7 @@ displayEndOfDemoMessage('');
         else
             data =  60 ./ DATA.rri;
         end
-        
+                        
         GUI.all_data_handle = line(DATA.trr, data, 'Color', 'b', 'Parent', ha, 'Marker', '*', 'MarkerSize', 2, 'DisplayName', 'Hole time series'); % 'LineWidth', 1.5
                 
         set(ha, 'XLim', [0 DATA.RRIntPage_Length]);
@@ -2133,23 +2150,10 @@ displayEndOfDemoMessage('');
                 else
                     close(waitbar_handle);
                     throw(MException('LoadFile:text', 'Please, choose another file type.'));
-                end
-                
-%                 if strcmp(integration, 'oximetry')
-%                     wb = waitbar(0, 'SpO2: Resampling ... ', 'Name', 'SpO2');
-%                     setLogo(wb, 'M2');
-%                     
-%                     QRS_data = ResampSpO2(QRS_data, wb);
-%                     time_data = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(QRS_data)/DATA.SpO2NewSamplingFrequency;
-%                     
-%                     if isvalid(wb); close(wb); end
-%                     
-%                     if isempty(QRS_data)
-%                         throw(MException('Load_Data_from_SingleFile:Data', 'Could not Resample SpO2 data.'));
-%                     end
-%                 end
+                end               
                 
                 set_qrs_data(QRS_data, time_data);
+                
             end
         end
     end
@@ -2292,10 +2296,17 @@ displayEndOfDemoMessage('');
                 end
                 
                 if strcmp(DATA.Integration, 'oximetry')
+                    
+                    GUI.quality_vent_text.String = 'Ventilation file name';
+                    GUI.DataQualityMenu.Label = 'Open ventilation file';
+                    
+%                     GUI.Detrending_checkbox.String = 'Resample signal';
+                                        
                     if Module3
                         GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations', 'Hypoxic Burden', 'Complexity', 'Periodicity', 'Group'};
 %                         GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on', 'on', 'on'};
                     else
+                                                                        
                         GUI.FourthTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
                         GUI.FifthTab = uix.Panel( 'Parent', GUI.Analysis_TabPanel, 'Padding', DATA.Padding+2);
                         GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations', 'Hypoxic Burden', 'Complexity', 'Periodicity'};
@@ -2383,25 +2394,35 @@ displayEndOfDemoMessage('');
                     set(GUI.NonLinearBox, 'Widths', [-1 -3]);  % [-1 -3]   
                     set(findobj(GUI.NonLinearTab, 'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
 % -----------------------
-                    DATA.SpO2NewSamplingFrequency = mhrv.defaults.mhrv_get_default('filtSpO2.ResampSpO2.Original_fs', 'value');                 
-                                        
-                    if DATA.SamplingFrequency ~= DATA.SpO2NewSamplingFrequency
-
-                        wb = waitbar(0, 'SpO2: Resampling ... ', 'Name', 'SpO2'); setLogo(wb, 'M2');
-
-                        DATA.rri = ResampSpO2(DATA.rri, wb);
-                        
-                        if isvalid(wb); close(wb); end
-
-                        if isempty(DATA.rri)
-                            throw(MException('Load_Data_from_SingleFile:Data', 'Could not Resample SpO2 data.'));
-                        end
-                    end
-
-                    time_data = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(DATA.rri)/DATA.SpO2NewSamplingFrequency;
-                    set_qrs_data(DATA.rri, time_data);
+%                     DATA.SpO2NewSamplingFrequency = mhrv.defaults.mhrv_get_default('filtSpO2.ResampSpO2.Original_fs', 'value');                 
+                               
+%                     DATA.rri_saved = DATA.rri;
+%                     DATA.trr_saved = DATA.trr;
+                    
+                    
+%                     if DATA.SamplingFrequency ~= DATA.SpO2NewSamplingFrequency
+% 
+%                         wb = waitbar(0, 'SpO2: Resampling ... ', 'Name', 'SpO2'); setLogo(wb, 'M2');
+% 
+%                         DATA.rri = ResampSpO2(DATA.rri, wb);
+%                         
+%                         if isvalid(wb); close(wb); end
+% 
+%                         if isempty(DATA.rri)
+%                             throw(MException('Load_Data_from_SingleFile:Data', 'Could not Resample SpO2 data.'));
+%                         end
+%                     end
+% 
+%                     time_data = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(DATA.rri)/DATA.SpO2NewSamplingFrequency;
+%                     set_qrs_data(DATA.rri, time_data);
 
                 else
+                    
+%                     GUI.Detrending_checkbox.String = 'Detrend NN time series';
+                    
+                    GUI.quality_vent_text.String = 'Signal quality file name';
+                    GUI.DataQualityMenu.Label = 'Open signal quality file';
+                    
                     if Module3
                         GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'Time', 'Frequency', 'NonLinear', 'Group'};
 %                         GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'off', 'off', 'on'};
@@ -2426,23 +2447,10 @@ displayEndOfDemoMessage('');
                     set(findobj(GUI.NonLinearTab, 'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
 % % -----------------------
                 end
-                
-                
+                                
                 if ~DATA.GroupsCalc
                     waitbar(2 / 2, waitbar_handle, 'Create Config Parameters Windows'); setLogo(waitbar_handle, 'M2');
-%                     if strcmp(DATA.Integration, 'oximetry')
-%                         myColors.myEditTextColor = myEditTextColor;
-%                         myColors.myUpBackgroundColor = myUpBackgroundColor;
-%                         [DATA, GUI] = createConfigParametersInterface_Oximetry(DATA, GUI, myColors);
-%                         
-%                         config_keys = GUI.ConfigParamHandlesMap.keys();                        
-%                         for i = 1 : length(config_keys)
-%                             field_handle = GUI.ConfigParamHandlesMap(config_keys{i});
-%                             field_handle.Callback = {@set_config_Callback, config_keys{i}};
-%                         end
-%                     else
                         createConfigParametersInterface();
-%                     end
                     if isvalid(waitbar_handle); close(waitbar_handle); end
                 end
                 
@@ -2477,25 +2485,25 @@ displayEndOfDemoMessage('');
                     if strcmp(DATA.Integration, 'oximetry')
                         GUI.SaveMeasures.Label = 'Save SpO2 measures';
                         set(GUI.SaveFiguresAsMenu, 'Enable', 'off');
-                        set(GUI.DataQualityMenu, 'Enable', 'on');
-                        set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
-                        GUI.FilteringLevelBox.Visible = 'on';
+%                         set(GUI.DataQualityMenu, 'Enable', 'on');
+%                         set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
+%                         GUI.FilteringLevelBox.Visible = 'on';
                         GUI.DefaultMethodBox.Visible = 'off';
                         GUI.Detrending_checkbox.Visible = 'off';
                         GUI.Filtering_popupmenu.String = DATA.Filters_SpO2;
                         GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
-                        GUI.FilteringLevel_popupmenu.Enable = 'on';
+%                         GUI.FilteringLevel_popupmenu.Enable = 'on';
                     else
                         GUI.SaveMeasures.Label = 'Save HRV measures';
                         set(GUI.SaveFiguresAsMenu, 'Enable', 'on');
-                        set(GUI.DataQualityMenu, 'Enable', 'on');
-                        set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
-                        GUI.FilteringLevelBox.Visible = 'on';
+%                         set(GUI.DataQualityMenu, 'Enable', 'on');
+%                         set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
+%                         GUI.FilteringLevelBox.Visible = 'on';
                         GUI.DefaultMethodBox.Visible = 'on';
                         GUI.Detrending_checkbox.Visible = 'on';
                         GUI.Filtering_popupmenu.String = DATA.Filters_ECG;
                         GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
-                        GUI.FilteringLevel_popupmenu.Enable = 'on';
+%                         GUI.FilteringLevel_popupmenu.Enable = 'on';
                     end
                     reset_defaults_extensions();
                 end
@@ -2812,15 +2820,22 @@ displayEndOfDemoMessage('');
             set_default_values();
             
             try
-%                 try
-                    % Only for calc min and max bounderies for plotting
-                    FiltSignal('filter_quotient', false, 'filter_ma', true, 'filter_range', false);
-%                 catch e                    
-%                     DATA.nni = DATA.rri;
-%                     DATA.tnn = DATA.trr;
-%                     h_e = warndlg(['filtrr error: ', e.message], 'Warning');
-%                     setLogo(h_e, 'M2');
-%                 end
+                
+                if strcmp(DATA.Integration, 'oximetry')
+                    if DATA.SamplingFrequency ~= 1
+%                     if get(GUI.Detrending_checkbox, 'Value')
+%                         [DATA.rri, DATA.trr] = ResampleSpO2Data(DATA.rri_saved, DATA.SamplingFrequency, DATA.custom_filters_thresholds.ResampSpO2.Original_fs);
+                        [DATA.rri, DATA.trr] = ResampleSpO2Data(DATA.rri, DATA.SamplingFrequency);
+                        DATA.SamplingFrequency = 1;
+                    end
+%                     else
+%                         DATA.rri = DATA.rri_saved;
+%                         DATA.trr = DATA.trr_saved;
+%                     end
+                end
+                                
+                % Only for calc min and max bounderies for plotting
+                FiltSignal('filter_quotient', false, 'filter_ma', true, 'filter_range', false);
                 
                 DATA.filter_ma_nni = DATA.nni;
                 DATA.filter_ma_tnn = DATA.tnn;
@@ -2868,6 +2883,8 @@ displayEndOfDemoMessage('');
         
         if ~isempty(DATA.rri)
             
+            GUI.ShowFilteredData.Value = 1;
+            
             set(GUI.AutoScaleYUpperAxes_checkbox, 'Value', 1);
             set(GUI.AutoScaleYLowAxes_checkbox, 'Value', 1);
             
@@ -2898,10 +2915,7 @@ displayEndOfDemoMessage('');
             setSliderProperties(GUI.RawDataSlider, DATA.maxSignalLength, DATA.MyWindowSize, 0.1);
             GUI.RawDataSlider.Enable = enable_slider;
             
-            try
-%                 set(GUI.freq_yscale_Button, 'String', 'Log');
-%                 set(GUI.freq_yscale_Button, 'Value', 1);
-                
+            try                
                 if strcmp(DATA.Integration, 'oximetry')
                     set(GUI.oxim_per_log_Button, 'String', 'Log');
                     set(GUI.oxim_per_log_Button, 'Value', 1);
@@ -3447,13 +3461,7 @@ displayEndOfDemoMessage('');
                 set(GUI.GroupsConfig_text, 'String', conf_name); % for Group analysis
             end
             
-%             if strcmp(DATA.Integration, 'oximetry')
-%                 myColors.myEditTextColor = myEditTextColor;
-%                 myColors.myUpBackgroundColor = myUpBackgroundColor;
-%                 [DATA, GUI] = createConfigParametersInterface_Oximetry(DATA, GUI, myColors);
-%             else
-                createConfigParametersInterface();
-%             end
+            createConfigParametersInterface();
             
         catch e
             h_e = errordlg(['Reset_pushbutton_Callback: ' e.message], 'Input Error');
@@ -3494,19 +3502,32 @@ displayEndOfDemoMessage('');
         
         if ~isempty(DATA.rri)
             
-            if strcmp(DATA.Integration, 'oximetry')                
+            if strcmp(DATA.Integration, 'oximetry')   
+                                
                 if DATA.filter_spo2_range
-                    wb = waitbar(0, 'SpO2: Set Range', 'Name', 'SpO2 - Set Range'); setLogo(wb, 'M2');
-                    
+                    wb = waitbar(0, 'SpO2: Set Range', 'Name', 'SpO2 - Set Range'); setLogo(wb, 'M2');                    
                     nni = SetRange(DATA.rri, wb);
-                    tnn = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(nni)/DATA.SpO2NewSamplingFrequency;
-                    
+%                     tnn = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(nni)/DATA.SpO2NewSamplingFrequency; 
+                    tnn = 0 : DATA.SamplingFrequency : (length(nni)-1)*DATA.SamplingFrequency;
                     if isvalid(wb); close(wb); end
                 elseif DATA.filter_spo2_median
                     wb = waitbar(0, 'SpO2: Median', 'Name', 'SpO2 - Median'); setLogo(wb, 'M2');
                     nni = MedianSpO2(DATA.rri, wb);
-                    tnn = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(nni)/DATA.SpO2NewSamplingFrequency;
+%                     tnn = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(nni)/DATA.SpO2NewSamplingFrequency;
+                    tnn = 0 : DATA.SamplingFrequency : (length(nni)-1)*DATA.SamplingFrequency;
                     if isvalid(wb); close(wb); end
+                elseif DATA.filter_spo2_block
+                    wb = waitbar(0, 'SpO2: Block Data', 'Name', 'SpO2 - Block Data'); setLogo(wb, 'M2');
+                    nni = BlockDataSpO2(DATA.rri, wb);
+%                     tnn = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(nni)/DATA.SpO2NewSamplingFrequency;
+                    tnn = 0 : DATA.SamplingFrequency : (length(nni)-1)*DATA.SamplingFrequency;
+                    if isvalid(wb); close(wb); end  
+                elseif DATA.filter_spo2_dfilter
+                    wb = waitbar(0, 'SpO2: DFilter', 'Name', 'SpO2 - DFilter'); setLogo(wb, 'M2');
+                    nni = DFilterSpO2(DATA.rri, wb);
+%                     tnn = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(nni)/DATA.SpO2NewSamplingFrequency;
+                    tnn = 0 : DATA.SamplingFrequency : (length(nni)-1)*DATA.SamplingFrequency;
+                    if isvalid(wb); close(wb); end     
                 else
                     nni = DATA.rri;
                     tnn = DATA.trr;
@@ -3642,8 +3663,8 @@ displayEndOfDemoMessage('');
                 catch
                 end
                 try
-                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_min',  filters_thresholds.rangeSpO2.range_min);
-                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_max',  filters_thresholds.rangeSpO2.range_max);
+                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_min',  filters_thresholds.RangeSpO2.Range_min);
+                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_max',  filters_thresholds.RangeSpO2.Range_max);
                 catch
                 end
             elseif strcmp(Filter, 'Quotient')
@@ -3654,7 +3675,11 @@ displayEndOfDemoMessage('');
                 set_default_filters_threshoulds('filtrr.range.rr_max',  filters_thresholds.range.rr_max);
                 set_default_filters_threshoulds('filtrr.range.rr_min',  filters_thresholds.range.rr_min);
             elseif strcmp(Filter, 'Median')
-                set_default_filters_threshoulds('filtSpO2.MedianSpO2.Range_min',  filters_thresholds.medianSpO2.filter_length);                
+                set_default_filters_threshoulds('filtSpO2.MedianSpO2.FilterLength',  filters_thresholds.MedianSpO2.FilterLength);                
+            elseif strcmp(Filter, 'Block Data')
+                set_default_filters_threshoulds('filtSpO2.BlockSpO2.Treshold',  filters_thresholds.BlockSpO2.Treshold);                    
+            elseif strcmp(Filter, 'DFilter')
+                set_default_filters_threshoulds('filtSpO2.DFilterSpO2.Diff',  filters_thresholds.DFilterSpO2.Diff);                        
             end
         else
             fil_level = DATA.filters_level_value(find(cellfun(@(x) strcmp(x, FilterLevel), DATA.FilterLevel))-1);
@@ -3730,8 +3755,8 @@ displayEndOfDemoMessage('');
                 catch
                 end
                 try
-                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_min', DATA.default_filters_thresholds.rangeSpO2.range_min);
-                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_max', DATA.default_filters_thresholds.rangeSpO2.range_max);
+                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_min', DATA.default_filters_thresholds.rangeSpO2.Range_min);
+                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_max', DATA.default_filters_thresholds.rangeSpO2.Range_max);
                 catch e
                     disp('NO SpO2');
                 end
@@ -3754,8 +3779,18 @@ displayEndOfDemoMessage('');
                 set_default_filters_threshoulds('filtrr.range.rr_min', DATA.default_filters_thresholds.range.rr_min);
                 set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.moving_average.win_threshold);
                 set_default_filters_threshoulds('filtrr.moving_average.win_length', DATA.default_filters_thresholds.moving_average.win_length);
-            elseif strcmp(Filter, 'Median')                                
-                set_default_filters_threshoulds('filtSpO2.MedianSpO2.FilterLength', DATA.default_filters_thresholds.medianSpO2.filter_length);
+            elseif strcmp(Filter, 'Median')
+                GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
+                GUI.FilteringLevel_popupmenu.Enable = 'on';
+                set_default_filters_threshoulds('filtSpO2.MedianSpO2.FilterLength', DATA.default_filters_thresholds.MedianSpO2.FilterLength);
+            elseif strcmp(Filter, 'Block Data')
+                GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
+                GUI.FilteringLevel_popupmenu.Enable = 'on';
+                set_default_filters_threshoulds('filtSpO2.BlockSpO2.Treshold', DATA.default_filters_thresholds.BlockSpO2.Treshold);
+            elseif strcmp(Filter, 'DFilter')
+                GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
+                GUI.FilteringLevel_popupmenu.Enable = 'on';
+                set_default_filters_threshoulds('filtSpO2.DFilterSpO2.Diff', DATA.default_filters_thresholds.DFilterSpO2.Diff);
             end            
             try
                 set_filters(Filter);
@@ -3845,18 +3880,36 @@ displayEndOfDemoMessage('');
             mhrv.defaults.mhrv_set_default('filtrr.quotient.enable', DATA.filter_quotient);
             mhrv.defaults.mhrv_set_default('filtrr.ma.enable', DATA.filter_ma);
         else
-            if strcmp(Filter, DATA.Filters_SpO2{3}) % No filtering                
+            if strcmp(Filter, DATA.Filters_SpO2{5}) % No filtering                
                 DATA.filter_spo2_range = false;
                 DATA.filter_spo2_median = false;
+                DATA.filter_spo2_block = false;
+                DATA.filter_spo2_dfilter = false;
             elseif strcmp(Filter, DATA.Filters_SpO2{1})
                 DATA.filter_spo2_range = true;
                 DATA.filter_spo2_median = false;
+                DATA.filter_spo2_block = false;
+                DATA.filter_spo2_dfilter = false;
             elseif strcmp(Filter, DATA.Filters_SpO2{2})
                 DATA.filter_spo2_range = false;
                 DATA.filter_spo2_median = true;
+                DATA.filter_spo2_block = false;
+                DATA.filter_spo2_dfilter = false;
+            elseif strcmp(Filter, DATA.Filters_SpO2{3}) 
+                DATA.filter_spo2_range = false;
+                DATA.filter_spo2_median = false;
+                DATA.filter_spo2_block = true;
+                DATA.filter_spo2_dfilter = false;
+            elseif strcmp(Filter, DATA.Filters_SpO2{4}) 
+                DATA.filter_spo2_range = false;
+                DATA.filter_spo2_median = false;
+                DATA.filter_spo2_block = false;
+                DATA.filter_spo2_dfilter = true;    
             end            
             mhrv.defaults.mhrv_set_default('filtSpO2.RangeSpO2.enable', DATA.filter_spo2_range);
             mhrv.defaults.mhrv_set_default('filtSpO2.MedianSpO2.enable', DATA.filter_spo2_median);
+            mhrv.defaults.mhrv_set_default('filtSpO2.BlockSpO2.enable', DATA.filter_spo2_block);
+            mhrv.defaults.mhrv_set_default('filtSpO2.DFilterSpO2.enable', DATA.filter_spo2_dfilter);
         end
     end
 %%
@@ -4619,16 +4672,34 @@ displayEndOfDemoMessage('');
                         
             if strcmp(param_name, 'OveralGeneralMeasures.ZC_Baseline') || strcmp(param_name, 'OveralGeneralMeasures.M_Threshold')...
             || strcmp(param_name, 'HypoxicBurdenMeasures.CA_Baseline') || strcmp(param_name, 'HypoxicBurdenMeasures.CT_Threshold')...
-            || strcmp(param_name, 'filtSpO2.RangeSpO2.Range_min') || strcmp(param_name, 'filtSpO2.RangeSpO2.Range_max')
+            || strcmp(param_name, 'filtSpO2.RangeSpO2.Range_min') || strcmp(param_name, 'filtSpO2.RangeSpO2.Range_max')...
+            || strcmp(param_name, 'filtSpO2.BlockSpO2.Treshold') || strcmp(param_name, 'filtSpO2.DFilterSpO2.Diff')
         
                 if isnan(screen_value) || screen_value < 0 || screen_value > 100
                     h_e = errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
                     setLogo(h_e, 'M2');
                     set(src, 'String', prev_screen_value);
-                    return;
+                    return;                
                 end
             
-            elseif strcmp(param_name, 'hrv_freq.welch_overlap') 
+%-------------------------------------------------------                
+                if (strcmp(Filter, 'Range') && (strcmp(param_name, 'filtSpO2.RangeSpO2.Range_min') || strcmp(param_name, 'filtSpO2.RangeSpO2.Range_max')))...
+                || (strcmp(Filter, 'Block Data') && strcmp(param_name, 'filtSpO2.BlockSpO2.Treshold'))...
+                || (strcmp(Filter, 'DFilter') && strcmp(param_name, 'filtSpO2.DFilterSpO2.Diff'))
+                    set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
+                end
+%-------------------------------------------------------
+            elseif strcmp(param_name, 'filtSpO2.MedianSpO2.FilterLength')
+                if isnan(screen_value) || ~(screen_value > 0) || mod(screen_value, 2) == 0
+                    h_e = errordlg(['set_config_Callback error: ' 'This parameter must be numeric odd positive value!'], 'Input Error');
+                    setLogo(h_e, 'M2');
+                    set(src, 'String', prev_screen_value);
+                    return;
+                elseif strcmp(Filter, 'Median')
+                    set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
+                end
+%-------------------------------------------------------                
+            elseif strcmp(param_name, 'hrv_freq.welch_overlap')
                 if isnan(screen_value) || screen_value < 0 || screen_value >= 100
                     h_e = errordlg(['set_config_Callback error: ' 'The value must be greater than 0 and less than 100!'], 'Input Error');
                     setLogo(h_e, 'M2');
@@ -4669,10 +4740,7 @@ displayEndOfDemoMessage('');
                 elseif strcmp(Filter, 'Range') || strcmp(Filter, 'Combined filters')
                     set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
                 end
-            elseif strcmp(param_name, 'hrv_freq.window_minutes')
-                %             try
-                %                 Spectral_Window_Length(GUI.SpectralWindowLengthHandle, string_screen_value);
-                %                 set(GUI.Active_Window_Length, 'String', string_screen_value);
+            elseif strcmp(param_name, 'hrv_freq.window_minutes')                
                 
                 [screen_value, isInputNumeric] = calcDurationInSeconds(GUI.SpectralWindowLengthHandle, string_screen_value, prev_screen_value*60);
                 
@@ -4685,16 +4753,12 @@ displayEndOfDemoMessage('');
                 end
                 
                 screen_value = screen_value / 60; % to minutes
-                %                 doCalc = false;
-                %             catch e
-                %                 h_e = errordlg(e.message, 'Input Error');
-                %                 return;
-                %             end
+                
             elseif  isnan(screen_value) || ~(screen_value > 0)
                 h_e = errordlg(['set_config_Callback error: ' 'This parameter must be numeric positive single value!'], 'Input Error');
                 setLogo(h_e, 'M2');
                 set(src, 'String', prev_screen_value);
-                return;
+                return;            
             end
             
             if ~isempty(min_suffix_ind)
@@ -4787,15 +4851,28 @@ displayEndOfDemoMessage('');
                 end
             elseif regexpi(param_name, 'filtSpO2')
                 DATA.custom_filters_thresholds.(param_category{2}).(param_category{3}) = param_value;
-                doFilt = 1;
+                if strcmp(Filter, 'Range') && strcmp(param_category{2}, 'RangeSpO2')
+                    doFilt = 1;
+                elseif strcmp(Filter, 'Median') && strcmp(param_category{2}, 'MedianSpO2')
+                    doFilt = 1;
+                elseif strcmp(Filter, 'Block Data') && strcmp(param_category{2}, 'BlockSpO2')
+                    doFilt = 1;
+                elseif strcmp(Filter, 'DFilter') && strcmp(param_category{2}, 'DFilterSpO2')
+                    doFilt = 1;
+%                 elseif strcmp(param_category{2}, 'ResampSpO2') && strcmp(param_category{3}, 'Original_fs')
+%                     doFilt = 2;    
+                end
             else
                 doFilt = 1;
             end
             
             if get(GUI.AutoCalc_checkbox, 'Value')
                 try
+%                     if doCalc && doFilt == 3 %% Change Original_fs
+%                         Resamping_checkbox_Callback();
+%                     end
                     
-                    if doCalc && doFilt == 2 %% Change lambda
+                    if doCalc && doFilt == 2 %% Change lambda 
                         Detrending_checkbox_Callback();
                     end
                     
@@ -5719,7 +5796,7 @@ displayEndOfDemoMessage('');
                     DATA.PMStat.PlotData{i} = pd_periodicity;
                     
 %                     SpO2_PRSA = PRSAMeasures(nni_window);
-                    disp(['Spo2: Calculating PRSA measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);                                        
+                    disp(['Spo2: Calculating periodicity measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);                                        
                 end
                 
                 [PMData, PMRowsNames, PMDescriptions] = table2cell_StatisticsParam(SpO2_PRSA);                
@@ -6604,10 +6681,16 @@ displayEndOfDemoMessage('');
 %%
     function Detrending_checkbox_Callback(~, ~)
         detrend = get(GUI.Detrending_checkbox, 'Value');
-        mhrv.defaults.mhrv_set_default('filtrr.detrending.enable', detrend);
+%         if ~strcmp(DATA.Integration, 'oximetry')
+            mhrv.defaults.mhrv_set_default('filtrr.detrending.enable', detrend);
+%         else
+%             mhrv.defaults.mhrv_set_default('filtSpO2.ResampSpO2.enable', detrend);
+%         end
         DATA.Detrending = detrend;
         try
+            %             if ~strcmp(DATA.Integration, 'oximetry')
             DetrendIfNeed_data_chunk();
+            
             clear_statistics_plots();
             clearStatTables();
             if isfield(GUI, 'filtered_handle')
@@ -6617,9 +6700,29 @@ displayEndOfDemoMessage('');
             if get(GUI.AutoCalc_checkbox, 'Value')
                 calcStatistics();
             end
+%             else
+%                 if detrend 
+%                     DATA.SpO2NewSamplingFrequency = DATA.custom_filters_thresholds.ResampSpO2.Original_fs;
+%                 else
+%                     DATA.SpO2NewSamplingFrequency = DATA.default_filters_thresholds.ResampSpO2.Original_fs;
+%                 end
+%                 
+%                 if isfield(GUI, 'raw_data_handle') && ishandle(GUI.raw_data_handle) && isvalid(GUI.raw_data_handle)
+%                     delete(GUI.raw_data_handle);
+%                 end
+% %                 if get(GUI.AutoCalc_checkbox, 'Value')
+%                     reset_plot_Data();
+%                     reset_plot_GUI();
+%                     EnablePageUpDown();
+% %                 end
+%             end
         catch e
-            h_e = errordlg(['Detrending_checkbox_Callback Error: ' e.message], 'Input Error');
-            setLogo(h_e, 'M2');
+            if ~strcmp(DATA.Integration, 'oximetry')
+                error_text = 'Detrending_checkbox_Callback Error: ';                
+            else
+                error_text = 'Resampling_checkbox_Callback Error: ';
+            end
+            h_e = errordlg([error_text e.message], 'Input Error'); setLogo(h_e, 'M2');
             return;
         end
     end
@@ -6905,6 +7008,11 @@ displayEndOfDemoMessage('');
         CL_human = 60/BR_human;
         CL_mammal = 60/BR;
         xx = 50*(CL_mammal/CL_human);
+    end
+%%
+    function ShowFilteredData_checkbox_Callback(src, ~)        
+        GUI.filtered_handle.Visible = src.Value;
+        GUI.only_filtered_handle.Visible = src.Value;
     end
 %%
     function AutoCalc_checkbox_Callback( src, ~ )

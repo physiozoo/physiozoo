@@ -16,7 +16,7 @@
 
 function [SpO2_PM, pd_data] = PeriodicityMeasures(data)
 
-t0 = tic;
+% t0 = tic;
 SpO2_PM = table;
 
 exe_file_path = fileparts(mfilename('fullpath'));
@@ -46,9 +46,9 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
     
     command2 = ['"' executable_file '" ' signal_file ' psd_periodicity ' ];
     
-    tic
+%     tic
     result_measures_2 = exec_pzpy(command2);
-    toc
+%     toc
     
     pd_data.fft = comp_fft(data);
     pd_data.PRSA_window = calc_PRSA(data, 10);
@@ -120,7 +120,7 @@ SpO2_PM.Properties.VariableDescriptions{'PSD_peak'} = 'Peak amplitude of the FFT
 %     else
 %         throw(MException('PeriodicityMeasures:text', 'Can''t calculate PSD measures.'));
 %     end
-    disp(['ComplexityMeasures elapsed time: ', num2str(toc(t0))]);
+%     disp(['PeriodicityMeasures elapsed time: ', num2str(toc(t0))]);
 
 
 

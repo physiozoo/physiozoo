@@ -13,21 +13,21 @@ filtSpO2:
             name: Enable range filter
             units: boolean
         FilterLength:
-            value: 9       # possible values : positive
+            value: 9       # possible values : positive only odd
             description: The length of the filter
             name: Filter Length
             units: sec
-    ResampSpO2:
-        enable:
-            value: true     # possible values : {True, False}
-            description: Whether to enable resampling
-            name: Enable resampling
-            units: boolean
-        Original_fs:
-            value: 1       # possible values : positive
-            description: The original frequency
-            name: Original Fs
-            units: Hz
+    #ResampSpO2:
+    #    enable:
+    #        value: true     # possible values : {True, False}
+    #        description: Whether to enable resampling
+    #        name: Enable resampling
+    #        units: boolean
+    #    Original_fs:
+    #        value: 1       # possible values : positive
+    #        description: The original frequency
+    #        name: Original Fs
+    #        units: Hz
     RangeSpO2: # RemovalAbnormalities
         enable:
             value: true     # possible values : {True, False}
@@ -44,6 +44,28 @@ filtSpO2:
             description: Maximal value to remove samples
             name: Range max
             units: '%'
+    BlockSpO2:
+        enable:
+            value: false     # possible values : {True, False}
+            description: Whether to enable range-based filtering
+            name: Enable block filter
+            units: boolean
+        Treshold:
+            value: 50       # possible values : between 0 and 100
+            description: Treshold parameter for block data filter
+            name: Treshold
+            units: '%' 
+    DFilterSpO2:
+        enable:
+            value: false     # possible values : {True, False}
+            description: Whether to enable range-based filtering
+            name: Enable block filter
+            units: boolean
+        Diff:
+            value: 4       # possible values : between 0 and 100
+            description: Parameter of the delta filter
+            name: Diff
+            units: '%'         
 
 OveralGeneralMeasures:
     ZC_Baseline:
@@ -107,6 +129,16 @@ ComplexityMeasures:
         description: Tolerance to compute SampEn
         name: R Sampen
         units: n.u.
+    M_ApEn:
+        value: 2       # possible values : positive
+        description: Embedding dimension to compute ApEn
+        name: M ApEn
+        units: n.u.
+    R_ApEn:
+        value: 0.25      # possible values : positive
+        description: Tolerance to compute ApEn
+        name: R ApEn
+        units: n.u.    
 
 PeriodicityMeasures:
     PRSA_Window:

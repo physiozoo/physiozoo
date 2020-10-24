@@ -31,7 +31,7 @@
 
 function SpO2_HBM = HypoxicBurdenMeasures(data, ODI_begin, ODI_end)
 
-t0 = tic;
+% t0 = tic;
 SpO2_HBM = table;
 
 exe_file_path = fileparts(mfilename('fullpath'));
@@ -55,9 +55,9 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
     command = ['"' executable_file '" ' signal_file ' hypoxic_burden ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' HypoxicBurdenMeasures ' func_args];
     
-    tic
+%     tic
     result_measures = exec_pzpy(command);
-    toc
+%     toc
 end
 
 if isempty(result_measures)
@@ -93,5 +93,5 @@ SpO2_HBM.Properties.VariableDescriptions{'AOD100'} = 'Cumulative area of desatur
 %     else
 %         throw(MException('HypoxicBurdenMeasures:text', 'Can''t calculate hypoxic burden measures.'));
 %     end
-        disp(['HypoxicBurdenMeasures elapsed time: ', num2str(toc(t0))]);
+%         disp(['HypoxicBurdenMeasures elapsed time: ', num2str(toc(t0))]);
 % end

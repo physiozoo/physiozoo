@@ -1,6 +1,6 @@
 %%
 function [DATA, GUI] = createConfigParametersInterface_Oximetry(DATA, GUI, myColors)
-disp('Test');
+% disp('Test');
 
 SmallFontSize = DATA.SmallFontSize;
 
@@ -10,21 +10,37 @@ param_keys = keys(defaults_map);
 
 filtrr_keys = param_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'filtSpO2')), param_keys)));
 filt_median_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.MedianSpO2')), filtrr_keys)));
-filt_resamp_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.ResampSpO2')), filtrr_keys)));
+% filt_resamp_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.ResampSpO2')), filtrr_keys)));
 filt_range_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.RangeSpO2')), filtrr_keys)));
 
+filt_block_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.BlockSpO2')), filtrr_keys)));
+filt_dfilter_keys = filtrr_keys(find(cellfun(@(x) ~isempty(regexpi(x, '\.DFilterSpO2')), filtrr_keys)));
+
+
 filt_median_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), filt_median_keys))) = [];
-filt_resamp_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), filt_resamp_keys))) = [];
+% filt_resamp_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), filt_resamp_keys))) = [];
 filt_range_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), filt_range_keys))) = [];
 
+filt_block_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), filt_block_keys))) = [];
+filt_dfilter_keys(find(cellfun(@(x) ~isempty(regexpi(x, 'enable')), filt_dfilter_keys))) = [];
+
+
 DATA.filter_spo2_median = mhrv.defaults.mhrv_get_default('filtSpO2.MedianSpO2.enable', 'value');
-DATA.filter_spO2_resamp = mhrv.defaults.mhrv_get_default('filtSpO2.ResampSpO2.enable', 'value');
+% DATA.filter_spO2_resamp = mhrv.defaults.mhrv_get_default('filtSpO2.ResampSpO2.enable', 'value');
 DATA.filter_spo2_range = mhrv.defaults.mhrv_get_default('filtSpO2.RangeSpO2.enable', 'value');
 
-DATA.default_filters_thresholds.medianSpO2.filter_length = mhrv.defaults.mhrv_get_default('filtSpO2.MedianSpO2.FilterLength', 'value');
-DATA.default_filters_thresholds.resampSpO2.original_fs = mhrv.defaults.mhrv_get_default('filtSpO2.ResampSpO2.Original_fs', 'value');
-DATA.default_filters_thresholds.rangeSpO2.range_min = mhrv.defaults.mhrv_get_default('filtSpO2.RangeSpO2.Range_min', 'value');
-DATA.default_filters_thresholds.rangeSpO2.range_max = mhrv.defaults.mhrv_get_default('filtSpO2.RangeSpO2.Range_max', 'value');
+DATA.filter_spo2_block = mhrv.defaults.mhrv_get_default('filtSpO2.BlockSpO2.enable', 'value');
+DATA.filter_spo2_dfilter = mhrv.defaults.mhrv_get_default('filtSpO2.DFilterSpO2.enable', 'value');
+
+
+DATA.default_filters_thresholds.MedianSpO2.FilterLength = mhrv.defaults.mhrv_get_default('filtSpO2.MedianSpO2.FilterLength', 'value');
+% DATA.default_filters_thresholds.ResampSpO2.Original_fs = mhrv.defaults.mhrv_get_default('filtSpO2.ResampSpO2.Original_fs', 'value');
+DATA.default_filters_thresholds.RangeSpO2.Range_max = mhrv.defaults.mhrv_get_default('filtSpO2.RangeSpO2.Range_max', 'value');
+DATA.default_filters_thresholds.RangeSpO2.Range_min = mhrv.defaults.mhrv_get_default('filtSpO2.RangeSpO2.Range_min', 'value');
+
+DATA.default_filters_thresholds.BlockSpO2.Treshold = mhrv.defaults.mhrv_get_default('filtSpO2.BlockSpO2.Treshold', 'value');
+DATA.default_filters_thresholds.DFilterSpO2.Diff = mhrv.defaults.mhrv_get_default('filtSpO2.DFilterSpO2.Diff', 'value');
+
 
 DATA.custom_filters_thresholds = DATA.default_filters_thresholds;
 
@@ -34,8 +50,12 @@ if DATA.filter_spo2_range
     DATA.filter_index = 1;
 elseif DATA.filter_spo2_median
     DATA.filter_index = 2;    
-elseif ~DATA.filter_spo2_range && ~DATA.filter_spo2_median
-    DATA.filter_index = 3;
+elseif DATA.filter_spo2_block
+    DATA.filter_index = 3; 
+elseif DATA.filter_spo2_dfilter
+    DATA.filter_index = 4;
+elseif ~DATA.filter_spo2_range && ~DATA.filter_spo2_median && ~DATA.filter_spo2_block && ~DATA.filter_spo2_dfilter
+    DATA.filter_index = 5;    
 end
 GUI.Filtering_popupmenu.Value = DATA.filter_index;
 %-----------------------------
@@ -58,15 +78,27 @@ uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Median',
 [GUI, filt_median_keys_length, max_extent_control(2), handles_boxes_2] = FillParamFields(GUI.FilteringParamBox, containers.Map(filt_median_keys, values(defaults_map, filt_median_keys)), GUI, DATA, myColors.myUpBackgroundColor);
 uix.Empty( 'Parent', GUI.FilteringParamBox );
 
-uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Resampling', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
-[GUI, filt_resamp_keys_length, max_extent_control(3), handles_boxes_3] = FillParamFields(GUI.FilteringParamBox, containers.Map(filt_resamp_keys, values(defaults_map, filt_resamp_keys)), GUI, DATA, myColors.myUpBackgroundColor);
+uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Block', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
+[GUI, filt_block_keys_length, max_extent_control(3), handles_boxes_3] = FillParamFields(GUI.FilteringParamBox, containers.Map(filt_block_keys, values(defaults_map, filt_block_keys)), GUI, DATA, myColors.myUpBackgroundColor);
 uix.Empty( 'Parent', GUI.FilteringParamBox );
+
+uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'DFilter', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
+[GUI, filt_dfilter_keys_length, max_extent_control(4), handles_boxes_4] = FillParamFields(GUI.FilteringParamBox, containers.Map(filt_dfilter_keys, values(defaults_map, filt_dfilter_keys)), GUI, DATA, myColors.myUpBackgroundColor);
+uix.Empty( 'Parent', GUI.FilteringParamBox );
+
+% uicontrol( 'Style', 'text', 'Parent', GUI.FilteringParamBox, 'String', 'Resampling', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'Bold');
+% [GUI, filt_resamp_keys_length, max_extent_control(5), handles_boxes_5] = FillParamFields(GUI.FilteringParamBox, containers.Map(filt_resamp_keys, values(defaults_map, filt_resamp_keys)), GUI, DATA, myColors.myUpBackgroundColor);
+% uix.Empty( 'Parent', GUI.FilteringParamBox );
+
+% GUI.Detrending_checkbox.Value = defaults_map('filtSpO2.ResampSpO2.enable').value;
 
 max_extent = max(max_extent_control);
 
 setWidthsConfigParams(max_extent, handles_boxes_1);
 setWidthsConfigParams(max_extent, handles_boxes_2);
 setWidthsConfigParams(max_extent, handles_boxes_3);
+setWidthsConfigParams(max_extent, handles_boxes_4);
+% setWidthsConfigParams(max_extent, handles_boxes_5);
 
 rs = 19; %-22;
 ts = 19; % -18
@@ -74,7 +106,8 @@ es = 2;
 set(GUI.FilteringParamBox, 'Height', ...
     [ts, rs * ones(1, filt_range_keys_length), es,...
     ts, rs * ones(1, filt_median_keys_length), es,...
-    ts, rs * ones(1, filt_resamp_keys_length), es]);
+    ts, rs * ones(1, filt_block_keys_length), es,...
+    ts, rs * ones(1, filt_dfilter_keys_length), es]);
 
 
 % Time Parameters

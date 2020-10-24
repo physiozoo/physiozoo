@@ -27,7 +27,7 @@
 
 function SpO2_CM = ComplexityMeasures(data)
 
-t0 = tic;
+% t0 = tic;
 SpO2_CM = table;
 
 exe_file_path = fileparts(mfilename('fullpath'));
@@ -53,9 +53,9 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
     command = ['"' executable_file '" ' signal_file ' complexity ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' ComplexityMeasures ' func_args];
     
-    tic
+%     tic
     result_measures = exec_pzpy(command);
-    toc
+%     toc
 end
 
 if isempty(result_measures)
@@ -91,4 +91,4 @@ SpO2_CM.Properties.VariableDescriptions{'ApEn'} = 'Approximate Entropy';
 %     else
 %         throw(MException('ComplexityMeasures:text', 'Can''t calculate complexity measures.'));
 %     end
-disp(['ComplexityMeasures elapsed time: ', num2str(toc(t0))]);
+% disp(['ComplexityMeasures elapsed time: ', num2str(toc(t0))]);

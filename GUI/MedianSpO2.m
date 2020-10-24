@@ -26,7 +26,7 @@ else
     
     waitbar(2 / 2, waitbar_handle, 'Median', 'Name', 'SpO2 - Median');
         
-    command = ['"' executable_file '" ' signal_file ' MedianSpO2 ' func_args];        
+    command = ['"' executable_file '" ' signal_file ' median_spo2 ' func_args];        
     
     signal = exec_pzpy(command);
     if isvalid(waitbar_handle); close(waitbar_handle); end

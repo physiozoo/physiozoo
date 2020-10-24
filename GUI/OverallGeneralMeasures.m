@@ -42,7 +42,7 @@
 
 function SpO2_OGM = OverallGeneralMeasures(data)
 
-t0 = tic;
+% t0 = tic;
 SpO2_OGM = table;
 
 exe_file_path = fileparts(mfilename('fullpath'));
@@ -68,9 +68,9 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
     command = ['"' executable_file '" ' signal_file ' overall_general ' func_args];
     %command = ['"' executable_file '" vector ' jsonencode(data) ' OveralGeneralMeasures ' func_args];
     
-    tic
+%     tic
     result_measures = exec_pzpy(command);
-    toc
+%     toc
 end
 
 if isempty(result_measures)
@@ -129,5 +129,5 @@ SpO2_OGM.Properties.VariableDescriptions{'DIx'} = 'Delta Index'; %'Delta index';
 %         throw(MException('OveralGeneralMeasures:text', 'Can''t calculate overal general measures.'));
 %     end
 % end
-disp(['OveralGeneralMeasures elapsed time: ', num2str(toc(t0))]);
+% disp(['OveralGeneralMeasures elapsed time: ', num2str(toc(t0))]);
 % end

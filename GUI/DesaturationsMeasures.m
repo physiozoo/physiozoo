@@ -43,7 +43,7 @@
 
 function [SpO2_DSM, ODI_begin, ODI_end] = DesaturationsMeasures(data)
 
-t0 = tic;
+% t0 = tic;
 SpO2_DSM = table;
 
 exe_file_path = fileparts(mfilename('fullpath'));
@@ -67,9 +67,9 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
     command = ['"' executable_file '" ' signal_file ' desaturation ' func_args];
     %     command = ['"' executable_file '" vector ' jsonencode(data) ' DesaturationsMeasures ' func_args];
     
-    tic
+%     tic
     result_measures = exec_pzpy(command);
-    toc
+%     toc
 end
 
 if isempty(result_measures)
@@ -165,5 +165,5 @@ SpO2_DSM.Properties.VariableDescriptions{'TD_sd'} = 'Standard deviation of time 
 % else
 %     throw(MException('DesaturationsMeasures:text', 'Can''t calculate desaturations measures.'));
 % end
-disp(['DesaturationsMeasures elapsed time: ', num2str(toc(t0))]);
+% disp(['DesaturationsMeasures elapsed time: ', num2str(toc(t0))]);
 % end

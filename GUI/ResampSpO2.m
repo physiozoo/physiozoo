@@ -6,7 +6,7 @@
 % Returns:
 % 	The resampled signal.
 
-function signal = ResampSpO2(data, waitbar_handle)
+function signal = ResampSpO2(data, Original_fs, waitbar_handle)
 
 t0 = tic;
 t2 = tic;
@@ -17,7 +17,7 @@ if ~exist(executable_file, 'file')
     error('Could not find the "pzpy.exe"');
 else
     
-    Original_fs = mhrv.defaults.mhrv_get_default('filtSpO2.ResampSpO2.Original_fs', 'value');
+%     Original_fs = mhrv.defaults.mhrv_get_default('filtSpO2.ResampSpO2.Original_fs', 'value');
     func_args = zip_args({'OriginalFreq'}, {Original_fs});
     
     waitbar(1 / 2, waitbar_handle, 'Writing data to the file', 'Name', 'SpO2');

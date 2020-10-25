@@ -5055,7 +5055,7 @@ displayEndOfDemoMessage('');
             end
         else
             if ~isempty(DATA.PMStat.PlotData{DATA.active_window})
-                plot_spo2_psd_graph(GUI.FifthAxes1, DATA.PMStat.PlotData{DATA.active_window}, DATA.freq_yscale);
+                plot_spo2_psd_graph(GUI.FifthAxes1, DATA.PMStat.PlotData{DATA.active_window}.fft, DATA.freq_yscale);
             end
         end
     end

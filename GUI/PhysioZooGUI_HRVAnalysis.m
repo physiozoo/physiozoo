@@ -4322,7 +4322,7 @@ displayEndOfDemoMessage('');
         
         legend_handle.String{1} = 'Time series';
                 
-        Filter = GUI.Filtering_popupmen.String{GUI.Filtering_popupmenu.Value};
+        Filter = GUI.Filtering_popupmenu.String{GUI.Filtering_popupmenu.Value};
         if strcmp(Filter, 'No filtering')
             legend_handle.String{2} = 'Selected time series';
         else

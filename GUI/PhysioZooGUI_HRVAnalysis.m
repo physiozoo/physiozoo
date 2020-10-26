@@ -2485,7 +2485,7 @@ displayEndOfDemoMessage('');
                     
                     if strcmp(DATA.Integration, 'oximetry')
                         GUI.SaveMeasures.Label = 'Save SpO2 measures';
-                        set(GUI.SaveFiguresAsMenu, 'Enable', 'off');
+                        set(GUI.SaveFiguresAsMenu, 'Enable', 'on');
                         set(GUI.DataQualityMenu, 'Enable', 'on');
                         set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
 %                         GUI.FilteringLevelBox.Visible = 'on';
@@ -2709,6 +2709,7 @@ displayEndOfDemoMessage('');
             GUI.oxim_per_log_Button.Visible = 'off';
         end
         box(GUI.FifthAxes1, 'off' );
+        box(GUI.FifthAxes2, 'off' );
 %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
     end
 %%
@@ -3418,7 +3419,7 @@ displayEndOfDemoMessage('');
         
         if isfield(DATA, 'Integration') && strcmp(DATA.Integration, 'oximetry')
             DATA_Measure.measures = [1 1];
-            DATA_Fig.export_figures = [];
+            DATA_Fig.export_figures = [1 1 1 1 1 1 1 1];
         else
             DATA_Measure.measures = [1 1 1 1];
             DATA_Fig.export_figures = [1 1 1 1 1 1 1];
@@ -4062,8 +4063,13 @@ displayEndOfDemoMessage('');
         
         set_defaults_path();
         
-        GUIFiguresNames = {'NN Interval Distribution'; 'Power Spectral Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare Ellipse'; 'RR Time Series'};
-        DATA.FiguresNames = {'_NND'; '_PSD'; '_Beta'; '_DFA'; '_MSE'; '_Poincare'; '_RR'};
+        if ~strcmp(DATA.Integration, 'oximetry')
+            GUIFiguresNames = {'NN Interval Distribution'; 'Power Spectral Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare Ellipse'; 'RR Time Series'};
+            DATA.FiguresNames = {'_NND'; '_PSD'; '_Beta'; '_DFA'; '_MSE'; '_Poincare'; '_RR'};
+        else
+            GUIFiguresNames = {'Statistics SpO2'; 'Desaturations Lengths'; 'Desaturations Depths'; 'CA'; 'DFA'; 'PSD'; 'PRSA'; 'SpO2 Signal'};
+            DATA.FiguresNames = {'_StatSpO2'; '_DesatLengths'; '_DesatDepths'; '_CA'; '_DFA'; '_PSD'; '_PRSA'; '_SpO2Signal'};
+        end
         
         main_screensize = DATA.screensize;
         
@@ -4082,7 +4088,7 @@ displayEndOfDemoMessage('');
         figures_panel = uix.Panel( 'Parent', mainSaveFigurestLayout, 'Padding', DATA.Padding+2, 'Title', 'Select figures to save:', 'FontSize', DATA.BigFontSize+2, 'FontName', 'Calibri', 'BorderType', 'beveledin' );
         figures_box = uix.VButtonBox('Parent', figures_panel, 'Spacing', DATA.Spacing-1, 'HorizontalAlignment', 'left', 'ButtonSize', [200 25]);
         
-        for i = 1 : 7
+        for i = 1 : length(DATA.FiguresNames)
             uicontrol( 'Style', 'checkbox', 'Parent', figures_box, 'Callback', {@figures_checkbox_Callback, i}, 'FontSize', DATA.BigFontSize, ...
                 'Tag', ['Fig' num2str(i)], 'String', GUIFiguresNames{i}, 'FontName', 'Calibri', 'Value', DATA_Fig.export_figures(i));
         end
@@ -4091,7 +4097,7 @@ displayEndOfDemoMessage('');
         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @dir_button_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Save As', 'FontName', 'Calibri');
         uicontrol( 'Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', {@cancel_button_Callback, GUI.SaveFiguresWindow}, 'FontSize', DATA.BigFontSize, 'String', 'Cancel', 'FontName', 'Calibri');
         
-        set( mainSaveFigurestLayout, 'Heights',  [-70 -30]); % [-70 -45 -25]
+        set( mainSaveFigurestLayout, 'Heights',  [-80 -20]); % [-70 -45 -25]
     end
 %%
     function figures_checkbox_Callback( src, ~, param_name )
@@ -4116,160 +4122,166 @@ displayEndOfDemoMessage('');
                 ext = 'tiff';
             elseif strcmpi(ext, 'tiff')
                 ext = 'tiffn';
-            end
+            end            
             
             export_path_name = fullfile(fig_path, fig_name);
             
-            yes_no = zeros(length(DATA.FiguresNames));
-            for i = 1 : length(DATA.FiguresNames)
-                if DATA_Fig.export_figures(i)
-                    full_file_name = [export_path_name DATA.FiguresNames{i} '.' ext];
-                    button = 'Yes';
-                    if exist(full_file_name, 'file')
-                        button = questdlg([full_file_name ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
-                    end
-                    if strcmp(button, 'Yes')
-                        yes_no(i) = 1;
+            if ~strcmp(DATA.Integration, 'oximetry')
+                
+                yes_no = zeros(length(DATA.FiguresNames));
+                for i = 1 : length(DATA.FiguresNames)
+                    if DATA_Fig.export_figures(i)
+                        full_file_name = [export_path_name DATA.FiguresNames{i} '.' ext];
+                        button = 'Yes';
+                        if exist(full_file_name, 'file')
+                            button = questdlg([full_file_name ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
+                        end
+                        if strcmp(button, 'Yes')
+                            yes_no(i) = 1;
+                        end
                     end
                 end
-            end
-            if ~isempty(DATA.TimeStat) || ~isempty(DATA.FrStat) || ~isempty(DATA.NonLinStat)
-                
-                if ~strcmpi(ext, 'fig')
-                    if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1) && yes_no(1)
-                        af = figure;
-                        setLogo(af, 'M2');
-                        set(af, 'Visible', 'off')
-                        mhrv.plots.plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
-                        mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{1}], 'output_format', ext, 'title', figure_title(fig_name, 1));
-                        close(af);
-                    end
+                                            
+                if ~isempty(DATA.TimeStat) || ~isempty(DATA.FrStat) || ~isempty(DATA.NonLinStat)
                     
-                    if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
-                        if DATA_Fig.export_figures(2) && yes_no(2)
+                    if ~strcmpi(ext, 'fig')
+                        if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1) && yes_no(1)
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
-                            mhrv.plots.plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
-                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{2}], 'output_format', ext, 'title', figure_title(fig_name, 2));
+                            mhrv.plots.plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
+                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{1}], 'output_format', ext, 'title', figure_title(fig_name, 1));
                             close(af);
                         end
-                        if DATA_Fig.export_figures(3) && yes_no(3)
+                        
+                        if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
+                            if DATA_Fig.export_figures(2) && yes_no(2)
+                                af = figure;
+                                setLogo(af, 'M2');
+                                set(af, 'Visible', 'off')
+                                mhrv.plots.plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
+                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{2}], 'output_format', ext, 'title', figure_title(fig_name, 2));
+                                close(af);
+                            end
+                            if DATA_Fig.export_figures(3) && yes_no(3)
+                                af = figure;
+                                setLogo(af, 'M2');
+                                set(af, 'Visible', 'off')
+                                mhrv.plots.plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
+                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{3}], 'output_format', ext, 'title', figure_title(fig_name, 3));
+                                close(af);
+                            end
+                        end
+                        
+                        if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
+                            if DATA_Fig.export_figures(4) && yes_no(4)
+                                af = figure;
+                                setLogo(af, 'M2');
+                                set(af, 'Visible', 'off')
+                                mhrv.plots.plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
+                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{4}], 'output_format', ext, 'title', figure_title(fig_name, 4));
+                                close(af);
+                            end
+                            if DATA_Fig.export_figures(5) && yes_no(5)
+                                af = figure;
+                                setLogo(af, 'M2');
+                                set(af, 'Visible', 'off')
+                                mhrv.plots.plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
+                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{5}], 'output_format', ext, 'title', figure_title(fig_name, 5));
+                                close(af);
+                            end
+                            if DATA_Fig.export_figures(6) && yes_no(6)
+                                af = figure;
+                                setLogo(af, 'M2');
+                                set(af, 'Visible', 'off')
+                                mhrv.plots.plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
+                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{6}], 'output_format', ext, 'title', figure_title(fig_name, 6));
+                                close(af);
+                            end
+                        end
+                        if DATA_Fig.export_figures(7) && yes_no(7)
                             af = figure;
                             setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
-                            mhrv.plots.plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
-                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{3}], 'output_format', ext, 'title', figure_title(fig_name, 3));
+                            plot_rr_time_series(gca);
+                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{7}], 'output_format', ext, 'title', figure_title(fig_name, 7));
+                            close(af);
+                        end
+                    elseif strcmpi(ext, 'fig')
+                        if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1) && yes_no(1)
+                            af = figure;
+                            setLogo(af, 'M2');
+                            set(af, 'Name', [fig_name, DATA.FiguresNames{1}], 'NumberTitle', 'off');
+                            mhrv.plots.plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
+                            title(gca, figure_title(fig_name, 1));
+                            savefig(af, [export_path_name, DATA.FiguresNames{1}], 'compact');
+                            close(af);
+                        end
+                        if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
+                            if DATA_Fig.export_figures(2) && yes_no(2)
+                                af = figure;
+                                setLogo(af, 'M2');
+                                set(af, 'Name', [fig_name, DATA.FiguresNames{2}], 'NumberTitle', 'off');
+                                mhrv.plots.plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
+                                title(gca, figure_title(fig_name, 2));
+                                savefig(af, [export_path_name, DATA.FiguresNames{2}], 'compact');
+                                close(af);
+                            end
+                            if DATA_Fig.export_figures(3) && yes_no(3)
+                                af = figure;
+                                setLogo(af, 'M2');
+                                set(af, 'Name', [fig_name, DATA.FiguresNames{3}], 'NumberTitle', 'off');
+                                mhrv.plots.plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
+                                title(gca, figure_title(fig_name, 3));
+                                savefig(af, [export_path_name, DATA.FiguresNames{3}], 'compact');
+                                close(af);
+                            end
+                        end
+                        if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
+                            if DATA_Fig.export_figures(4) && yes_no(4)
+                                af = figure;
+                                setLogo(af, 'M2');
+                                set(af, 'Name', [fig_name, DATA.FiguresNames{4}], 'NumberTitle', 'off');
+                                mhrv.plots.plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
+                                title(gca, figure_title(fig_name, 4));
+                                savefig(af, [export_path_name, DATA.FiguresNames{4}], 'compact');
+                                close(af);
+                            end
+                            if DATA_Fig.export_figures(5) && yes_no(5)
+                                af = figure;
+                                setLogo(af, 'M2');
+                                set(af, 'Name', [fig_name, DATA.FiguresNames{5}], 'NumberTitle', 'off');
+                                mhrv.plots.plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
+                                title(gca, figure_title(fig_name, 5));
+                                savefig(af, [export_path_name, DATA.FiguresNames{5}], 'compact');
+                                close(af);
+                            end
+                            if DATA_Fig.export_figures(6) && yes_no(6)
+                                af = figure;
+                                setLogo(af, 'M2');
+                                set(af, 'Name', [fig_name, DATA.FiguresNames{6}], 'NumberTitle', 'off');
+                                mhrv.plots.plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
+                                title(gca, figure_title(fig_name, 6));
+                                savefig(af, [export_path_name, DATA.FiguresNames{6}], 'compact');
+                                close(af);
+                            end
+                        end
+                        if DATA_Fig.export_figures(7) && yes_no(7)
+                            af = figure;
+                            setLogo(af, 'M2');
+                            set(af, 'Name', [fig_name, DATA.FiguresNames{7}], 'NumberTitle', 'off');
+                            plot_rr_time_series(gca);
+                            title(gca, figure_title(fig_name, 7));
+                            savefig(af, [export_path_name, DATA.FiguresNames{7}], 'compact');
                             close(af);
                         end
                     end
-                    
-                    if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
-                        if DATA_Fig.export_figures(4) && yes_no(4)
-                            af = figure;
-                            setLogo(af, 'M2');
-                            set(af, 'Visible', 'off')
-                            mhrv.plots.plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
-                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{4}], 'output_format', ext, 'title', figure_title(fig_name, 4));
-                            close(af);
-                        end
-                        if DATA_Fig.export_figures(5) && yes_no(5)
-                            af = figure;
-                            setLogo(af, 'M2');
-                            set(af, 'Visible', 'off')
-                            mhrv.plots.plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
-                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{5}], 'output_format', ext, 'title', figure_title(fig_name, 5));
-                            close(af);
-                        end
-                        if DATA_Fig.export_figures(6) && yes_no(6)
-                            af = figure;
-                            setLogo(af, 'M2');
-                            set(af, 'Visible', 'off')
-                            mhrv.plots.plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
-                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{6}], 'output_format', ext, 'title', figure_title(fig_name, 6));
-                            close(af);
-                        end
-                    end
-                    if DATA_Fig.export_figures(7) && yes_no(7)
-                        af = figure;
-                        setLogo(af, 'M2');
-                        set(af, 'Visible', 'off')
-                        plot_rr_time_series(gca);
-                        mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{7}], 'output_format', ext, 'title', figure_title(fig_name, 7));
-                        close(af);
-                    end
-                elseif strcmpi(ext, 'fig')
-                    if ~isempty(DATA.TimeStat.PlotData{DATA.active_window}) && DATA_Fig.export_figures(1) && yes_no(1)
-                        af = figure;
-                        setLogo(af, 'M2');
-                        set(af, 'Name', [fig_name, DATA.FiguresNames{1}], 'NumberTitle', 'off');
-                        mhrv.plots.plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
-                        title(gca, figure_title(fig_name, 1));
-                        savefig(af, [export_path_name, DATA.FiguresNames{1}], 'compact');
-                        close(af);
-                    end
-                    if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
-                        if DATA_Fig.export_figures(2) && yes_no(2)
-                            af = figure;
-                            setLogo(af, 'M2');
-                            set(af, 'Name', [fig_name, DATA.FiguresNames{2}], 'NumberTitle', 'off');
-                            mhrv.plots.plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
-                            title(gca, figure_title(fig_name, 2));
-                            savefig(af, [export_path_name, DATA.FiguresNames{2}], 'compact');
-                            close(af);
-                        end
-                        if DATA_Fig.export_figures(3) && yes_no(3)
-                            af = figure;
-                            setLogo(af, 'M2');
-                            set(af, 'Name', [fig_name, DATA.FiguresNames{3}], 'NumberTitle', 'off');
-                            mhrv.plots.plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
-                            title(gca, figure_title(fig_name, 3));
-                            savefig(af, [export_path_name, DATA.FiguresNames{3}], 'compact');
-                            close(af);
-                        end
-                    end
-                    if ~isempty(DATA.NonLinStat.PlotData{DATA.active_window})
-                        if DATA_Fig.export_figures(4) && yes_no(4)
-                            af = figure;
-                            setLogo(af, 'M2');
-                            set(af, 'Name', [fig_name, DATA.FiguresNames{4}], 'NumberTitle', 'off');
-                            mhrv.plots.plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
-                            title(gca, figure_title(fig_name, 4));
-                            savefig(af, [export_path_name, DATA.FiguresNames{4}], 'compact');
-                            close(af);
-                        end
-                        if DATA_Fig.export_figures(5) && yes_no(5)
-                            af = figure;
-                            setLogo(af, 'M2');
-                            set(af, 'Name', [fig_name, DATA.FiguresNames{5}], 'NumberTitle', 'off');
-                            mhrv.plots.plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
-                            title(gca, figure_title(fig_name, 5));
-                            savefig(af, [export_path_name, DATA.FiguresNames{5}], 'compact');
-                            close(af);
-                        end
-                        if DATA_Fig.export_figures(6) && yes_no(6)
-                            af = figure;
-                            setLogo(af, 'M2');
-                            set(af, 'Name', [fig_name, DATA.FiguresNames{6}], 'NumberTitle', 'off');
-                            mhrv.plots.plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
-                            title(gca, figure_title(fig_name, 6));
-                            savefig(af, [export_path_name, DATA.FiguresNames{6}], 'compact');
-                            close(af);
-                        end
-                    end
-                    if DATA_Fig.export_figures(7) && yes_no(7)
-                        af = figure;
-                        setLogo(af, 'M2');
-                        set(af, 'Name', [fig_name, DATA.FiguresNames{7}], 'NumberTitle', 'off');
-                        plot_rr_time_series(gca);
-                        title(gca, figure_title(fig_name, 7));
-                        savefig(af, [export_path_name, DATA.FiguresNames{7}], 'compact');
-                        close(af);
-                    end
+                else
+                    h_e = errordlg('Please, press Compute before saving!', 'Input Error');
+                    setLogo(h_e, 'M2');
                 end
             else
-                h_e = errordlg('Please, press Compute before saving!', 'Input Error');
-                setLogo(h_e, 'M2');
+                save_spo2_figures_to_file(GUI, DATA, export_path_name, ext, fig_name, DATA_Fig);
             end
             delete( GUI.SaveFiguresWindow );
         else

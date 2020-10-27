@@ -327,6 +327,7 @@ displayEndOfDemoMessage('');
         GUI.DataQualityMenu.Label = 'Open signal quality file';
         
         GUI.ShowFilteredData.Value = 1;
+        GUI.ShowRawData.Value = 1;
     end
 %%
     function clearStatTables()
@@ -551,8 +552,8 @@ displayEndOfDemoMessage('');
         set( MainCommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing  );
         
         
-        GUI.ShowFilteredData = uicontrol( 'Style', 'Checkbox', 'Parent', BlueRectButtons_Box, 'Callback', @ShowFilteredData_checkbox_Callback, 'FontSize', BigFontSize-1.5, 'String', 'Show filtered data', 'Value', 1);
-        
+        GUI.ShowRawData = uicontrol( 'Style', 'Checkbox', 'Parent', BlueRectButtons_Box, 'Callback', @ShowRawData_checkbox_Callback, 'FontSize', BigFontSize-1.5, 'String', 'Show raw data', 'Value', 1);
+        GUI.ShowFilteredData = uicontrol( 'Style', 'Checkbox', 'Parent', BlueRectButtons_Box, 'Callback', @ShowFilteredData_checkbox_Callback, 'FontSize', BigFontSize-1.5, 'String', 'Show filtered data', 'Value', 1);        
         
         GUI.BlueRectFocusButton = uicontrol( 'Style', 'PushButton', 'Parent', BlueRectButtons_Box, 'Callback', @blue_rect_focus_pushbutton_Callback, 'FontSize', BigFontSize, 'Visible', 'on');
         if DATA.SmallScreen
@@ -989,7 +990,7 @@ displayEndOfDemoMessage('');
         %---------------------------
         %---------------------------
         
-        tables_field_size = [-85 -15];
+        tables_field_size = [-85 -1]; % [-85 -15]
         
         GUI.TimeBox = uix.HBox( 'Parent', GUI.TimeTab, 'Spacing', DATA.Spacing);
         GUI.ParamTimeBox = uix.VBox( 'Parent', GUI.TimeBox, 'Spacing', DATA.Spacing);
@@ -1024,7 +1025,7 @@ displayEndOfDemoMessage('');
         uix.Empty( 'Parent', PSD_HBox );
         set( PSD_HBox, 'Widths', [-30 100 -45] );
         
-        set( GUI.FrequencyBox, 'Widths', [-34 -64] );
+        set( GUI.FrequencyBox, 'Widths', [-1 -3] ); % [-34 -64]
         %---------------------------
         
         GUI.NonLinearBox = uix.HBox( 'Parent', GUI.NonLinearTab, 'Spacing', DATA.Spacing);
@@ -1041,7 +1042,7 @@ displayEndOfDemoMessage('');
         GUI.NonLinearAxes2 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox) );
         GUI.NonLinearAxes3 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox) );
         set(GUI.NonLinearAxesBox, 'Widths', [-24 -24 -24]); % -14 -24 -24 -24
-        set(GUI.NonLinearBox, 'Widths', [-1 -3]);
+        set(GUI.NonLinearBox, 'Widths', [-1 -5]); % [-1 -3]
 %         %---------------------------
 %         
 %         GUI.FourthBox = uix.HBox( 'Parent', GUI.FourthTab, 'Spacing', DATA.Spacing);
@@ -1772,7 +1773,9 @@ displayEndOfDemoMessage('');
         
         GUI.filtered_handle = line(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected filtered time series', 'Parent', ha);
         
-        GUI.only_filtered_handle = line(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected only filtered time series', 'Parent', ha);
+        if ~strcmp(DATA.Integration, 'oximetry')
+            GUI.only_filtered_handle = line(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected only filtered time series', 'Parent', ha);
+        end
         
         xlabel(ha, 'Time (h:min:sec)');
         ylabel(ha, yString);
@@ -1783,7 +1786,9 @@ displayEndOfDemoMessage('');
             DATA.legend_handle.Box = 'off';
         end
         
-        legend([GUI.raw_data_handle, GUI.filtered_handle], DATA.legend_handle.String(1 : end - 1));
+        if ~strcmp(DATA.Integration, 'oximetry')
+            legend([GUI.raw_data_handle, GUI.filtered_handle], DATA.legend_handle.String(1 : end - 1));        
+        end
         
         set(ha, 'XLim', [DATA.firstSecond2Show, DATA.firstSecond2Show + DATA.MyWindowSize]);
         
@@ -1794,7 +1799,7 @@ displayEndOfDemoMessage('');
         if isfield(DATA.AnalysisParams, 'segment_startTime')
             Filt_time_data = DATA.tnn;
             Filt_data = DATA.nni;
-            Filt_data_saved = DATA.nni_saved;
+            %             Filt_data_saved = DATA.nni_saved;
             
             filt_win_indexes = find(Filt_time_data >= DATA.AnalysisParams.segment_startTime & Filt_time_data <= DATA.AnalysisParams.segment_effectiveEndTime);
             
@@ -1802,30 +1807,44 @@ displayEndOfDemoMessage('');
                 
                 filt_signal_time = Filt_time_data(filt_win_indexes(1) : filt_win_indexes(end));
                 filt_signal_data = Filt_data(filt_win_indexes(1) : filt_win_indexes(end));
-                filt_signal_data_saved = Filt_data_saved(filt_win_indexes);
+                %                 filt_signal_data_saved = Filt_data_saved(filt_win_indexes);
                 
                 if DATA.PlotHR == 0
                     filt_data =  filt_signal_data;
-                    filt_data_saved =  filt_signal_data_saved;
+                    %                     filt_data_saved =  filt_signal_data_saved;
                 else
                     filt_data =  60 ./ filt_signal_data;
-                    filt_data_saved =  60 ./ filt_signal_data_saved;
+                    %                     filt_data_saved =  60 ./ filt_signal_data_saved;
                 end
                 filt_data_time = ones(1, length(DATA.tnn))*NaN;
                 filt_data_vector = ones(1, length(DATA.nni))*NaN;
-                filt_data_vector_saved = ones(1, length(DATA.nni))*NaN;
+                %                 filt_data_vector_saved = ones(1, length(DATA.nni))*NaN;
                 
                 filt_data_time(filt_win_indexes) = filt_signal_time;
                 filt_data_vector(filt_win_indexes) = filt_data;
-                filt_data_vector_saved(filt_win_indexes) = filt_data_saved;
+                %                 filt_data_vector_saved(filt_win_indexes) = filt_data_saved;
                 
                 set(GUI.filtered_handle, 'XData', filt_data_time, 'YData', filt_data_vector);
-                set(GUI.only_filtered_handle, 'XData', filt_data_time, 'YData', filt_data_vector_saved);
+                %                 set(GUI.only_filtered_handle, 'XData', filt_data_time, 'YData', filt_data_vector_saved);                                                
+            end
+            if ~strcmp(DATA.Integration, 'oximetry')
+                if ~isempty(filt_win_indexes)
+                    Filt_data_saved = DATA.nni_saved;
+                    filt_signal_data_saved = Filt_data_saved(filt_win_indexes);
+                    if DATA.PlotHR == 0
+                        filt_data_saved =  filt_signal_data_saved;
+                    else
+                        filt_data_saved =  60 ./ filt_signal_data_saved;
+                    end
+                    filt_data_vector_saved = ones(1, length(DATA.nni))*NaN;
+                    filt_data_vector_saved(filt_win_indexes) = filt_data_saved;
+                    set(GUI.only_filtered_handle, 'XData', filt_data_time, 'YData', filt_data_vector_saved);
+                end
             end
         end
     end
 %%
-    function plotDesaturationsRegions()
+function plotDesaturationsRegions()
         if ~isempty(DATA.DesaturationsRegions)
             if isfield(GUI, 'DesaturationsLineHandle')
                 delete(GUI.DesaturationsLineHandle);
@@ -2326,7 +2345,7 @@ displayEndOfDemoMessage('');
 %                         GUI.Analysis_TabPanel.TabEnables = {'on', 'on', 'on', 'on', 'on', 'on'};
                         %---------------------------
                         
-                        tables_field_size = [-85 -15];
+                        tables_field_size = [-85 -1];
                         
                         GUI.FourthBox = uix.HBox('Parent', GUI.FourthTab, 'Spacing', DATA.Spacing);
                         GUI.ParamFourthBox = uix.VBox( 'Parent', GUI.FourthBox, 'Spacing', DATA.Spacing);
@@ -2404,7 +2423,7 @@ displayEndOfDemoMessage('');
                     GUI.NonLinearAxes1 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox));
                     uix.Empty( 'Parent', GUI.NonLinearAxesBox );
                     set(GUI.NonLinearAxesBox, 'Widths', [-1 -1.5 -1]);
-                    set(GUI.NonLinearBox, 'Widths', [-1 -3]);  % [-1 -3]   
+                    set(GUI.NonLinearBox, 'Widths', [-1 -5]);  % [-1 -3]   
                     set(findobj(GUI.NonLinearTab, 'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
 % -----------------------
 %                     DATA.SpO2NewSamplingFrequency = mhrv.defaults.mhrv_get_default('filtSpO2.ResampSpO2.Original_fs', 'value');                 
@@ -2456,7 +2475,7 @@ displayEndOfDemoMessage('');
                     GUI.NonLinearAxes2 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox));
                     GUI.NonLinearAxes3 = axes('Parent', uicontainer('Parent', GUI.NonLinearAxesBox));
                     set(GUI.NonLinearAxesBox, 'Widths', [-24 -24 -24]);
-                    set(GUI.NonLinearBox, 'Widths', [-1 -3]);  
+                    set(GUI.NonLinearBox, 'Widths', [-1 -5]);  
                     set(findobj(GUI.NonLinearTab, 'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
 % % -----------------------
                 end
@@ -2898,6 +2917,7 @@ displayEndOfDemoMessage('');
         if ~isempty(DATA.rri)
             
             GUI.ShowFilteredData.Value = 1;
+            GUI.ShowRawData.Value = 1;
             
             set(GUI.AutoScaleYUpperAxes_checkbox, 'Value', 1);
             set(GUI.AutoScaleYLowAxes_checkbox, 'Value', 1);
@@ -7035,9 +7055,18 @@ displayEndOfDemoMessage('');
         xx = 50*(CL_mammal/CL_human);
     end
 %%
-    function ShowFilteredData_checkbox_Callback(src, ~)        
-        GUI.filtered_handle.Visible = src.Value;
-        GUI.only_filtered_handle.Visible = src.Value;
+    function ShowFilteredData_checkbox_Callback(src, ~)  
+        
+        if isfield(GUI, 'filtered_handle') && ishandle(GUI.filtered_handle) && isvalid(GUI.filtered_handle)
+            GUI.filtered_handle.Visible = src.Value;
+        end
+        if isfield(GUI, 'only_filtered_handle') && ishandle(GUI.only_filtered_handle) && isvalid(GUI.only_filtered_handle)
+            GUI.only_filtered_handle.Visible = src.Value;
+        end
+    end
+%%
+    function ShowRawData_checkbox_Callback(src, ~)
+        GUI.raw_data_handle.Visible = src.Value;
     end
 %%
     function AutoCalc_checkbox_Callback( src, ~ )

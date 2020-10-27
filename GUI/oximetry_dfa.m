@@ -35,7 +35,7 @@ t = [0; cumsum(sig(1:end-1))];
 %% Initializations
 
 % Integrate the signal without mean
-nni_int = cumsum(sig - mean(sig));
+nni_int = cumsum(sig - mean(sig, 'omitnan'));
 
 N = length(nni_int);
 
@@ -72,7 +72,7 @@ for nn = n
     end
 
     % Calculate F(n), the value of the DFA for the current n
-    fn(nn) = sqrt ( 1/N * sum((sig_windows(:) - sig_regressed(:)).^2) );
+    fn(nn) = sqrt ( 1/N * sum((sig_windows(:) - sig_regressed(:)).^2, 'omitnan') );
 end
 
 % Find the indices of all the DFA values we calculated

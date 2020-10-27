@@ -1570,6 +1570,9 @@ displayEndOfDemoMessage('');
                 if min_signal_data ~= max_signal_data
                     DATA.AutoYLimitUpperAxes.RRMinYLimit = min(min_signal_data, max_signal_data);
                     DATA.AutoYLimitUpperAxes.RRMaxYLimit = max(min_signal_data, max_signal_data);
+                else
+                    DATA.AutoYLimitUpperAxes.RRMinYLimit = min_signal_data*0.9;
+                    DATA.AutoYLimitUpperAxes.RRMaxYLimit = max_signal_data*1.1;
                 end
                 
                 max_rri_60 = max(60 ./ signal_data);
@@ -1577,6 +1580,9 @@ displayEndOfDemoMessage('');
                 if min_rri_60 ~= max_rri_60
                     DATA.AutoYLimitUpperAxes.HRMinYLimit = min(min_rri_60, max_rri_60);
                     DATA.AutoYLimitUpperAxes.HRMaxYLimit = max(min_rri_60, max_rri_60);
+                else
+                    DATA.AutoYLimitUpperAxes.HRMinYLimit = min_rri_60 * 0.9;
+                    DATA.AutoYLimitUpperAxes.HRMaxYLimit = max_rri_60 * 1.1;
                 end
             else
                 max_nni = max(filt_signal_data);
@@ -1589,6 +1595,9 @@ displayEndOfDemoMessage('');
                 if min_nni_delta ~= max_nni_delta
                     DATA.AutoYLimitUpperAxes.RRMinYLimit = min_nni_delta;
                     DATA.AutoYLimitUpperAxes.RRMaxYLimit = max_nni_delta;
+                else
+                    DATA.AutoYLimitUpperAxes.RRMinYLimit = min_nni_delta * 0.9;
+                    DATA.AutoYLimitUpperAxes.RRMaxYLimit = max_nni_delta * 1.1;
                 end
                 
                 max_nni_60 = max(60 ./ filt_signal_data);
@@ -1600,6 +1609,9 @@ displayEndOfDemoMessage('');
                 if min_nni_delta_60 ~= max_nni_delta_60
                     DATA.AutoYLimitUpperAxes.HRMinYLimit = min_nni_delta_60;
                     DATA.AutoYLimitUpperAxes.HRMaxYLimit = max_nni_delta_60;
+                else
+                    DATA.AutoYLimitUpperAxes.HRMinYLimit = min_nni_delta_60*0.9;
+                    DATA.AutoYLimitUpperAxes.HRMaxYLimit = max_nni_delta_60*1.1;
                 end
             end
             

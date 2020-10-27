@@ -2769,7 +2769,7 @@ displayEndOfDemoMessage('');
         else
             if ~all(isnan(plot_data))
                 GUI.NonLinearAxes1.Visible = 'on';
-                plot_oximetry_CA(GUI.NonLinearAxes1, plot_data);
+                plot_oximetry_CT(GUI.NonLinearAxes1, plot_data);
             else
                 GUI.NonLinearAxes1.Visible = 'off';
             end

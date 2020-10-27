@@ -1,6 +1,8 @@
 %%
 function pd_data = comp_fft(signal)
 
+signal(isnan(signal)) = 0;
+
 N = length(signal);
 Hs = hamming(N ,'symmetric');
 fft_two_sided = fft(Hs'.*signal);

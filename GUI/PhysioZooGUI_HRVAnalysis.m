@@ -3789,10 +3789,10 @@ function plotDesaturationsRegions()
                 catch
                 end
                 try
-                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_min', DATA.default_filters_thresholds.rangeSpO2.Range_min);
-                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_max', DATA.default_filters_thresholds.rangeSpO2.Range_max);
+                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_min', DATA.default_filters_thresholds.RangeSpO2.Range_min);
+                    set_default_filters_threshoulds('filtSpO2.RangeSpO2.Range_max', DATA.default_filters_thresholds.RangeSpO2.Range_max);
                 catch e
-                    disp('NO SpO2');
+                    disp(['NO SpO2', e.message]);
                 end
             elseif strcmp(Filter, 'No filtering')
                 GUI.FilteringLevel_popupmenu.String = DATA.FilterNoLevel;
@@ -4718,7 +4718,7 @@ function plotDesaturationsRegions()
             end
                         
             if strcmp(param_name, 'OveralGeneralMeasures.ZC_Baseline') || strcmp(param_name, 'OveralGeneralMeasures.M_Threshold')...
-            || strcmp(param_name, 'HypoxicBurdenMeasures.CA_Baseline') || strcmp(param_name, 'HypoxicBurdenMeasures.CT_Threshold')...
+            || strcmp(param_name, 'ODIMeasures.ODI_Threshold') || strcmp(param_name, 'HypoxicBurdenMeasures.CT_Threshold')...
             || strcmp(param_name, 'filtSpO2.RangeSpO2.Range_min') || strcmp(param_name, 'filtSpO2.RangeSpO2.Range_max')...
             || strcmp(param_name, 'filtSpO2.BlockSpO2.Treshold') || strcmp(param_name, 'filtSpO2.DFilterSpO2.Diff')
         

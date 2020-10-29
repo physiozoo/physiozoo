@@ -4713,6 +4713,8 @@ function plotDesaturationsRegions()
                 items = get(GUI.Filtering_popupmenu, 'String');
                 index_selected = get(GUI.Filtering_popupmenu, 'Value');
                 Filter = items{index_selected};
+            else
+                Filter = [];
             end
                         
             if strcmp(param_name, 'OveralGeneralMeasures.ZC_Baseline') || strcmp(param_name, 'OveralGeneralMeasures.M_Threshold')...
@@ -4728,10 +4730,12 @@ function plotDesaturationsRegions()
                 end
             
 %-------------------------------------------------------                
-                if (strcmp(Filter, 'Range') && (strcmp(param_name, 'filtSpO2.RangeSpO2.Range_min') || strcmp(param_name, 'filtSpO2.RangeSpO2.Range_max')))...
-                || (strcmp(Filter, 'Block Data') && strcmp(param_name, 'filtSpO2.BlockSpO2.Treshold'))...
-                || (strcmp(Filter, 'DFilter') && strcmp(param_name, 'filtSpO2.DFilterSpO2.Diff'))
-                    set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
+                if ~isempty(Filter)
+                    if (strcmp(Filter, 'Range') && (strcmp(param_name, 'filtSpO2.RangeSpO2.Range_min') || strcmp(param_name, 'filtSpO2.RangeSpO2.Range_max')))...
+                            || (strcmp(Filter, 'Block Data') && strcmp(param_name, 'filtSpO2.BlockSpO2.Treshold'))...
+                            || (strcmp(Filter, 'DFilter') && strcmp(param_name, 'filtSpO2.DFilterSpO2.Diff'))
+                        set(GUI.FilteringLevel_popupmenu, 'Value', custom_level);
+                    end
                 end
 %-------------------------------------------------------
             elseif strcmp(param_name, 'filtSpO2.MedianSpO2.FilterLength')

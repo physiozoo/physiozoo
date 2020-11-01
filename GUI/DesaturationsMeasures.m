@@ -58,8 +58,10 @@ result_measures = [];
 if ~all(isnan(data)) && exist(executable_file, 'file')
     
     ODI_Threshold = mhrv.defaults.mhrv_get_default('ODIMeasures.ODI_Threshold', 'value');
+    Hard_Threshold = mhrv.defaults.mhrv_get_default('ODIMeasures.Hard_Threshold', 'value');
+    Relative = mhrv.defaults.mhrv_get_default('ODIMeasures.Relative', 'value');
     
-    func_args = zip_args({'ODI_Threshold'}, {ODI_Threshold});
+    func_args = zip_args({'ODI_Threshold', 'hard_threshold', 'relative'}, {ODI_Threshold, Hard_Threshold, Relative});
     
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
@@ -101,6 +103,7 @@ SpO2_DSM.Properties.Description = 'Desaturations measures';
 SpO2_DSM.ODIxx = result_measures.ODI;
 SpO2_DSM.Properties.VariableUnits{'ODIxx'} = 'Event/h';
 SpO2_DSM.Properties.VariableDescriptions{'ODIxx'} = 'The oxygen desaturation index';
+SpO2_DSM.Properties.VariableNames{'ODIxx'} = ['ODI' num2str(floor(ODI_Threshold))]; % change name to e.g. ODI5
 
 ODI_begin = result_measures.begin;
 ODI_end = result_measures.end;

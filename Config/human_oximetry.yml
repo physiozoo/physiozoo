@@ -95,6 +95,16 @@ ODIMeasures:
         description: Threshold to compute Oxygen Desaturation Index
         name: ODI Threshold
         units: '%'
+    Hard_Threshold:
+        value: 90       # possible values : between 0 and 100
+        description: Threshold to detect desaturations
+        name: Hard Threshold
+        units: '%'
+    Relative:
+        value: true       # possible values : true or false
+        description: Whether to use relative or hard threshold
+        name: Relative
+        units: boolean     
 
 HypoxicBurdenMeasures:
     CT_Threshold:

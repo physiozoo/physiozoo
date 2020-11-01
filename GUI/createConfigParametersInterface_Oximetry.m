@@ -66,6 +66,10 @@ hypoxicBurden_spo2_keys = param_keys((cellfun(@(x) ~isempty(regexpi(x, 'HypoxicB
 complexity_spo2_keys = param_keys((cellfun(@(x) ~isempty(regexpi(x, 'ComplexityMeasures')), param_keys)));
 periodicity_spo2_keys = param_keys((cellfun(@(x) ~isempty(regexpi(x, 'PeriodicityMeasures')), param_keys)));
 
+
+desaturations_spo2_keys((cellfun(@(x) ~isempty(regexpi(x, 'Relative')), desaturations_spo2_keys))) = [];
+
+
 max_extent_control = [];
 % Filtering Parameters
 clearParametersBox(GUI.FilteringParamBox);
@@ -130,11 +134,18 @@ uix.Empty( 'Parent', GUI.FrequencyParamBox );
 [GUI, desaturations_param_length, max_extent_control, handles_boxes] = FillParamFields(GUI.FrequencyParamBox, containers.Map(desaturations_spo2_keys, values(defaults_map, desaturations_spo2_keys)), GUI, DATA, myColors.myUpBackgroundColor);
 uix.Empty( 'Parent', GUI.FrequencyParamBox );
 
+
+GUI.Relativecheckbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.FrequencyParamBox, 'FontSize', DATA.BigFontSize, ...
+    'String', defaults_map('ODIMeasures.Relative').name, 'Value', defaults_map('ODIMeasures.Relative').value, 'TooltipString', defaults_map('ODIMeasures.Relative').description);
+
+uix.Empty( 'Parent', GUI.FrequencyParamBox );
+
+
 setWidthsConfigParams(max_extent_control, handles_boxes);
 
 rs = 19;
 ts = 19;
-set(GUI.FrequencyParamBox, 'Height', [ts, rs * ones(1, desaturations_param_length), -1]);
+set(GUI.FrequencyParamBox, 'Height', [ts, rs * ones(1, desaturations_param_length), ts, ts, -1]);
 %-----------------------------------
 
 
@@ -182,6 +193,7 @@ set(findobj(GUI.TimeParamBox, 'Style', 'text'), 'BackgroundColor', myColors.myUp
 
 set(findobj(GUI.FrequencyParamBox, 'Style', 'edit'), 'BackgroundColor', myColors.myEditTextColor);
 set(findobj(GUI.FrequencyParamBox, 'Style', 'text'), 'BackgroundColor', myColors.myUpBackgroundColor);
+set(findobj(GUI.FrequencyParamBox, 'Style', 'Checkbox'), 'BackgroundColor', myColors.myUpBackgroundColor);
 
 set(findobj(GUI.NonLinearParamBox, 'Style', 'edit'), 'BackgroundColor', myColors.myEditTextColor);
 set(findobj(GUI.NonLinearParamBox, 'Style', 'text'), 'BackgroundColor', myColors.myUpBackgroundColor);

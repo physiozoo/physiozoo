@@ -41,9 +41,8 @@
 % - TD_u: Mean of time between two consecutive desaturation events.
 % - TD_sd: Standard deviation of time between 2 consecutive desaturation events.
 
-function [SpO2_DSM, ODI_begin, ODI_end] = DesaturationsMeasures(data)
+function [SpO2_DSM, ODI_begin, ODI_end] = DesaturationsMeasures(data, measures_cb_array)
 
-% t0 = tic;
 SpO2_DSM = table;
 
 exe_file_path = fileparts(mfilename('fullpath'));
@@ -51,27 +50,49 @@ executable_file = [exe_file_path filesep 'SpO2' filesep 'pzpy.exe'];
 
 result_measures = [];
 
-% if ~exist(executable_file, 'file')
-%     error('Could not find the "pzpy.exe"');
-% else
+ODI_Threshold = mhrv.defaults.mhrv_get_default('ODIMeasures.ODI_Threshold', 'value');
+Hard_Threshold = mhrv.defaults.mhrv_get_default('ODIMeasures.Hard_Threshold', 'value');
+Relative = mhrv.defaults.mhrv_get_default('ODIMeasures.Relative', 'value');
+Desat_Max_Length = mhrv.defaults.mhrv_get_default('ODIMeasures.Desat_Max_Length', 'value');
 
 if ~all(isnan(data)) && exist(executable_file, 'file')
     
-    ODI_Threshold = mhrv.defaults.mhrv_get_default('ODIMeasures.ODI_Threshold', 'value');
-    Hard_Threshold = mhrv.defaults.mhrv_get_default('ODIMeasures.Hard_Threshold', 'value');
-    Relative = mhrv.defaults.mhrv_get_default('ODIMeasures.Relative', 'value');
+    if Relative
+        rel = false;
+    else
+        rel = true;
+    end
     
-    func_args = zip_args({'ODI_Threshold', 'hard_threshold', 'relative'}, {ODI_Threshold, Hard_Threshold, Relative});
+    func_args = zip_args({'ODI_Threshold', 'hard_threshold', 'relative', 'desat_max_length'}, {ODI_Threshold, Hard_Threshold, rel, Desat_Max_Length});
     
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
     
-    command = ['"' executable_file '" ' signal_file ' desaturation ' func_args];
-    %     command = ['"' executable_file '" vector ' jsonencode(data) ' DesaturationsMeasures ' func_args];
-    
-%     tic
-    result_measures = exec_pzpy(command);
-%     toc
+    if measures_cb_array
+        command = ['"' executable_file '" ' signal_file ' desaturation ' func_args];
+        result_measures = exec_pzpy(command);
+    else
+        result_measures.ODI = ' ';
+        result_measures.DL_u = ' ';
+        result_measures.DL_sd = ' ';
+        result_measures.DA100_u = ' ';
+        result_measures.DA100_sd = ' ';
+        
+        result_measures.DAmax_u = ' ';
+        result_measures.DAmax_sd = ' ';
+        result_measures.DD100_u = ' ';
+        result_measures.DD100_sd = ' ';
+        result_measures.DDmax_u = ' ';
+        
+        result_measures.DDmax_sd = ' ';
+        result_measures.DS_u = ' ';
+        result_measures.DS_sd = ' ';
+        result_measures.TD_u = ' ';
+        result_measures.TD_sd = ' ';
+        
+        result_measures.begin = [];
+        result_measures.end = [];
+    end
 end
 
 if isempty(result_measures)
@@ -97,7 +118,6 @@ if isempty(result_measures)
     result_measures.end = [];
 end
 
-% if ~isempty(result_measures) && isstruct(result_measures)
 SpO2_DSM.Properties.Description = 'Desaturations measures';
 
 SpO2_DSM.ODIxx = result_measures.ODI;
@@ -165,8 +185,3 @@ SpO2_DSM.Properties.VariableDescriptions{'TD_u'} = 'Mean of time between two con
 SpO2_DSM.TD_sd = result_measures.TD_sd;
 SpO2_DSM.Properties.VariableUnits{'TD_sd'} = 'sec**2';
 SpO2_DSM.Properties.VariableDescriptions{'TD_sd'} = 'Standard deviation of time between 2 consecutive desaturation events';
-% else
-%     throw(MException('DesaturationsMeasures:text', 'Can''t calculate desaturations measures.'));
-% end
-% disp(['DesaturationsMeasures elapsed time: ', num2str(toc(t0))]);
-% end

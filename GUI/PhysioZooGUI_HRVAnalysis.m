@@ -132,7 +132,6 @@ displayEndOfDemoMessage('');
         DATA.freq_yscale = 'linear';
         DATA.doCalc = false;
         
-%         DATA.SpO2NewSamplingFrequency = 1;
     end % createData
 %-------------------------------------------------------------------------%
 %%
@@ -140,10 +139,7 @@ displayEndOfDemoMessage('');
         % All signal (Intervals)
         DATA.trr = [];
         DATA.rri = [];
-        
-%         DATA.trr_saved = [];
-%         DATA.rri_saved = [];
-        
+                
         % All Filtered Signal (Intervals)
         DATA.tnn = [];
         DATA.nni = [];
@@ -185,40 +181,10 @@ displayEndOfDemoMessage('');
         DATA.FrStat.PlotData = [];
         DATA.NonLinStat.PlotData = [];
                 
-%         DATA.GeneralStat.PlotData = [];
         DATA.CMStat.PlotData = [];
         DATA.PMStat.PlotData = [];
-        
-%         DATA.timeData = [];
-%         DATA.timeRowsNames = [];
-%         DATA.timeDescriptions = [];
-        
-%         DATA.ODIData = [];
-%         DATA.ODIRowsNames = [];
-%         DATA.ODIDescriptions = [];
-        
-%         DATA.fd_arData = [];
-%         DATA.fd_ArRowsNames = [];
-        
-%         DATA.fd_welchData = [];
-%         DATA.fd_WelchRowsNames = [];
-        
-%         DATA.nonlinData = [];
-%         DATA.nonlinRowsNames = [];
-%         DATA.nonlinDescriptions = [];
-        
-%         DATA.CMData = [];
-%         DATA.CMRowsNames = [];
-%         DATA.CMDescriptions = [];
-        
-%         DATA.CMStat.Data = [];
-%         DATA.PMStat.Data = [];
-%         
-%         DATA.CMStat.RowsNames = [];
-%         DATA.PMStat.RowsNames_NO_GreekLetters = [];
 
         GUI.TimeParametersTableRowName = [];
-%         GUI.FrequencyParametersTableMethodRowName = [];
         GUI.FrequencyParametersTableRowName = [];
         GUI.NonLinearTableRowName = [];
         GUI.CMTableRowName = [];
@@ -258,7 +224,7 @@ displayEndOfDemoMessage('');
         set(GUI.SaveFiguresAsMenu,'Enable', 'off');
         set(GUI.SaveParamFileMenu,'Enable', 'off');
         set(GUI.LoadConfigFile, 'Enable', 'off');
-        %         set(GUI.open_record_pushbutton_handle, 'Enable', 'off');
+        
         set(GUI.open_quality_pushbutton_handle, 'Enable', 'off');
         set(GUI.open_config_pushbutton_handle, 'Enable', 'off');
         
@@ -336,6 +302,8 @@ displayEndOfDemoMessage('');
             for i = 1 : length(GUI.measures_cb_array)
                 GUI.measures_cb_array(i).Value = 1;
             end
+            GUI.measures_cb_array(end).Value = 0;
+            GUI.Complexity_CB.Value = 0;
         end
     end
 %%
@@ -361,16 +329,7 @@ displayEndOfDemoMessage('');
             GUI.CMTableData = [];
             GUI.CMTable.RowName = [];
         end        
-%         if isfield(GUI, 'ODIParametersTable') && ishandle(GUI.ODIParametersTable) && isvalid(GUI.ODIParametersTable)
-%             GUI.ODIParametersTable.Data = [];
-%             GUI.ODIParametersTableData = [];
-%             GUI.ODIParametersTable.RowName = [];
-%         end
-%         if isfield(GUI, 'DSMParametersTable') && ishandle(GUI.DSMParametersTable) && isvalid(GUI.DSMParametersTable)
-%             GUI.DSMParametersTableData = [];
-%             GUI.DSMParametersTable.RowName=[];
-%             GUI.DSMParametersTable.Data = [];
-%         end
+
         if isfield(GUI, 'PMTable') && ishandle(GUI.PMTable) && isvalid(GUI.PMTable)
             GUI.PMTable.Data = [];
             GUI.PMTableData = [];
@@ -1458,8 +1417,9 @@ displayEndOfDemoMessage('');
             field_handle.Callback = {@set_config_Callback, config_keys{i}};
         end
         
-        GUI.Relativecheckbox.Callback = @Relative_checkbox_Callback;
-        
+        if isfield(GUI, 'Relativecheckbox') && isvalid(GUI.Relativecheckbox)
+            GUI.Relativecheckbox.Callback = @Relative_checkbox_Callback;
+        end        
     end
 %%
     function slider_Callback(~, ~)
@@ -1680,7 +1640,7 @@ displayEndOfDemoMessage('');
         window_size_in_data_points = data_points_number();
         
         if window_size_in_data_points < 350
-            set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 2, 'MarkerEdgeColor', 'b', 'MarkerFaceColor', [1, 1, 1]); % 4 'MarkerEdgeColor', [180 74 255]/255
+            set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 2, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', [1, 1, 1]); % 4 'MarkerEdgeColor', [180 74 255]/255
         else
             set(GUI.raw_data_handle, 'Marker', 'none');
         end
@@ -1743,7 +1703,7 @@ displayEndOfDemoMessage('');
         
         color_data = zeros(data_size, 1, 3);
         for i = 1 : data_size
-            color_data(i, 1, :) = [0 1 0]; % [0 1 0]
+            color_data(i, 1, :) = [0 0 1]; % [0 1 0]
         end
                 
         [DesReg_number, ~] = size(DATA.DesaturationsRegions);
@@ -1751,7 +1711,7 @@ displayEndOfDemoMessage('');
         for i = 1 : DesReg_number
            for j = DATA.DesaturationsRegions(i, 1) : DATA.DesaturationsRegions(i, 2)
                if mod(i, 2) == 0
-                   my_color = [1 1 0]; % [1 0 1] [136 0 234]/255
+                   my_color = [1 0 1]; % [1 0 1] [136 0 234]/255
                else
                    my_color = [1 0 0]; % [1 0 0] [249 216 193]/255 [238 114 3]/255
                end
@@ -1773,9 +1733,10 @@ displayEndOfDemoMessage('');
                 yString = 'SpO2 (percent)';
                 color_data = create_color_array4oximetry();
                 %               GUI.raw_data_handle = patch(signal_time, data, color_data, 'EdgeColor', 'flat', 'LineWidth', 2.5, 'Parent', ha, 'DisplayName', 'Time series');
-                GUI.raw_data_handle = plot(ha, signal_time, data, 'b-', 'LineWidth', 2, 'DisplayName', 'Time series');
+                GUI.raw_data_handle = plot(ha, signal_time, data, 'g-', 'LineWidth', 1, 'DisplayName', 'Time series');
                 
-                GUI.filtered_handle = patch(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, color_data, 'EdgeColor', 'flat', 'LineWidth', 1, 'LineStyle', '-', 'DisplayName', 'Selected filtered time series', 'Parent', ha);
+                GUI.filtered_handle = patch(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, color_data, 'EdgeColor', 'flat', 'LineWidth', 2, 'LineStyle', '-', 'DisplayName', 'Selected filtered time series', 'Parent', ha);
+                uistack(GUI.raw_data_handle, 'top');
             otherwise
                 if ~DATA.PlotHR
                     data =  signal_data;
@@ -2357,7 +2318,8 @@ function plotDesaturationsRegions()
                     GUI.quality_vent_text.String = 'Ventilation file name';
                     GUI.DataQualityMenu.Label = 'Open ventilation file';
                     
-%                     GUI.Detrending_checkbox.String = 'Resample signal';
+                    GUI.Detrending_checkbox.String = 'Median';
+                    GUI.Detrending_checkbox.Callback = @Median_checkbox_Callback;                    
                                
                     if Module3
                         GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations', 'Hypoxic Burden', 'Complexity', 'Periodicity', 'Group'};
@@ -2487,7 +2449,8 @@ function plotDesaturationsRegions()
 
                 else
                     
-%                     GUI.Detrending_checkbox.String = 'Detrend NN time series';
+                    GUI.Detrending_checkbox.String = 'Detrend NN time series';
+                    GUI.Detrending_checkbox.Callback = @Detrending_checkbox_Callback;
                     
                     GUI.quality_vent_text.String = 'Signal quality file name';
                     GUI.DataQualityMenu.Label = 'Open signal quality file';
@@ -2564,7 +2527,7 @@ function plotDesaturationsRegions()
                         set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
 %                         GUI.FilteringLevelBox.Visible = 'on';
                         GUI.DefaultMethodBox.Visible = 'off';
-                        GUI.Detrending_checkbox.Visible = 'off';
+                        GUI.Detrending_checkbox.Visible = 'on';
                         GUI.Filtering_popupmenu.String = DATA.Filters_SpO2;
                         GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
 %                         GUI.FilteringLevel_popupmenu.Enable = 'on';
@@ -2625,7 +2588,11 @@ function plotDesaturationsRegions()
         for i = 1 : variables_num
             var_name = table_properties.VariableNames{i};
             if length(stat_table.(var_name)) == 1
-                stat_data_cell{i, 1} = sprintf('%.2f', stat_table.(var_name));
+                if strcmp(stat_table.(var_name), ' ')
+                    stat_data_cell{i, 1} = ' ';
+                else
+                    stat_data_cell{i, 1} = sprintf('%.2f', stat_table.(var_name));
+                end
             else
                 stat_data_cell{i, 1} = sprintf('%.2f\x00B1%.2f', stat_table.(var_name)(1), stat_table.(var_name)(2));
             end
@@ -2719,7 +2686,7 @@ function plotDesaturationsRegions()
         clear_complexity_statistics_results(GUI);
         plot_data = DATA.CMStat.PlotData{active_window};
         
-        if ~all(isnan(plot_data.fn))
+        if ~isempty(plot_data) && ~all(isnan(plot_data.fn))
             GUI.FourthAxes1.Visible = 'on';
             plot_oximetry_dfa(GUI.FourthAxes1, plot_data)            
         else            
@@ -2889,7 +2856,7 @@ function plotDesaturationsRegions()
             if ~strcmp(DATA.Integration, 'oximetry')
                 DATA.Filt_MyDefaultWindowSize = min(mhrv.defaults.mhrv_get_default('hrv_freq.window_minutes', 'value') * 60, DATA.maxSignalLength); % min to sec
             else
-                DATA.Filt_MyDefaultWindowSize = min(30 * 60, DATA.maxSignalLength); % min to sec
+                DATA.Filt_MyDefaultWindowSize = min(5 * 60, DATA.maxSignalLength); % min to sec
             end
             
             DATA.PlotHR = 0;
@@ -3584,6 +3551,8 @@ function plotDesaturationsRegions()
             for i = 1 : length(GUI.measures_cb_array)
                 GUI.measures_cb_array(i).Value = 1;
             end
+            GUI.measures_cb_array(end).Value = 0;
+            GUI.Complexity_CB.Value = 0;
         end
                 
         EnablePageUpDown();
@@ -4715,7 +4684,7 @@ function plotDesaturationsRegions()
                 end
             end
             
-            if strcmp(param_category, 'filtrr') || isempty(DATA.TimeStat) || isempty(DATA.FrStat) || isempty(DATA.NonLinStat) || strcmp(param_category, 'filtSpO2')
+            if strcmp(param_category, 'filtrr') || strcmp(param_category, 'filtSpO2') % || isempty(DATA.TimeStat) || isempty(DATA.FrStat) || isempty(DATA.NonLinStat)
                 waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...');
                 setLogo(waitbar_handle, 'M2');
                 try
@@ -5390,10 +5359,14 @@ function plotDesaturationsRegions()
                     if strcmp(DATA.Integration, 'oximetry')
                         waitbar(1 / 5, waitbar_handle, ['Calculating overal general measures for window ' num2str(i)]);
                         setLogo(waitbar_handle, 'M2');
-                        hrv_td = OverallGeneralMeasures(nni_window);
+                        hrv_td = OverallGeneralMeasures(nni_window, GUI.measures_cb_array(1).Value);
                         disp(['SpO2: Calculating overal general measures metrics: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                         
-                        DATA.TimeStat.PlotData{i} = nni_window;
+                        if GUI.measures_cb_array(1).Value
+                            DATA.TimeStat.PlotData{i} = nni_window;
+                        else
+                            DATA.TimeStat.PlotData{i} = [];
+                        end
                         hrv_frag = [];
                         fragData = [];
                         fragRowsNames = [];
@@ -5621,10 +5594,14 @@ function plotDesaturationsRegions()
                     end
                     
 %                     hrv_nl = HypoxicBurdenMeasures(nni_window, DATA.ODI_begin, DATA.ODI_end); %ODI_begin, ODI_end
-                    hrv_nl = HypoxicBurdenMeasures(nni_window, ODI_begin, ODI_end); %ODI_begin, ODI_end
+                    hrv_nl = HypoxicBurdenMeasures(nni_window, ODI_begin, ODI_end, GUI.measures_cb_array(3).Value); %ODI_begin, ODI_end
                     disp(['Spo2: Calculating hypoxic burden metrics: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                     
-                    DATA.NonLinStat.PlotData{i} = nni_window;
+                    if GUI.measures_cb_array(3).Value
+                        DATA.NonLinStat.PlotData{i} = nni_window;
+                    else
+                        DATA.NonLinStat.PlotData{i} = [];
+                    end
                 else
                     fun_name = 'hrv.hrv_nonlinear';
                     waitbar(3 / 3, waitbar_handle, ['Calculating nolinear measures for window ' num2str(i)]);
@@ -5709,11 +5686,15 @@ function plotDesaturationsRegions()
                 try                    
                     waitbar(4 / 5, waitbar_handle, ['Calculating complexity measures for window ' num2str(i)]); setLogo(waitbar_handle, 'M2');
                     
-                    SpO2_CM = ComplexityMeasures(nni_window);
+                    SpO2_CM = ComplexityMeasures(nni_window, [GUI.measures_cb_array(5:9).Value]);
                     disp(['Spo2: Calculating complexity measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                     
-                    [~, ~, plot_data] = oximetry_dfa(nni_window);
-                    DATA.CMStat.PlotData{i} = plot_data;
+                    if GUI.measures_cb_array(5).Value && ~all(isnan(nni_window))
+                        [~, ~, plot_data] = oximetry_dfa(nni_window);
+                        DATA.CMStat.PlotData{i} = plot_data;
+                    else
+                        DATA.CMStat.PlotData{i} = [];
+                    end
                     
                     [CMData, CMRowsNames, CMDescriptions] = table2cell_StatisticsParam(SpO2_CM);
                     %                 nonlinRowsNames_NO_GreekLetters = nonlinRowsNames;
@@ -5808,7 +5789,7 @@ function plotDesaturationsRegions()
 %                         [SpO2_ODI, ODI_begin, ODI_end] = ODIMeasure(nni_window);
                         
                                                                         
-                        [SpO2_DSM, ODI_begin, ODI_end] = DesaturationsMeasures(nni_window);
+                        [SpO2_DSM, ODI_begin, ODI_end] = DesaturationsMeasures(nni_window, GUI.measures_cb_array(2).Value);
                         
                         DATA.ODI_begin = ODI_begin + prev_ind_num;
                         DATA.ODI_end = ODI_end + prev_ind_num;                        
@@ -5915,7 +5896,7 @@ function plotDesaturationsRegions()
                     waitbar(5 / 5, waitbar_handle, ['Calculating periodicity measures for window ' num2str(i)]);
                     setLogo(waitbar_handle, 'M2');
                     
-                    [SpO2_PRSA, pd_periodicity] = PeriodicityMeasures(nni_window);
+                    [SpO2_PRSA, pd_periodicity] = PeriodicityMeasures(nni_window, GUI.measures_cb_array(4).Value);
                     DATA.PMStat.PlotData{i} = pd_periodicity;
                     
 %                     SpO2_PRSA = PRSAMeasures(nni_window);
@@ -6006,41 +5987,41 @@ function plotDesaturationsRegions()
                 
             else % oximetry
                 try
-                    if GUI.measures_cb_array(1).Value
-                        calcTimeStatistics(waitbar_handle);
-                    end
+%                     if GUI.measures_cb_array(1).Value
+                    calcTimeStatistics(waitbar_handle);
+%                     end
                 catch e
                     disp(e);
                     waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
                 end
                 try
-                    if GUI.measures_cb_array(2).Value
-                        calcDesaturationsStatistics(waitbar_handle);
-                    end
+%                     if GUI.measures_cb_array(2).Value
+                    calcDesaturationsStatistics(waitbar_handle);
+%                     end
                 catch e
                     disp(e);
                     waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
                 end
                 try
-                    if GUI.measures_cb_array(3).Value
-                        calcNonlinearStatistics(waitbar_handle);
-                    end
+%                     if GUI.measures_cb_array(3).Value
+                    calcNonlinearStatistics(waitbar_handle);
+%                     end
                 catch e
                     disp(e);
                     waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
                 end
                 try
-                    if GUI.measures_cb_array(4).Value
-                        calcComplexityStatistics(waitbar_handle);
-                    end
+%                     if GUI.measures_cb_array(6).Value
+                    calcComplexityStatistics(waitbar_handle);
+%                     end
                 catch e
                     disp(e);
                     waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
                 end
                 try
-                    if GUI.measures_cb_array(5).Value
-                        calcPeriodicityMeasuresStatistics(waitbar_handle);
-                    end
+%                     if GUI.measures_cb_array(4).Value
+                    calcPeriodicityMeasuresStatistics(waitbar_handle);
+%                     end
                 catch e
                     disp(e);
                 end
@@ -6828,14 +6809,27 @@ function plotDesaturationsRegions()
 %%
     function Relative_checkbox_Callback(src, ~)
         
-        mhrv.defaults.mhrv_set_default('ODIMeasures.Relative', get(src, 'Value'));
+        rel_val = get(src, 'Value');
+        
+        mhrv.defaults.mhrv_set_default('ODIMeasures.Relative', rel_val);
+        
+        
+        if rel_val
+            GUI.Hard_Threshold.Enable = 'on';
+            GUI.ODI_Threshold.Enable = 'off';
+            GUI.Desat_Max_Length.Enable = 'off';
+        else
+            GUI.Hard_Threshold.Enable = 'of';
+            GUI.ODI_Threshold.Enable = 'on';
+            GUI.Desat_Max_Length.Enable = 'on';
+        end
         
         if get(GUI.AutoCalc_checkbox, 'Value')
             waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
             calcDesaturationsStatistics(waitbar_handle);
             close(waitbar_handle);
         end
-    end        
+    end     
 %%
     function Detrending_checkbox_Callback(~, ~)
         detrend = get(GUI.Detrending_checkbox, 'Value');
@@ -7207,11 +7201,38 @@ function plotDesaturationsRegions()
         GUI.measures_cb_array(1) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'General');
         GUI.measures_cb_array(2) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Desaturations');
         GUI.measures_cb_array(3) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Hypoxic Burden');
-        GUI.measures_cb_array(4) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Complexity');
-        GUI.measures_cb_array(5) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Periodicity');
+        GUI.measures_cb_array(4) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Periodicity');
+        GUI.Complexity_CB = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Complexity', 'FontSize', DATA.BigFontSize, 'Value', 0, 'Callback', @Complexity_CB_Callback);
         uix.Empty('Parent', GUI.OBMBox);
         
-        set(GUI.OBMBox, 'Heights', [-1 -0.5 -1 -1 -1 -1 -1 -7]);
+        hB = uix.HBox( 'Parent', GUI.OBMBox, 'Spacing', DATA.Spacing);
+        uix.Empty('Parent', hB);
+        GUI.measures_cb_array(5) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'DFA');
+        set(hB, 'Width', [-0.5 -10]);        
+                        
+        hB = uix.HBox( 'Parent', GUI.OBMBox, 'Spacing', DATA.Spacing);
+        uix.Empty('Parent', hB);
+        GUI.measures_cb_array(6) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'LZ');
+        set(hB, 'Width', [-0.5 -10]);        
+        
+        hB = uix.HBox( 'Parent', GUI.OBMBox, 'Spacing', DATA.Spacing);
+        uix.Empty('Parent', hB);
+        GUI.measures_cb_array(7) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'CTM');
+        set(hB, 'Width', [-0.5 -10]);        
+        
+        hB = uix.HBox( 'Parent', GUI.OBMBox, 'Spacing', DATA.Spacing);
+        uix.Empty('Parent', hB);
+        GUI.measures_cb_array(8) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'SampEn');
+        set(hB, 'Width', [-0.5 -10]);        
+        
+        hB = uix.HBox( 'Parent', GUI.OBMBox, 'Spacing', DATA.Spacing);
+        uix.Empty('Parent', hB);
+        GUI.measures_cb_array(9) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'ApEn');
+        set(hB, 'Width', [-0.5 -10]);        
+        
+        uix.Empty('Parent', GUI.OBMBox);
+        
+        set(GUI.OBMBox, 'Heights', [-1 -0.5 -1 -1 -1 -1 -1 -0.5 -1 -1 -1 -1 -1 -7]);
         
         for i = 1 : length(GUI.measures_cb_array)
             GUI.measures_cb_array(i).Callback = {@calc_spesific_measure, i};
@@ -7219,11 +7240,22 @@ function plotDesaturationsRegions()
             GUI.measures_cb_array(i).Value = 1;
         end
         
+        GUI.measures_cb_array(9).Value = 0;
+        
         set(findobj(GUI.OBMSclPanel, 'Type', 'uicontainer'), 'BackgroundColor', myUpBackgroundColor);
         set(findobj(GUI.OBMSclPanel, 'Type', 'UIControl'), 'BackgroundColor', myUpBackgroundColor);        
     end
 %%
     function calc_spesific_measure(src, ~, measure_num)
+        
+        comp_mes_cb = [GUI.measures_cb_array(5:9).Value];
+        
+        if sum(comp_mes_cb) == length(comp_mes_cb)
+            GUI.Complexity_CB.Value = 1;
+        elseif sum(comp_mes_cb) == 0
+            GUI.Complexity_CB.Value = 0;
+        end
+                        
         if src.Value
             if measure_num == 1
                 param_category = 'OveralGeneralMeasures';
@@ -7232,40 +7264,50 @@ function plotDesaturationsRegions()
             elseif measure_num == 3
                 param_category = 'HypoxicBurdenMeasures';
             elseif measure_num == 4
-                param_category = 'ComplexityMeasures';
-            elseif measure_num == 5
                 param_category = 'PeriodicityMeasures';
+            elseif measure_num == 5 || measure_num == 6 || measure_num == 7  || measure_num == 8 || measure_num == 9
+                param_category = 'ComplexityMeasures';
             end
             if get(GUI.AutoCalc_checkbox, 'Value')
                 try
                     update_statistics(param_category);
                 catch e
                     h_e = errordlg(['calc_spesific_measure error: ' e.message], 'Input Error'); setLogo(h_e, 'M2');
-                    src.Value = 1;
+                    src.Value = 0;
                 end
             end
         else
-            if measure_num == 1
-                clear_time_statistics_results(GUI);
-                GUI.TimeParametersTable.Data = [];
-                DATA.timeStatPartRowNumber = 0;
-            elseif measure_num == 2
-                clear_frequency_statistics_results(GUI);
-                GUI.FrequencyParametersTable.Data = [];
-                DATA.frequencyStatPartRowNumber = 0;
-            elseif measure_num == 3
-                clear_nonlinear_statistics_results(GUI);
-                GUI.NonLinearTable.Data = [];
-                DATA.NonLinearStatPartRowNumber = 0;
-            elseif measure_num == 4
-                clear_complexity_statistics_results(GUI);
-                GUI.CMTable.Data = [];
-                DATA.ComplexityStatPartRowNumber = 0;
-            elseif measure_num == 5
-                clear_periodicity_statistics_results(GUI);
-                GUI.PMTable.Data = [];
-            end
+%             if measure_num == 1
+%                 clear_time_statistics_results(GUI);
+%                 GUI.TimeParametersTable.Data = [];
+%                 DATA.timeStatPartRowNumber = 0;
+%             elseif measure_num == 2
+%                 clear_frequency_statistics_results(GUI);
+%                 GUI.FrequencyParametersTable.Data = [];
+%                 DATA.frequencyStatPartRowNumber = 0;
+%             elseif measure_num == 3
+%                 clear_nonlinear_statistics_results(GUI);
+%                 GUI.NonLinearTable.Data = [];
+%                 DATA.NonLinearStatPartRowNumber = 0;
+%             elseif measure_num == 4
+%                 clear_complexity_statistics_results(GUI);
+%                 GUI.CMTable.Data = [];
+%                 DATA.ComplexityStatPartRowNumber = 0;
+%             elseif measure_num == 5
+%                 clear_periodicity_statistics_results(GUI);
+%                 GUI.PMTable.Data = [];
+%             end
         end
+    end
+%%
+    function Complexity_CB_Callback(src, ~ )
+        for i = 5 : 9
+            GUI.measures_cb_array(i).Value = src.Value;            
+        end
+    end
+%%
+    function Median_checkbox_Callback(src, ~ )
+        disp('Median');
     end
 %%
     function onHelp( ~, ~ )

@@ -126,9 +126,6 @@ WIN32 is still required for the locale module.
 #define COMPILER _Py_PASTE_VERSION("64 bit (AMD64)")
 #endif /* __INTEL_COMPILER */
 #define PYD_PLATFORM_TAG "win_amd64"
-#elif defined(_M_ARM64)
-#define COMPILER _Py_PASTE_VERSION("64 bit (ARM64)")
-#define PYD_PLATFORM_TAG "win_arm64"
 #else
 #define COMPILER _Py_PASTE_VERSION("64 bit (Unknown)")
 #endif
@@ -181,7 +178,7 @@ typedef _W64 int ssize_t;
 #define PYD_PLATFORM_TAG "win32"
 #elif defined(_M_ARM)
 #define COMPILER _Py_PASTE_VERSION("32 bit (ARM)")
-#define PYD_PLATFORM_TAG "win_arm32"
+#define PYD_PLATFORM_TAG "win_arm"
 #else
 #define COMPILER _Py_PASTE_VERSION("32 bit (Unknown)")
 #endif
@@ -274,11 +271,11 @@ Py_NO_ENABLE_SHARED to find out.  Also support MS_NO_COREDLL for b/w compat */
                         file in their Makefile (other compilers are
                         generally taken care of by distutils.) */
 #                       if defined(_DEBUG)
-#                               pragma comment(lib,"python38_d.lib")
+#                               pragma comment(lib,"python37_d.lib")
 #                       elif defined(Py_LIMITED_API)
 #                               pragma comment(lib,"python3.lib")
 #                       else
-#                               pragma comment(lib,"python38.lib")
+#                               pragma comment(lib,"python37.lib")
 #                       endif /* _DEBUG */
 #               endif /* _MSC_VER */
 #       endif /* Py_BUILD_CORE */
@@ -386,10 +383,6 @@ Py_NO_ENABLE_SHARED to find out.  Also support MS_NO_COREDLL for b/w compat */
 /* Define to 1 if you have the <direct.h> header file. */
 #define HAVE_DIRECT_H 1
 
-/* Define to 1 if you have the declaration of `tzname', and to 0 if you don't.
-   */
-#define HAVE_DECL_TZNAME 1
-
 /* Define if you have dirent.h.  */
 /* #define DIRENT 1 */
 
@@ -469,6 +462,10 @@ Py_NO_ENABLE_SHARED to find out.  Also support MS_NO_COREDLL for b/w compat */
 /* Define if  you can safely include both <sys/select.h> and <sys/time.h>
    (which you can't on SCO ODT 3.0). */
 /* #undef SYS_SELECT_WITH_SYS_TIME */
+
+/* Define if you want build the _decimal module using a coroutine-local rather
+   than a thread-local context */
+#define WITH_DECIMAL_CONTEXTVAR 1
 
 /* Define if you want documentation strings in extension modules */
 #define WITH_DOC_STRINGS 1

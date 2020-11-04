@@ -16,5 +16,5 @@ try
     legend(GUI.NonLinearAxes3, 'off');
     GUI.NonLinearAxes3.Visible = 'off';
 catch e
-    disp(e.message);
+%     disp(e.message);
 end

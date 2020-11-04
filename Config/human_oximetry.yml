@@ -89,22 +89,27 @@ OveralGeneralMeasures:
         name: DI Window
         units: sec
 
-ODIMeasures:
-    ODI_Threshold:
-        value: 3       # possible values : positive
-        description: Threshold to compute Oxygen Desaturation Index
-        name: ODI Threshold
-        units: '%'
+ODIMeasures:    
     Hard_Threshold:
         value: 90       # possible values : between 0 and 100
         description: Threshold to detect desaturations
         name: Hard Threshold
         units: '%'
     Relative:
-        value: true       # possible values : true or false
+        value: false       # possible values : true or false
         description: Whether to use relative or hard threshold
-        name: Relative
-        units: boolean     
+        name: Use hard threshold for detecting desaturations 
+        units: boolean  
+    Desat_Max_Length:
+        value: 90       # It has to be a positive number
+        description: Maximum lenght for the desaturation detector
+        name: Max Length
+        units: sec  
+    ODI_Threshold:
+        value: 3       # possible values : positive
+        description: Threshold to compute Oxygen Desaturation Index
+        name: ODI Threshold
+        units: '%'    
 
 HypoxicBurdenMeasures:
     CT_Threshold:

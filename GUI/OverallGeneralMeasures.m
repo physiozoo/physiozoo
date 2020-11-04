@@ -40,24 +40,21 @@
 
 
 
-function SpO2_OGM = OverallGeneralMeasures(data)
+function SpO2_OGM = OverallGeneralMeasures(data, measures_cb_array)
 
-% t0 = tic;
 SpO2_OGM = table;
 
 exe_file_path = fileparts(mfilename('fullpath'));
 executable_file = [exe_file_path filesep 'SpO2' filesep 'pzpy.exe'];
 
 result_measures = [];
-%
-% if ~exist(executable_file, 'file')
-%     error('Could not find the "pzpy.exe"');
-% else
+
+ZC_Baseline = mhrv.defaults.mhrv_get_default('OveralGeneralMeasures.ZC_Baseline', 'value');
+Percentile = mhrv.defaults.mhrv_get_default('OveralGeneralMeasures.Percentile', 'value');
+M_Threshold = mhrv.defaults.mhrv_get_default('OveralGeneralMeasures.M_Threshold', 'value');
+DI_Window = mhrv.defaults.mhrv_get_default('OveralGeneralMeasures.DI_Window', 'value');
+
 if ~all(isnan(data)) && exist(executable_file, 'file')
-    ZC_Baseline = mhrv.defaults.mhrv_get_default('OveralGeneralMeasures.ZC_Baseline', 'value');
-    Percentile = mhrv.defaults.mhrv_get_default('OveralGeneralMeasures.Percentile', 'value');
-    M_Threshold = mhrv.defaults.mhrv_get_default('OveralGeneralMeasures.M_Threshold', 'value');
-    DI_Window = mhrv.defaults.mhrv_get_default('OveralGeneralMeasures.DI_Window', 'value');
     
     
     func_args = zip_args({'ZC_Baseline', 'percentile', 'M_Threshold', 'DI_Window'}, [ZC_Baseline, Percentile, M_Threshold, DI_Window]);
@@ -65,12 +62,21 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
     
-    command = ['"' executable_file '" ' signal_file ' overall_general ' func_args];
-    %command = ['"' executable_file '" vector ' jsonencode(data) ' OveralGeneralMeasures ' func_args];
-    
-%     tic
-    result_measures = exec_pzpy(command);
-%     toc
+    if measures_cb_array
+        command = ['"' executable_file '" ' signal_file ' overall_general ' func_args];
+        result_measures = exec_pzpy(command);
+    else
+        result_measures.AV = ' ';
+        result_measures.MED = ' ';
+        result_measures.Min = ' ';
+        result_measures.SD = ' ';
+        result_measures.RG = ' ';
+        
+        result_measures.P = ' ';
+        result_measures.M = ' ';
+        result_measures.ZC = ' ';
+        result_measures.DI = ' ';
+    end
 end
 
 if isempty(result_measures)
@@ -86,7 +92,6 @@ if isempty(result_measures)
     result_measures.DI = NaN;
 end
 
-%     if ~isempty(result_measures)
 SpO2_OGM.Properties.Description = 'Overall general measures';
 
 SpO2_OGM.AV = result_measures.AV;
@@ -112,22 +117,20 @@ SpO2_OGM.Properties.VariableDescriptions{'RG'} = 'SpO2 range'; %'SpO2 range' (di
 
 SpO2_OGM.Pxx = result_measures.P;
 SpO2_OGM.Properties.VariableUnits{'Pxx'} = '%';
-SpO2_OGM.Properties.VariableDescriptions{'Pxx'} = 'xxth percentile SpO2 value'; % xxth percentile SpO2 value, by default xx=1; 'Percentile'; %'0.01th percentile SpO2 value';
+SpO2_OGM.Properties.VariableDescriptions{'Pxx'} = [num2str(floor(Percentile)) 'th percentile SpO2 value']; % xxth percentile SpO2 value, by default xx=1; 'Percentile'; %'0.01th percentile SpO2 value';
+SpO2_OGM.Properties.VariableNames{'Pxx'} = ['P' num2str(floor(Percentile))]; % change name to e.g. P1
 
 SpO2_OGM.Mx = result_measures.M;
 SpO2_OGM.Properties.VariableUnits{'Mx'} = '%';
-SpO2_OGM.Properties.VariableDescriptions{'Mx'} = 'Percentage of the signal xx% below median oxygen saturation'; %'Percentage of the signal 2% below median oxygen saturation';
+SpO2_OGM.Properties.VariableDescriptions{'Mx'} = ['Percentage of the signal ' num2str(floor(M_Threshold)) '% below median oxygen saturation']; %'Percentage of the signal 2% below median oxygen saturation';
+SpO2_OGM.Properties.VariableNames{'Mx'} = ['M' num2str(floor(M_Threshold))]; % change name to e.g. M2
 
 SpO2_OGM.ZCxx = result_measures.ZC;
 SpO2_OGM.Properties.VariableUnits{'ZCxx'} = 'nu';
-SpO2_OGM.Properties.VariableDescriptions{'ZCxx'} = 'Number of zero-crossing points at the xx% SpO2 level'; % by default xx=AV'; %'Number of zero-crossing points, using mean of the signal as baseline';
+SpO2_OGM.Properties.VariableDescriptions{'ZCxx'} = ['Number of zero-crossing points at the ' num2str(floor(ZC_Baseline)) '% SpO2 level']; % by default xx=AV'; %'Number of zero-crossing points, using mean of the signal as baseline';
+SpO2_OGM.Properties.VariableNames{'ZCxx'} = ['ZC' num2str(floor(ZC_Baseline))]; % change name to e.g. ZC85
 
 SpO2_OGM.DIx = result_measures.DI;
 SpO2_OGM.Properties.VariableUnits{'DIx'} = 'nu';
 SpO2_OGM.Properties.VariableDescriptions{'DIx'} = 'Delta Index'; %'Delta index';
-%     else
-%         throw(MException('OveralGeneralMeasures:text', 'Can''t calculate overal general measures.'));
-%     end
-% end
-% disp(['OveralGeneralMeasures elapsed time: ', num2str(toc(t0))]);
-% end
+SpO2_OGM.Properties.VariableNames{'DIx'} = ['DI' num2str(floor(DI_Window))]; % change name to e.g. DI12

@@ -36,7 +36,9 @@ for i = 1 : param_keys_length
         else
             set(param_control, 'String', current_value, 'UserData', current_value);
         end
-                
+            
+        param_control.Tag = symbol_field_name;
+        
         GUI.ConfigParamHandlesMap(field_name) = param_control;
         
     else

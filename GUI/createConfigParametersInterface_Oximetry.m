@@ -134,7 +134,6 @@ uix.Empty( 'Parent', GUI.FrequencyParamBox );
 [GUI, desaturations_param_length, max_extent_control, handles_boxes] = FillParamFields(GUI.FrequencyParamBox, containers.Map(desaturations_spo2_keys, values(defaults_map, desaturations_spo2_keys)), GUI, DATA, myColors.myUpBackgroundColor);
 uix.Empty( 'Parent', GUI.FrequencyParamBox );
 
-
 GUI.Relativecheckbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.FrequencyParamBox, 'FontSize', DATA.BigFontSize, ...
     'String', defaults_map('ODIMeasures.Relative').name, 'Value', defaults_map('ODIMeasures.Relative').value, 'TooltipString', defaults_map('ODIMeasures.Relative').description);
 
@@ -146,8 +145,23 @@ setWidthsConfigParams(max_extent_control, handles_boxes);
 rs = 19;
 ts = 19;
 set(GUI.FrequencyParamBox, 'Height', [ts, rs * ones(1, desaturations_param_length), ts, ts, -1]);
-%-----------------------------------
 
+%-----------------------------------
+h_n = size(handles_boxes, 2);
+for i = 1 : h_n
+    if strcmp(handles_boxes{1, i}.Children(2).Tag, 'ODI Threshold')
+        GUI.ODI_Threshold = handles_boxes{1, i}.Children(2);
+    elseif strcmp(handles_boxes{1, i}.Children(2).Tag, 'Hard Threshold')
+        GUI.Hard_Threshold = handles_boxes{1, i}.Children(2);
+    elseif strcmp(handles_boxes{1, i}.Children(2).Tag, 'Max Length')
+        GUI.Desat_Max_Length = handles_boxes{1, i}.Children(2);
+    end
+end
+
+GUI.Hard_Threshold.Enable = 'of';
+GUI.ODI_Threshold.Enable = 'on';
+GUI.Desat_Max_Length.Enable = 'on';
+%-----------------------------------
 
 % NonLinear Parameters
 clearParametersBox(GUI.NonLinearParamBox);

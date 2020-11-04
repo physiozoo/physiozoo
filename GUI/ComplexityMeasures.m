@@ -25,9 +25,8 @@
 % - SampEn: Sample Entropy.
 % - DFA: Detrended Fluctuation Analysis.
 
-function SpO2_CM = ComplexityMeasures(data)
+function SpO2_CM = ComplexityMeasures(data, measures_cb_array)
 
-% t0 = tic;
 SpO2_CM = table;
 
 exe_file_path = fileparts(mfilename('fullpath'));
@@ -36,26 +35,53 @@ executable_file = [exe_file_path filesep 'SpO2' filesep 'pzpy.exe'];
 result_measures = [];
 
 if ~all(isnan(data)) && exist(executable_file, 'file')
-    
-    %     if exist(executable_file, 'file')
-    %         error('Could not find the "pzpy.exe"');
-    %     else
+        
     CTM_Threshold = mhrv.defaults.mhrv_get_default('ComplexityMeasures.CTM_Threshold', 'value');
     DFA_Window = mhrv.defaults.mhrv_get_default('ComplexityMeasures.DFA_Window', 'value');
     M_Sampen = mhrv.defaults.mhrv_get_default('ComplexityMeasures.M_Sampen', 'value');
     R_Sampen = mhrv.defaults.mhrv_get_default('ComplexityMeasures.R_Sampen', 'value');
+    M_ApEn = mhrv.defaults.mhrv_get_default('ComplexityMeasures.M_ApEn', 'value');
+    R_ApEn = mhrv.defaults.mhrv_get_default('ComplexityMeasures.R_ApEn', 'value');
     
-    func_args = zip_args({'CTM_Threshold', 'DFA_Window', 'M_Sampen', 'R_Sampen'}, {CTM_Threshold, DFA_Window, M_Sampen, R_Sampen});
+    func_args = zip_args({'CTM_Threshold', 'DFA_Window', 'M_Sampen', 'R_Sampen', 'M_ApEn', 'R_ApEn'}, {CTM_Threshold, DFA_Window, M_Sampen, R_Sampen, M_ApEn, R_ApEn});
     
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
-    
-    command = ['"' executable_file '" ' signal_file ' complexity ' func_args];
-    %     command = ['"' executable_file '" vector ' jsonencode(data) ' ComplexityMeasures ' func_args];
-    
-%     tic
-    result_measures = exec_pzpy(command);
-%     toc
+        
+    if sum(measures_cb_array) == length(measures_cb_array)
+        command = ['"' executable_file '" ' signal_file ' complexity ' func_args];
+        result_measures = exec_pzpy(command);
+    else
+        result_measures.DFA = ' ';
+        result_measures.LZ = ' ';
+        result_measures.CTM = ' ';
+        result_measures.SampEn = ' ';
+        result_measures.ApEn = ' ';
+        
+        if measures_cb_array(1)
+            command = ['"' executable_file '" ' signal_file ' comp_dfa ' func_args];
+            result_measures.DFA = exec_pzpy(command);        
+        end
+        if measures_cb_array(2)
+            command = ['"' executable_file '" ' signal_file ' comp_lz ' func_args];
+            result_measures.LZ = exec_pzpy(command);
+        end
+        if measures_cb_array(3)
+            command = ['"' executable_file '" ' signal_file ' comp_ctm ' func_args];
+            result_measures.CTM = exec_pzpy(command);
+        end
+        if measures_cb_array(4)
+            command = ['"' executable_file '" ' signal_file ' comp_sampen ' func_args];
+            result_measures.SampEn = exec_pzpy(command);
+        end
+        if measures_cb_array(5)
+            command = ['"' executable_file '" ' signal_file ' comp_apen ' func_args];
+            result_measures.ApEn = exec_pzpy(command);
+        end
+    end
+            
+%     command = ['"' executable_file '" ' signal_file ' complexity ' func_args];
+%     result_measures = exec_pzpy(command);
 end
 
 if isempty(result_measures)
@@ -82,13 +108,8 @@ SpO2_CM.Properties.VariableDescriptions{'CTMxx'} = 'Central Tendency Measure wit
 
 SpO2_CM.SampEn = result_measures.SampEn;
 SpO2_CM.Properties.VariableUnits{'SampEn'} = 'nu';
-SpO2_CM.Properties.VariableDescriptions{'SampEn'} = 'Sample Entropy.';
+SpO2_CM.Properties.VariableDescriptions{'SampEn'} = 'Sample Entropy';
 
 SpO2_CM.ApEn = result_measures.ApEn;
 SpO2_CM.Properties.VariableUnits{'ApEn'} = 'nu';
 SpO2_CM.Properties.VariableDescriptions{'ApEn'} = 'Approximate Entropy';
-
-%     else
-%         throw(MException('ComplexityMeasures:text', 'Can''t calculate complexity measures.'));
-%     end
-% disp(['ComplexityMeasures elapsed time: ', num2str(toc(t0))]);

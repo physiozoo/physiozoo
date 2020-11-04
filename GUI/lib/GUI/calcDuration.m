@@ -25,7 +25,8 @@ end
 what_2_show = show_hours * 2 + need_ms;
 
 % Duration of signal
-duration_h  = mod(floor(signal_length / 3600), 60);
+% duration_h  = mod(floor(signal_length / 3600), 60);
+duration_h  = floor(signal_length / 3600);
 duration_m  = mod(floor(signal_length / 60), 60);
 duration_s  = mod(floor(signal_length), 60);
 duration_ms = floor(mod(signal_length, 1)*1000);

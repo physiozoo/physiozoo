@@ -76,7 +76,7 @@ displayEndOfDemoMessage('');
         DATA.integration_index = 1;
         
         DATA.Filters_ECG = {'Moving average', 'Range', 'Quotient', 'Combined filters', 'No filtering'};
-        DATA.Filters_SpO2 = {'Range', 'Median', 'Block Data', 'DFilter', 'No filtering'};
+        DATA.Filters_SpO2 = {'Range', 'Block Data', 'DFilter', 'No filtering'}; % , 'Median'
         DATA.filter_index = 1;
         
         DATA.default_filter_level_index = 1;
@@ -91,7 +91,7 @@ displayEndOfDemoMessage('');
         DATA.filter_range = false;
         
         DATA.filter_spo2_range = true;
-        DATA.filter_spo2_median = false;
+%         DATA.filter_spo2_median = false;
         DATA.filter_spo2_block = false;
         DATA.filter_spo2_dfilter = false;
         
@@ -1534,8 +1534,8 @@ displayEndOfDemoMessage('');
             
             if length(signal_data) == length(filt_signal_data)
                 
-                min_signal_data = min(signal_data);
-                max_signal_data = max(signal_data);
+                min_signal_data = min(signal_data, [], 'omitnan');
+                max_signal_data = max(signal_data, [], 'omitnan');
                 if min_signal_data ~= max_signal_data
                     DATA.AutoYLimitUpperAxes.RRMinYLimit = min(min_signal_data, max_signal_data);
                     DATA.AutoYLimitUpperAxes.RRMaxYLimit = max(min_signal_data, max_signal_data);
@@ -1544,8 +1544,8 @@ displayEndOfDemoMessage('');
                     DATA.AutoYLimitUpperAxes.RRMaxYLimit = max_signal_data*1.1;
                 end
                 
-                max_rri_60 = max(60 ./ signal_data);
-                min_rri_60 = min(60 ./ signal_data);
+                max_rri_60 = max(60 ./ signal_data, [], 'omitnan');
+                min_rri_60 = min(60 ./ signal_data, [], 'omitnan');
                 if min_rri_60 ~= max_rri_60
                     DATA.AutoYLimitUpperAxes.HRMinYLimit = min(min_rri_60, max_rri_60);
                     DATA.AutoYLimitUpperAxes.HRMaxYLimit = max(min_rri_60, max_rri_60);
@@ -1554,8 +1554,8 @@ displayEndOfDemoMessage('');
                     DATA.AutoYLimitUpperAxes.HRMaxYLimit = max_rri_60 * 1.1;
                 end
             else
-                max_nni = max(filt_signal_data);
-                min_nni = min(filt_signal_data);
+                max_nni = max(filt_signal_data, [], 'omitnan');
+                min_nni = min(filt_signal_data, [], 'omitnan');
                 delta = (max_nni - min_nni)*1;
                 
                 
@@ -1569,8 +1569,8 @@ displayEndOfDemoMessage('');
                     DATA.AutoYLimitUpperAxes.RRMaxYLimit = max_nni_delta * 1.1;
                 end
                 
-                max_nni_60 = max(60 ./ filt_signal_data);
-                min_nni_60 = min(60 ./ filt_signal_data);
+                max_nni_60 = max(60 ./ filt_signal_data, [], 'omitnan');
+                min_nni_60 = min(60 ./ filt_signal_data, [], 'omitnan');
                 delta_60 = (max_nni_60 - min_nni_60)*1;
                 
                 min_nni_delta_60 = min(min_nni_60, max_nni_60) - delta_60;
@@ -1621,8 +1621,11 @@ displayEndOfDemoMessage('');
         
         try
             set(axes_handle, 'YLim', [MinYLimit MaxYLimit]);
-        catch
-            disp('temp');
+        catch            
+            if ~isnan(MinYLimit) && ~isnan(MaxYLimit)
+%                 disp('temp');
+                set(axes_handle, 'YLim', [MinYLimit-10 MaxYLimit+10]);
+            end
         end
     end
 %%
@@ -1639,8 +1642,14 @@ displayEndOfDemoMessage('');
         
         window_size_in_data_points = data_points_number();
         
+        if strcmp(DATA.Integration, 'oximetry')
+            ed_color = 'g';
+        else
+            ed_color = 'b';
+        end
+        
         if window_size_in_data_points < 350
-            set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 2, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', [1, 1, 1]); % 4 'MarkerEdgeColor', [180 74 255]/255
+            set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 2, 'MarkerEdgeColor', ed_color, 'MarkerFaceColor', [1, 1, 1]); % 4 'MarkerEdgeColor', [180 74 255]/255
         else
             set(GUI.raw_data_handle, 'Marker', 'none');
         end
@@ -2319,7 +2328,8 @@ function plotDesaturationsRegions()
                     GUI.DataQualityMenu.Label = 'Open ventilation file';
                     
                     GUI.Detrending_checkbox.String = 'Median';
-                    GUI.Detrending_checkbox.Callback = @Median_checkbox_Callback;                    
+                    GUI.Detrending_checkbox.Callback = @Median_checkbox_Callback;
+                    GUI.Detrending_checkbox.Tooltip = 'Whether to apply median filter';                 
                                
                     if Module3
                         GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations', 'Hypoxic Burden', 'Complexity', 'Periodicity', 'Group'};
@@ -2451,6 +2461,7 @@ function plotDesaturationsRegions()
                     
                     GUI.Detrending_checkbox.String = 'Detrend NN time series';
                     GUI.Detrending_checkbox.Callback = @Detrending_checkbox_Callback;
+                    GUI.Detrending_checkbox.Tooltip = 'Enable or disable the detrending of the time series';
                     
                     GUI.quality_vent_text.String = 'Signal quality file name';
                     GUI.DataQualityMenu.Label = 'Open signal quality file';
@@ -3586,12 +3597,12 @@ function plotDesaturationsRegions()
 %                     tnn = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(nni)/DATA.SpO2NewSamplingFrequency; 
                     tnn = 0 : DATA.SamplingFrequency : (length(nni)-1)*DATA.SamplingFrequency;
                     if isvalid(wb); close(wb); end
-                elseif DATA.filter_spo2_median
-                    wb = waitbar(0, 'SpO2: Median', 'Name', 'SpO2 - Median'); setLogo(wb, 'M2');
-                    nni = MedianSpO2(DATA.rri, wb);
-%                     tnn = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(nni)/DATA.SpO2NewSamplingFrequency;
-                    tnn = 0 : DATA.SamplingFrequency : (length(nni)-1)*DATA.SamplingFrequency;
-                    if isvalid(wb); close(wb); end
+%                 elseif DATA.filter_spo2_median
+%                     wb = waitbar(0, 'SpO2: Median', 'Name', 'SpO2 - Median'); setLogo(wb, 'M2');
+%                     nni = MedianSpO2(DATA.rri, wb);
+% %                     tnn = 1/DATA.SpO2NewSamplingFrequency : 1/DATA.SpO2NewSamplingFrequency : length(nni)/DATA.SpO2NewSamplingFrequency;
+%                     tnn = 0 : DATA.SamplingFrequency : (length(nni)-1)*DATA.SamplingFrequency;
+%                     if isvalid(wb); close(wb); end
                 elseif DATA.filter_spo2_block
                     wb = waitbar(0, 'SpO2: Block Data', 'Name', 'SpO2 - Block Data'); setLogo(wb, 'M2');
                     nni = BlockDataSpO2(DATA.rri, wb);
@@ -3607,6 +3618,12 @@ function plotDesaturationsRegions()
                 else
                     nni = DATA.rri;
                     tnn = DATA.trr;
+                end
+                if GUI.Detrending_checkbox.Value % Median - ON
+                    wb = waitbar(0, 'SpO2: Median', 'Name', 'SpO2 - Median'); setLogo(wb, 'M2');
+                    nni = MedianSpO2(nni, wb);
+                    tnn = 0 : DATA.SamplingFrequency : (length(nni)-1)*DATA.SamplingFrequency;
+                    if isvalid(wb); close(wb); end
                 end
             else
                 [nni, tnn, ~] = mhrv.rri.filtrr(DATA.rri, DATA.trr, 'filter_quotient', filter_quotient, 'filter_ma', filter_ma, 'filter_range', filter_range);
@@ -3750,8 +3767,8 @@ function plotDesaturationsRegions()
                 set_default_filters_threshoulds('filtrr.moving_average.win_length',  filters_thresholds.moving_average.win_length);
                 set_default_filters_threshoulds('filtrr.range.rr_max',  filters_thresholds.range.rr_max);
                 set_default_filters_threshoulds('filtrr.range.rr_min',  filters_thresholds.range.rr_min);
-            elseif strcmp(Filter, 'Median')
-                set_default_filters_threshoulds('filtSpO2.MedianSpO2.FilterLength',  filters_thresholds.MedianSpO2.FilterLength);                
+%             elseif strcmp(Filter, 'Median')
+%                 set_default_filters_threshoulds('filtSpO2.MedianSpO2.FilterLength',  filters_thresholds.MedianSpO2.FilterLength);                
             elseif strcmp(Filter, 'Block Data')
                 set_default_filters_threshoulds('filtSpO2.BlockSpO2.Treshold',  filters_thresholds.BlockSpO2.Treshold);                    
             elseif strcmp(Filter, 'DFilter')
@@ -3800,7 +3817,11 @@ function plotDesaturationsRegions()
             clear_statistics_plots();
             clearStatTables();
             if isfield(GUI, 'filtered_handle')
-                set(GUI.filtered_handle, 'XData', ones(1, length(DATA.tnn))*NaN, 'YData', ones(1, length(DATA.nni))*NaN);
+                if ~strcmp(DATA.Integration, 'oximetry')
+                    set(GUI.filtered_handle, 'XData', ones(1, length(DATA.tnn))*NaN, 'YData', ones(1, length(DATA.nni))*NaN);
+                else
+                    set(GUI.filtered_handle, 'XData', ones(1, length(DATA.tnn))*NaN, 'YData', ones(1, length(DATA.nni))*NaN, 'CData', create_color_array4oximetry());
+                end
             end
             if isfield(GUI, 'only_filtered_handle')
                 set(GUI.only_filtered_handle, 'XData', ones(1, length(DATA.tnn))*NaN, 'YData', ones(1, length(DATA.nni))*NaN);
@@ -3855,10 +3876,10 @@ function plotDesaturationsRegions()
                 set_default_filters_threshoulds('filtrr.range.rr_min', DATA.default_filters_thresholds.range.rr_min);
                 set_default_filters_threshoulds('filtrr.moving_average.win_threshold', DATA.default_filters_thresholds.moving_average.win_threshold);
                 set_default_filters_threshoulds('filtrr.moving_average.win_length', DATA.default_filters_thresholds.moving_average.win_length);
-            elseif strcmp(Filter, 'Median')
-                GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
-                GUI.FilteringLevel_popupmenu.Enable = 'on';
-                set_default_filters_threshoulds('filtSpO2.MedianSpO2.FilterLength', DATA.default_filters_thresholds.MedianSpO2.FilterLength);
+%             elseif strcmp(Filter, 'Median')
+%                 GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
+%                 GUI.FilteringLevel_popupmenu.Enable = 'on';
+%                 set_default_filters_threshoulds('filtSpO2.MedianSpO2.FilterLength', DATA.default_filters_thresholds.MedianSpO2.FilterLength);
             elseif strcmp(Filter, 'Block Data')
                 GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
                 GUI.FilteringLevel_popupmenu.Enable = 'on';
@@ -3956,29 +3977,29 @@ function plotDesaturationsRegions()
             mhrv.defaults.mhrv_set_default('filtrr.quotient.enable', DATA.filter_quotient);
             mhrv.defaults.mhrv_set_default('filtrr.ma.enable', DATA.filter_ma);
         else
-            if strcmp(Filter, DATA.Filters_SpO2{5}) % No filtering                
+            if strcmp(Filter, DATA.Filters_SpO2{4}) % No filtering                
                 DATA.filter_spo2_range = false;
-                DATA.filter_spo2_median = false;
+%                 DATA.filter_spo2_median = false;
                 DATA.filter_spo2_block = false;
                 DATA.filter_spo2_dfilter = false;
             elseif strcmp(Filter, DATA.Filters_SpO2{1})
                 DATA.filter_spo2_range = true;
-                DATA.filter_spo2_median = false;
+%                 DATA.filter_spo2_median = false;
                 DATA.filter_spo2_block = false;
                 DATA.filter_spo2_dfilter = false;
-            elseif strcmp(Filter, DATA.Filters_SpO2{2})
+%             elseif strcmp(Filter, DATA.Filters_SpO2{2})
+%                 DATA.filter_spo2_range = false;
+%                 DATA.filter_spo2_median = true;
+%                 DATA.filter_spo2_block = false;
+%                 DATA.filter_spo2_dfilter = false;
+            elseif strcmp(Filter, DATA.Filters_SpO2{2}) 
                 DATA.filter_spo2_range = false;
-                DATA.filter_spo2_median = true;
-                DATA.filter_spo2_block = false;
+%                 DATA.filter_spo2_median = false;
+                DATA.filter_spo2_block = true;
                 DATA.filter_spo2_dfilter = false;
             elseif strcmp(Filter, DATA.Filters_SpO2{3}) 
                 DATA.filter_spo2_range = false;
-                DATA.filter_spo2_median = false;
-                DATA.filter_spo2_block = true;
-                DATA.filter_spo2_dfilter = false;
-            elseif strcmp(Filter, DATA.Filters_SpO2{4}) 
-                DATA.filter_spo2_range = false;
-                DATA.filter_spo2_median = false;
+%                 DATA.filter_spo2_median = false;
                 DATA.filter_spo2_block = false;
                 DATA.filter_spo2_dfilter = true;    
             end            
@@ -4939,7 +4960,7 @@ function plotDesaturationsRegions()
                 DATA.custom_filters_thresholds.(param_category{2}).(param_category{3}) = param_value;
                 if strcmp(Filter, 'Range') && strcmp(param_category{2}, 'RangeSpO2')
                     doFilt = 1;
-                elseif strcmp(Filter, 'Median') && strcmp(param_category{2}, 'MedianSpO2')
+                elseif GUI.Detrending_checkbox.Value  && strcmp(param_category{2}, 'MedianSpO2') % Median - ON
                     doFilt = 1;
                 elseif strcmp(Filter, 'Block Data') && strcmp(param_category{2}, 'BlockSpO2')
                     doFilt = 1;
@@ -7306,8 +7327,15 @@ function plotDesaturationsRegions()
         end
     end
 %%
-    function Median_checkbox_Callback(src, ~ )
-        disp('Median');
+    function Median_checkbox_Callback(src, ~)
+%         disp('Median');
+        try
+            update_statistics('filtSpO2');
+        catch
+            h_e = errordlg(['Median_checkbox_Callback error: ' e.message], 'Input Error'); setLogo(h_e, 'M2');
+            src.Value = ~src.Value;
+            update_statistics('filtSpO2');
+        end
     end
 %%
     function onHelp( ~, ~ )

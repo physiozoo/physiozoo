@@ -44,18 +44,20 @@ DATA.default_filters_thresholds.DFilterSpO2.Diff = mhrv.defaults.mhrv_get_defaul
 
 DATA.custom_filters_thresholds = DATA.default_filters_thresholds;
 
+GUI.Detrending_checkbox.Value = DATA.filter_spo2_median;
+
 % Set GUI filter list value
 %-----------------------------
 if DATA.filter_spo2_range
     DATA.filter_index = 1;
-elseif DATA.filter_spo2_median
-    DATA.filter_index = 2;    
+% elseif DATA.filter_spo2_median
+%     DATA.filter_index = 2;    
 elseif DATA.filter_spo2_block
-    DATA.filter_index = 3; 
+    DATA.filter_index = 2; 
 elseif DATA.filter_spo2_dfilter
-    DATA.filter_index = 4;
+    DATA.filter_index = 3;
 elseif ~DATA.filter_spo2_range && ~DATA.filter_spo2_median && ~DATA.filter_spo2_block && ~DATA.filter_spo2_dfilter
-    DATA.filter_index = 5;    
+    DATA.filter_index = 4;    
 end
 GUI.Filtering_popupmenu.Value = DATA.filter_index;
 %-----------------------------

@@ -9,8 +9,8 @@ filtSpO2:
     MedianSpO2:
         enable:
             value: false     # possible values : {True, False}
-            description: Whether to enable range-based filtering
-            name: Enable range filter
+            description: Whether to apply median filter
+            name: Enable median filter
             units: boolean
         FilterLength:
             value: 9       # possible values : positive only odd
@@ -31,7 +31,7 @@ filtSpO2:
     RangeSpO2: # RemovalAbnormalities
         enable:
             value: true     # possible values : {True, False}
-            description: Whether to enable removal of the abnormalities
+            description: Whether to remove the abnormalities
             name: Enable removal of the abnormalities
             units: boolean
         Range_min:

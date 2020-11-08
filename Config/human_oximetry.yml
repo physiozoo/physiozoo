@@ -166,3 +166,13 @@ PeriodicityMeasures:
         description: Number of values to shift when computing autocorrelation
         name: K AC
         units: sec
+    Frequency_Low:
+        value: 0.014       # possible values : positive
+        description: Low threshold for the PSD_band biomarker
+        name: Frequency Low
+        units: Hz
+    Frequency_High:
+        value: 0.033       # possible values : positive
+        description: High threshold for the PSD_band biomarker
+        name: Frequency High
+        units: Hz    

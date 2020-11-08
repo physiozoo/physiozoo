@@ -29,16 +29,20 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
     PRSA_Window = mhrv.defaults.mhrv_get_default('PeriodicityMeasures.PRSA_Window', 'value');
     K_AC = mhrv.defaults.mhrv_get_default('PeriodicityMeasures.K_AC', 'value');
     
-    func_args = zip_args({'PRSA_Window', 'K_AC'}, {PRSA_Window, K_AC});
+    Frequency_Low = mhrv.defaults.mhrv_get_default('PeriodicityMeasures.Frequency_Low', 'value');
+    Frequency_High = mhrv.defaults.mhrv_get_default('PeriodicityMeasures.Frequency_High', 'value');
+    
+    func_args1 = zip_args({'PRSA_Window', 'K_AC'}, {PRSA_Window, K_AC});
+    func_args2 = zip_args({'frequency_low_threshold', 'frequency_high_threshold'}, {Frequency_Low, Frequency_High});
     
     signal_file = [tempdir 'temp.dat'];
     dlmwrite(signal_file, data, '\n');
     
     if measures_cb_array
-        command1 = ['"' executable_file '" ' signal_file ' prsa_periodicity ' func_args];
+        command1 = ['"' executable_file '" ' signal_file ' prsa_periodicity ' func_args1];
         result_measures = exec_pzpy(command1);
         
-        command2 = ['"' executable_file '" ' signal_file ' psd_periodicity ' ];
+        command2 = ['"' executable_file '" ' signal_file ' psd_periodicity ' func_args2];
         result_measures_2 = exec_pzpy(command2);
                 
         pd_data.fft = comp_fft(data);

@@ -4861,6 +4861,26 @@ function plotDesaturationsRegions()
                 
                 screen_value = screen_value / 60; % to minutes
                 
+            elseif strcmp(param_name, 'PeriodicityMeasures.Frequency_Low') ||  strcmp(param_name, 'PeriodicityMeasures.Frequency_High')
+                if isnan(screen_value) || ~(screen_value >= 0)
+                    h_e = errordlg(['set_config_Callback error: ' 'This parameter must be numeric positive single value or zero!'], 'Input Error'); setLogo(h_e, 'M2');
+                    set(src, 'String', prev_screen_value);
+                    return;
+                elseif strcmp(param_name, 'PeriodicityMeasures.Frequency_Low')
+                    f_h = mhrv.defaults.mhrv_get_default('PeriodicityMeasures.Frequency_High').value;
+                    if screen_value >= f_h
+                        h_e = errordlg(['set_config_Callback error: ' 'Frequency Low must be less than Frequency High!'], 'Input Error'); setLogo(h_e, 'M2');
+                        set(src, 'String', prev_screen_value);
+                        return;
+                    end
+                elseif strcmp(param_name, 'PeriodicityMeasures.Frequency_High')
+                    f_h = mhrv.defaults.mhrv_get_default('PeriodicityMeasures.Frequency_Low').value;
+                    if screen_value <= f_h
+                        h_e = errordlg(['set_config_Callback error: ' 'Frequency Low must be less than Frequency High!'], 'Input Error'); setLogo(h_e, 'M2');
+                        set(src, 'String', prev_screen_value);
+                        return;
+                    end
+                end
             elseif  isnan(screen_value) || ~(screen_value > 0)
                 h_e = errordlg(['set_config_Callback error: ' 'This parameter must be numeric positive single value!'], 'Input Error');
                 setLogo(h_e, 'M2');
@@ -7223,7 +7243,7 @@ function plotDesaturationsRegions()
         GUI.measures_cb_array(2) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Desaturations');
         GUI.measures_cb_array(3) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Hypoxic Burden');
         GUI.measures_cb_array(4) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Periodicity');
-        GUI.Complexity_CB = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Complexity', 'FontSize', DATA.BigFontSize, 'Value', 0, 'Callback', @Complexity_CB_Callback);
+        GUI.Complexity_CB = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Complexity (heavy algorithms, may takes some additional time)', 'FontSize', DATA.BigFontSize, 'Value', 0, 'Callback', @Complexity_CB_Callback);
         uix.Empty('Parent', GUI.OBMBox);
         
         hB = uix.HBox( 'Parent', GUI.OBMBox, 'Spacing', DATA.Spacing);

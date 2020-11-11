@@ -96,17 +96,17 @@ displayEndOfDemoMessage('');
         DATA.filter_spo2_dfilter = false;
         
         %         DEBUGGING MODE - Small Screen
-        % DATA.screensize = [0 0 1250 800];
+%         DATA.screensize = [0 0 1250 800];
         
         DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
         
-        if DATA.screensize(3) < 1920 %1080
-            DATA.BigFontSize = 10;
-            DATA.SmallFontSize = 10;
+        if DATA.screensize(3) < 1535 %1920 %1080
+            DATA.BigFontSize = 9;
+            DATA.SmallFontSize = 9;
             DATA.SmallScreen = 1;
         else
-            DATA.BigFontSize = 11;
-            DATA.SmallFontSize = 11;
+            DATA.BigFontSize = 10; % 11
+            DATA.SmallFontSize = 10; % 11
             DATA.SmallScreen = 0;
         end
         
@@ -305,6 +305,9 @@ displayEndOfDemoMessage('');
             GUI.measures_cb_array(end).Value = 0;
             GUI.Complexity_CB.Value = 0;
         end
+        
+        GUI.MedianFilter_checkbox.Value = 0;
+        GUI.Detrending_checkbox.Value = 0;
     end
 %%
     function clearStatTables()
@@ -447,9 +450,13 @@ displayEndOfDemoMessage('');
         Upper_Part_Box = uix.HBoxFlex('Parent', GUI.mainLayout, 'Spacing', DATA.Spacing); % Upper Part
         Low_Part_BoxPanel = uix.BoxPanel( 'Parent', GUI.mainLayout, 'Title', '  ', 'Padding', DATA.Padding+2 ); %Low Part
         
-        upper_part = 0.55;
-        upper_part = 1 - upper_part;
-        set( GUI.mainLayout, 'Heights', [(-1)*upper_part, (-1)*upper_part]  );
+        if DATA.SmallScreen
+            upper_part = 0.55;       
+        else
+            upper_part = 0.55;       
+        end
+        lower_part = 1 - upper_part;
+        set( GUI.mainLayout, 'Heights', [(-1)*upper_part, (-1)*lower_part]  );
         
         %---------------------------------
         
@@ -460,13 +467,13 @@ displayEndOfDemoMessage('');
         temp_vbox_buttons = uix.VBox( 'Parent', temp_panel_buttons, 'Spacing', DATA.Spacing);
         
         if DATA.SmallScreen
-            left_part = 0.4; % 0.4
-            Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
-            buttons_part = 0.1;
+            left_part = 0.37; % 0.4
+            Left_Part_widths_in_pixels = 0.35 * DATA.window_size(1); % 0.27
+            buttons_part = 0.11;
         else
-            left_part = 0.25; % 0.27
-            Left_Part_widths_in_pixels = 0.25 * DATA.window_size(1); % 0.25
-            buttons_part = 0.07; % 0.07
+            left_part = 0.35; % 0.25
+            Left_Part_widths_in_pixels = 0.35 * DATA.window_size(1); % 0.25
+            buttons_part = 0.1; % 0.07
         end
         right_part = 0.7; % 0.7
         
@@ -478,8 +485,8 @@ displayEndOfDemoMessage('');
         GUI.UpCentral_TabPanel = uix.CardPanel('Parent', temp_panel_right, 'Padding', DATA.Padding);
         MainCommandsButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
         BlueRectButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
-        PageUpDownButtons_Box = uix.HButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding+10, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
-        
+        PageUpDownButtons_Box = uix.HButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
+%         DATA.Padding+10
         set(temp_vbox_buttons, 'Heights', [-100, -35, -20]); % -15
         %------------------------------------
         
@@ -515,7 +522,12 @@ displayEndOfDemoMessage('');
         GUI.AutoCalc_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', MainCommandsButtons_Box, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', BigFontSize-1.5, 'String', 'Auto Compute', 'Value', 1);
         GUI.RR_or_HR_plot_button = uicontrol( 'Style', 'ToggleButton', 'Parent', MainCommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
         GUI.Reset_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', MainCommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
-        set( MainCommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing  );
+        
+        if DATA.SmallScreen
+            set( MainCommandsButtons_Box, 'ButtonSize', [150, 25], 'Spacing', DATA.Spacing  );
+        else
+            set( MainCommandsButtons_Box, 'ButtonSize', [150, 25], 'Spacing', DATA.Spacing  );
+        end
         
         
         GUI.ShowRawData = uicontrol( 'Style', 'Checkbox', 'Parent', BlueRectButtons_Box, 'Callback', @ShowRawData_checkbox_Callback, 'FontSize', BigFontSize-1.5, 'String', 'Show raw data', 'Value', 1);
@@ -523,14 +535,18 @@ displayEndOfDemoMessage('');
         
         GUI.BlueRectFocusButton = uicontrol( 'Style', 'PushButton', 'Parent', BlueRectButtons_Box, 'Callback', @blue_rect_focus_pushbutton_Callback, 'FontSize', BigFontSize, 'Visible', 'on');
         if DATA.SmallScreen
-            set( BlueRectButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing  );
+            set( BlueRectButtons_Box, 'ButtonSize', [150, 25], 'Spacing', DATA.Spacing  );
         else
-            set( BlueRectButtons_Box, 'ButtonSize', [105, 25], 'Spacing', DATA.Spacing  );
+            set( BlueRectButtons_Box, 'ButtonSize', [150, 25], 'Spacing', DATA.Spacing  ); % 105
         end
         
         GUI.PageDownButton = uicontrol( 'Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', @page_down_pushbutton_Callback, 'FontSize', BigFontSize, 'String', sprintf('\x25C0'), 'Visible', 'on');  % 2190'
         GUI.PageUpButton = uicontrol( 'Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', @page_up_pushbutton_Callback, 'FontSize', BigFontSize, 'String', sprintf('\x25B6'), 'Visible', 'on');  % 2192
-        set( PageUpDownButtons_Box, 'ButtonSize', [70, 25], 'Spacing', DATA.Spacing  );
+        if DATA.SmallScreen
+            set( PageUpDownButtons_Box, 'ButtonSize', [75, 25], 'Spacing', DATA.Spacing);
+        else
+            set( PageUpDownButtons_Box, 'ButtonSize', [75, 25], 'Spacing', DATA.Spacing);
+        end
         
         %---------------------------------
         Analysis_Box = uix.HBoxFlex('Parent', Low_Part_BoxPanel, 'Spacing', DATA.Spacing);
@@ -578,12 +594,17 @@ displayEndOfDemoMessage('');
         %--------------------------------------------------------------------------------------------
         
         GUI.AdvancedBox = uix.VBox( 'Parent', GUI.AdvancedTab, 'Spacing', DATA.Spacing);
-        GUI.Advanced_TabPanel = uix.TabPanel('Parent', GUI.AdvancedBox, 'Padding', DATA.Padding, 'TabWidth', 70, 'FontSize', SmallFontSize-1);
+        if DATA.SmallScreen
+            tab_width = 56;
+        else
+            tab_width = 68;
+        end
+        GUI.Advanced_TabPanel = uix.TabPanel('Parent', GUI.AdvancedBox, 'Padding', DATA.Padding, 'TabWidth', tab_width); % , 'FontSize', SmallFontSize
         
-        GUI.FilteringParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+2);
-        GUI.TimeParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+2);
-        GUI.FrequencyParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+2);
-        GUI.NonLinearParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+2);
+        GUI.FilteringParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+0);
+        GUI.TimeParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+0);
+        GUI.FrequencyParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+0);
+        GUI.NonLinearParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+0);
         GUI.Advanced_TabPanel.TabTitles = {'Filtering', 'Time', 'Frequency', 'NonLinear'};
         
         GUI.FilteringSclPanel = uix.ScrollingPanel('Parent', GUI.FilteringParamTab);
@@ -645,8 +666,14 @@ displayEndOfDemoMessage('');
         GUI.FilteringBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         a{7} = uicontrol( 'Style', 'text', 'Parent', GUI.FilteringBox, 'String', 'Preprocessing', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.Filtering_popupmenu = uicontrol( 'Style', 'PopUpMenu', 'Parent', GUI.FilteringBox, 'Callback', @Filtering_popupmenu_Callback, 'FontSize', SmallFontSize);
+        
         GUI.Filtering_popupmenu.String = DATA.Filters_ECG;
+        
         uix.Empty( 'Parent', GUI.FilteringBox );
+        GUI.MedianFilter_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.FilteringBox, 'Callback', @Median_checkbox_Callback, 'FontSize', DATA.BigFontSize, ...
+            'String', 'Median Filter', 'TooltipString', 'Whether to apply median filter', 'Visible', 'off');
+        
+%         uix.Empty( 'Parent', GUI.FilteringBox );
         
         GUI.FilteringLevelBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         a{8} = uicontrol( 'Style', 'text', 'Parent', GUI.FilteringLevelBox, 'String', 'Preprocessing level', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
@@ -671,14 +698,14 @@ displayEndOfDemoMessage('');
         set( GUI.DataLengthBox, 'Widths', field_size );
         
         if DATA.SmallScreen
-            field_size = [max_extent_control + 5, -0.65, -0.35]; % -0.65, -0.35
+            field_size = [max_extent_control + 5, -0.2, -0.35]; % -0.65, -0.35
         else
-            field_size = [max_extent_control + 5, -0.65, -0.35]; % -0.6, -0.5
+            field_size = [max_extent_control + 5, -0.31, -0.35]; % [max_extent_control + 5, -0.65, -0.35]
         end
         
         set( GUI.MammalBox, 'Widths', field_size );
         set( GUI.IntegrationBox, 'Widths', field_size );
-        set( GUI.FilteringBox, 'Widths', field_size );
+%         set( GUI.FilteringBox, 'Widths', field_size );
         set( GUI.FilteringLevelBox, 'Widths', field_size );
         set( GUI.DefaultMethodBox, 'Widths', field_size );
         
@@ -690,11 +717,14 @@ displayEndOfDemoMessage('');
         end
         
         popupmenu_position = get(GUI.Mammal_popupmenu, 'Position');
-        field_size = [max_extent_control + 5, popupmenu_position(3)+ 15, 25];
+        
+        field_size = [max_extent_control + 5, popupmenu_position(3) + 15, 25];
         set( GUI.ConfigFileNameBox, 'Widths', field_size );
         set( GUI.RecordNameBox, 'Widths',     field_size );
         set( GUI.DataQualityBox, 'Widths',    field_size );
         
+        set( GUI.FilteringBox, 'Widths', [max_extent_control + 5, popupmenu_position(3), 15,  -1] );
+                
         %         config_file_name_extent = get(GUI.Config_text, 'Extent');
         %         config_file_name_position = get(GUI.Config_text, 'Position');
         load_config_name_button_position = get(GUI.open_config_pushbutton_handle, 'Position');
@@ -2327,10 +2357,13 @@ function plotDesaturationsRegions()
                     GUI.quality_vent_text.String = 'Ventilation file name';
                     GUI.DataQualityMenu.Label = 'Open ventilation file';
                     
-                    GUI.Detrending_checkbox.String = 'Median';
-                    GUI.Detrending_checkbox.Callback = @Median_checkbox_Callback;
-                    GUI.Detrending_checkbox.Tooltip = 'Whether to apply median filter';                 
+%                     GUI.Detrending_checkbox.String = 'Median Filter';
+%                     GUI.Detrending_checkbox.Callback = @Median_checkbox_Callback;
+%                     GUI.Detrending_checkbox.Tooltip = 'Whether to apply median filter';                 
                                
+                    GUI.MedianFilter_checkbox.Visible = 'on';
+                    GUI.Detrending_checkbox.Visible = 'off';
+                    
                     if Module3
                         GUI.Analysis_TabPanel.TabTitles = {'Statistics', 'General', 'Desaturations', 'Hypoxic Burden', 'Complexity', 'Periodicity', 'Group'};
                         
@@ -2401,10 +2434,14 @@ function plotDesaturationsRegions()
                     
                     build_OBM_Tab();
                     
-                    GUI.FourthParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+2);
-                    GUI.FifthParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+2);
+                    GUI.FourthParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+0);
+                    GUI.FifthParamTab = uix.Panel( 'Parent', GUI.Advanced_TabPanel, 'Padding', DATA.Padding+0);
                     GUI.Advanced_TabPanel.TabTitles = {'Filtering', 'General', 'Desaturations', 'HypoxicBurden', 'Complexity', 'Periodicity'};
-                    GUI.Advanced_TabPanel.FontSize = DATA.SmallFontSize - 3;
+                    if DATA.SmallScreen
+                        GUI.Advanced_TabPanel.FontSize = DATA.SmallFontSize - 3;
+                    else
+                        GUI.Advanced_TabPanel.FontSize = DATA.SmallFontSize - 3;
+                    end
                                         
                     tabs_widths = GUI.TimeSclPanel.Widths;
                     tabs_heights = GUI.TimeSclPanel.Heights;
@@ -2459,9 +2496,12 @@ function plotDesaturationsRegions()
 
                 else
                     
-                    GUI.Detrending_checkbox.String = 'Detrend NN time series';
-                    GUI.Detrending_checkbox.Callback = @Detrending_checkbox_Callback;
-                    GUI.Detrending_checkbox.Tooltip = 'Enable or disable the detrending of the time series';
+%                     GUI.Detrending_checkbox.String = 'Detrend NN time series';
+%                     GUI.Detrending_checkbox.Callback = @Detrending_checkbox_Callback;
+%                     GUI.Detrending_checkbox.Tooltip = 'Enable or disable the detrending of the time series';
+                    
+                    GUI.MedianFilter_checkbox.Visible = 'off';
+                    GUI.Detrending_checkbox.Visible = 'on';
                     
                     GUI.quality_vent_text.String = 'Signal quality file name';
                     GUI.DataQualityMenu.Label = 'Open signal quality file';
@@ -2480,7 +2520,7 @@ function plotDesaturationsRegions()
 
                     end
                     GUI.Advanced_TabPanel.TabTitles = {'Filtering', 'Time', 'Frequency', 'NonLinear'};
-                    GUI.Advanced_TabPanel.FontSize = DATA.SmallFontSize - 1;
+%                     GUI.Advanced_TabPanel.FontSize = DATA.SmallFontSize - 1;
                     
 % % -----------------------
                     try
@@ -2538,7 +2578,7 @@ function plotDesaturationsRegions()
                         set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
 %                         GUI.FilteringLevelBox.Visible = 'on';
                         GUI.DefaultMethodBox.Visible = 'off';
-                        GUI.Detrending_checkbox.Visible = 'on';
+%                         GUI.Detrending_checkbox.Visible = 'on';
                         GUI.Filtering_popupmenu.String = DATA.Filters_SpO2;
                         GUI.FilteringLevel_popupmenu.String = DATA.FilterShortLevel;
 %                         GUI.FilteringLevel_popupmenu.Enable = 'on';
@@ -2549,7 +2589,7 @@ function plotDesaturationsRegions()
                         set(GUI.open_quality_pushbutton_handle, 'Enable', 'on');
 %                         GUI.FilteringLevelBox.Visible = 'on';
                         GUI.DefaultMethodBox.Visible = 'on';
-                        GUI.Detrending_checkbox.Visible = 'on';
+%                         GUI.Detrending_checkbox.Visible = 'on';
                         GUI.Filtering_popupmenu.String = DATA.Filters_ECG;
                         GUI.FilteringLevel_popupmenu.String = DATA.FilterLevel;
 %                         GUI.FilteringLevel_popupmenu.Enable = 'on';
@@ -2954,6 +2994,9 @@ function plotDesaturationsRegions()
         
         if ~isempty(DATA.rri)
             
+            GUI.MedianFilter_checkbox.Value = 0;
+            GUI.Detrending_checkbox.Value = 0;
+        
             GUI.ShowFilteredData.Value = 1;
             GUI.ShowRawData.Value = 1;
             
@@ -3619,7 +3662,7 @@ function plotDesaturationsRegions()
                     nni = DATA.rri;
                     tnn = DATA.trr;
                 end
-                if GUI.Detrending_checkbox.Value % Median - ON
+                if GUI.MedianFilter_checkbox.Value % Median - ON
                     wb = waitbar(0, 'SpO2: Median', 'Name', 'SpO2 - Median'); setLogo(wb, 'M2');
                     nni = MedianSpO2(nni, wb);
                     tnn = 0 : DATA.SamplingFrequency : (length(nni)-1)*DATA.SamplingFrequency;
@@ -3823,7 +3866,7 @@ function plotDesaturationsRegions()
                     set(GUI.filtered_handle, 'XData', ones(1, length(DATA.tnn))*NaN, 'YData', ones(1, length(DATA.nni))*NaN, 'CData', create_color_array4oximetry());
                 end
             end
-            if isfield(GUI, 'only_filtered_handle')
+            if isfield(GUI, 'only_filtered_handle') && isvalid(GUI.only_filtered_handle)
                 set(GUI.only_filtered_handle, 'XData', ones(1, length(DATA.tnn))*NaN, 'YData', ones(1, length(DATA.nni))*NaN);
             end
             plotFilteredData();
@@ -4601,11 +4644,10 @@ function plotDesaturationsRegions()
                         DATA.CMStat.Data = [];
                         DATA.PMStat.RowsNames = [];
                         DATA.PMStat.Data = [];
-                    end
-                    
+                    end                                                            
                     hrv_metrics_table.Properties.Description = sprintf('%s%s', title, DATA.DataFileName);
                     
-                    AllRowsNames = [DATA.TimeStat.RowsNames_NO_GreekLetters; DATA.FrStat.RowsNames_NO_GreekLetters; DATA.NonLinStat.RowsNames_NO_GreekLetters; DATA.CMStat.RowsNames; DATA.PMStat.RowsNames_NO_GreekLetters];
+                    AllRowsNames = [DATA.TimeStat.RowsNames_NO_GreekLetters; DATA.FrStat.RowsNames_NO_GreekLetters; DATA.NonLinStat.RowsNames_NO_GreekLetters; DATA.CMStat.RowsNames; DATA.PMStat.RowsNames];
                     statistics_params = [DATA.TimeStat.Data; DATA.FrStat.Data; DATA.NonLinStat.Data; DATA.CMStat.Data; DATA.PMStat.Data];
                     
                     column_names = {'Description'};
@@ -4620,7 +4662,11 @@ function plotDesaturationsRegions()
                         %                         fprintf(header_fileID, 'Mammal: %s\r\n', DATA.mammals{DATA.mammal_index});
                         fprintf(header_fileID, 'Mammal: %s\r\n', get(GUI.Mammal_popupmenu, 'String'));
                         fprintf(header_fileID, 'Integration level: %s\r\n', DATA.GUI_Integration{DATA.integration_index});
-                        fprintf(header_fileID, 'Preprocessing: %s\r\n', DATA.Filters_ECG{DATA.filter_index});
+                        if ~strcmp(DATA.Integration, 'oximetry')
+                            fprintf(header_fileID, 'Preprocessing: %s\r\n', DATA.Filters_ECG{DATA.filter_index});
+                        else
+                            fprintf(header_fileID, 'Preprocessing: %s\r\n', DATA.Filters_SpO2{DATA.filter_index});
+                        end                  
                         fprintf(header_fileID, 'Preprocessing level: %s\r\n', DATA.FilterLevel{DATA.filter_level_index});
                         fprintf(header_fileID, 'Window start: %s\r\n', calcDuration(DATA.AnalysisParams.segment_startTime));
                         fprintf(header_fileID, 'Window end: %s\r\n', calcDuration(DATA.AnalysisParams.segment_endTime));
@@ -4743,7 +4789,14 @@ function plotDesaturationsRegions()
             elseif strcmp(param_category, 'PeriodicityMeasures')
                 waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
                 calcPeriodicityMeasuresStatistics(waitbar_handle);
-                close(waitbar_handle);      
+                close(waitbar_handle);    
+            elseif strcmp(param_category, 'ODI_HypoxicBurdenMeasures')
+                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
+                calcDesaturationsStatistics(waitbar_handle);
+                close(waitbar_handle);   
+                waitbar_handle = waitbar(0, 'Calculating', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M2');
+                calcNonlinearStatistics(waitbar_handle);
+                close(waitbar_handle);
             end
         end
     end
@@ -4980,7 +5033,7 @@ function plotDesaturationsRegions()
                 DATA.custom_filters_thresholds.(param_category{2}).(param_category{3}) = param_value;
                 if strcmp(Filter, 'Range') && strcmp(param_category{2}, 'RangeSpO2')
                     doFilt = 1;
-                elseif GUI.Detrending_checkbox.Value  && strcmp(param_category{2}, 'MedianSpO2') % Median - ON
+                elseif GUI.MedianFilter_checkbox.Value  && strcmp(param_category{2}, 'MedianSpO2') % Median - ON
                     doFilt = 1;
                 elseif strcmp(Filter, 'Block Data') && strcmp(param_category{2}, 'BlockSpO2')
                     doFilt = 1;
@@ -5120,6 +5173,9 @@ function plotDesaturationsRegions()
                 
                 FilteredData_tnn = FilteredData_tnn(~isnan(FilteredData_tnn));
                 FilteredData_nni = FilteredData_nni(~isnan(FilteredData_nni));
+                
+                FilteredData_tnn = FilteredData_tnn(:);
+                FilteredData_nni = FilteredData_nni(:);
                 
                 if strcmp(ext, '.txt')
                     psd_fileID = fopen(full_file_name_filtered, 'w');
@@ -5635,10 +5691,10 @@ function plotDesaturationsRegions()
                     end
                     
 %                     hrv_nl = HypoxicBurdenMeasures(nni_window, DATA.ODI_begin, DATA.ODI_end); %ODI_begin, ODI_end
-                    hrv_nl = HypoxicBurdenMeasures(nni_window, ODI_begin, ODI_end, GUI.measures_cb_array(3).Value); %ODI_begin, ODI_end
+                    hrv_nl = HypoxicBurdenMeasures(nni_window, ODI_begin, ODI_end, GUI.measures_cb_array(2).Value); %ODI_begin, ODI_end
                     disp(['Spo2: Calculating hypoxic burden metrics: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                     
-                    if GUI.measures_cb_array(3).Value
+                    if GUI.measures_cb_array(2).Value
                         DATA.NonLinStat.PlotData{i} = nni_window;
                     else
                         DATA.NonLinStat.PlotData{i} = [];
@@ -5727,10 +5783,10 @@ function plotDesaturationsRegions()
                 try                    
                     waitbar(4 / 5, waitbar_handle, ['Calculating complexity measures for window ' num2str(i)]); setLogo(waitbar_handle, 'M2');
                     
-                    SpO2_CM = ComplexityMeasures(nni_window, [GUI.measures_cb_array(5:9).Value]);
+                    SpO2_CM = ComplexityMeasures(nni_window, [GUI.measures_cb_array(4:8).Value]);
                     disp(['Spo2: Calculating complexity measures for window: win ', num2str(i), ', ', num2str(toc(start_time)), 'sec.']);
                     
-                    if GUI.measures_cb_array(5).Value && ~all(isnan(nni_window))
+                    if GUI.measures_cb_array(4).Value && ~all(isnan(nni_window))
                         [~, ~, plot_data] = oximetry_dfa(nni_window);
                         DATA.CMStat.PlotData{i} = plot_data;
                     else
@@ -5937,7 +5993,7 @@ function plotDesaturationsRegions()
                     waitbar(5 / 5, waitbar_handle, ['Calculating periodicity measures for window ' num2str(i)]);
                     setLogo(waitbar_handle, 'M2');
                     
-                    [SpO2_PRSA, pd_periodicity] = PeriodicityMeasures(nni_window, GUI.measures_cb_array(4).Value);
+                    [SpO2_PRSA, pd_periodicity] = PeriodicityMeasures(nni_window, GUI.measures_cb_array(3).Value);
                     DATA.PMStat.PlotData{i} = pd_periodicity;
                     
 %                     SpO2_PRSA = PRSAMeasures(nni_window);
@@ -7240,40 +7296,40 @@ function plotDesaturationsRegions()
         uicontrol('Style', 'text', 'Parent', GUI.OBMBox, 'FontSize', DATA.BigFontSize, 'FontWeight', 'Bold', 'String', 'Compute Measures:', 'HorizontalAlignment', 'left');
         uix.Empty('Parent', GUI.OBMBox);
         GUI.measures_cb_array(1) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'General');
-        GUI.measures_cb_array(2) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Desaturations');
-        GUI.measures_cb_array(3) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Hypoxic Burden');
-        GUI.measures_cb_array(4) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Periodicity');
+        GUI.measures_cb_array(2) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Desaturations & Hypoxic Burden');
+%         GUI.measures_cb_array(3) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Hypoxic Burden');
+        GUI.measures_cb_array(3) = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Periodicity');
         GUI.Complexity_CB = uicontrol('Style', 'checkbox', 'Parent', GUI.OBMBox, 'String', 'Complexity (heavy algorithms, may takes some additional time)', 'FontSize', DATA.BigFontSize, 'Value', 0, 'Callback', @Complexity_CB_Callback);
         uix.Empty('Parent', GUI.OBMBox);
         
         hB = uix.HBox( 'Parent', GUI.OBMBox, 'Spacing', DATA.Spacing);
         uix.Empty('Parent', hB);
-        GUI.measures_cb_array(5) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'DFA');
+        GUI.measures_cb_array(4) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'DFA');
         set(hB, 'Width', [-0.5 -10]);        
                         
         hB = uix.HBox( 'Parent', GUI.OBMBox, 'Spacing', DATA.Spacing);
         uix.Empty('Parent', hB);
-        GUI.measures_cb_array(6) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'LZ');
+        GUI.measures_cb_array(5) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'LZ');
         set(hB, 'Width', [-0.5 -10]);        
         
         hB = uix.HBox( 'Parent', GUI.OBMBox, 'Spacing', DATA.Spacing);
         uix.Empty('Parent', hB);
-        GUI.measures_cb_array(7) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'CTM');
+        GUI.measures_cb_array(6) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'CTM');
         set(hB, 'Width', [-0.5 -10]);        
         
         hB = uix.HBox( 'Parent', GUI.OBMBox, 'Spacing', DATA.Spacing);
         uix.Empty('Parent', hB);
-        GUI.measures_cb_array(8) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'SampEn');
+        GUI.measures_cb_array(7) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'SampEn');
         set(hB, 'Width', [-0.5 -10]);        
         
         hB = uix.HBox( 'Parent', GUI.OBMBox, 'Spacing', DATA.Spacing);
         uix.Empty('Parent', hB);
-        GUI.measures_cb_array(9) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'ApEn');
+        GUI.measures_cb_array(8) = uicontrol('Style', 'checkbox', 'Parent', hB, 'String', 'ApEn');
         set(hB, 'Width', [-0.5 -10]);        
         
         uix.Empty('Parent', GUI.OBMBox);
         
-        set(GUI.OBMBox, 'Heights', [-1 -0.5 -1 -1 -1 -1 -1 -0.5 -1 -1 -1 -1 -1 -7]);
+        set(GUI.OBMBox, 'Heights', [-1 -0.5 -1 -1 -1 -1 -0.5 -1 -1 -1 -1 -1 -7]);
         
         for i = 1 : length(GUI.measures_cb_array)
             GUI.measures_cb_array(i).Callback = {@calc_spesific_measure, i};
@@ -7281,7 +7337,7 @@ function plotDesaturationsRegions()
             GUI.measures_cb_array(i).Value = 1;
         end
         
-        GUI.measures_cb_array(9).Value = 0;
+        GUI.measures_cb_array(8).Value = 0;
         
         set(findobj(GUI.OBMSclPanel, 'Type', 'uicontainer'), 'BackgroundColor', myUpBackgroundColor);
         set(findobj(GUI.OBMSclPanel, 'Type', 'UIControl'), 'BackgroundColor', myUpBackgroundColor);        
@@ -7289,7 +7345,7 @@ function plotDesaturationsRegions()
 %%
     function calc_spesific_measure(src, ~, measure_num)
         
-        comp_mes_cb = [GUI.measures_cb_array(5:9).Value];
+        comp_mes_cb = [GUI.measures_cb_array(4:8).Value];
         
         if sum(comp_mes_cb) == length(comp_mes_cb)
             GUI.Complexity_CB.Value = 1;
@@ -7301,12 +7357,12 @@ function plotDesaturationsRegions()
             if measure_num == 1
                 param_category = 'OveralGeneralMeasures';
             elseif measure_num == 2
-                param_category = 'ODIMeasures';
+                param_category = 'ODI_HypoxicBurdenMeasures';
+%             elseif measure_num == 3
+%                 param_category = 'HypoxicBurdenMeasures';
             elseif measure_num == 3
-                param_category = 'HypoxicBurdenMeasures';
-            elseif measure_num == 4
                 param_category = 'PeriodicityMeasures';
-            elseif measure_num == 5 || measure_num == 6 || measure_num == 7  || measure_num == 8 || measure_num == 9
+            elseif measure_num == 4 || measure_num == 5 || measure_num == 6  || measure_num == 7 || measure_num == 8
                 param_category = 'ComplexityMeasures';
             end
             if get(GUI.AutoCalc_checkbox, 'Value')
@@ -7342,7 +7398,7 @@ function plotDesaturationsRegions()
     end
 %%
     function Complexity_CB_Callback(src, ~ )
-        for i = 5 : 9
+        for i = 4 : 8
             GUI.measures_cb_array(i).Value = src.Value;            
         end
     end

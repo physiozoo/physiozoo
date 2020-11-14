@@ -40,7 +40,7 @@ mhrv toolbox documentation
    :maxdepth: 2
    :caption: mhrv API Reference
 
-   sections/mhrv/mhrv.rst
+   mhrv/sections/mhrv.rst
 
 Indices and tables
 ==================

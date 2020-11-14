@@ -46,10 +46,11 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'recommonmark',
     'sphinxcontrib.matlab',
 ]
 
-matlab_src_dir = os.path.abspath('../lib')
+matlab_src_dir = os.path.abspath('../mhrv')
 primary_domain = 'mat'
 
 # Dont show full module name in generated docs
@@ -82,9 +83,8 @@ language = None
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
 exclude_patterns = [
-        '_build', 'Thumbs.db', '.DS_Store',
-        # Exclude mhrv auto-doc sections (we re-create them for this project)
-        'mhrv/sections/mhrv*.rst']
+    '_build', 'Thumbs.db', '.DS_Store',
+]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'

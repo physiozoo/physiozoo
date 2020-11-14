@@ -28,12 +28,12 @@ PhysioZoo documentation
 mhrv toolbox documentation
 ==============================
 
-.. mdinclude:: mhrv/sections/intro.md
 
 .. toctree::
    :maxdepth: 2
    :caption: Working with the toolbox
 
+   mhrv/sections/intro.md
    mhrv/sections/getting_started.md
    
 .. toctree::

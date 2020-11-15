@@ -935,8 +935,10 @@ end
                     dData = diff((data(:,Channels.Data.No)));
                     Channels.Data.Data = (dData/Fs)*Scale_factor;
                 case 'beating_rate'
-                    Channels.Data.Data =60./data(:,Channels.Data.No)*Channels.Data.Scale_factor;
-                case 'oxygen_saturation'    
+                    Channels.Data.Data = 60./data(:,Channels.Data.No)*Channels.Data.Scale_factor;
+                case 'oxygen_saturation'  
+                case 'select'
+                    Channels.Data.Data =data(:, Channels.Data.No);
                 otherwise
             end
                  

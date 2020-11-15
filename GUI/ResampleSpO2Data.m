@@ -21,7 +21,7 @@ disp('Resamping');
 %     Fs = SamplingFrequency;
 % end
 
-time_data = 0 : 1 : length(rri)-1;
+time_data = 0 : 1 : length(rri_resampled)-1;
 
 % time_data = time_data - time_data(1);
 

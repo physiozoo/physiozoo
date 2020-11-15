@@ -1471,8 +1471,17 @@ end
                 
                 GUI.hT = text(0, 0, 'Test', 'Parent', GUI.ECG_Axes);
                 
+                [real_ch_no, ~] = size(data.Data.Names);
+                
+                if real_ch_no > ch_no
+                    names_array = {data.Data.Names{2:end}};
+                else
+                    names_array = data.Data.Names;
+                end
+                
                 table_data = cell(ch_no, 2);
-                table_data(1, 1) = {data.Data.Names{1}};
+%                 table_data(1, 1) = {data.Data.Names{1}};
+                table_data(1, 1) = {names_array{1}};
                 table_data(1, 2) = {true};                                
                 
 %                 [~, ch_no] = size(DATA.sig);                
@@ -1484,7 +1493,8 @@ end
 %                     GUI.ChISignal_checkbox(i-1).UserData = i-1;
 %                     GUI.ChISignal_checkbox(i-1).BackgroundColor = myUpBackgroundColor;
 
-                    table_data(i, 1) = {data.Data.Names{i}};
+%                     table_data(i, 1) = {data.Data.Names{i}};
+                    table_data(i, 1) = {names_array{i}};
                     table_data(i, 2) = {false};
                 end
                 

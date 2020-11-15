@@ -8,6 +8,8 @@
 #*.atr
 *.qrs*
 
+*.zip
+
 # Default local physionet install directory
 bin/wfdb/
 
@@ -49,6 +51,8 @@ ExamplesTXT/Uta/
 ExamplesTXT/Test Rhythms/
 Temp/
 GUI/Copys/
+TEST_PZ_19/
+Examples SpO2/
 
 tempYAML.yml
 

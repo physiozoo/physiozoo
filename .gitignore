@@ -44,16 +44,16 @@ Test Set for Loader/
 Moran/
 Documentation for gui-layout-toolbox-2.3.1/
 Examples sqi/
-Examples All/
-ExamplesTXT/Armond/
-ExamplesTXT/Uta/
+#Examples All/
+#ExamplesTXT/Armond/
+#ExamplesTXT/Uta/
 #ExamplesTXT/SpO2/
-ExamplesTXT/Test Rhythms/
+#ExamplesTXT/Test Rhythms/
 Temp/
-GUI/Copys/
+#GUI/Copys/
 TEST_PZ_19/
 Examples SpO2/
-ExamplesTXT/
+
 
 tempYAML.yml
 

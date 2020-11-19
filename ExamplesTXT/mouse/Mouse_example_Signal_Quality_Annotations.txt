@@ -1,8 +1,0 @@
----
-type: quality annotation
-source file: Mouse_example_Signal_Quality_Annotations.txt
-
----
-
-Beginning	End		Class
-0.000000	0.000000	C

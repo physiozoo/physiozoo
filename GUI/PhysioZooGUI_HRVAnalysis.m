@@ -4205,8 +4205,8 @@ function plotDesaturationsRegions()
             GUIFiguresNames = {'NN Interval Distribution'; 'Power Spectral Density'; 'Beta'; 'DFA'; 'MSE'; 'Poincare Ellipse'; 'RR Time Series'};
             DATA.FiguresNames = {'_NND'; '_PSD'; '_Beta'; '_DFA'; '_MSE'; '_Poincare'; '_RR'};
         else
-            GUIFiguresNames = {'Statistics SpO2'; 'Desaturations Lengths'; 'Desaturations Depths'; 'CA'; 'DFA'; 'PSD'; 'PRSA'; 'SpO2 Signal'};
-            DATA.FiguresNames = {'_StatSpO2'; '_DesatLengths'; '_DesatDepths'; '_CA'; '_DFA'; '_PSD'; '_PRSA'; '_SpO2Signal'};
+            GUIFiguresNames = {'Statistics SpO2'; 'Desaturations Lengths'; 'Desaturations Depths'; 'CT'; 'DFA'; 'PSD'; 'PRSA'; 'SpO2 Signal'};
+            DATA.FiguresNames = {'_StatSpO2'; '_DesatLengths'; '_DesatDepths'; '_CT'; '_DFA'; '_PSD'; '_PRSA'; '_SpO2Signal'};
         end
         
         main_screensize = DATA.screensize;

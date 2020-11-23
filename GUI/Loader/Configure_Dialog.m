@@ -572,7 +572,7 @@ switch CH.Data.Type
     case {'interval','electrography'}
         file_type = '*.dat';
         file_name = 'WFDB files (*.dat)';
-    case {'peak','beating_rate'}
+    case {'peak','beating_rate', 'oxygen_saturation'}
         file_type = '*.qrs; *.atr';
         file_name = 'WFDB Files (*.qrs; *.atr)';
     otherwise
@@ -626,7 +626,11 @@ switch ExtensionFileName
         [~, filename_noExt, ~] = fileparts(filename);
         comments = {['Mammal:' Mammal ',Integration_level:' Integration_level]};
         
-        wrann([results_folder_name filename_noExt], ExtensionFileName, int64(cumsum(Data(:,2))*Fs), 'fs', Fs, 'comments', comments); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
+        if ~strcmp(CH.Data.Type, 'oxygen_saturation')
+            wrann([results_folder_name filename_noExt], ExtensionFileName, int64(cumsum(Data(:,2))*Fs), 'fs', Fs, 'comments', comments); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
+        else
+            wrann([results_folder_name filename_noExt], ExtensionFileName, int64(Data(:,2)), 'fs', Fs, 'comments', comments); % , 'comments', {[DATA.Integration '-' DATA.Mammal]}
+        end
         
     otherwise
 end

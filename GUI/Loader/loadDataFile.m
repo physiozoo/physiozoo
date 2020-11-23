@@ -87,7 +87,13 @@ switch ext(2:end)
             delete(waitbar_handle)
             return
         end
-        [UniqueMap,header,data] = Read_WFDB_DataFile(header_info,UniqueMap,waitbar_handle,FileName,ext);
+        
+        if ~strcmp(header_info.channel_info{1}.units, '%')
+            [UniqueMap,header,data] = Read_WFDB_DataFile(header_info,UniqueMap,waitbar_handle,FileName,ext);
+        elseif strcmp(header_info.channel_info{1}.units, '%')
+            [UniqueMap,header,data] = Read_WFDB_SpO2File(header_info,UniqueMap,waitbar_handle,FileName,ext);
+        end
+        
     case {'qrs','atr'}  % WFDB annotation files
         FileName = [file_path,filesep,name];                                                                                                                       % build filename w/o ext, for WFDB
         try

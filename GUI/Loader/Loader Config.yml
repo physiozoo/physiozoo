@@ -27,7 +27,7 @@ units:
     microvolt: [uv,mkvolt,microvolt,mikrovolt]
     index: [index,ind,i]
     bpm: [bpm]
-    percent: [percent]
+    percent: [percent,'%']
 alarm:
     msg_1: The sampling frequency Fs was re-computed to match the time axis that was entered
     msg_2: The set of channels selected do not match

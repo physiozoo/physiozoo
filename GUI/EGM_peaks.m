@@ -1,26 +1,35 @@
 function peaks=EGM_peaks(signal,params,toplot)
 % peaks=EGM_peaks(signal,params)
 % 
-% PhysioZoo's default peak detector for electrograms.
+% PhysioZoo's default beat detector for sinoatrial node electrographic recordings.
+% last eddited by Ori Shemla on December 15th, 2020
+% If you use it - please use the following refference:
+%   Shemla et al 2020 (Frontiers in physiology)
+%
+%
 % inputs-
 %   signal: numeric vector, raw electrogram record
 %   params: 1x1 struct with the following fields:
-%               - Fs: numeric scalar, the measurement frequency (Hz).
-%               - refractory_period: numeric scalar, the typical
-%               refractoric period (msec) of the mammal type.
-%               - alpha: numeric scalar, adjustable parameter (n.u.) for the
-%               prominence of the peaks. higher alpha means more prominent
-%               peaks selection. typically in the range of [0-2].
-%               - BI: numeric scalar, the typical beating interval (msec) of the
+%               - Fs (obligatory): numeric scalar, the measurement frequency (Hz).
+%               - ref_per (obligatory): numeric scalar, the typical
+%               refractory period (msec) of the mammal type.
+%               - bi (obligatory): numeric scalar, the typical beating interval (msec) of the
 %               mammal type.
+%               - prom_thrresh1: numeric scalar. The relative peak prominence threshold [%] for the initial beat detection. In the range of [0-100]. default - 20.           
+%               - prom_thrresh2: numeric scalar. The relative peak prominence threshold [%] for the beat classification. In the range of [0-inf]. default - 80.           
 %
 % outputs- 
 %   peaks: numeric vector of real positive integers, the peaks location
 %   indices in the electrogram signal.
 % 
 % 
-% 
-% 
+% example: 
+% temp=load('egm_filename.mat','Data');
+% signal=temp.Data;
+% params.Fs=10000;
+% params.ref_per=30;
+% params.bi=250;
+% peaks=EGM_peaks(signal,params)
 % 
 
 
@@ -33,7 +42,7 @@ if nargout~=1
     error('too much or not at all output arguments')
 end
 
-if ~isfield(params,'ref_per') || ~isfield(params,'bi') || isempty(params.ref_per) || isempty(params.bi) || ~isfinite(params.ref_per) || ~isfinite(params.bi)
+if ~isfield(params,'Fs') || ~isfield(params,'ref_per') || ~isfield(params,'bi') || isempty(params.Fs) || isempty(params.ref_per) || isempty(params.bi) || ~isfinite(params.Fs) || ~isfinite(params.ref_per) || ~isfinite(params.bi)
     error('Invalid refractory period and BI values. Enter their values as fields in ''params''');
 elseif params.bi<3 || params.ref_per<1
     warning('The refractory_period and BI values are extrimely low. make sure their units are millisecond.')

@@ -1,30 +1,30 @@
-# Default parameter values of the mhrv toolbox
+# mouse parameter values of the mhrv toolbox for 
 ---
 parameters_type:
-    mammal: default
-    integration_level: Electrogram
+    mammal: mouse
+    integration_level: electrogram
       
 # RR Interval filtering
 filtrr:
     range:
         enable:
-            value: false
+            value: true
             description: Whether to enable range-based filtering
             name: Enable range filter
             units: boolean
         rr_min:
-            value: 0.28
+            value: 0.021
             description: Minimal allowed RR interval duration
             name: RR min
             units: sec
         rr_max:
-            value: 2.4
+            value: 0.724
             description: Maximal allowed RR interval duration
             name: RR max
             units: sec
     moving_average:
         enable:
-            value: true
+            value: false
             description: Whether to enable moving average-based filtering
             name: Enable moving average filter
             units: boolean
@@ -60,12 +60,11 @@ filtrr:
             description: Enable or disable the detrending of the time series
             name: Detrend NN time series
             units: boolean            
-    
 
 # Time-domain HRV parameters
 hrv_time:
     pnn_thresh_ms:
-        value: 50
+        value: 12
         description: Threshold value for PNNx
         name: PNN Threshold
         units: ms
@@ -73,22 +72,22 @@ hrv_time:
 # Frequency-domain HRV parameters
 hrv_freq:    
     vlf_band:
-        value: [0.003, 0.04]
+        value: [0.0056, 0.202]
         description: VLF frequency band range
         name: VLF Band
         units: Hz
     lf_band:
-        value: [0.04,  0.15]
+        value: [0.202,  2.418]
         description: LF frequency band range
         name: LF Band
         units: Hz
     hf_band:
-        value: [0.15,   0.4]
+        value: [2.418,   5]
         description: HF frequency band range
         name: HF Band
         units: Hz    
     window_minutes:
-        value: 5
+        value: 3
         description: Duration of winodow for spectral averaging
         name: Spectral window length
         units: min
@@ -98,15 +97,15 @@ hrv_freq:
         name: Welch overlap
         units: '%'
     ar_order:
-        value: 20
+        value: 30
         description: Order of AR model to fit
         name: AR order
         units: n.u.
     beta_band:
-        value: [0.003, 0.04]
+        value: [0.0056, 0.202]
         description: Frequency range for log-log slope calculation (beta)
         name: Beta band
-        units: Hz 
+        units: Hz    
     
 # DFA Parameters
 dfa:
@@ -116,7 +115,7 @@ dfa:
         name: n_min
         units: n.u.
     n_max:
-        value: 128
+        value: 64
         description: Maximal DFA box size
         name: n_max
         units: n.u.
@@ -131,7 +130,7 @@ dfa:
         name: Alpha1 range
         units: n.u.
     alpha2_range:
-        value: [16, 128]
+        value: [16, 64]
         description: Box size range for alpha2 slope calculation
         name: Alpha2 range
         units: n.u.
@@ -139,7 +138,7 @@ dfa:
 # MSE Parameters
 mse:
     mse_max_scale:
-        value: 15
+        value: 20
         description: Maximal scale value for MSE calculation
         name: MSE max scale
         units: n.u.

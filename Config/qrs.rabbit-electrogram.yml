@@ -1,4 +1,4 @@
-mammal:             rabbit
+mammal:             mouse
 integration_level:  Electrogram
 peak_detector:      EGM peaks
 peak_adjustment:    default
@@ -86,13 +86,25 @@ peaks_window:
 # EGM peaks
 
 ref_per:
-    value: 140
+    value: 140.0
     units: msec
     description: Typical refractory period
     name: ref_per
 bi:
-    value: 523.2
+    value: 327.3
     units: msec
     description: Typical beating interval
     name: bi    
+    
+prom_thresh1:
+    value: 20
+    units: \%
+    description: Prominence threshold coefficient for initial peak detection
+    name: prom_thresh1    
+    
+prom_thresh2:
+    value: 80
+    units: \%
+    description: Prominence threshold coefficient for peak clasification
+    name: prom_thresh2    
     

@@ -1,5 +1,5 @@
 function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
-%Calcualtes non-linear HRV metrics based on Poincaré plots, detrended
+%Calcualtes non-linear HRV metrics based on Poincar?? plots, detrended
 %fluctuation analysis (DFA) [2]_  and Multiscale Entropy (MSE) [3]_.
 %
 %:param nni: RR/NN intervals, in seconds.
@@ -26,14 +26,14 @@ function [ hrv_nl, plot_data ] = hrv_nonlinear( nni, varargin )
 %       - SampEn: The sample entropy.
 %
 %
-%.. [2] Peng, C.-K., Hausdorff, J. M. and Goldberger, A. L. (2000) ‘Fractal mechanisms
+%.. [2] Peng, C.-K., Hausdorff, J. M. and Goldberger, A. L. (2000) ???Fractal mechanisms
 %   in neuronal control: human heartbeat and gait dynamics in health and disease,
-%   Self-organized biological dynamics and nonlinear control.’ Cambridge:
+%   Self-organized biological dynamics and nonlinear control.??? Cambridge:
 %   Cambridge University Press.
 %
-%.. [3] Costa, M. D., Goldberger, A. L. and Peng, C.-K. (2005) ‘Multiscale entropy
-%   analysis of biological signals’, Physical Review E - Statistical, Nonlinear,
-%   and Soft Matter Physics, 71(2), pp. 1–18.
+%.. [3] Costa, M. D., Goldberger, A. L. and Peng, C.-K. (2005) ???Multiscale entropy
+%   analysis of biological signals???, Physical Review E - Statistical, Nonlinear,
+%   and Soft Matter Physics, 71(2), pp. 1???18.
 %
 
 import mhrv.defaults.*;
@@ -107,6 +107,13 @@ if ~isempty(mse_values)
     hrv_nl.SampEn = mse_values(1);
     hrv_nl.Properties.VariableUnits{'SampEn'} = 'n.u.';
     hrv_nl.Properties.VariableDescriptions{'SampEn'} = 'Sample entropy';
+end
+
+% Save the average MSE value of the tail (block size>=16).
+if ~isempty(mse_values) && any(scale_axis>=16)
+    hrv_nl.TailEn = mean(mse_values(scale_axis>=16));
+    hrv_nl.Properties.VariableUnits{'TailEn'} = 'n.u.';
+    hrv_nl.Properties.VariableDescriptions{'TailEn'} = 'Average MSE value of the tail (block size>=16)';
 end
 
 if mse_metrics

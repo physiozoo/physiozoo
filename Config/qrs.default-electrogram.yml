@@ -87,12 +87,12 @@ peaks_window:
 
 
 ref_per:
-    value: 21.0
+    value: 140.0
     units: msec
     description: Typical refractory period
     name: ref_per
 bi:
-    value: 241.3
+    value: 327.3
     units: msec
     description: Typical beating interval
     name: bi    

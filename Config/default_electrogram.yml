@@ -1,8 +1,8 @@
-# Rabbit parameter values of the mhrv toolbox
+# default parameter values of the mhrv toolbox
 ---
 parameters_type:
-    mammal: rabbit
-    integration_level: electrogram
+    mammal: default
+    integration_level: Electrogram
       
 # RR Interval filtering
 filtrr:

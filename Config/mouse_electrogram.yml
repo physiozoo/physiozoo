@@ -1,8 +1,8 @@
-# mouse parameter values of the mhrv toolbox for 
+# mouse parameter values of the mhrv toolbox  
 ---
 parameters_type:
     mammal: mouse
-    integration_level: electrogram
+    integration_level: Electrogram
       
 # RR Interval filtering
 filtrr:

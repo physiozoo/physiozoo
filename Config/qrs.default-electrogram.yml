@@ -1,9 +1,9 @@
-mammal:             mouse
+mammal:             default
 integration_level:  Electrogram
 peak_detector:      EGM peaks
 peak_adjustment:    default
 
-# rqrs config file for mouse
+# rqrs config file for default
 
 HR:
     value: 608
@@ -99,13 +99,13 @@ bi:
     
 prom_thresh1:
     value: 20
-    units: \%
+    units: '%'
     description: Prominence threshold coefficient for initial peak detection
     name: prom_thresh1    
     
 prom_thresh2:
     value: 80
-    units: \%
+    units: '%'
     description: Prominence threshold coefficient for peak clasification
     name: prom_thresh2    
     

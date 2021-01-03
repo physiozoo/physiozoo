@@ -385,7 +385,7 @@ end
             'Ventricular tachycardia'; ...
             
             'Sinus bradycardia'; ...
-            '2? heart block'; ...
+            '2° heart block'; ...
             'Nodal (A-V junctional) rhythm'; ...
             
             'Paced rhythm'; ...
@@ -502,7 +502,7 @@ end
         Upper_Part_Box = uix.HBoxFlex('Parent', mainLayout, 'Spacing', DATA.Spacing); % Upper Part
         Low_Part_BoxPanel = uix.BoxPanel( 'Parent', mainLayout, 'Title', '  ', 'Padding', DATA.Padding); %Low Part
         
-        upper_part = 0.7; % 0.8 0.55
+        upper_part = 0.75; % 0.8 0.55
         low_part = 1 - upper_part;
         set(mainLayout, 'Heights', [(-1)*upper_part, (-1)*low_part]);
         
@@ -915,26 +915,26 @@ end
             set(textBox{i}, 'Widths', field_size);
         end
         
-        set(textBox{21}, 'Widths', field_size);
+        set(textBox{23}, 'Widths', field_size);
         
         if DATA.SmallScreen
             field_size = [max_extent_control, 100, -1];
         else
             field_size = [max_extent_control, 100, -1];
         end
-        set(textBox{22}, 'Widths', field_size);
+        set(textBox{24}, 'Widths', field_size);
         
-        field_size = [max_extent_control, 46, 2, 46, 20];
+        field_size = [max_extent_control, 46, 5, 43, 20];
         set(YLimitBox, 'Widths', field_size);
         set(YLimitBox2, 'Widths', field_size);
         
-        GUI.AutoScaleY_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
+        GUI.AutoScaleY_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
         set(YLimitBox, 'Widths', [field_size, 150]);
         
-        GUI.AutoScaleYLowAxes_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox2, 'Callback', @AutoScaleYLowAxes_pushbutton_Callback, 'FontSize', 10, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
+        GUI.AutoScaleYLowAxes_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox2, 'Callback', @AutoScaleYLowAxes_pushbutton_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
         set(YLimitBox2, 'Widths', [field_size, 150]);
         
-        field_size = [max_extent_control, 46, 2, 46, 20, -1];
+        field_size = [max_extent_control, 46, 5, 43, 20, -1];
         set(CutoffFr, 'Widths', field_size);
         
         set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6 -3 -3 -6     -6 -2 -7 -6 -52]);

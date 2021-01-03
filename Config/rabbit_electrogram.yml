@@ -2,7 +2,7 @@
 ---
 parameters_type:
     mammal: rabbit
-    integration_level: electrogram
+    integration_level: Electrogram
       
 # RR Interval filtering
 filtrr:

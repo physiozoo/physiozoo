@@ -1,14 +1,14 @@
 POBM Preprocessing
 ==========
 
-In this tutorial you will learn how to preprocess your oximetry time series within the ``POBM`` toolbox. 
+In this tutorial you will learn how to preprocess your oximetry time series within **PhysioZoo OBM**.
 
 **Introduction**
 ----------------------
 
-When loading an oximetry time series in the POBM toolbox, one of the parameters you need to set is the preprocessing method.
+When loading an oximetry time series in **PhysioZoo OBM**, one of the parameters you need to set is the preprocessing method.
 
-We implemented in **PhysioZoo** three methods for pre-filtering the oximetry time series:
+We implemented in **PhysioZoo OBM** three methods for pre-filtering the oximetry time series:
 
   * Range, 
   * Delta Filter,

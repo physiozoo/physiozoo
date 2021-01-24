@@ -1,12 +1,11 @@
 Oximetry time series analysis
 ==========
 
-In this tutorial you will learn how to compute the oximetry biomarkers and export the computed values within the **PhysioZoo OBM**.
+In this tutorial you will learn how to use **PhysioZoo OBM** to compute the oximetry biomarkers and export the computed values.
 
 **Introduction**
 ----------------------
-
-The SpO2 is a measure of the amount of oxygen-loaded hemoglobin in the blood, relative to the amount of oxygen-unloaded hemoglobin. The extraction of digital biomarkers from the oxygen saturation time series is a critical step in the process of diagnosis and continuous monitoring of patient pulmonary function. Indeed, studying the variability of the oxygen saturation signal may provide information on the underlying physiological control systems. **PhysioZoo OBM** provides the framework and the tools for extracting oximetry biomarkers from the SpO2 signal.
+SpO2 is a measure of the amount of oxygen-loaded hemoglobin in the blood, relative to the amount of oxygen-unloaded hemoglobin. The extraction of digital biomarkers from the oxygen saturation time series is a critical step in the process of diagnosis and monitoring of patient pulmonary function. Indeed, studying the variability of the oxygen saturation signal may provide information on the underlying physiological control systems. **PhysioZoo OBM** provides the framework and the tools for extracting oximetry biomarkers from the SpO2 signal.
 
 
 **Performing oximetry analysis**

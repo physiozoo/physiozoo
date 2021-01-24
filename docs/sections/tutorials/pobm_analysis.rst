@@ -16,10 +16,10 @@ Start by loading some example data by clicking File -> Open data file -> SpO2/Sp
 .. image:: ../../_static/pobm_mainmenu.jpg
    :align: center
 
-In the upper figure (A) the selected window (shaded in blue) defines the time interval for which the oximetry biomarkers are computed. In the lower panel (B), the overall oximetry signal is plotted. Two windows are drawn on it: one window with a red frame and another one with a blue frame (and alpha color from within). The red window defines the part of the oximetry time series plotted in the larger upper figure (A). The blue frame defines the part of the oximetry time series for which the biomarkers will be computed. The 2 windows can be modified (extended/shrunk/moved) using the mouse. Pannel (C) shows all the oximetry biomarkers that have been computed.
+Refering to the figure above: (A) the selected window (shaded in blue) defines the time interval for which the oximetry biomarkers are computed. In the lower panel (B), the overall oximetry signal is plotted. Two windows are drawn on it: one window with a red frame and another one with a blue frame (and alpha color from within). The red window defines the part of the oximetry time series plotted in the larger upper figure (A). The blue frame defines the part of the oximetry time series for which the biomarkers will be computed. The two windows can be modified (extended/shrunk/moved) using the mouse. Pannel (C) shows all the oximetry biomarkers that have been computed.
 
 Congrats! You have made your first oximetry analysis with **PhysioZoo OBM**!
-The biomarkers are divided into 5 different categories: General, Desaturations, Hypoxic Burden, Complexity and Periodicity. You can choose to compute only certain categories (to save time), into the tab "OBM".
+The biomarkers are divided into five different categories: General, Desaturations, Hypoxic Burden, Complexity and Periodicity. You can choose to compute only certain categories (to save time), into the tab "OBM".
 
 .. note:: Every time you move the analysis window to another location the newly selected segment will be automatically analyzed. You can disable this by deselecting the checkbox “Auto Compute” located under the “Compute” button.
 
@@ -49,7 +49,7 @@ Select the location where you want to save the oximetry measures. Open the file 
 **Exporting figures**
 --------------------------------------------
 
-**PhysioZoo OBM** provides some figures to illustrate the biomarkers, such as the histogram of the values of the signal, histogram of the desaturations characteristics, the value of CT in function of the baseline, a DFA illustration and an estimation of the power spectral density. Figures can be exported in high quality format and thus easily included in your research reports and/or papers. For exporting figures click File -> Export figures. You will be prompted with the following window on which you can choose what figures you want to export. After clicking 'Save As' you will be able to choose the format of the figure.
+Using **PhysioZoo OBM** you can export some summary graphs such as the distribution of the time series, histogram of the desaturations characteristics etc. Figures can be exported in high quality format and thus easily included in your research reports and/or papers. For exporting figures click File -> Export figures. You will be prompted with the following window on which you can choose what figures you want to export. After clicking 'Save As' you will be able to choose the format of the figure.
 
 .. image:: ../../_static/pobm_save_figures.PNG
    :align: center
@@ -58,7 +58,7 @@ Select the location where you want to save the oximetry measures. Open the file 
 **Consecutive windows analysis**
 --------------------------------------------
 
-You might want to track the evolution of the oximetry biomarkers over the time. For example, for monitoring patients it would be useful to see how the oximetry biomarkers vary in the time. For that purpose **PhysioZoo OBM** enables the analysis to be performed on consecutive segments.
+You might want to track the evolution of the oximetry biomarkers over the time. For example, for monitoring patients it would be useful to see how the oximetry biomarkers vary over time. For that purpose **PhysioZoo OBM** enables the analysis to be performed on consecutive windows.
 
 Click the “Single” Submenu in the left panel and click on the "Use full length" button. Then press the “Compute” button located on the top right of the interface. You will see the following screen, which contains all the oximetry biomarkers for each consecutive window over the whole recording.
 
@@ -75,4 +75,4 @@ If you want to export figures, then select with the mouse the window you want to
 **Setting biomarker parameters**
 --------------------------------------------
 
-The oximetry biomarkers have lots of parameters which can be adjusted by the user. For example, desaturations can be detected thanks to a relative threshold or a hard threshold. In order to change those parameters, click on tab "Options". Then you have 6 tabs, one for filtering and one for each of the 5 categories of biomarkers. After changing the value of a specific parameter, click on "Compute" in order to compute again the biomarkers with the new parameter.
+The oximetry biomarkers have a number of associated parameters which can be adjusted by the user. For example, desaturations can be detected with a relative threshold of 3% or 5%. In order to change those parameters, click on tab "Options". Then you have six tabs, one for filtering and one for each of the five categories of biomarkers. After changing the value of a specific parameter, click on "Compute" in order to compute again the biomarkers with the new parameter.

@@ -13,7 +13,7 @@ SpO2 is a measure of the amount of oxygen-loaded hemoglobin in the blood, relati
 
 Start by loading some example data by clicking File -> Open data file -> SpO2/SpO2_example.txt. The program will start the analysis automatically and will display the following window:
 
-.. image:: ../../_static/pobm_mainmenu.jpg
+.. image:: ../../_static/pobm_mainmenu.PNG
    :align: center
 
 Refering to the figure above: (A) the selected window (shaded in blue) defines the time interval for which the oximetry biomarkers are computed. In the lower panel (B), the overall oximetry signal is plotted. Two windows are drawn on it: one window with a red frame and another one with a blue frame (and alpha color from within). The red window defines the part of the oximetry time series plotted in the larger upper figure (A). The blue frame defines the part of the oximetry time series for which the biomarkers will be computed. The two windows can be modified (extended/shrunk/moved) using the mouse. Pannel (C) shows all the oximetry biomarkers that have been computed.
@@ -62,7 +62,7 @@ You might want to track the evolution of the oximetry biomarkers over the time. 
 
 Click the “Single” Submenu in the left panel and click on the "Use full length" button. Then press the “Compute” button located on the top right of the interface. You will see the following screen, which contains all the oximetry biomarkers for each consecutive window over the whole recording.
 
-.. image:: ../../_static/pobm_consecutive_windows.png
+.. image:: ../../_static/pobm_consecutive_windows.PNG
    :align: center
 
 You can also enable the analysis window to be overlapping by using the “Overlap” entry in the Analysis menu. By default the value is 0% (i.e. no overlap between successive windows). Change it to 50% and re-run the analysis.

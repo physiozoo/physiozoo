@@ -5,7 +5,7 @@ In this tutorial you will learn how to use **PhysioZoo OBM** to compute the oxim
 
 **Introduction**
 ----------------------
-SpO2 is a measure of the amount of oxygen-loaded hemoglobin in the blood, relative to the amount of oxygen-unloaded hemoglobin. The extraction of digital biomarkers from the oxygen saturation time series is a critical step in the process of diagnosis and monitoring of patient pulmonary function. Indeed, studying the variability of the oxygen saturation signal may provide information on the underlying physiological control systems. **PhysioZoo OBM** provides the framework and the tools for extracting oximetry biomarkers from the SpO2 signal.
+SpO2 is a measure of the amount of oxygen-loaded hemoglobin in the blood, relative to the amount of oxygen-unloaded hemoglobin. The extraction of digital biomarkers from the oxygen saturation time series is a critical step in the process of diagnosis and monitoring of patient pulmonary function. Studying the variability of the oxygen saturation signal may provide information about the underlying physiological control systems. **PhysioZoo OBM** provides the framework and the tools for extracting oximetry biomarkers from the SpO2 signal.
 
 
 **Performing oximetry analysis**
@@ -23,7 +23,7 @@ The biomarkers are divided into five different categories: General, Desaturation
 
 .. note:: Every time you move the analysis window to another location the newly selected segment will be automatically analyzed. You can disable this by deselecting the checkbox “Auto Compute” located under the “Compute” button.
 
-.. note:: The length of the selected window is important. Some biomarkers require algorithm with high complexity, and thus may take some time to run on too long windows. You can modify the size of the window under "Display".
+.. note:: The length of the selected window is important. Some biomarkers are extracted using an algorithm with high computational complexity, and thus may take some time to run on long windows. You can modify the size of the window under "Display".
 
 
 **Exporting oximetry biomarkers**
@@ -38,7 +38,7 @@ You can select the computation(s) you want to save with the checkboxes:
 
 - **SpO2 Measures**: The 44 oximetry biomarkers computed by the software.
 
-- **Preprocessed SpO2**: the oximetry time series after it was preprocessed by the filter you specified under Main-> Preprocessing. 
+- **Preprocessed SpO2**: The oximetry time series after it was preprocessed by the filter you specified under Main-> Preprocessing. 
 
 Select the location where you want to save the oximetry measures. Open the file and see the list of oximetry measures together with their definitions and values for the window that was selected.
 
@@ -49,7 +49,7 @@ Select the location where you want to save the oximetry measures. Open the file 
 **Exporting figures**
 --------------------------------------------
 
-Using **PhysioZoo OBM** you can export some summary graphs such as the distribution of the time series, histogram of the desaturations characteristics etc. Figures can be exported in high quality format and thus easily included in your research reports and/or papers. For exporting figures click File -> Export figures. You will be prompted with the following window on which you can choose what figures you want to export. After clicking 'Save As' you will be able to choose the format of the figure.
+Using **PhysioZoo OBM** you can export summary graphs such as the distribution of the time series or histogram of the desaturations characteristics. Figures can be exported in high quality format and thus easily included in your research reports and/or papers. For exporting figures click File -> Export figures. You will be prompted with the following window on which you can choose what figures you want to export. After clicking 'Save As' you will be able to choose the format of the figure.
 
 .. image:: ../../_static/pobm_save_figures.PNG
    :align: center
@@ -58,7 +58,7 @@ Using **PhysioZoo OBM** you can export some summary graphs such as the distribut
 **Consecutive windows analysis**
 --------------------------------------------
 
-You might want to track the evolution of the oximetry biomarkers over the time. For example, for monitoring patients it would be useful to see how the oximetry biomarkers vary over time. For that purpose **PhysioZoo OBM** enables the analysis to be performed on consecutive windows.
+You might want to track the evolution of the oximetry biomarkers over the time. For example, when monitoring patients it may be useful to see how the oximetry biomarkers vary over time. For that purpose **PhysioZoo OBM** enables the analysis to be performed on consecutive windows.
 
 Click the “Single” Submenu in the left panel and click on the "Use full length" button. Then press the “Compute” button located on the top right of the interface. You will see the following screen, which contains all the oximetry biomarkers for each consecutive window over the whole recording.
 
@@ -69,10 +69,10 @@ You can also enable the analysis window to be overlapping by using the “Overla
 
 You can export all oximetry biomarkers from all consecutive windows (Main -> Save SpO2 measures).
 
-If you want to export figures, then select with the mouse the window you want to save the figures for.
+If you want to export figures, then use the mouse to select the windows that you want included in the figure.
 
 
 **Setting biomarker parameters**
 --------------------------------------------
 
-The oximetry biomarkers have a number of associated parameters which can be adjusted by the user. For example, desaturations can be detected with a relative threshold of 3% or 5%. In order to change those parameters, click on tab "Options". Then you have six tabs, one for filtering and one for each of the five categories of biomarkers. After changing the value of a specific parameter, click on "Compute" in order to compute again the biomarkers with the new parameter.
+The oximetry biomarkers have a number of associated parameters which can be adjusted by the user. For example, desaturations can be detected with a relative threshold of 3% or 5%. In order to change those parameters, click on tab "Options". Six tabs will be shown, one for filtering and one for each of the five categories of biomarkers. After changing the value of a specific parameter, click on "Compute" in order to recompute the biomarkers with the new parameters.

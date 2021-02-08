@@ -132,6 +132,12 @@ displayEndOfDemoMessage('');
         DATA.freq_yscale = 'linear';
         DATA.doCalc = false;
         
+        DATA.ox_raw_data_color = [0 0.4470 0.7410]; % [0 0.4470 0.7410] %0, 0, 1
+        DATA.ox_rd_lw = 3;
+        
+        DATA.ox_filt_data_color = [0 1 0]; % [0 1 0] % [0.9290 0.6940 0.1250] % 0 0.75 0.75
+        DATA.ox_fd_lw = 1.25;
+        
     end % createData
 %-------------------------------------------------------------------------%
 %%
@@ -448,7 +454,7 @@ displayEndOfDemoMessage('');
         
         % + Create the panels
         Upper_Part_Box = uix.HBoxFlex('Parent', GUI.mainLayout, 'Spacing', DATA.Spacing); % Upper Part
-        Low_Part_BoxPanel = uix.BoxPanel( 'Parent', GUI.mainLayout, 'Title', '  ', 'Padding', DATA.Padding+2 ); %Low Part
+        Low_Part_BoxPanel = uix.BoxPanel( 'Parent', GUI.mainLayout, 'Title', '  ', 'Padding', DATA.Padding+2); %Low Part
         
         if DATA.SmallScreen
             upper_part = 0.55;       
@@ -1566,9 +1572,14 @@ displayEndOfDemoMessage('');
                 
                 min_signal_data = min(signal_data, [], 'omitnan');
                 max_signal_data = max(signal_data, [], 'omitnan');
+                delta = (max_signal_data - min_signal_data) * 0.1;
+                
+                min_signal_data = min(min_signal_data, max_signal_data) - delta;
+                max_signal_data = max(min_signal_data, max_signal_data) + delta;
+                
                 if min_signal_data ~= max_signal_data
-                    DATA.AutoYLimitUpperAxes.RRMinYLimit = min(min_signal_data, max_signal_data);
-                    DATA.AutoYLimitUpperAxes.RRMaxYLimit = max(min_signal_data, max_signal_data);
+                    DATA.AutoYLimitUpperAxes.RRMinYLimit = min_signal_data;
+                    DATA.AutoYLimitUpperAxes.RRMaxYLimit = max_signal_data;
                 else
                     DATA.AutoYLimitUpperAxes.RRMinYLimit = min_signal_data*0.9;
                     DATA.AutoYLimitUpperAxes.RRMaxYLimit = max_signal_data*1.1;
@@ -1576,9 +1587,15 @@ displayEndOfDemoMessage('');
                 
                 max_rri_60 = max(60 ./ signal_data, [], 'omitnan');
                 min_rri_60 = min(60 ./ signal_data, [], 'omitnan');
+                
+                delta_60 = (max_rri_60 - min_rri_60)*0.1;
+                
+                min_rri_60 = min(min_rri_60, max_rri_60) - delta_60;
+                max_rri_60 = max(min_rri_60, max_rri_60) + delta_60;
+                
                 if min_rri_60 ~= max_rri_60
-                    DATA.AutoYLimitUpperAxes.HRMinYLimit = min(min_rri_60, max_rri_60);
-                    DATA.AutoYLimitUpperAxes.HRMaxYLimit = max(min_rri_60, max_rri_60);
+                    DATA.AutoYLimitUpperAxes.HRMinYLimit = min_rri_60;
+                    DATA.AutoYLimitUpperAxes.HRMaxYLimit = max_rri_60;
                 else
                     DATA.AutoYLimitUpperAxes.HRMinYLimit = min_rri_60 * 0.9;
                     DATA.AutoYLimitUpperAxes.HRMaxYLimit = max_rri_60 * 1.1;
@@ -1650,6 +1667,7 @@ displayEndOfDemoMessage('');
         YLimAxes.MinYLimit = MinYLimit;
         
         try
+%             set(axes_handle, 'YLim', [MinYLimit MaxYLimit]);
             set(axes_handle, 'YLim', [MinYLimit MaxYLimit]);
         catch            
             if ~isnan(MinYLimit) && ~isnan(MaxYLimit)
@@ -1673,13 +1691,16 @@ displayEndOfDemoMessage('');
         window_size_in_data_points = data_points_number();
         
         if strcmp(DATA.Integration, 'oximetry')
-            ed_color = 'g';
+            ed_color = DATA.ox_raw_data_color;
+            mr_color = DATA.ox_raw_data_color;
         else
             ed_color = 'b';
+            mr_color = [1, 1, 1];
         end
         
         if window_size_in_data_points < 350
-            set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 2, 'MarkerEdgeColor', ed_color, 'MarkerFaceColor', [1, 1, 1]); % 4 'MarkerEdgeColor', [180 74 255]/255
+%             set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 2, 'MarkerEdgeColor', ed_color, 'MarkerFaceColor', [1, 1, 1]); % 4 'MarkerEdgeColor', [180 74 255]/255
+            set(GUI.raw_data_handle, 'Marker', 'o', 'MarkerSize', 2, 'MarkerEdgeColor', ed_color, 'MarkerFaceColor', mr_color); % 4 'MarkerEdgeColor', [180 74 255]/255
         else
             set(GUI.raw_data_handle, 'Marker', 'none');
         end
@@ -1693,14 +1714,23 @@ displayEndOfDemoMessage('');
             data =  60 ./ DATA.rri;
         end
                         
-        GUI.all_data_handle = line(DATA.trr, data, 'Color', 'b', 'Parent', ha, 'Marker', '*', 'MarkerSize', 2, 'DisplayName', 'Hole time series'); % 'LineWidth', 1.5
+        
+        if strcmp(DATA.Integration, 'oximetry')
+            data_color = DATA.ox_raw_data_color;
+        else
+            data_color = 'b';
+        end
+                
+        GUI.all_data_handle = line(DATA.trr, data, 'Color', data_color, 'Parent', ha, 'Marker', '*', 'MarkerSize', 2, 'DisplayName', 'Hole time series'); % 'LineWidth', 1.5
                 
         set(ha, 'XLim', [0 DATA.RRIntPage_Length]);
+        ha.TickLabelInterpreter = 'Latex';
         
         % PLot red rectangle
-        ylim = get(ha, 'YLim');
+%         my_ylim = get(ha, 'YLim');
+        my_ylim = ylim(ha);
         x_box = [0 DATA.MyWindowSize DATA.MyWindowSize 0 0];
-        y_box = [ylim(1) ylim(1) ylim(2) ylim(2) ylim(1)];
+        y_box = [my_ylim(1) my_ylim(1) my_ylim(2) my_ylim(2) my_ylim(1)];
         
         if isfield(GUI, 'red_rect')
             delete(GUI.red_rect);
@@ -1714,8 +1744,8 @@ displayEndOfDemoMessage('');
         
         x_segment_start = DATA.AnalysisParams.segment_startTime;
         x_segment_stop = DATA.AnalysisParams.segment_effectiveEndTime;
-        y_segment_start = ylim(1);
-        y_segment_stop = ylim(2);
+        y_segment_start = my_ylim(1);
+        y_segment_stop = my_ylim(2);
         
         v = [x_segment_start y_segment_start; x_segment_stop y_segment_start; x_segment_stop y_segment_stop; x_segment_start y_segment_stop];
         f = [1 2 3 4];
@@ -1742,7 +1772,7 @@ displayEndOfDemoMessage('');
         
         color_data = zeros(data_size, 1, 3);
         for i = 1 : data_size
-            color_data(i, 1, :) = [0 0 1]; % [0 1 0]
+            color_data(i, 1, :) = DATA.ox_filt_data_color; % [0 0 1]
         end
                 
         [DesReg_number, ~] = size(DATA.DesaturationsRegions);
@@ -1750,9 +1780,9 @@ displayEndOfDemoMessage('');
         for i = 1 : DesReg_number
            for j = DATA.DesaturationsRegions(i, 1) : DATA.DesaturationsRegions(i, 2)
                if mod(i, 2) == 0
-                   my_color = [1 0 1]; % [1 0 1] [136 0 234]/255
+                   my_color = [1 0 1]; % [1 0 1] 
                else
-                   my_color = [1 0 0]; % [1 0 0] [249 216 193]/255 [238 114 3]/255
+                   my_color = [1 0 0]; % [1 0 0] 
                end
                color_data(j, :, :) = my_color;
            end
@@ -1769,20 +1799,22 @@ displayEndOfDemoMessage('');
             case 'oximetry'
                 data =  signal_data;
                 data(end) = NaN;
-                yString = 'SpO2 (percent)';
+                yString = '$SpO_2(\%)$';
                 color_data = create_color_array4oximetry();
                 %               GUI.raw_data_handle = patch(signal_time, data, color_data, 'EdgeColor', 'flat', 'LineWidth', 2.5, 'Parent', ha, 'DisplayName', 'Time series');
-                GUI.raw_data_handle = plot(ha, signal_time, data, 'g-', 'LineWidth', 1, 'DisplayName', 'Time series');
+                GUI.raw_data_handle = plot(ha, signal_time, data, 'Color', DATA.ox_raw_data_color, 'LineStyle', '-', 'LineWidth', DATA.ox_rd_lw, 'DisplayName', 'Time series');
                 
-                GUI.filtered_handle = patch(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, color_data, 'EdgeColor', 'flat', 'LineWidth', 2, 'LineStyle', '-', 'DisplayName', 'Selected filtered time series', 'Parent', ha);
-                uistack(GUI.raw_data_handle, 'top');
+                GUI.filtered_handle = patch(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, color_data,...
+                    'EdgeColor', 'flat', 'FaceColor','flat', 'LineWidth', DATA.ox_fd_lw, 'LineStyle', '-', 'DisplayName', 'Selected filtered time series', 'Parent', ha);
+                uistack(GUI.filtered_handle, 'top');
+%                 GUI.filtered_handle.HandleVisibility = 'off';
             otherwise
                 if ~DATA.PlotHR
                     data =  signal_data;
-                    yString = 'RR (sec)';
+                    yString = '$RR $\space$ (sec)$';
                 else
                     data =  60 ./ signal_data;
-                    yString = 'HR (BPM)';
+                    yString = '$HR $\space$ (BPM)$';
                 end
                 GUI.raw_data_handle = plot(ha, signal_time, data, 'b-', 'LineWidth', 2, 'DisplayName', 'Time series');
                 GUI.filtered_handle = line(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected filtered time series', 'Parent', ha);
@@ -1797,23 +1829,57 @@ displayEndOfDemoMessage('');
 %             GUI.only_filtered_handle = line(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected only filtered time series', 'Parent', ha);
 %         end
         
-        xlabel(ha, 'Time (h:min:sec)');
-        ylabel(ha, yString);
-        
-        DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal');
-        if sum(ismember(properties(DATA.legend_handle), 'AutoUpdate'))
-            DATA.legend_handle.AutoUpdate = 'off';
-            DATA.legend_handle.Box = 'off';
-        end
-        
+        xlabel(ha, '$Time (h:min:sec)$', 'Interpreter', 'Latex');
+        ylabel(ha, yString, 'Interpreter', 'Latex');
+        ha.TickLabelInterpreter = 'Latex';
+                         
         if ~strcmp(DATA.Integration, 'oximetry')
-            legend([GUI.raw_data_handle, GUI.filtered_handle], DATA.legend_handle.String(1 : end - 1));        
+            DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal', 'Interpreter', 'Latex'); % , 'interpreter', 'latex'
+            if sum(ismember(properties(DATA.legend_handle), 'AutoUpdate'))
+                DATA.legend_handle.AutoUpdate = 'off';
+                DATA.legend_handle.Box = 'off';
+            end
+            DATA.legend_handle.String = DATA.legend_handle.String(1:end-1);
+%             legend([GUI.raw_data_handle, GUI.filtered_handle], DATA.legend_handle.String(1 : end - 1));   
+        else
+            [DATA.legend_handle, legObj] = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal', 'Interpreter', 'Latex'); % , 'interpreter', 'latex'
+            if sum(ismember(properties(DATA.legend_handle), 'AutoUpdate'))
+                DATA.legend_handle.AutoUpdate = 'off';
+                DATA.legend_handle.Box = 'off';
+            end
+            DATA.p_h = findobj(legObj, 'Type', 'Patch');
+            DATA.p_h.FaceAlpha = 0;
+            
+            x = get(DATA.p_h, 'xdata');
+            y = get(DATA.p_h, 'ydata');
+            y = mean(y);
+            x = [x(1); x(3)];
+            y = [y; y];
+            ff = [1 2];
+            
+            set(DATA.p_h, 'Vertices', [x y], 'Faces', ff, 'EdgeColor', DATA.ox_filt_data_color);
+            
+%         https://www.mathworks.com/matlabcentral/answers/515053-legend-of-a-patch-object-with-a-line-in-the-center
         end
         
         set(ha, 'XLim', [DATA.firstSecond2Show, DATA.firstSecond2Show + DATA.MyWindowSize]);
         
         setAllowAxesZoom(DATA.zoom_handle, GUI.RRDataAxes, false);
     end
+
+
+% leg_MSE,objh] = legend(s_MSE(i),'BSL','ABK','Filtered','Location','NorthEast','FontName','Calibri');
+%     set(leg_MSE,'Box','off');
+%     set(leg_MSE,'FontSize',font_size);
+%     if i == 1 leg_MSE.Location = 'SouthEast'; end
+%     if i == 2 leg_MSE.Location = 'SouthEast'; end
+%     lineh = findobj(objh,'type','line');
+%         lineh(2).XData = [0.237 0.38];
+%         lineh(4).XData = [0.237 0.38];
+%         lineh(6).XData = [0.237 0.38];
+
+
+
 %%
     function plotFilteredData()
         if isfield(DATA.AnalysisParams, 'segment_startTime')
@@ -2281,8 +2347,8 @@ function plotDesaturationsRegions()
                     h_e = errordlg(['Load Single File error: ' e.message], 'Input Error');
                     setLogo(h_e, 'M2');
                     clean_gui();
-                    cla(GUI.RRDataAxes);
-                    cla(GUI.AllDataAxes);
+                    cla(GUI.RRDataAxes, 'reset');
+                    cla(GUI.AllDataAxes, 'reset');
                     return;
                 end
                 
@@ -2353,6 +2419,8 @@ function plotDesaturationsRegions()
                 end
                 
                 if strcmp(DATA.Integration, 'oximetry')
+                    
+%                     GUI.RR_or_HR_plot_button.Enable = 'off';
                     
                     GUI.quality_vent_text.String = 'Ventilation file name';
                     GUI.DataQualityMenu.Label = 'Open ventilation file';
@@ -2500,6 +2568,8 @@ function plotDesaturationsRegions()
 %                     GUI.Detrending_checkbox.Callback = @Detrending_checkbox_Callback;
 %                     GUI.Detrending_checkbox.Tooltip = 'Enable or disable the detrending of the time series';
                     
+%                     GUI.RR_or_HR_plot_button.Enable = 'on';
+
                     GUI.MedianFilter_checkbox.Visible = 'off';
                     GUI.Detrending_checkbox.Visible = 'on';
                     
@@ -2555,12 +2625,13 @@ function plotDesaturationsRegions()
                     EnablePageUpDown();
                     
                     if isfield(GUI, 'RRDataAxes')
-                        PathName = strrep(PathName, '\', '\\');
+%                         PathName = strrep(PathName, '\', '\\');
+                        PathName = strrep(PathName, '\', '$ \backslash $');
                         PathName = strrep(PathName, '_', '\_');
                         QRS_FileName_title = strrep(QRS_FileName, '_', '\_');
                         
                         TitleName = [PathName QRS_FileName_title] ;
-                        title(GUI.RRDataAxes, TitleName, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize);
+                        title(GUI.RRDataAxes, TitleName, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize, 'Interpreter', 'Latex');
                         
                         set(GUI.RecordName_text, 'String', QRS_FileName);
                     end
@@ -3035,10 +3106,12 @@ function plotDesaturationsRegions()
                     set(GUI.oxim_per_log_Button, 'String', 'Log');
                     set(GUI.oxim_per_log_Button, 'Value', 1);
                     set(GUI.freq_yscale_Button, 'Visible', 'off');
+                    set(GUI.RR_or_HR_plot_button, 'Enable', 'inactive', 'Value', 0, 'String', 'Plot HR');
                 else
                     set(GUI.freq_yscale_Button, 'String', 'Log');
                     set(GUI.freq_yscale_Button, 'Value', 1);
                     set(GUI.freq_yscale_Button, 'Visible', 'on');
+                    set(GUI.RR_or_HR_plot_button, 'Enable', 'on', 'Value', 0, 'String', 'Plot HR');
                 end
                 
                 set(GUI.segment_startTime, 'String', calcDuration(DATA.DEFAULT_AnalysisParams.segment_startTime, 0));
@@ -3052,8 +3125,8 @@ function plotDesaturationsRegions()
                     delete(DATA.legend_handle);
                 end
                 
-                cla(GUI.RRDataAxes);
-                cla(GUI.AllDataAxes);
+                cla(GUI.RRDataAxes, 'reset');
+                cla(GUI.AllDataAxes, 'reset');
                 
                 plotAllData();
                 plotRawData();
@@ -3081,7 +3154,7 @@ function plotDesaturationsRegions()
                 
                 set(GUI.WindowSize, 'String', calcDuration(DATA.MyWindowSize, 0));
                 set(GUI.RecordLength_text, 'String', [calcDuration(DATA.maxSignalLength, 1) '    h:min:sec.msec']);
-                set(GUI.RR_or_HR_plot_button, 'Enable', 'on', 'Value', 0, 'String', 'Plot HR');
+%                 set(GUI.RR_or_HR_plot_button, 'Enable', 'on', 'Value', 0, 'String', 'Plot HR');
                 set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0)); % , 'Enable', 'off'
                 set(GUI.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
                 
@@ -3471,8 +3544,9 @@ function plotDesaturationsRegions()
             set(GUI.MinYLimitUpperAxes_Edit, 'String', num2str(MinYLimit));
             set(GUI.MaxYLimitUpperAxes_Edit, 'String', num2str(MaxYLimit));
             
-            cla(GUI.RRDataAxes);
-            cla(GUI.AllDataAxes);
+            cla(GUI.RRDataAxes, 'reset');
+            cla(GUI.AllDataAxes, 'reset');
+            delete(DATA.legend_handle);
             plotAllData();
             plotRawData();
             DetrendIfNeed_data_chunk();
@@ -4351,7 +4425,14 @@ function plotDesaturationsRegions()
                             setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{1}], 'NumberTitle', 'off');
                             mhrv.plots.plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
-                            title(gca, figure_title(fig_name, 1));
+                            title(gca, figure_title(fig_name, 1), 'Interpreter', 'Latex');
+                            set(gca, 'TickLabelInterpreter', 'Latex');
+                            xl = get(gca, 'XLabel');
+                            xl.Interpreter = 'Latex';
+                            yl = get(gca, 'YLabel');
+                            yl.Interpreter = 'Latex';
+%                             lh = get(gca, 'Legend');
+%                             lh.Interpreter = 'Latex';
                             savefig(af, [export_path_name, DATA.FiguresNames{1}], 'compact');
                             close(af);
                         end
@@ -4361,7 +4442,16 @@ function plotDesaturationsRegions()
                                 setLogo(af, 'M2');
                                 set(af, 'Name', [fig_name, DATA.FiguresNames{2}], 'NumberTitle', 'off');
                                 mhrv.plots.plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
-                                title(gca, figure_title(fig_name, 2));
+                                title(gca, figure_title(fig_name, 2), 'Interpreter', 'Latex');
+                                set(gca, 'TickLabelInterpreter', 'Latex');
+                                xl = get(gca, 'XLabel');
+                                xl.Interpreter = 'Latex';
+                                yl = get(gca, 'YLabel');
+%                                 yl.String = ['$' yl.String '$'];                                                                
+                                yl.String = 'PSD ( $\frac {ms^2} {Hz}$)';   
+                                yl.Interpreter = 'Latex';
+%                                 lh = get(gca, 'Legend');
+%                                 lh.Interpreter = 'Latex';
                                 savefig(af, [export_path_name, DATA.FiguresNames{2}], 'compact');
                                 close(af);
                             end
@@ -4370,7 +4460,15 @@ function plotDesaturationsRegions()
                                 setLogo(af, 'M2');
                                 set(af, 'Name', [fig_name, DATA.FiguresNames{3}], 'NumberTitle', 'off');
                                 mhrv.plots.plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
-                                title(gca, figure_title(fig_name, 3));
+                                title(gca, figure_title(fig_name, 3), 'Interpreter', 'Latex');
+                                set(gca, 'TickLabelInterpreter', 'latex');
+                                xl = get(gca, 'XLabel');
+                                xl.Interpreter = 'latex';
+                                yl = get(gca, 'YLabel');
+                                yl.String = 'log(PSD [ $\frac {ms^2} {Hz}$])';
+                                yl.Interpreter = 'latex';
+%                                 lh = get(gca, 'Legend');
+%                                 lh.Interprseter = 'latex';
                                 savefig(af, [export_path_name, DATA.FiguresNames{3}], 'compact');
                                 close(af);
                             end
@@ -4381,7 +4479,15 @@ function plotDesaturationsRegions()
                                 setLogo(af, 'M2');
                                 set(af, 'Name', [fig_name, DATA.FiguresNames{4}], 'NumberTitle', 'off');
                                 mhrv.plots.plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
-                                title(gca, figure_title(fig_name, 4));
+                                title(gca, figure_title(fig_name, 4), 'Interpreter', 'Latex');
+                                set(gca, 'TickLabelInterpreter', 'latex');
+                                xl = get(gca, 'XLabel');
+                                xl.String = ['$' xl.String '$'];
+                                xl.Interpreter = 'latex';
+                                yl = get(gca, 'YLabel');
+                                yl.Interpreter = 'latex';
+%                                 lh = get(gca, 'Legend');
+%                                 lh.Interpreter = 'latex';
                                 savefig(af, [export_path_name, DATA.FiguresNames{4}], 'compact');
                                 close(af);
                             end
@@ -4390,7 +4496,14 @@ function plotDesaturationsRegions()
                                 setLogo(af, 'M2');
                                 set(af, 'Name', [fig_name, DATA.FiguresNames{5}], 'NumberTitle', 'off');
                                 mhrv.plots.plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
-                                title(gca, figure_title(fig_name, 5));
+                                title(gca, figure_title(fig_name, 5), 'Interpreter', 'Latex');
+                                set(gca, 'TickLabelInterpreter', 'latex');
+                                xl = get(gca, 'XLabel');
+                                xl.Interpreter = 'latex';
+                                yl = get(gca, 'YLabel');
+                                yl.Interpreter = 'latex';
+%                                 lh = get(gca, 'Legend');
+%                                 lh.Interpreter = 'latex';                                
                                 savefig(af, [export_path_name, DATA.FiguresNames{5}], 'compact');
                                 close(af);
                             end
@@ -4399,7 +4512,14 @@ function plotDesaturationsRegions()
                                 setLogo(af, 'M2');
                                 set(af, 'Name', [fig_name, DATA.FiguresNames{6}], 'NumberTitle', 'off');
                                 mhrv.plots.plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
-                                title(gca, figure_title(fig_name, 6));
+                                title(gca, figure_title(fig_name, 6), 'Interpreter', 'Latex');
+                                set(gca, 'TickLabelInterpreter', 'latex');
+                                xl = get(gca, 'XLabel');
+                                xl.Interpreter = 'latex';
+                                yl = get(gca, 'YLabel');
+                                yl.Interpreter = 'latex';
+%                                 lh = get(gca, 'Legend');
+%                                 lh.Interpreter = 'latex';                                
                                 savefig(af, [export_path_name, DATA.FiguresNames{6}], 'compact');
                                 close(af);
                             end
@@ -4409,7 +4529,14 @@ function plotDesaturationsRegions()
                             setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{7}], 'NumberTitle', 'off');
                             plot_rr_time_series(gca);
-                            title(gca, figure_title(fig_name, 7));
+                            title(gca, figure_title(fig_name, 7), 'Interpreter', 'Latex');
+                            set(gca, 'TickLabelInterpreter', 'latex');
+                            xl = get(gca, 'XLabel');
+                            xl.Interpreter = 'latex';
+                            yl = get(gca, 'YLabel');
+                            yl.Interpreter = 'latex';
+%                             lh = get(gca, 'Legend');
+%                             lh.Interpreter = 'latex';
                             savefig(af, [export_path_name, DATA.FiguresNames{7}], 'compact');
                             close(af);
                         end
@@ -4450,8 +4577,8 @@ function plotDesaturationsRegions()
             plot(ax, DATA.tnn(filt_win_indexes), 60 ./ DATA.nni(filt_win_indexes), 'g-', 'LineWidth', 1);
             yString = 'HR (BPM)';
         end
-        xlabel(ax, 'Time (h:min:sec)');
-        ylabel(ax, yString);
+        xlabel(ax, 'Time (h:min:sec)', 'Interpreter', 'Latex');
+        ylabel(ax, yString, 'Interpreter', 'Latex');
         
         set(ax, 'XLim', [XData_active_window(1), XData_active_window(3)]);
         setAxesXTicks(ax);
@@ -7261,10 +7388,9 @@ function plotDesaturationsRegions()
         xx = 50*(CL_mammal/CL_human);
     end
 %%
-    function ShowFilteredData_checkbox_Callback(src, ~)  
-        
+    function ShowFilteredData_checkbox_Callback(src, ~)          
         if isfield(GUI, 'filtered_handle') && ishandle(GUI.filtered_handle) && isvalid(GUI.filtered_handle)
-            GUI.filtered_handle.Visible = src.Value;
+            GUI.filtered_handle.Visible = src.Value;           
         end
         if isfield(GUI, 'only_filtered_handle') && ishandle(GUI.only_filtered_handle) && isvalid(GUI.only_filtered_handle)
             GUI.only_filtered_handle.Visible = src.Value;

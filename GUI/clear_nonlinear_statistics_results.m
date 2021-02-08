@@ -18,3 +18,24 @@ try
 catch e
 %     disp(e.message);
 end
+try
+    GUI.NonLinearAxes1.XLabel.Interpreter = 'none';
+    GUI.NonLinearAxes1.YLabel.Interpreter = 'none';
+    GUI.NonLinearAxes1.TickLabelInterpreter.Interpreter = 'none';
+    GUI.NonLinearAxes1.Legend.Interpreter = 'none';
+catch
+end
+try
+    GUI.NonLinearAxes2.XLabel.Interpreter = 'none';
+    GUI.NonLinearAxes2.YLabel.Interpreter = 'none';
+    GUI.NonLinearAxes2.TickLabelInterpreter.Interpreter = 'none';
+    GUI.NonLinearAxes2.Legend.Interpreter = 'none';
+catch
+end
+try
+    GUI.NonLinearAxes3.XLabel.Interpreter = 'none';
+    GUI.NonLinearAxes3.YLabel.Interpreter = 'none';
+    GUI.NonLinearAxes3.TickLabelInterpreter.Interpreter = 'none';
+    GUI.NonLinearAxes3.Legend.Interpreter = 'none';
+catch
+end

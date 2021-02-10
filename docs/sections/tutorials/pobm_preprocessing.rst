@@ -32,7 +32,7 @@ The example below shows an oximetry time series before preprocessing (raw data),
   
 You can select the preprocessing filter with the dropdown "Preprocessing" located under the Main tab. You can then check the box "Median filter", to choose to apply the median filter. If you want to customize the preprocessing further, you can modify the parameters of each preprocessing methods under Options->Filtering.
 
-The image below shows an example of an oximetry time series (the green signal) which has been filtered (blue signal). The resulting preprocessed time series is shown as a green time series, using the Range filter, associated with median filter (as the box median filter is marked with V). The desaturations are highlighted in red.
+The image below shows an example of an oximetry time series (the blue signal) which has been filtered (green signal). The resulting preprocessed time series is shown as a green time series, using the Range filter, associated with median filter (as the box median filter is marked with V). The desaturations are highlighted in red.
 
 .. image:: ../../_static/pobm_preprocessing_PZ.PNG
    :align: center

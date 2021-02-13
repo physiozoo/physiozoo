@@ -1,48 +1,48 @@
-mammal:             rabbit
+mammal:             default
 integration_level:  Electrogram
 peak_detector:      EGM peaks
 peak_adjustment:    default
 
-# rqrs config file for rabbit:
+# rqrs config file for default
 
 HR:
-    value: 264
+    value: 608
     units: bpm
     description:  Typical heart rate
     name: HR
 QS:
-    value: 0.02
+    value: 0.00718
     units: sec
     description: Typical QRS duration
     name: QS
 QT:
-    value: 0.12
+    value: 0.03
     units: sec
     description: Typical QT duration
     name: QT
 QRSa:
-    value: 294
+    value: 1090
     units: microvolts
     description: Typical QRS peak-to-peak amplitude
     name: QRSa
 QRSamin:
-    value: 114
+    value: 370
     units: microvolts
     description: Minimum QRS peak-to-peak amplitude
     name: QRSamin
 RRmin:
-    value: 0.14
+    value: 0.05
     units: sec
     description: Minimum RR interval ("refractory period")
     name: RRmin
 RRmax:
-    value: 0.58
+    value: 0.24
     units: sec
     description: Maximum RR interval; thresholds will be adjusted if no peaks are detected within this interval
     name: RRmax
 window_size_sec:
                # 0.8*QS
-        value: 0.016 
+        value: 0.005744
         description: Size of rqrs forward-search window
         name: rqrs Window Size
         units: Seconds    
@@ -55,7 +55,7 @@ lcf:
     description: Low cutoff frequency
     name: lcf
 hcf:
-    value: 150
+    value: 300
     units: Hz
     description: High cutoff frequency
     name: hcf
@@ -65,7 +65,7 @@ thr:
     description: Energy threshold
     name: thr
 rp:
-    value: 0.088
+    value: 0.030
     units: sec
     description: Refractory period
     name: rp
@@ -78,12 +78,13 @@ ws:
 # adjusting peaks location
 
 peaks_window:
-    value: 40
+    value: 17
     units: ms
     description: Search for a peak within a window of size peak_window. Used for manual correction of peaks location or peak_adjustment.
-    name: Peaks window       
+    name: Peaks window   
     
 # EGM peaks
+
 
 ref_per:
     value: 140.0

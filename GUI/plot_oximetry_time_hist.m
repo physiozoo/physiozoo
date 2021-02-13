@@ -9,6 +9,10 @@ l2 = line([max(signal), max(signal)], ylim(ax), 'LineWidth', 2, 'Color', 'r', 'P
 l3 = line([median(signal), median(signal)], ylim(ax), 'LineWidth', 2, 'Color', '#EDB120', 'Parent', ax); % 
 l4 = line([mean(signal), mean(signal)], ylim(ax), 'LineWidth', 2.5, 'Color', 'r', 'Parent', ax);
 
-xlabel(ax, 'SpO2 (%)'); ylabel(ax, 'Count');
+xlabel(ax, '$SpO_2(\%)$', 'Interpreter', 'Latex');
+ylabel(ax, '$Count$', 'Interpreter', 'Latex');
 
-legend(ax, [l1 l2 l3 l4], {'minimum', 'maximum', 'median', 'average'}, 'Location', 'best'); % 'spo2 values', 
+set(ax, 'TickLabelInterpreter', 'Latex');
+
+legend(ax, [l1 l2 l3 l4], {'minimum', 'maximum', 'median', 'average'}, 'Interpreter', 'Latex'); % 'spo2 values', 
+% , 'Location', 'best'

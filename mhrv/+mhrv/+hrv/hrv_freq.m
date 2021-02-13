@@ -406,6 +406,12 @@ for ii = length(power_methods):-1:1
     hrv_fd.Properties.VariableUnits{col_lf_to_hf} = 'n.u.';
     hrv_fd.Properties.VariableDescriptions{col_lf_to_hf} = sprintf('Low frequency band to high frequency band power ratio (LF/HF) (%s)', power_methods{ii});
 
+    % Calculate VLF/LF ratio
+    col_vlf_to_lf = ['VLF_TO_LF' suffix];
+    hrv_fd{:,col_vlf_to_lf}  = hrv_fd{:,col_vlf_power}  / hrv_fd{:,col_lf_power};
+    hrv_fd.Properties.VariableUnits{col_vlf_to_lf} = 'n.u.';
+    hrv_fd.Properties.VariableDescriptions{col_vlf_to_lf} = sprintf('Very low frequency band to low frequency band power ratio (VLF/LF) (%s)', power_methods{ii});
+
     % Calculate power in the extra bands
     for jj = 1:length(extra_bands)
         extra_band = extra_bands{jj};

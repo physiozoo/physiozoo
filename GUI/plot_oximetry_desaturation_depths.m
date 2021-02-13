@@ -14,7 +14,11 @@ l2 = line([max(desat_intervals_depth), max(desat_intervals_depth)], ylim(ax), 'L
 l3 = line([median(desat_intervals_depth), median(desat_intervals_depth)], ylim(ax), 'LineWidth', 2, 'Color', '#EDB120', 'Parent', ax);
 l4 = line([mean(desat_intervals_depth), mean(desat_intervals_depth)], ylim(ax), 'LineWidth', 2.5, 'Color', 'r', 'Parent', ax);
 
-legend(ax, [l1 l2 l3 l4], {'minimum', 'maximum', 'median', 'mean'}, 'Location', 'best'); % 'desaturation depth'
+legend(ax, [l1 l2 l3 l4], {'minimum', 'maximum', 'median', 'mean'}, 'Interpreter', 'Latex'); % 'desaturation depth'
 
-xlabel(ax, 'Desaturation Depth (%)');
-ylabel(ax, 'Count');
+xlabel(ax, '$Desaturation $\space$ Depth ($\%$)$', 'Interpreter', 'Latex');
+ylabel(ax, '$Count$', 'Interpreter', 'Latex');
+
+set(ax, 'TickLabelInterpreter', 'Latex');
+
+% , 'Location', 'best'

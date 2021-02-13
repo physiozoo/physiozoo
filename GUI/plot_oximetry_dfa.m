@@ -15,9 +15,12 @@ hold(ax, 'on');
 grid(ax, 'on');
 axis(ax, 'tight');
 
-xlabel(ax, 'log_2(n)'); ylabel(ax, 'DFA(n)');
+xlabel(ax, '$log_2(n)$', 'Interpreter', 'Latex');
+ylabel(ax, '$DFA(n)$', 'Interpreter', 'Latex');
 set(ax, 'XTick', 2.^(1:15)); % Set ticks at powers of two
 
-legend(ax, 'DFA', 'Location', 'northwest');
+legend(ax, 'DFA', 'Location', 'northwest', 'Interpreter', 'Latex');
 uistack(h1, 'top');
+
+set(ax, 'TickLabelInterpreter', 'Latex');
 

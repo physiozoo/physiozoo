@@ -125,6 +125,13 @@ end
             GUI = rmfield(GUI, 'rhythms_win');
         end
         
+        GUI.RhythmsListbox.String = '';
+        GUI.RhythmsListbox.UserData = [];
+        GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
+        GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
+        GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
+        GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
+            
 %         if isfield(GUI, 'PinkLineHandle_AllDataAxes')
 %             delete(GUI.PinkLineHandle_AllDataAxes);
 %             GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
@@ -519,7 +526,7 @@ end
             Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
         else
             left_part = 0.285;  % 0.285  %0.265
-            set(Upper_Part_Box, 'Widths', [-25.5 -64 -10.5]);
+            set(Upper_Part_Box, 'Widths', [-29.5 -64 -10.5]); % [-25.5 -64 -10.5]
             Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
         end
         right_part = 0.99; % 0.9
@@ -670,7 +677,11 @@ end
         
         max_extent_control = calc_max_control_x_extend(text_handles);
         
-        field_size = [max_extent_control, 200, 25];
+        if DATA.SmallScreen
+            field_size = [max_extent_control, 170, 25];
+        else
+            field_size = [max_extent_control, 200, 25];
+        end
         for i =  1 : 5
             set(textBox{i}, 'Widths', field_size);
         end
@@ -740,7 +751,12 @@ end
         end
         
         popupmenu_position = get(GUI.GUIRecord.Mammal_popupmenu, 'Position');
-        field_size = [max_extent_control, popupmenu_position(3)+ 15, 25];
+                
+        if DATA.SmallScreen
+            field_size = [max_extent_control, popupmenu_position(3) + 20, 25];
+        else
+            field_size = [max_extent_control, popupmenu_position(3) + 45, 25];
+        end
         for i = 1 : 5
             set(textBox{i}, 'Widths', field_size);
         end
@@ -764,7 +780,7 @@ end
         set(GUI.RhythmsHBox, 'Widths', field_size1);
         
         if DATA.SmallScreen
-            hf = -0.1; % -0.45
+            hf = -0.12; % -0.1
             %             uix.Empty( 'Parent', RecordBox);
             set(RecordBox, 'Heights', [hf * ones(1, 11), -1]);
         else
@@ -825,7 +841,7 @@ end
         
         uix.Empty('Parent', GUI.ConfigBox );
         
-        GUI.AutoPeakWin_checkbox = uicontrol( 'Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', SmallFontSize, 'String', 'Auto', 'Value', 1);
+        GUI.AutoPeakWin_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', SmallFontSize, 'String', 'Auto', 'Value', 1);
         [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window');
         
         uix.Empty('Parent', GUI.ConfigBox );
@@ -874,10 +890,14 @@ end
         
         uix.Empty('Parent', DisplayBox);
         
-        GUI.GridX_checkbox = uicontrol('Style', 'Checkbox', 'Parent', DisplayBox, 'Callback', @GridX_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid X', 'Value', 1);
-        GUI.GridY_checkbox = uicontrol('Style', 'Checkbox', 'Parent', DisplayBox, 'Callback', @GridY_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid Y', 'Value', 1);
+        tempBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
         
-%         uix.Empty('Parent', DisplayBox);
+        GUI.GridX_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox, 'Callback', @GridX_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid X', 'Value', 1);
+        GUI.GridY_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox, 'Callback', @GridY_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid Y', 'Value', 1);
+        uix.Empty('Parent', tempBox);
+        uix.Empty('Parent', tempBox);
+        
+        uix.Empty('Parent', DisplayBox);
         
 %         GUI.ChannelsBox = uix.HBox( 'Parent', DisplayBox, 'Spacing', DATA.Spacing);
         
@@ -885,13 +905,23 @@ end
         
         GUI.FilteredSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', DisplayBox, 'Callback', @ShowFilteredSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show filtered signal', 'Value', 0);
         
-        uix.Empty('Parent', DisplayBox);
+%         uix.Empty('Parent', DisplayBox);
         
         [GUI, textBox{24}, text_handles{24}] = createGUIPopUpMenuLine(GUI, 'GUIDisplay', 'FilterLevel_popupmenu', 'Filter level', DisplayBox,...
             @FilterLevel_popupmenu_Callback, {'Weak'; 'Moderate'; 'Strong'});
         
         [GUI, CutoffFr, text_handles{25}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'LowCutoffFr_Edit'; 'HightCutoffFr_Edit'}, 'Cutoff Frequency:', 'Hz', DisplayBox, {@LowHightCutoffFr_Edit; @LowHightCutoffFr_Edit}, '', []);
         set_default_filter_level_user_data();
+        
+        uix.Empty('Parent', DisplayBox);
+
+
+        [GUI, textBox{26}, text_handles{26}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinRhythmsRange_Edit'; 'MaxRhythmsRange_Edit'}, 'Rhythms range:', 'h:min:sec', DisplayBox, {@MinMaxRhythmsRange_Edit_Callback; @MinMaxRhythmsRange_Edit_Callback}, '', []);
+        
+        RhythmsHBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
+        text_handles{27} = uicontrol('Style', 'text', 'Parent', RhythmsHBox, 'String', 'Rhythms', 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+        GUI.RhythmsListbox = uicontrol('Style', 'ListBox', 'Parent', RhythmsHBox, 'Callback', @Rhythms_listbox_Callback, 'FontSize', DATA.SmallFontSize, 'Tag', 'RhythmsList');
+        
         
         uix.Empty('Parent', DisplayBox);
         
@@ -910,21 +940,31 @@ end
         
         max_extent_control = calc_max_control_x_extend(text_handles);
         
-        field_size = [max_extent_control, 100, 20 -1]; % max_extent_control, 150, 10 -1
-        for i = 1 : length(text_handles) - 3
+        if DATA.SmallScreen
+            field_size = [max_extent_control, 120, 1 -1]; % max_extent_control, 150, 10 -1
+        else
+            field_size = [max_extent_control, 140, 1 -1]; % max_extent_control, 150, 10 -1
+        end
+        
+        for i = 1 : length(text_handles) - 4
             set(textBox{i}, 'Widths', field_size);
         end
         
         set(textBox{23}, 'Widths', field_size);
+        set(tempBox, 'Widths', field_size);
         
         if DATA.SmallScreen
-            field_size = [max_extent_control, 100, -1];
+            field_size = [max_extent_control, 120, -1];
         else
-            field_size = [max_extent_control, 100, -1];
+            field_size = [max_extent_control, 140, -1];
         end
         set(textBox{24}, 'Widths', field_size);
         
-        field_size = [max_extent_control, 46, 5, 43, 20];
+        if DATA.SmallScreen
+            field_size = [max_extent_control, 56, 5, 53, 1];
+        else
+            field_size = [max_extent_control, 66, 5, 63, 1];
+        end
         set(YLimitBox, 'Widths', field_size);
         set(YLimitBox2, 'Widths', field_size);
         
@@ -934,10 +974,25 @@ end
         GUI.AutoScaleYLowAxes_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox2, 'Callback', @AutoScaleYLowAxes_pushbutton_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
         set(YLimitBox2, 'Widths', [field_size, 150]);
         
-        field_size = [max_extent_control, 46, 5, 43, 20, -1];
+        if DATA.SmallScreen
+            field_size = [max_extent_control, 56, 5, 53, 1, -1];
+        else
+            field_size = [max_extent_control, 66, 5, 63, 1, -1];
+        end
         set(CutoffFr, 'Widths', field_size);
+        set(textBox{26}, 'Widths', field_size);
         
-        set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6 -3 -3 -6     -6 -2 -7 -6 -52]);
+        if DATA.SmallScreen
+            set(RhythmsHBox, 'Widths', [max_extent_control 120]);
+        else
+            set(RhythmsHBox, 'Widths', [max_extent_control 140]);
+        end
+                        
+        if DATA.SmallScreen
+            set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6  -4 -6  -2   -6  -7 -6 -2 -6 -30 -30]);
+        else
+            set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6  -3 -6  -2   -6  -7 -6 -6 -6 -40 -1]);
+        end
         
         %-------------------------------------------------------
         
@@ -2742,6 +2797,14 @@ end
                 DATA.peaks_bad_quality = 0;
             end
             
+            
+            GUI.RhythmsListbox.String = '';
+            GUI.RhythmsListbox.UserData = [];
+            GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
+            GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
+            GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
+            GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
+            
             DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
             
             if isfield(GUI, 'rhythms_win')
@@ -2986,7 +3049,7 @@ end
         if isfield(DATA, 'Rhythms_Map')
             rhythms_starts =  DATA.Rhythms_Map.keys();
             for i = 1 : length(rhythms_starts)
-                
+                                               
                 rhythms_struct = DATA.Rhythms_Map(rhythms_starts{i});
                 
                 need2drawPatch = need2drawRhythm(xlim, rhythms_struct);
@@ -3006,6 +3069,13 @@ end
                     end
                     if isgraphics(rhythms_struct.rhythm_handle, 'patch')
                         set(rhythms_struct.rhythm_handle, 'YData', [min(ylim) min(ylim) max(ylim) max(ylim)]);
+                                                
+                        r_start = GUI.RhythmsListbox.UserData(GUI.RhythmsListbox.Value);
+                        if r_start == rhythms_starts{i}
+                            rhythms_struct.rhythm_handle.LineWidth = 3;
+                        else
+                            rhythms_struct.rhythm_handle.LineWidth = 1;
+                        end
                     end
                 else
                     if rhythms_struct.rhythm_plotted
@@ -3029,6 +3099,8 @@ end
     function plot_rhythms_line(DATA_QualityAnnotations_Data, DATA_Class)
         if ~isempty(DATA_QualityAnnotations_Data)
             
+%             reset_rhythm_linewidth_bottomaxes();
+            
             if isfield(GUI, 'RhythmsHandle_AllDataAxes')  && any(isvalid(GUI.RhythmsHandle_AllDataAxes))
                 prev_rhythms_win_num = length(GUI.RhythmsHandle_AllDataAxes);
             else
@@ -3037,14 +3109,20 @@ end
             
             qd_size = size(DATA_QualityAnnotations_Data);
             intervals_num = qd_size(1);
+
+            ylim = get(GUI.RRInt_Axes, 'YLim');
+            f = [1 2 3 4];
             
             for i = 1 : intervals_num
+                
+                reset_rhythm_linewidth_bottomaxes();
+                
                 [is_member, class_ind] = ismember(DATA_Class{i}, DATA.Rhythms_Type);
                 if ~is_member
                     class_ind = 1;
                 end
-                ylim = get(GUI.RRInt_Axes, 'YLim');
-                f = [1 2 3 4];
+%                 ylim = get(GUI.RRInt_Axes, 'YLim');
+%                 f = [1 2 3 4];
                 
                 rhythm_start = DATA_QualityAnnotations_Data(i,1);
                 rhythm_end = DATA_QualityAnnotations_Data(i,2);
@@ -3052,7 +3130,7 @@ end
                 v = [rhythm_start min(ylim); rhythm_end min(ylim); rhythm_end max(ylim); rhythm_start max(ylim)];
                 
                 patch_handle = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.rhythms_color{class_ind}, 'EdgeColor', DATA.rhythms_color{class_ind}, ...
-                    'LineWidth', 1, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.85, 'UserData', class_ind, 'Parent', GUI.RRInt_Axes, 'Tag', 'RRIntRhythms');
+                    'LineWidth', 2, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.85, 'UserData', class_ind, 'Parent', GUI.RRInt_Axes, 'Tag', 'RRIntRhythms');
                 uistack(patch_handle, 'bottom');
                 
                 GUI.RhythmsHandle_AllDataAxes(prev_rhythms_win_num + i) = patch_handle;
@@ -3111,13 +3189,15 @@ end
 %%
     function patch_handle = plot_rhythms_rect(rhythms_range, rhythms_win_num, rhythms_class)
         
+        reset_rhythm_linewidth_topaxes();        
+        
         ylim = get(GUI.ECG_Axes, 'YLim');
         
         v = [min(rhythms_range) min(ylim); max(rhythms_range) min(ylim); max(rhythms_range) max(ylim); min(rhythms_range) max(ylim)];
         f = [1 2 3 4];
         
         patch_handle = patch('Faces', f, 'Vertices', v, 'FaceColor', DATA.rhythms_color{rhythms_class}, 'EdgeColor', DATA.rhythms_color{rhythms_class}, ...
-            'LineWidth', 1, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.5, 'UserData', rhythms_class, 'Parent', GUI.ECG_Axes, 'Tag', 'DataRhythms', ...
+            'LineWidth', 3, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.5, 'UserData', rhythms_class, 'Parent', GUI.ECG_Axes, 'Tag', 'DataRhythms', ...
             'Visible', 'on'); % 'FaceAlpha', 0.1
         %         GUI.rhythms_win(rhythms_win_num)
         uistack(patch_handle, 'bottom'); % GUI.rhythms_win(rhythms_win_num)
@@ -3194,6 +3274,8 @@ end
                                                 
                         rhythms_handle = plot_rhythms_rect(rhythms_range, 0, rhythms_class); % DATA.rhythms_win_num
                         
+%                         rhythms_handle.LineWidth = 3;
+                        
                         rhythms_struct.rhythm_type = classes{rhythms_class};
                         rhythms_struct.rhythm_range = [min(rhythms_range) max(rhythms_range)];
                         rhythms_struct.rhythm_class_ind = rhythms_class;
@@ -3213,6 +3295,22 @@ end
                         update_rhythm_button(rhythms_class);
                         
                         Update_Rhytms_Stat_Table();
+                        
+                        Update_Rhythms_ListBox(rhythms_struct);
+                        
+%                         CurrentName = {[rhythms_struct.rhythm_type '_' num2str(min(rhythms_range))]};
+%                         if isempty(GUI.RhythmsListbox.String)
+%                             GUI.RhythmsListbox.String = CurrentName;
+%                             GUI.RhythmsListbox.UserData = min(rhythms_range);
+%                         else
+%                             GUI.RhythmsListbox.String(end+1) = CurrentName;
+%                             GUI.RhythmsListbox.UserData = [GUI.RhythmsListbox.UserData min(rhythms_range)];
+%                             GUI.RhythmsListbox.Value = length(GUI.RhythmsListbox.String);
+%                         end
+%                         
+%                         GUI.GUIDisplay.MinRhythmsRange_Edit.String = min(rhythms_range);
+%                         GUI.GUIDisplay.MaxRhythmsRange_Edit.String = max(rhythms_range);
+                        
                     end
                     set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
                 catch e
@@ -3351,6 +3449,36 @@ end
                                 end
                                 DATA.Rhythms_Map.remove(min(rhythms_range));
                                 Update_Rhytms_Stat_Table();
+                                
+                                CurrentName = [rhythms_struct.rhythm_type, '_', num2str(min(rhythms_range))];
+                                iGroup = ismember(GUI.RhythmsListbox.String, CurrentName);
+                                GUI.RhythmsListbox.Value = 1;
+                                GUI.RhythmsListbox.String = GUI.RhythmsListbox.String(~iGroup);
+                                GUI.RhythmsListbox.UserData = GUI.RhythmsListbox.UserData(~iGroup);
+                                           
+                                if ~isempty(GUI.RhythmsListbox.String)
+                                    
+                                    reset_rhythm_linewidth_topaxes();
+                                    reset_rhythm_linewidth_bottomaxes();
+                                    
+                                    r_h = DATA.Rhythms_Map(GUI.RhythmsListbox.UserData(1));
+                                    r_h.low_axes_patch_handle.LineWidth = 2;
+                                    r_h.rhythm_handle.LineWidth = 3;
+                                                                        
+                                    r_r = r_h.rhythm_range;
+                                    
+                                    GUI.GUIDisplay.MinRhythmsRange_Edit.String = calcDuration(r_r(1), 0, 1);
+                                    GUI.GUIDisplay.MaxRhythmsRange_Edit.String = calcDuration(r_r(2), 0, 1);
+                                    GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = r_r(1);
+                                    GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = r_r(2);
+                                
+                                else
+                                    GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
+                                    GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
+                                    GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
+                                    GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
+                                end
+                                
                             end
                         catch e
                             disp(e);
@@ -4512,6 +4640,12 @@ end
             else
                 rhythms_win_num = 1;
                 DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
+                GUI.RhythmsListbox.String = '';
+                GUI.RhythmsListbox.UserData = [];
+                GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
+                GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
+                GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
+                GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
             end
             
             waitbar_handle = waitbar(0, 'Loadind', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
@@ -4545,6 +4679,8 @@ end
                         
                         Rhythms_Data = [Rhythms_Data; DATA_RhythmsAnnotations_Data(i, :)];
                         RhythmsClass = [RhythmsClass; DATA_RhythmsClass{i}];
+                        
+                        Update_Rhythms_ListBox(rhythms_struct);
                     end
                 end
             end
@@ -5465,6 +5601,129 @@ end
         else
             src.String = src.UserData;
             h_e = errordlg('Please, check your input!', 'Input Error'); setLogo(h_e, 'M1');
+        end
+    end
+%%
+    function Update_Rhythms_ListBox(rhythms_struct)
+        
+        min_rhythms_range = min(rhythms_struct.rhythm_range);
+        max_rhythms_range = max(rhythms_struct.rhythm_range);
+        
+        CurrentName = {[rhythms_struct.rhythm_type '_' num2str(min_rhythms_range)]};
+        if isempty(GUI.RhythmsListbox.String)
+            GUI.RhythmsListbox.String = CurrentName;
+            GUI.RhythmsListbox.UserData = min_rhythms_range;
+            GUI.RhythmsListbox.Value = 1;
+        else
+            GUI.RhythmsListbox.String(end+1) = CurrentName;
+            GUI.RhythmsListbox.UserData = [GUI.RhythmsListbox.UserData min_rhythms_range];
+            GUI.RhythmsListbox.Value = length(GUI.RhythmsListbox.String);
+        end
+                
+        GUI.GUIDisplay.MinRhythmsRange_Edit.String = calcDuration(min_rhythms_range, 0, 1);
+        GUI.GUIDisplay.MaxRhythmsRange_Edit.String = calcDuration(max_rhythms_range, 0, 1);
+        GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = min_rhythms_range;
+        GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = max_rhythms_range;
+    end
+%%
+    function reset_rhythm_linewidth_topaxes()
+        if isfield(GUI, 'rhythms_win')
+            for i = 1 : length(GUI.rhythms_win)
+                GUI.rhythms_win(i).LineWidth = 1;
+            end
+        end        
+    end
+%%
+    function reset_rhythm_linewidth_bottomaxes()        
+        if isfield(GUI, 'RhythmsHandle_AllDataAxes')
+            for i = 1 : length(GUI.RhythmsHandle_AllDataAxes)
+                GUI.RhythmsHandle_AllDataAxes(i).LineWidth = 1;
+            end
+        end
+    end
+%%
+    function Rhythms_listbox_Callback(src, ~)
+        
+        reset_rhythm_linewidth_topaxes();
+        reset_rhythm_linewidth_bottomaxes();
+                
+        current_r = DATA.Rhythms_Map(src.UserData(src.Value));
+        r_r = current_r.rhythm_range;
+        
+        GUI.GUIDisplay.MinRhythmsRange_Edit.String = calcDuration(r_r(1), 0, 1);
+        GUI.GUIDisplay.MaxRhythmsRange_Edit.String = calcDuration(r_r(2), 0, 1);
+        GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = r_r(1);
+        GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = r_r(2);
+        
+        current_r.low_axes_patch_handle.LineWidth = 2;
+        
+        if current_r.rhythm_plotted
+            current_r.rhythm_handle.LineWidth = 3;
+        end
+    end
+%%
+    function MinMaxRhythmsRange_Edit_Callback(~, ~)
+                       
+        min_r_str = GUI.GUIDisplay.MinRhythmsRange_Edit.String;
+        max_r_str = GUI.GUIDisplay.MaxRhythmsRange_Edit.String;
+        
+        [min_r_d, isInputNumeric_min] = calcDurationInSeconds(GUI.GUIDisplay.MinRhythmsRange_Edit, min_r_str, GUI.GUIDisplay.MinRhythmsRange_Edit.UserData);
+        [max_r_d, isInputNumeric_max] = calcDurationInSeconds(GUI.GUIDisplay.MaxRhythmsRange_Edit, max_r_str, GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData);
+                
+        if isInputNumeric_min && isInputNumeric_max
+                                    
+            min_r = min(min_r_d, max_r_d);
+            max_r = max(min_r_d, max_r_d);
+            
+            if max_r > DATA.maxRRTime
+                max_r = DATA.maxRRTime;
+            end
+            
+            r_s = DATA.Rhythms_Map(GUI.RhythmsListbox.UserData(GUI.RhythmsListbox.Value));
+            
+            rhythms_range = r_s.rhythm_range;
+            
+            CurrentName = [r_s.rhythm_type, '_', num2str(min(rhythms_range))];
+            iGroup = ismember(GUI.RhythmsListbox.String, CurrentName);
+            GUI.RhythmsListbox.Value = 1;
+            GUI.RhythmsListbox.String = GUI.RhythmsListbox.String(~iGroup);
+            GUI.RhythmsListbox.UserData = GUI.RhythmsListbox.UserData(~iGroup);
+            
+            DATA.Rhythms_Map.remove(min(rhythms_range));
+            
+            GUI.GUIDisplay.MinRhythmsRange_Edit.String = calcDuration(min_r, 0, 1);
+            GUI.GUIDisplay.MaxRhythmsRange_Edit.String = calcDuration(max_r, 0, 1);
+            
+            GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = min_r;
+            GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = max_r;                        
+            
+            r_s.rhythm_range = [min_r max_r];
+            
+            rhythm_x_data = [min_r max_r max_r min_r];
+            
+            try
+                if r_s.rhythm_plotted
+                    r_s.rhythm_handle.XData = rhythm_x_data;
+                end
+            catch e
+                disp(e.message);
+            end
+            try
+                if isgraphics(r_s.low_axes_patch_handle)
+                    r_s.low_axes_patch_handle.XData = rhythm_x_data;
+                end
+            catch e
+                disp(e.message);
+            end
+            
+            DATA.Rhythms_Map(min_r) = r_s;
+            
+            GUI.RhythmsListbox.String(end+1) = {[r_s.rhythm_type, '_', num2str(min_r)]};
+            GUI.RhythmsListbox.UserData = [GUI.RhythmsListbox.UserData min_r];
+            GUI.RhythmsListbox.Value = length(GUI.RhythmsListbox.String);
+            
+            redraw_rhythms_rect();
+            Update_Rhytms_Stat_Table();
         end
     end
 %%

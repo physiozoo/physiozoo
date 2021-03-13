@@ -24,8 +24,6 @@ PhysioZoo documentation
    sections/tutorials/configfiles.rst
    sections/tutorials/rhythms_annotations.rst
    sections/tutorials/multichannel_visualization.rst
-   sections/tutorials/pobm_preprocessing.rst
-   sections/tutorials/pobm_analysis.rst
    
 mhrv toolbox documentation
 ==============================

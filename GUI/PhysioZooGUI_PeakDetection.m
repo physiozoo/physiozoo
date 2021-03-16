@@ -4341,7 +4341,13 @@ end
             res_parh = [basepath filesep 'Results'];
         end
         
-        if ~isdir(res_parh)
+        if ~isempty(GUI.GUIDir.DirName_text.String)
+            [~, b] = fileparts(GUI.GUIDir.DirName_text.String);
+            res_parh = [res_parh filesep b];
+            
+        end
+        
+        if ~isfolder(res_parh) % isdir
             warning('off');
             mkdir(res_parh);
             warning('on');
@@ -4431,7 +4437,7 @@ end
             res_parh = [basepath filesep 'Results'];
         end
         
-        if ~isdir(res_parh)
+        if ~isfolder(res_parh) % isdir
             warning('off');
             mkdir(res_parh);
             warning('on');

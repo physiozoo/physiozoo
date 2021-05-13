@@ -17,6 +17,7 @@ addpath([basepath filesep 'Config']);
 addpath([basepath filesep 'GUI']);
 addpath([basepath filesep 'GUI' filesep 'Loader']);
 addpath(genpath([basepath filesep 'GUI' filesep 'lib']));
+addpath(genpath([basepath filesep 'GUI' filesep 'Biomarkers']));
 
 PhysioZooGUI_HRVAnalysis();
 

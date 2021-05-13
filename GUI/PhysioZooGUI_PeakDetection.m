@@ -77,7 +77,7 @@ end
 %%
     function clean_gui_low_part()
         
-        cla(GUI.RRInt_Axes); % RR_axes                
+        cla(GUI.RRInt_Axes); % RR_axes
         
         if isfield(GUI, 'PinkLineHandle_AllDataAxes')
             delete(GUI.PinkLineHandle_AllDataAxes);
@@ -100,20 +100,20 @@ end
         GUI.SavePeaks.Enable = 'off';
         GUI.AutoScaleYLowAxes_checkbox.Value = 1;
         
-%         GUI.PeaksTable.Data = {''};
+        %         GUI.PeaksTable.Data = {''};
         DATA.peaks_added = 0;
         DATA.peaks_deleted = 0;
-        DATA.peaks_total = 0;        
+        DATA.peaks_total = 0;
         DATA.peaks_file_name = '';
         DATA.qrs = [];
         DATA.qrs_saved = [];
-        GUI.PeaksTable.Data(:, 2) = {0};                              
+        GUI.PeaksTable.Data(:, 2) = {0};
     end
 %%
     function clean_gui(clear_sm_files_names)
         
         cla(GUI.ECG_Axes); % RawData_axes
-%         cla(GUI.RRInt_Axes); % RR_axes
+        %         cla(GUI.RRInt_Axes); % RR_axes
         
         if isfield(GUI, 'quality_win')
             delete(GUI.quality_win);
@@ -131,30 +131,30 @@ end
         GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
         GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
         GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
-            
-%         if isfield(GUI, 'PinkLineHandle_AllDataAxes')
-%             delete(GUI.PinkLineHandle_AllDataAxes);
-%             GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
-%         end
-%         
-%         if isfield(GUI, 'RhythmsHandle_AllDataAxes')
-%             delete(GUI.RhythmsHandle_AllDataAxes);
-%             GUI = rmfield(GUI, 'RhythmsHandle_AllDataAxes');
-%         end
+        
+        %         if isfield(GUI, 'PinkLineHandle_AllDataAxes')
+        %             delete(GUI.PinkLineHandle_AllDataAxes);
+        %             GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
+        %         end
+        %
+        %         if isfield(GUI, 'RhythmsHandle_AllDataAxes')
+        %             delete(GUI.RhythmsHandle_AllDataAxes);
+        %             GUI = rmfield(GUI, 'RhythmsHandle_AllDataAxes');
+        %         end
         
         set(GUI.GUIRecord.RecordFileName_text, 'String', '');
-%         set(GUI.GUIRecord.PeaksFileName_text, 'String', '');
+        %         set(GUI.GUIRecord.PeaksFileName_text, 'String', '');
         set(GUI.GUIRecord.DataQualityFileName_text, 'String', '');
         set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
         set(GUI.GUIRecord.Config_text, 'String', '');
         set(GUI.GUIRecord.TimeSeriesLength_text, 'String', '');
         
-%         set(GUI.GUIDisplay.RRIntPage_Length, 'String', '');
-%         set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', '');
-%         set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', '');
-%         
-%         set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'UserData', []);
-%         set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'UserData', []);
+        %         set(GUI.GUIDisplay.RRIntPage_Length, 'String', '');
+        %         set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'String', '');
+        %         set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'String', '');
+        %
+        %         set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'UserData', []);
+        %         set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'UserData', []);
         
         set(GUI.GUIDisplay.FirstSecond, 'String', '');
         set(GUI.GUIDisplay.WindowSize, 'String', '');
@@ -166,31 +166,31 @@ end
         set(GUI.GUIDisplay.MaxYLimit_Edit, 'UserData', '');
         
         GUI.AutoPeakWin_checkbox.Value = 1;
-%         set(GUI.GUIConfig.PeaksWindow, 'String', '');
+        %         set(GUI.GUIConfig.PeaksWindow, 'String', '');
         
         GUI.GUIRecord.Annotation_popupmenu.Value = 1;
         
-%         GUI.GUIRecord.Class_popupmenu.Visible = 'off';
-%         GUI.Class_Text.Visible = 'off';
-%         GUI.GUIRecord.Class_popupmenu.Value = 3;
-%         
-%         GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
-%         GUI.Rhythms_Text.Visible = 'off';
-%         GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
+        %         GUI.GUIRecord.Class_popupmenu.Visible = 'off';
+        %         GUI.Class_Text.Visible = 'off';
+        %         GUI.GUIRecord.Class_popupmenu.Value = 3;
+        %
+        %         GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
+        %         GUI.Rhythms_Text.Visible = 'off';
+        %         GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
         
-%         GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
-%         GUI.Adjustment_Text.Visible = 'on';
-%         GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
+        %         GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
+        %         GUI.Adjustment_Text.Visible = 'on';
+        %         GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
         
         GUI.Adjustment_Text.String = 'Peak adjustmen';
         GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
         GUI.GUIRecord.PeakAdjustment_popupmenu.String = DATA.Adjustment_type;
         GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @PeakAdjustment_popupmenu_Callback;
         
-%         set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
-%         set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
-%         set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
-%         set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
+        %         set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
+        %         set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
+        %         set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
+        %         set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
         
         title(GUI.ECG_Axes, '');
         
@@ -199,7 +199,7 @@ end
         
         GUI.LoadConfigurationFile.Enable = 'off';
         GUI.SaveConfigurationFile.Enable = 'off';
-%         GUI.SavePeaks.Enable = 'off';
+        %         GUI.SavePeaks.Enable = 'off';
         
         GUI.SaveRhythms.Enable = 'off';
         GUI.OpenRhythms.Enable = 'off';
@@ -236,10 +236,10 @@ end
         GUI.GUIDisplay.Movie_Delay.String = 2;
         
         GUI.AutoScaleY_checkbox.Value = 1;
-%         GUI.AutoScaleYLowAxes_checkbox.Value = 1;
+        %         GUI.AutoScaleYLowAxes_checkbox.Value = 1;
         GridX_checkbox_Callback();
         %         GridY_checkbox_Callback();
-%         GUI.RawSignal_checkbox.Value = 1;
+        %         GUI.RawSignal_checkbox.Value = 1;
         GUI.FilteredSignal_checkbox.Value = 0;
         GUI.GUIDisplay.FilterLevel_popupmenu.Value = 1;
         %         GUI.GUIDisplay.LowCutoffFr_Edit.String = 0.5;
@@ -255,10 +255,10 @@ end
         GUI.RhythmsHBox.Visible = 'off';
         Rhythms_ToggleButton_Reset();
         
-%         if isfield(GUI, 'ChISignal_checkbox')
-%             delete(GUI.ChISignal_checkbox);
-%             GUI = rmfield(GUI, 'ChISignal_checkbox');
-%         end
+        %         if isfield(GUI, 'ChISignal_checkbox')
+        %             delete(GUI.ChISignal_checkbox);
+        %             GUI = rmfield(GUI, 'ChISignal_checkbox');
+        %         end
         
         if isfield(GUI, 'RawChannelsData_handle')
             GUI = rmfield(GUI, 'RawChannelsData_handle');
@@ -278,14 +278,38 @@ end
         GUI.GUIDir.FileName2Split.String = '';
         GUI.GUIDir.Split_Sec.String = DATA.Small_File_Length_Sec;
         GUI.GUIDir.Split_Sec.UserData = DATA.Small_File_Length_Sec;
+        
+        GUI.P_checkbox.Value = 0;
+        GUI.Q_checkbox.Value = 0;
+        GUI.R_checkbox.Value = 1;
+        GUI.S_checkbox.Value = 0;
+        GUI.T_checkbox.Value = 0;
+        
+        if isfield(GUI, 'P_linehandle')
+            delete(GUI.P_linehandle);
+            GUI = rmfield(GUI, 'P_linehandle');
+        end
+        if isfield(GUI, 'Q_linehandle')
+            delete(GUI.Q_linehandle);
+            GUI = rmfield(GUI, 'Q_linehandle');
+        end
+        if isfield(GUI, 'S_linehandle')
+            delete(GUI.S_linehandle);
+            GUI = rmfield(GUI, 'S_linehandle');
+        end
+        if isfield(GUI, 'T_linehandle')
+            delete(GUI.T_linehandle);
+            GUI = rmfield(GUI, 'T_linehandle');
+        end
+        
     end
 %%
     function DATA = createData()
         
         DATA.screensize = get( 0, 'Screensize' );
         
-%                 DEBUGGING MODE - Small Screen
-%                 DATA.screensize = [0 0 1250 800];
+        %                 DEBUGGING MODE - Small Screen
+        %                 DATA.screensize = [0 0 1250 800];
         
         DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
         
@@ -436,8 +460,7 @@ end
             'MenuBar', 'none', ...
             'Position', [20, 50, DATA.window_size(1), DATA.window_size(2)], ...
             'Tag', 'fPhysioZooPD');
-        
-        
+                
         set(GUI.Window, 'CloseRequestFcn', {@Exit_Callback});
         
         setLogo(GUI.Window, 'M1');
@@ -476,597 +499,621 @@ end
         %         C = uitoolfactory(uitoolbar_handle, 'Exploration.DataCursor');
         %         %         C = uitoolfactory(H,'Standard.EditPlot');
         
-        % + File menu
-        GUI.FileMenu = uimenu( GUI.Window, 'Label', 'File' );
-        uimenu( GUI.FileMenu, 'Label', 'Open data file', 'Callback', @OpenFile_Callback, 'Accelerator', 'O');
-        
-        GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load peaks', 'Callback', @OpenFile_Callback, 'Accelerator', 'O');
-        GUI.SavePeaks = uimenu( GUI.FileMenu, 'Label', 'Save peaks', 'Callback', @SavePeaks_Callback, 'Accelerator', 'S');
-        
-        GUI.LoadConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Load configuration file', 'Callback', @LoadConfigurationFile_Callback, 'Accelerator', 'F');
-        GUI.SaveConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Save configuration file', 'Callback', @SaveConfigurationFile_Callback, 'Accelerator', 'C');
-        
-        GUI.SaveFiguresFile = uimenu( GUI.FileMenu, 'Label', 'Save figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator', 'G');
-        
-        GUI.OpenDataQuality = uimenu( GUI.FileMenu, 'Label', 'Open signal quality file', 'Callback', @OpenDataQuality_Callback, 'Accelerator', 'Q', 'Separator', 'on');
-        GUI.SaveDataQuality = uimenu( GUI.FileMenu, 'Label', 'Save signal quality file', 'Callback', @SaveDataQuality_Callback, 'Accelerator', 'D');
-        
-        GUI.OpenRhythms = uimenu( GUI.FileMenu, 'Label', 'Open Rhythms file', 'Callback', @OpenRhythms_Callback, 'Accelerator', 'R', 'Separator', 'on');
-        GUI.SaveRhythms = uimenu( GUI.FileMenu, 'Label', 'Save Rhythms file', 'Callback', @SaveRhythms_Callback, 'Accelerator', 'T');
-        
-        
-        uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @Exit_Callback, 'Separator', 'on', 'Accelerator', 'E');
-        
-        % + Help menu
-        %         helpMenu = uimenu( GUI.Window, 'Label', 'Help' );
-        %         uimenu( helpMenu, 'Label', 'Documentation', 'Callback', @onHelp, 'Visible', 'off' );
-        %         uimenu( helpMenu, 'Label', 'PhysioZoo Home', 'Callback', @onPhysioZooHome );
-        
-        % Create the layout (Arrange the main interface)
-        mainLayout = uix.VBoxFlex('Parent', GUI.Window, 'Spacing', DATA.Spacing);
-        
-        % + Create the panels
-        Upper_Part_Box = uix.HBoxFlex('Parent', mainLayout, 'Spacing', DATA.Spacing); % Upper Part
-        Low_Part_BoxPanel = uix.BoxPanel( 'Parent', mainLayout, 'Title', '  ', 'Padding', DATA.Padding); %Low Part
-        
-        upper_part = 0.75; % 0.8 0.55
-        low_part = 1 - upper_part;
-        set(mainLayout, 'Heights', [(-1)*upper_part, (-1)*low_part]);
-        
-        % + Upper Panel - Left and Right Parts
-        temp_panel_left = uix.Panel( 'Parent', Upper_Part_Box, 'Padding', DATA.Padding);
-        temp_panel_right = uix.Panel( 'Parent', Upper_Part_Box, 'Padding', DATA.Padding); % , 'BorderType', 'none'
-        temp_panel_buttons = uix.Panel( 'Parent', Upper_Part_Box, 'Padding', DATA.Padding); % , 'BorderType', 'none'
-        
-        temp_vbox_buttons = uix.VBox( 'Parent', temp_panel_buttons, 'Spacing', DATA.Spacing);
-        
-        if DATA.SmallScreen
-            left_part = 0.48; % 0.4
-            set(Upper_Part_Box, 'Widths', [-29 -58 -13]);
-            Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
-        else
-            left_part = 0.285;  % 0.285  %0.265
-            set(Upper_Part_Box, 'Widths', [-29.5 -64 -10.5]); % [-25.5 -64 -10.5]
-            Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
+        try
+            % + File menu
+            GUI.FileMenu = uimenu( GUI.Window, 'Label', 'File' );
+            uimenu( GUI.FileMenu, 'Label', 'Open data file', 'Callback', @OpenFile_Callback, 'Accelerator', 'O');
+            
+            GUI.LoadPeaks = uimenu( GUI.FileMenu, 'Label', 'Load peaks', 'Callback', @OpenFile_Callback, 'Accelerator', 'O');
+            GUI.SavePeaks = uimenu( GUI.FileMenu, 'Label', 'Save peaks', 'Callback', @SavePeaks_Callback, 'Accelerator', 'S');
+            
+            GUI.LoadConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Load configuration file', 'Callback', @LoadConfigurationFile_Callback, 'Accelerator', 'F');
+            GUI.SaveConfigurationFile = uimenu( GUI.FileMenu, 'Label', 'Save configuration file', 'Callback', @SaveConfigurationFile_Callback, 'Accelerator', 'C');
+            
+            GUI.SaveFiguresFile = uimenu( GUI.FileMenu, 'Label', 'Save figures', 'Callback', @onSaveFiguresAsFile, 'Accelerator', 'G');
+            
+            GUI.OpenDataQuality = uimenu( GUI.FileMenu, 'Label', 'Open signal quality file', 'Callback', @OpenDataQuality_Callback, 'Accelerator', 'Q', 'Separator', 'on');
+            GUI.SaveDataQuality = uimenu( GUI.FileMenu, 'Label', 'Save signal quality file', 'Callback', @SaveDataQuality_Callback, 'Accelerator', 'D');
+            
+            GUI.OpenRhythms = uimenu( GUI.FileMenu, 'Label', 'Open Rhythms file', 'Callback', @OpenRhythms_Callback, 'Accelerator', 'R', 'Separator', 'on');
+            GUI.SaveRhythms = uimenu( GUI.FileMenu, 'Label', 'Save Rhythms file', 'Callback', @SaveRhythms_Callback, 'Accelerator', 'T');
+            
+            
+            uimenu( GUI.FileMenu, 'Label', 'Exit', 'Callback', @Exit_Callback, 'Separator', 'on', 'Accelerator', 'E');
+            
+            % + Help menu
+            %         helpMenu = uimenu( GUI.Window, 'Label', 'Help' );
+            %         uimenu( helpMenu, 'Label', 'Documentation', 'Callback', @onHelp, 'Visible', 'off' );
+            %         uimenu( helpMenu, 'Label', 'PhysioZoo Home', 'Callback', @onPhysioZooHome );
+            
+            % Create the layout (Arrange the main interface)
+            mainLayout = uix.VBoxFlex('Parent', GUI.Window, 'Spacing', DATA.Spacing);
+            
+            % + Create the panels
+            Upper_Part_Box = uix.HBoxFlex('Parent', mainLayout, 'Spacing', DATA.Spacing); % Upper Part
+            Low_Part_BoxPanel = uix.BoxPanel( 'Parent', mainLayout, 'Title', '  ', 'Padding', DATA.Padding); %Low Part
+            
+            upper_part = 0.75; % 0.8 0.55
+            low_part = 1 - upper_part;
+            set(mainLayout, 'Heights', [(-1)*upper_part, (-1)*low_part]);
+            
+            % + Upper Panel - Left and Right Parts
+            temp_panel_left = uix.Panel( 'Parent', Upper_Part_Box, 'Padding', DATA.Padding);
+            temp_panel_right = uix.Panel( 'Parent', Upper_Part_Box, 'Padding', DATA.Padding); % , 'BorderType', 'none'
+            temp_panel_buttons = uix.Panel( 'Parent', Upper_Part_Box, 'Padding', DATA.Padding); % , 'BorderType', 'none'
+            
+            temp_vbox_buttons = uix.VBox( 'Parent', temp_panel_buttons, 'Spacing', DATA.Spacing);
+            
+            if DATA.SmallScreen
+                left_part = 0.48; % 0.4
+                set(Upper_Part_Box, 'Widths', [-29 -58 -13]);
+                Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
+            else
+                left_part = 0.285;  % 0.285  %0.265
+                set(Upper_Part_Box, 'Widths', [-29.5 -64 -10.5]); % [-25.5 -64 -10.5]
+                Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
+            end
+            right_part = 0.99; % 0.9
+            buttons_part = 0.08; % 0.08
+            %         Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
+            
+            %         set(Upper_Part_Box, 'Widths', [-1*left_part -1*right_part -1*buttons_part]);
+            %         set(Upper_Part_Box, 'Widths', [-25.5 -64 -10.5]);
+            
+            GUI.RightLeft_TabPanel = uix.TabPanel('Parent', temp_panel_left, 'Padding', DATA.Padding);
+            two_axes_box = uix.VBox('Parent', temp_panel_right, 'Spacing', DATA.Spacing);
+            CommandsButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
+            
+            GUI.ChannelsTable = uitable('Parent', temp_vbox_buttons, 'FontSize', SmallFontSize, 'FontName', 'Calibri', 'Tag', 'ChannelsTable',...
+                'ColumnName', {'Channels', 'Display'}, 'ColumnEditable', [false true], 'RowStriping', 'on', ...
+                'CellEditCallback', @ChannelsTableEditCallback, 'CellSelectionCallback', @ChannelsTableSelectionCallback);
+            
+            AmpPlusMinusHButtons_Box = uix.HButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing);
+            GUI.ChAmpDecreaseButton = uicontrol('Style', 'PushButton', 'Parent', AmpPlusMinusHButtons_Box, 'Callback', @amp_plus_minus_pushbutton_Callback,...
+                'FontSize', BigFontSize, 'String', sprintf('\x25BE'), 'Tooltip', 'Decrease channel amplitude', 'UserData', 'minus'); % sprintf('\x25A0') 25B2
+            
+            GUI.ChAmpSourceButton = uicontrol('Style', 'PushButton', 'Parent', AmpPlusMinusHButtons_Box, 'Callback', @amp_plus_minus_pushbutton_Callback,...
+                'FontSize', BigFontSize, 'String', sprintf('\x003D'), 'Tooltip', 'Decrease channel amplitude', 'UserData', 'source'); % sprintf('\x25A0') 25B2
+            
+            GUI.ChAmpIncreaseButton = uicontrol('Style', 'PushButton', 'Parent', AmpPlusMinusHButtons_Box, 'Callback', @amp_plus_minus_pushbutton_Callback,...
+                'FontSize', BigFontSize, 'String', sprintf('\x25B4'), 'Tooltip', 'Increase channel amplitude', 'UserData', 'plus'); % sprintf('\x25A0') 25B2
+            
+            %         Black Up-Pointing Small Triangle
+            %         Black Down-Pointing Small Triangle
+            
+            % ------------------------
+            %         peaks_box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Padding', DATA.Padding);
+            peaks_box = uix.VBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding);
+            GUI.P_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'P-Peaks', 'Value', 0, 'Tag', 'PPeaksCb');
+            GUI.Q_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'Q-Peaks (QRS on)', 'Value', 0, 'Tag', 'QPeaksCb');
+            GUI.R_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'R-Peaks', 'Value', 1, 'Tag', 'RPeaksCb');
+            GUI.S_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'S-Peaks (QRS off)', 'Value', 0, 'Tag', 'SPeaksCb');
+            GUI.T_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'T-Peaks', 'Value', 0, 'Tag', 'TPeaksCb');
+            
+            GUI.P_checkbox.ForegroundColor = [0.9290, 0.6940, 0.1250];
+            GUI.Q_checkbox.ForegroundColor = [0.4940, 0.1840, 0.5560];
+            GUI.R_checkbox.ForegroundColor = [1 0 0];
+            GUI.S_checkbox.ForegroundColor = [0.8500, 0.3250, 0.0980];
+            GUI.T_checkbox.ForegroundColor = [0.6350, 0.0780, 0.1840];                        
+                                    
+            GUI.CalcPeaksButton_handle = uicontrol('Style', 'PushButton', 'Parent', peaks_box, 'String', 'Calc Peaks', 'FontSize', DATA.SmallFontSize-1,...
+                'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Enable', 'inactive', 'Tag', 'CalcPQRSTPeaks', 'Callback', @CalcPQRSTPeaks);
+            %on' | 'off' | 'inactive'
+            
+            %         set(peaks_box, 'ButtonSize', [110, 80], 'Spacing', DATA.Spacing);
+            % ------------------------
+            
+            play_box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Padding', DATA.Padding);
+            
+            %         set(temp_vbox_buttons, 'Heights', [-100, -35]);
+            
+            RecordTab = uix.Panel('Parent', GUI.RightLeft_TabPanel, 'Padding', DATA.Padding);
+            DirectoryTab = uix.Panel('Parent', GUI.RightLeft_TabPanel, 'Padding', DATA.Padding);
+            ConfigParamTab = uix.Panel('Parent', GUI.RightLeft_TabPanel, 'Padding', DATA.Padding);
+            DisplayTab = uix.Panel('Parent', GUI.RightLeft_TabPanel, 'Padding', DATA.Padding);
+            
+            GUI.RightLeft_TabPanel.TabTitles = {'Record', 'Folder', 'Configuration', 'Display'};
+            GUI.RightLeft_TabPanel.FontSize = BigFontSize;
+            
+            if DATA.SmallScreen
+                GUI.RightLeft_TabPanel.TabWidth = 80; % 100
+            else
+                GUI.RightLeft_TabPanel.TabWidth = 90; % 100
+            end
+            
+            GUI.ECG_Axes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'GUI.ECG_Axes');
+            GUI.RRInt_Axes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'GUI.RRInt_Axes');
+            %         axis(GUI.ECG_Axes, 'square', 'equal');
+            
+            set(two_axes_box, 'Heights', [-1, 100]);
+            
+            GUI.AutoCompute_pushbutton = uicontrol('Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Compute', 'Enable', 'off');
+            GUI.AutoCalc_checkbox = uicontrol('Style', 'Checkbox', 'Parent', CommandsButtons_Box, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'Auto Compute', 'Value', 1);
+            
+            GUI.RR_or_HR_plot_button = uicontrol('Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
+            GUI.Reset_pushbutton = uicontrol('Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
+            set(CommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing); % [70, 25]
+            
+            GUI.Rhythms_handle = uicontrol('Style', 'PushButton', 'Parent', play_box, 'String', 'Rhythms', 'FontSize', DATA.SmallFontSize,...
+                'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Enable', 'inactive');
+            
+            MovieStartStioHButtons_Box = uix.HButtonBox('Parent', play_box, 'Spacing', DATA.Spacing); % , 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom'
+            GUI.PlayStopReverseMovieButton = uicontrol('Style', 'ToggleButton', 'Parent', MovieStartStioHButtons_Box, 'Callback', @play_stop_reverse_movie_pushbutton_Callback,...
+                'FontSize', BigFontSize, 'String', sprintf('\x25C4'), 'Enable', 'inactive', 'Tooltip', 'Start/Stop scrolling (reverse)'); % sprintf('\x25A0') 25B2
+            GUI.PlayStopForwMovieButton = uicontrol('Style', 'ToggleButton', 'Parent', MovieStartStioHButtons_Box, 'Callback', @play_stop_movie_pushbutton_Callback,...
+                'FontSize', BigFontSize, 'String', sprintf('\x25BA'), 'Enable', 'inactive', 'Tooltip', 'Start/Stop scrolling (forward)'); % sprintf('\x25A0') 25B2
+            
+            % Black Right-Pointing Pointer
+            %         Black Left-Pointing Pointer
+            
+            PageUpDownButtons_Box = uix.HButtonBox('Parent', play_box, 'Spacing', DATA.Spacing); % , 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom'
+            GUI.PageDownButton = uicontrol('Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', {@page_down_pushbutton_Callback, ''}, 'FontSize', BigFontSize, 'String', sprintf('\x25C0'), 'Enable', 'off');  % 2190'
+            GUI.PageUpButton = uicontrol('Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', {@page_up_pushbutton_Callback, ''}, 'FontSize', BigFontSize, 'String', sprintf('\x25B6'), 'Enable', 'off');  % 2192
+            set(PageUpDownButtons_Box, 'ButtonSize', [70, 25], 'Spacing', DATA.Spacing);
+            set(MovieStartStioHButtons_Box, 'ButtonSize', [70, 25], 'Spacing', DATA.Spacing);
+            set(play_box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing); % [70, 25]
+            
+            GUI.CommandsButtons_Box = CommandsButtons_Box;
+            GUI.PageUpDownButtons_Box = PageUpDownButtons_Box;
+            
+            tabs_widths = Left_Part_widths_in_pixels;
+            tabs_heights = 600; % 525
+            
+            RecordSclPanel = uix.ScrollingPanel( 'Parent', RecordTab);
+            RecordBox = uix.VBox( 'Parent', RecordSclPanel, 'Spacing', DATA.Spacing);
+            set(RecordSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
+            
+            DirSclPanel = uix.ScrollingPanel( 'Parent', DirectoryTab);
+            DirBox = uix.VBox( 'Parent', DirSclPanel, 'Spacing', DATA.Spacing);
+            set(DirSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
+            
+            ConfigSclPanel = uix.ScrollingPanel( 'Parent', ConfigParamTab);
+            GUI.ConfigBox = uix.VBox( 'Parent', ConfigSclPanel, 'Spacing', DATA.Spacing);
+            set(ConfigSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
+            
+            DisplaySclPanel = uix.ScrollingPanel( 'Parent', DisplayTab);
+            DisplayBox = uix.VBox( 'Parent', DisplaySclPanel, 'Spacing', DATA.Spacing);
+            set(DisplaySclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
+            
+            GUI.RecordTab = RecordTab;
+            GUI.ConfigParamTab = ConfigParamTab;
+            GUI.DisplayTab = DisplayTab;
+            
+            %-------------------------------------------------------
+            % Folder Tab
+            
+            [GUI, textBox{1}, text_handles{1}] = createGUITextLine(GUI, 'GUIDir', 'DirName_text', 'Directory name:', DirBox, 'text', 1, @OpenDir_Callback);
+            GUI.GUIDir.DirName_text_pushbutton_handle.Enable = 'on';
+            
+            textBox{2} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);
+            text_handles{2} = uicontrol('Style', 'text', 'Parent', textBox{2}, 'String', 'File list:', ...
+                'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+            GUI.GUIDir.FileList = uicontrol('Style', 'listbox', 'Parent', textBox{2}, 'FontSize', ...
+                DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+            GUI.GUIDir.FileList.Callback = @FileList_listbox_callback;
+            uix.Empty('Parent', textBox{2});
+            
+            uix.Empty('Parent', DirBox);
+            
+            textBox{3} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);
+            text_handles{3} = uicontrol('Style', 'text', 'Parent', textBox{3}, 'String', 'Split file ', ...
+                'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+            GUI.GUIDir.FileName2Split = uicontrol('Style', 'text', 'Parent', textBox{3}, 'FontSize', DATA.SmallFontSize, 'String', '', 'HorizontalAlignment', 'left');
+            uicontrol('Style', 'text', 'Parent', textBox{3}, 'String', 'to', ...
+                'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+            
+            textBox{4} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);
+            text_handles{4} = uicontrol('Style', 'text', 'Parent', textBox{4}, 'String', 'Sections of ', ...
+                'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+            GUI.GUIDir.Split_Sec = uicontrol('Style', 'edit', 'Parent', textBox{4}, 'Callback', @Split_Sec_Callback, ...
+                'FontSize', DATA.SmallFontSize, 'Tag', 'Split_sec', 'UserData', DATA.Small_File_Length_Sec, 'String', DATA.Small_File_Length_Sec);
+            uicontrol('Style', 'text', 'Parent', textBox{4}, 'String', 'sec', ...
+                'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+            
+            textBox{5} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);
+            uix.Empty('Parent', textBox{5});
+            uicontrol('Style', 'PushButton', 'Parent', textBox{5}, 'Callback', @SplitFile_Button_Callback, ...
+                'FontSize', DATA.SmallFontSize, 'String', 'Split');
+            uix.Empty('Parent', textBox{5});
+            
+            uix.Empty('Parent', DirBox);
+            
+            
+            max_extent_control = calc_max_control_x_extend(text_handles);
+            
+            if DATA.SmallScreen
+                field_size = [max_extent_control, 170, 25];
+            else
+                field_size = [max_extent_control, 200, 25];
+            end
+            for i =  1 : 5
+                set(textBox{i}, 'Widths', field_size);
+            end
+            
+            %         if DATA.SmallScreen
+            %             hf = -0.45;
+            %             set(DirBox, 'Heights', [hf * ones(1, 2), -4] );
+            %         else
+            %             hf = -1;
+            set(DirBox, 'Heights', [-0.9, -7, -0.7, -0.7, -0.7, -0.7, -7]);
+            %         end
+            
+            %-------------------------------------------------------
+            % Record Tab
+            
+            [GUI, textBox{1}, text_handles{1}] = createGUITextLine(GUI, 'GUIRecord', 'RecordFileName_text', 'Record file name:', RecordBox, 'text', 1, @OpenFile_Callback);
+            [GUI, textBox{2}, text_handles{2}] = createGUITextLine(GUI, 'GUIRecord', 'PeaksFileName_text', 'Peaks file name:', RecordBox, 'text', 1, @OpenFile_Callback);
+            
+            [GUI, textBox{3}, text_handles{3}] = createGUITextLine(GUI, 'GUIRecord', 'DataQualityFileName_text', 'Signal quality file name:', RecordBox, 'text', 1, @OpenDataQuality_Callback);
+            
+            [GUI, textBox{4}, text_handles{4}] = createGUITextLine(GUI, 'GUIRecord', 'RhythmsFileName_text', 'Rhythms file name:', RecordBox, 'text', 1, @OpenRhythms_Callback);
+            
+            [GUI, textBox{5}, text_handles{5}] = createGUITextLine(GUI, 'GUIRecord', 'Config_text', 'Config file name:', RecordBox, 'text', 1, @LoadConfigurationFile_Callback);
+            [GUI, textBox{6}, text_handles{6}] = createGUITextLine(GUI, 'GUIRecord', 'TimeSeriesLength_text', 'Time series length:', RecordBox, 'text', 0, '');
+            [GUI, textBox{7}, text_handles{7}] = createGUITextLine(GUI, 'GUIRecord', 'Mammal_popupmenu', 'Mammal', RecordBox, 'edit', 0, '');
+            GUI.GUIRecord.Mammal_popupmenu.Callback = @Mammal_popupmenu_Callback;
+            
+            [GUI, textBox{8}, text_handles{8}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Integration_popupmenu', 'Integration level', RecordBox, @Integration_popupmenu_Callback, DATA.GUI_Integration);
+            [GUI, textBox{9}, text_handles{9}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'PeakDetector_popupmenu', 'Peak detector', RecordBox, @PeakDetector_popupmenu_Callback, DATA.GUI_PeakDetector);
+            [GUI, textBox{10}, text_handles{10}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Annotation_popupmenu', 'Annotation', RecordBox, @Annotation_popupmenu_Callback, DATA.GUI_Annotation);
+            [GUI, textBox{11}, text_handles{11}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'PeakAdjustment_popupmenu', 'Peak adjustment', RecordBox, @PeakAdjustment_popupmenu_Callback, DATA.Adjustment_type);
+            %         [GUI, textBox{12}, text_handles{12}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Class_popupmenu', 'Class', RecordBox, @Class_popupmenu_Callback, DATA.GUI_Class);
+            %         [GUI, textBox{13}, text_handles{13}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Rhythms_popupmenu', 'Rhythms', RecordBox, @Rhythms_popupmenu_Callback, DATA.Rhythms_Type);
+            
+            GUI.Adjust_textBox = textBox{11};
+            GUI.Adjustment_Text = text_handles{11};
+            GUI.Adjustment_Text.Visible = 'on';
+            
+            %         GUI.Class_textBox = textBox{12};
+            %         GUI.Rhythms_textBox = textBox{13};
+            
+            %         GUI.GUIRecord.Class_popupmenu.Visible = 'off';
+            %         GUI.GUIRecord.Class_popupmenu.Value = 3;
+            %         GUI.Class_Text = text_handles{12};
+            %         GUI.Class_Text.Visible = 'off';
+            
+            %         GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
+            %         GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
+            %         GUI.Rhythms_Text = text_handles{13};
+            %         GUI.Rhythms_Text.Visible = 'off';
+            
+            max_extent_control = calc_max_control_x_extend(text_handles);
+            
+            field_size = [max_extent_control, -1, 1];
+            for i = 6 : 6
+                set(textBox{i}, 'Widths', field_size);
+            end
+            
+            if DATA.SmallScreen
+                field_size1 = [max_extent_control, -0.47, -0.5]; % -0.56, -0.2 -0.55
+            else
+                field_size1 = [max_extent_control, -0.4, -0.55]; % + 5 % -0.45, -0.5
+            end
+            
+            for i = 7 : 11 % 13
+                set(textBox{i}, 'Widths', field_size1);
+            end
+            
+            popupmenu_position = get(GUI.GUIRecord.Mammal_popupmenu, 'Position');
+            
+            if DATA.SmallScreen
+                field_size = [max_extent_control, popupmenu_position(3) + 20, 25];
+            else
+                field_size = [max_extent_control, popupmenu_position(3) + 45, 25];
+            end
+            for i = 1 : 5
+                set(textBox{i}, 'Widths', field_size);
+            end
+            
+            GUI.RhythmsHBox = uix.HBox('Parent', RecordBox, 'Spacing', DATA.Spacing, 'Visible', 'off');
+            
+            uix.Empty('Parent', GUI.RhythmsHBox);
+            Rhythms_grid = uix.Grid('Parent', GUI.RhythmsHBox, 'Spacing', DATA.Spacing);
+            uix.Empty('Parent', GUI.RhythmsHBox);
+            
+            for i = 1 : length(DATA.Rhythms_Type)
+                GUI.rhythms_legend(i) = uicontrol('Style', 'ToggleButton', 'Parent', Rhythms_grid, 'Enable', 'on', 'String', DATA.Rhythms_Type{i}, ...
+                    'Tooltip', DATA.rhythms_tooltip{i}, 'Callback', @Rhythms_ToggleButton_Callback, 'Value', 0, 'UserData', i);
+            end
+            if DATA.SmallScreen
+                set(Rhythms_grid, 'Widths', 34*ones(1, 3), 'Heights', -1*ones(1, length(DATA.Rhythms_Type)/3)); % 34
+            else
+                set(Rhythms_grid, 'Widths', 39*ones(1, 3), 'Heights', -1*ones(1, length(DATA.Rhythms_Type)/3)); % 60
+            end
+            
+            set(GUI.RhythmsHBox, 'Widths', field_size1);
+            
+            if DATA.SmallScreen
+                hf = -0.12; % -0.1
+                %             uix.Empty( 'Parent', RecordBox);
+                set(RecordBox, 'Heights', [hf * ones(1, 11), -1]);
+            else
+                hf = -0.12; % -0.155
+                set(RecordBox, 'Heights', [hf * ones(1, 11), -1]);
+            end
+            
+            load_config_name_button_position = get(GUI.GUIRecord.Config_text_pushbutton_handle, 'Position');
+            updated_position = [load_config_name_button_position(1) load_config_name_button_position(2) + 10 load_config_name_button_position(3) load_config_name_button_position(4) - 10];
+            set(GUI.GUIRecord.RecordFileName_text_pushbutton_handle, 'Position', updated_position, 'Enable', 'on');
+            set(GUI.GUIRecord.PeaksFileName_text_pushbutton_handle, 'Position', updated_position);
+            set(GUI.GUIRecord.Config_text_pushbutton_handle, 'Position', updated_position);
+            set(GUI.GUIRecord.DataQualityFileName_text_pushbutton_handle, 'Position', updated_position);
+            set(GUI.GUIRecord.RhythmsFileName_text_pushbutton_handle, 'Position', updated_position);
+            
+            GUI.Adjust_textBox_position = get(GUI.Adjust_textBox, 'Position');
+            %         GUI.Class_textBox_position = get(GUI.Class_textBox, 'Position');
+            %         GUI.Rhythms_textBox_position = get(GUI.Rhythms_textBox, 'Position');
+            %         GUI.RhythmsHBox_position = get(GUI.RhythmsHBox, 'Position');
+            
+            
+            %         set(GUI.RhythmsHBox, 'Position', GUI.Class_textBox_position);
+            %         get(GUI.RhythmsHBox, 'Position')
+            %-------------------------------------------------------
+            % Config Params Tab
+            
+            %         field_size = [80, 150, 10 -1];
+            
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'rqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            
+            %         uix.Empty( 'Parent', GUI.ConfigBox );
+            
+            [GUI, textBox{1}, text_handles{1}] = createGUISingleEditLine(GUI, 'GUIConfig', 'HR', 'HR', 'BPM', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'HR');
+            [GUI, textBox{2}, text_handles{2}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QS', 'QS', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QS');
+            [GUI, textBox{3}, text_handles{3}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QT', 'QT', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QT');
+            [GUI, textBox{4}, text_handles{4}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSa', 'QRSa', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSa');
+            [GUI, textBox{5}, text_handles{5}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSamin', 'QRSamin', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSamin');
+            [GUI, textBox{6}, text_handles{6}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmin', 'RRmin', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmin');
+            [GUI, textBox{7}, text_handles{7}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmax', 'RRmax', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmax');
+            
+            uix.Empty('Parent', GUI.ConfigBox );
+            
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'jqrs/wjqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            [GUI, textBox{8}, text_handles{8}] = createGUISingleEditLine(GUI, 'GUIConfig', 'lcf', 'Lower cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'lcf');
+            [GUI, textBox{9}, text_handles{9}] = createGUISingleEditLine(GUI, 'GUIConfig', 'hcf', 'Upper cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'hcf');
+            [GUI, textBox{10}, text_handles{10}] = createGUISingleEditLine(GUI, 'GUIConfig', 'thr', 'Threshold', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'thr');
+            [GUI, textBox{11}, text_handles{11}] = createGUISingleEditLine(GUI, 'GUIConfig', 'rp', 'Refractory period', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'rp');
+            [GUI, textBox{12}, text_handles{12}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ws', 'Window size', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ws');
+            
+            uix.Empty('Parent', GUI.ConfigBox );
+            
+            % ORI's algorithm for EGM peaks
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'EGM peaks', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ref_per', 'Refractory period', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ref_per');
+            [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIConfig', 'bi', 'BI', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'bi');
+            [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh1', 'Prominence threshold 1', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh1');
+            [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh2', 'Prominence threshold 2', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh2');
+            
+            uix.Empty('Parent', GUI.ConfigBox );
+            
+            GUI.AutoPeakWin_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', SmallFontSize, 'String', 'Auto', 'Value', 1);
+            [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window');
+            
+            uix.Empty('Parent', GUI.ConfigBox );
+            
+            %         uix.Empty('Parent', GUI.ConfigBox );
+            %         uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'Adjust R-peak location', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            
+            
+            %         uix.Empty('Parent', GUI.ConfigBox );
+            %
+            %         tempBox = uix.HBox('Parent', GUI.ConfigBox, 'Spacing', DATA.Spacing);
+            %         uix.Empty('Parent', tempBox );
+            %         GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', tempBox, 'Callback', @Del_win_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Del Win');
+            %         uix.Empty('Parent', tempBox );
+            %         uix.Empty('Parent', tempBox );
+            
+            %         uix.Empty('Parent', GUI.ConfigBox );
+            %         set(GUI.ConfigBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7   -1 -7 -7 -7 -7 -7 -7   -8 -7 -7   -7 -7] );
+            
+            
+            
+            set(GUI.ConfigBox, 'Heights', [-15 * ones(1, 8)   -0.5 -15 * ones(1, 6) -0.5 -15 * ones(1, 5)  -0.5 -15 -15 -150]);
+            %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)   -1 -7 * ones(1, 6) -1 -7 * ones(1, 4)  -8 -7 -7 ] );
+            %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)    -7 * ones(1, 6) -7 * ones(1, 4)  -7 -7 ] );
+            %-------------------------------------------------------
+            % Display Tab
+            %         field_size = [110, 140, 10, -1];
+            
+            uix.Empty('Parent', DisplayBox);
+            
+            [GUI, textBox{18}, text_handles{18}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', 0);
+            [GUI, textBox{19}, text_handles{19}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', 0);
+            
+            %         field_size = [110, 64, 4, 63, 10];
+            [GUI, YLimitBox, text_handles{20}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', []);
+            
+            uix.Empty('Parent', DisplayBox);
+            
+            [GUI, textBox{21}, text_handles{21}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
+            [GUI, YLimitBox2, text_handles{22}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', []);
+            
+            uix.Empty('Parent', DisplayBox);
+            
+            [GUI, textBox{23}, text_handles{23}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'Movie_Delay', 'Movie Speed:', 'n.u.', DisplayBox, @Movie_Delay_Callback, '', 2);
+            GUI.GUIDisplay.Movie_Delay.String = 2;
+            
+            uix.Empty('Parent', DisplayBox);
+            
+            tempBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
+            
+            GUI.GridX_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox, 'Callback', @GridX_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid X', 'Value', 1);
+            GUI.GridY_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox, 'Callback', @GridY_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid Y', 'Value', 1);
+            uix.Empty('Parent', tempBox);
+            uix.Empty('Parent', tempBox);
+            
+            uix.Empty('Parent', DisplayBox);
+            
+            %         GUI.ChannelsBox = uix.HBox( 'Parent', DisplayBox, 'Spacing', DATA.Spacing);
+            
+            %         GUI.RawSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ChannelsBox, 'Callback', @ShowRawSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show raw signal', 'Value', 1);
+            
+            GUI.FilteredSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', DisplayBox, 'Callback', @ShowFilteredSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show filtered signal', 'Value', 0);
+            
+            %         uix.Empty('Parent', DisplayBox);
+            
+            [GUI, textBox{24}, text_handles{24}] = createGUIPopUpMenuLine(GUI, 'GUIDisplay', 'FilterLevel_popupmenu', 'Filter level', DisplayBox,...
+                @FilterLevel_popupmenu_Callback, {'Weak'; 'Moderate'; 'Strong'});
+            
+            [GUI, CutoffFr, text_handles{25}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'LowCutoffFr_Edit'; 'HightCutoffFr_Edit'}, 'Cutoff Frequency:', 'Hz', DisplayBox, {@LowHightCutoffFr_Edit; @LowHightCutoffFr_Edit}, '', []);
+            set_default_filter_level_user_data();
+            
+            uix.Empty('Parent', DisplayBox);
+            
+            
+            [GUI, textBox{26}, text_handles{26}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinRhythmsRange_Edit'; 'MaxRhythmsRange_Edit'}, 'Rhythms range:', 'h:min:sec', DisplayBox, {@MinMaxRhythmsRange_Edit_Callback; @MinMaxRhythmsRange_Edit_Callback}, '', []);
+            
+            RhythmsHBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
+            text_handles{27} = uicontrol('Style', 'text', 'Parent', RhythmsHBox, 'String', 'Rhythms', 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+            GUI.RhythmsListbox = uicontrol('Style', 'ListBox', 'Parent', RhythmsHBox, 'Callback', @Rhythms_listbox_Callback, 'FontSize', DATA.SmallFontSize, 'Tag', 'RhythmsList');
+            
+            
+            uix.Empty('Parent', DisplayBox);
+            
+            GUI.FilterLevelBox = textBox{24};
+            GUI.CutoffFrBox = CutoffFr;
+            
+            GUI.FilterLevelBox.Visible = 'off';
+            GUI.CutoffFrBox.Visible = 'off';
+            
+            set(GUI.GUIDisplay.FirstSecond, 'Enable', 'on');
+            set(GUI.GUIDisplay.WindowSize, 'Enable', 'on');
+            set(GUI.GUIDisplay.MinYLimit_Edit, 'Enable', 'inactive');
+            set(GUI.GUIDisplay.MaxYLimit_Edit, 'Enable', 'inactive');
+            set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'Enable', 'inactive');
+            set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'Enable', 'inactive');
+            
+            max_extent_control = calc_max_control_x_extend(text_handles);
+            
+            if DATA.SmallScreen
+                field_size = [max_extent_control, 120, 1 -1]; % max_extent_control, 150, 10 -1
+            else
+                field_size = [max_extent_control, 140, 1 -1]; % max_extent_control, 150, 10 -1
+            end
+            
+            for i = 1 : length(text_handles) - 4
+                set(textBox{i}, 'Widths', field_size);
+            end
+            
+            set(textBox{23}, 'Widths', field_size);
+            set(tempBox, 'Widths', field_size);
+            
+            if DATA.SmallScreen
+                field_size = [max_extent_control, 120, -1];
+            else
+                field_size = [max_extent_control, 140, -1];
+            end
+            set(textBox{24}, 'Widths', field_size);
+            
+            if DATA.SmallScreen
+                field_size = [max_extent_control, 56, 5, 53, 1];
+            else
+                field_size = [max_extent_control, 66, 5, 63, 1];
+            end
+            set(YLimitBox, 'Widths', field_size);
+            set(YLimitBox2, 'Widths', field_size);
+            
+            GUI.AutoScaleY_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
+            set(YLimitBox, 'Widths', [field_size, 150]);
+            
+            GUI.AutoScaleYLowAxes_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox2, 'Callback', @AutoScaleYLowAxes_pushbutton_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
+            set(YLimitBox2, 'Widths', [field_size, 150]);
+            
+            if DATA.SmallScreen
+                field_size = [max_extent_control, 56, 5, 53, 1, -1];
+            else
+                field_size = [max_extent_control, 66, 5, 63, 1, -1];
+            end
+            set(CutoffFr, 'Widths', field_size);
+            set(textBox{26}, 'Widths', field_size);
+            
+            if DATA.SmallScreen
+                set(RhythmsHBox, 'Widths', [max_extent_control 120]);
+            else
+                set(RhythmsHBox, 'Widths', [max_extent_control 140]);
+            end
+            
+            if DATA.SmallScreen
+                set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6  -4 -6  -2   -6  -7 -6 -2 -6 -30 -30]);
+            else
+                set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6  -3 -6  -2   -6  -7 -6 -6 -6 -40 -1]);
+            end
+            
+            %-------------------------------------------------------
+            
+            % Low Part
+            
+            Low_TabPanel = uix.TabPanel('Parent', Low_Part_BoxPanel, 'Padding', DATA.Padding);
+            
+            PeaksTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
+            RhythmsTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
+            
+            Low_TabPanel.TabTitles = {'Peaks', 'Rhythms'};
+            Low_TabPanel.TabWidth = 100;
+            Low_TabPanel.FontSize = BigFontSize;
+            
+            Low_Part_Box = uix.VBox('Parent', PeaksTab, 'Spacing', DATA.Spacing);
+            
+            GUI.PeaksTable = uitable('Parent', Low_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{550 'auto'}, 'FontName', 'Calibri');
+            GUI.PeaksTable.ColumnName = {'Description'; 'Values'};
+            GUI.PeaksTable.RowName = {'NB PEAKS (n.u.)'; 'NB PEAKS ADD (n.u.)'; 'NB PEAKS RM (n.u.)'; 'PR BAD SQ (%)'};
+            GUI.PeaksTable.Data = {''};
+            GUI.PeaksTable.Data(1, 1) = {'Total number of peaks'};    % Number of peaks detected by the peak detection algorithm
+            GUI.PeaksTable.Data(2, 1) = {'Number of peaks manually added by the user'}; % Number of peaks manually added by the user
+            GUI.PeaksTable.Data(3, 1) = {'Number of peaks manually removed by the user'}; % Number of peaks manually removed by the user
+            GUI.PeaksTable.Data(4, 1) = {['Percentage of the record annotated as bad quality (i.e. signal quality ' sprintf('\x2260') ' ''A'')']};
+            GUI.PeaksTable.Data(:, 2) = {0};
+            
+            %--------------------------------------------------------------------------
+            
+            Rhythms_Part_Box = uix.VBox('Parent', RhythmsTab, 'Spacing', DATA.Spacing);
+            GUI.RhythmsTable = uitable('Parent', Rhythms_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{250 'auto' 'auto' 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
+            GUI.RhythmsTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Median (sec)'; 'Q1 (sec)'; 'Q3 (sec)'; 'Burden (%)'; 'Nb events'};
+            GUI.RhythmsTable.Data = {};
+            GUI.RhythmsTable.RowName = {};
+            
+            %--------------------------------------------------------------------------
+            
+            set(findobj(Upper_Part_Box,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
+            set(findobj(Upper_Part_Box,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
+            set(findobj(Upper_Part_Box,'Style', 'slider'), 'BackgroundColor', mySliderColor);
+            set(findobj(Upper_Part_Box,'Style', 'checkbox'), 'BackgroundColor', myUpBackgroundColor);
+            set(findobj(Upper_Part_Box,'Style', 'ToggleButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
+            set(findobj(Upper_Part_Box,'Style', 'PushButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
+            set(findobj(Upper_Part_Box,'Type', 'uicontainer'), 'BackgroundColor', myUpBackgroundColor);
+            set(findobj(Upper_Part_Box,'Type', 'uipanel'), 'BackgroundColor', myUpBackgroundColor);
+            
+            % Low Part
+            set(findobj(Low_Part_BoxPanel,'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
+            set(findobj(Low_Part_BoxPanel,'Type', 'uipanel'), 'BackgroundColor', myLowBackgroundColor);
+            set(findobj(Low_Part_BoxPanel,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
+            set(findobj(Low_Part_BoxPanel,'Style', 'text'), 'BackgroundColor', myLowBackgroundColor);
+            
+            GUI.Rhythms_handle.BackgroundColor = [52 204 255]/255; % [131 255 226]/255   255 131 160
+            GUI.Rhythms_handle.ForegroundColor = [255 255 255]/255;
+            
+            for i = 1 : length(DATA.Rhythms_Type)
+                GUI.rhythms_legend(i).BackgroundColor = DATA.rhythms_color{i};
+            end
+            
+            GUI.OpenDataQuality.Enable = 'off';
+            GUI.SaveDataQuality.Enable = 'off';
+            
+            GUI.SaveRhythms.Enable = 'off';
+            GUI.OpenRhythms.Enable = 'off';
+            
+            GUI.LoadConfigurationFile.Enable = 'off';
+            GUI.SaveConfigurationFile.Enable = 'off';
+            GUI.SavePeaks.Enable = 'off';
+            GUI.SaveFiguresFile.Enable = 'off';
+            %GUI.LoadPeaks.Enable = 'off';
+            
+            GUI.PlayStopForwMovieButton.ForegroundColor = [0 1 0];
+            GUI.PlayStopReverseMovieButton.ForegroundColor = [0 1 0];
+            GUI.PageDownButton.ForegroundColor = [0 0 1];
+            GUI.PageUpButton.ForegroundColor = [0 0 1];
+        catch e
+            disp(e);
         end
-        right_part = 0.99; % 0.9
-        buttons_part = 0.08; % 0.08
-%         Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
-        
-%         set(Upper_Part_Box, 'Widths', [-1*left_part -1*right_part -1*buttons_part]);
-%         set(Upper_Part_Box, 'Widths', [-25.5 -64 -10.5]);
-        
-        GUI.RightLeft_TabPanel = uix.TabPanel('Parent', temp_panel_left, 'Padding', DATA.Padding);
-        two_axes_box = uix.VBox('Parent', temp_panel_right, 'Spacing', DATA.Spacing);
-        CommandsButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
-        
-        GUI.ChannelsTable = uitable('Parent', temp_vbox_buttons, 'FontSize', SmallFontSize, 'FontName', 'Calibri', 'Tag', 'ChannelsTable',...
-            'ColumnName', {'Channels', 'Display'}, 'ColumnEditable', [false true], 'RowStriping', 'on', ...
-            'CellEditCallback', @ChannelsTableEditCallback, 'CellSelectionCallback', @ChannelsTableSelectionCallback);
-
-        AmpPlusMinusHButtons_Box = uix.HButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing);
-        GUI.ChAmpDecreaseButton = uicontrol('Style', 'PushButton', 'Parent', AmpPlusMinusHButtons_Box, 'Callback', @amp_plus_minus_pushbutton_Callback,...
-            'FontSize', BigFontSize, 'String', sprintf('\x25BE'), 'Tooltip', 'Decrease channel amplitude', 'UserData', 'minus'); % sprintf('\x25A0') 25B2
-        
-        GUI.ChAmpSourceButton = uicontrol('Style', 'PushButton', 'Parent', AmpPlusMinusHButtons_Box, 'Callback', @amp_plus_minus_pushbutton_Callback,...
-            'FontSize', BigFontSize, 'String', sprintf('\x003D'), 'Tooltip', 'Decrease channel amplitude', 'UserData', 'source'); % sprintf('\x25A0') 25B2
-        
-        GUI.ChAmpIncreaseButton = uicontrol('Style', 'PushButton', 'Parent', AmpPlusMinusHButtons_Box, 'Callback', @amp_plus_minus_pushbutton_Callback,...
-            'FontSize', BigFontSize, 'String', sprintf('\x25B4'), 'Tooltip', 'Increase channel amplitude', 'UserData', 'plus'); % sprintf('\x25A0') 25B2
-        
-%         'Enable', 'inactive'
-
-%         Black Up-Pointing Small Triangle
-%         Black Down-Pointing Small Triangle
-        
-        play_box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Padding', DATA.Padding);
-        
-        %         set(temp_vbox_buttons, 'Heights', [-100, -35]);
-        
-        RecordTab = uix.Panel('Parent', GUI.RightLeft_TabPanel, 'Padding', DATA.Padding);
-        DirectoryTab = uix.Panel('Parent', GUI.RightLeft_TabPanel, 'Padding', DATA.Padding);
-        ConfigParamTab = uix.Panel('Parent', GUI.RightLeft_TabPanel, 'Padding', DATA.Padding);
-        DisplayTab = uix.Panel('Parent', GUI.RightLeft_TabPanel, 'Padding', DATA.Padding);
-        
-        GUI.RightLeft_TabPanel.TabTitles = {'Record', 'Folder', 'Configuration', 'Display'};        
-        GUI.RightLeft_TabPanel.FontSize = BigFontSize;
-        
-        if DATA.SmallScreen
-            GUI.RightLeft_TabPanel.TabWidth = 80; % 100
-        else
-            GUI.RightLeft_TabPanel.TabWidth = 90; % 100
-        end
-        
-        GUI.ECG_Axes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'GUI.ECG_Axes');
-        GUI.RRInt_Axes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'GUI.RRInt_Axes');
-        %         axis(GUI.ECG_Axes, 'square', 'equal');
-        
-        set(two_axes_box, 'Heights', [-1, 100]);
-        
-        GUI.AutoCompute_pushbutton = uicontrol('Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Compute', 'Enable', 'off');
-        GUI.AutoCalc_checkbox = uicontrol('Style', 'Checkbox', 'Parent', CommandsButtons_Box, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'Auto Compute', 'Value', 1);
-        
-        GUI.RR_or_HR_plot_button = uicontrol('Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
-        GUI.Reset_pushbutton = uicontrol('Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
-        set(CommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing); % [70, 25]
-        
-        GUI.Rhythms_handle = uicontrol('Style', 'PushButton', 'Parent', play_box, 'String', 'Rhythms', 'FontSize', DATA.SmallFontSize,...
-            'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Enable', 'inactive');
-        
-        MovieStartStioHButtons_Box = uix.HButtonBox('Parent', play_box, 'Spacing', DATA.Spacing); % , 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom'
-        GUI.PlayStopReverseMovieButton = uicontrol('Style', 'ToggleButton', 'Parent', MovieStartStioHButtons_Box, 'Callback', @play_stop_reverse_movie_pushbutton_Callback,...
-            'FontSize', BigFontSize, 'String', sprintf('\x25C4'), 'Enable', 'inactive', 'Tooltip', 'Start/Stop scrolling (reverse)'); % sprintf('\x25A0') 25B2
-        GUI.PlayStopForwMovieButton = uicontrol('Style', 'ToggleButton', 'Parent', MovieStartStioHButtons_Box, 'Callback', @play_stop_movie_pushbutton_Callback,...
-            'FontSize', BigFontSize, 'String', sprintf('\x25BA'), 'Enable', 'inactive', 'Tooltip', 'Start/Stop scrolling (forward)'); % sprintf('\x25A0') 25B2
-        
-        % Black Right-Pointing Pointer
-%         Black Left-Pointing Pointer
-        
-        PageUpDownButtons_Box = uix.HButtonBox('Parent', play_box, 'Spacing', DATA.Spacing); % , 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom'
-        GUI.PageDownButton = uicontrol('Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', {@page_down_pushbutton_Callback, ''}, 'FontSize', BigFontSize, 'String', sprintf('\x25C0'), 'Enable', 'off');  % 2190'
-        GUI.PageUpButton = uicontrol('Style', 'PushButton', 'Parent', PageUpDownButtons_Box, 'Callback', {@page_up_pushbutton_Callback, ''}, 'FontSize', BigFontSize, 'String', sprintf('\x25B6'), 'Enable', 'off');  % 2192
-        set(PageUpDownButtons_Box, 'ButtonSize', [70, 25], 'Spacing', DATA.Spacing);
-        set(MovieStartStioHButtons_Box, 'ButtonSize', [70, 25], 'Spacing', DATA.Spacing);
-        set(play_box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing); % [70, 25]
-        
-        GUI.CommandsButtons_Box = CommandsButtons_Box;
-        GUI.PageUpDownButtons_Box = PageUpDownButtons_Box;
-        
-        tabs_widths = Left_Part_widths_in_pixels;
-        tabs_heights = 600; % 525
-        
-        RecordSclPanel = uix.ScrollingPanel( 'Parent', RecordTab);
-        RecordBox = uix.VBox( 'Parent', RecordSclPanel, 'Spacing', DATA.Spacing);
-        set(RecordSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
-        
-        DirSclPanel = uix.ScrollingPanel( 'Parent', DirectoryTab);
-        DirBox = uix.VBox( 'Parent', DirSclPanel, 'Spacing', DATA.Spacing);
-        set(DirSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
-        
-        ConfigSclPanel = uix.ScrollingPanel( 'Parent', ConfigParamTab);
-        GUI.ConfigBox = uix.VBox( 'Parent', ConfigSclPanel, 'Spacing', DATA.Spacing);
-        set(ConfigSclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
-        
-        DisplaySclPanel = uix.ScrollingPanel( 'Parent', DisplayTab);
-        DisplayBox = uix.VBox( 'Parent', DisplaySclPanel, 'Spacing', DATA.Spacing);
-        set(DisplaySclPanel, 'Widths', tabs_widths, 'Heights', tabs_heights );
-        
-        GUI.RecordTab = RecordTab;
-        GUI.ConfigParamTab = ConfigParamTab;
-        GUI.DisplayTab = DisplayTab;
-        
-        %-------------------------------------------------------
-        % Folder Tab
-        
-        [GUI, textBox{1}, text_handles{1}] = createGUITextLine(GUI, 'GUIDir', 'DirName_text', 'Directory name:', DirBox, 'text', 1, @OpenDir_Callback);        
-        GUI.GUIDir.DirName_text_pushbutton_handle.Enable = 'on';
-        
-        textBox{2} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);
-        text_handles{2} = uicontrol('Style', 'text', 'Parent', textBox{2}, 'String', 'File list:', ...
-                                    'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.GUIDir.FileList = uicontrol('Style', 'listbox', 'Parent', textBox{2}, 'FontSize', ...
-                                        DATA.SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.GUIDir.FileList.Callback = @FileList_listbox_callback;
-        uix.Empty('Parent', textBox{2});
-        
-        uix.Empty('Parent', DirBox);
-        
-        textBox{3} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);
-        text_handles{3} = uicontrol('Style', 'text', 'Parent', textBox{3}, 'String', 'Split file ', ...
-                                    'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.GUIDir.FileName2Split = uicontrol('Style', 'text', 'Parent', textBox{3}, 'FontSize', DATA.SmallFontSize, 'String', '', 'HorizontalAlignment', 'left');
-        uicontrol('Style', 'text', 'Parent', textBox{3}, 'String', 'to', ...
-                  'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');  
-                                                                                                
-        textBox{4} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);
-        text_handles{4} = uicontrol('Style', 'text', 'Parent', textBox{4}, 'String', 'Sections of ', ...
-                                    'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.GUIDir.Split_Sec = uicontrol('Style', 'edit', 'Parent', textBox{4}, 'Callback', @Split_Sec_Callback, ...
-                  'FontSize', DATA.SmallFontSize, 'Tag', 'Split_sec', 'UserData', DATA.Small_File_Length_Sec, 'String', DATA.Small_File_Length_Sec);
-        uicontrol('Style', 'text', 'Parent', textBox{4}, 'String', 'sec', ...
-                  'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');              
-        
-        textBox{5} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);                      
-        uix.Empty('Parent', textBox{5});
-        uicontrol('Style', 'PushButton', 'Parent', textBox{5}, 'Callback', @SplitFile_Button_Callback, ...
-                  'FontSize', DATA.SmallFontSize, 'String', 'Split');
-        uix.Empty('Parent', textBox{5});              
-              
-        uix.Empty('Parent', DirBox);
-        
-        
-        max_extent_control = calc_max_control_x_extend(text_handles);
-        
-        if DATA.SmallScreen
-            field_size = [max_extent_control, 170, 25];
-        else
-            field_size = [max_extent_control, 200, 25];
-        end
-        for i =  1 : 5
-            set(textBox{i}, 'Widths', field_size);
-        end
-        
-        %         if DATA.SmallScreen
-        %             hf = -0.45;
-        %             set(DirBox, 'Heights', [hf * ones(1, 2), -4] );
-        %         else
-        %             hf = -1;
-        set(DirBox, 'Heights', [-0.9, -7, -0.7, -0.7, -0.7, -0.7, -7]);
-        %         end
-        
-        %-------------------------------------------------------
-        % Record Tab
-        
-        [GUI, textBox{1}, text_handles{1}] = createGUITextLine(GUI, 'GUIRecord', 'RecordFileName_text', 'Record file name:', RecordBox, 'text', 1, @OpenFile_Callback);
-        [GUI, textBox{2}, text_handles{2}] = createGUITextLine(GUI, 'GUIRecord', 'PeaksFileName_text', 'Peaks file name:', RecordBox, 'text', 1, @OpenFile_Callback);
-        
-        [GUI, textBox{3}, text_handles{3}] = createGUITextLine(GUI, 'GUIRecord', 'DataQualityFileName_text', 'Signal quality file name:', RecordBox, 'text', 1, @OpenDataQuality_Callback);
-        
-        [GUI, textBox{4}, text_handles{4}] = createGUITextLine(GUI, 'GUIRecord', 'RhythmsFileName_text', 'Rhythms file name:', RecordBox, 'text', 1, @OpenRhythms_Callback);
-        
-        [GUI, textBox{5}, text_handles{5}] = createGUITextLine(GUI, 'GUIRecord', 'Config_text', 'Config file name:', RecordBox, 'text', 1, @LoadConfigurationFile_Callback);
-        [GUI, textBox{6}, text_handles{6}] = createGUITextLine(GUI, 'GUIRecord', 'TimeSeriesLength_text', 'Time series length:', RecordBox, 'text', 0, '');
-        [GUI, textBox{7}, text_handles{7}] = createGUITextLine(GUI, 'GUIRecord', 'Mammal_popupmenu', 'Mammal', RecordBox, 'edit', 0, '');
-        GUI.GUIRecord.Mammal_popupmenu.Callback = @Mammal_popupmenu_Callback;
-        
-        [GUI, textBox{8}, text_handles{8}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Integration_popupmenu', 'Integration level', RecordBox, @Integration_popupmenu_Callback, DATA.GUI_Integration);
-        [GUI, textBox{9}, text_handles{9}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'PeakDetector_popupmenu', 'Peak detector', RecordBox, @PeakDetector_popupmenu_Callback, DATA.GUI_PeakDetector);
-        [GUI, textBox{10}, text_handles{10}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Annotation_popupmenu', 'Annotation', RecordBox, @Annotation_popupmenu_Callback, DATA.GUI_Annotation);
-        [GUI, textBox{11}, text_handles{11}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'PeakAdjustment_popupmenu', 'Peak adjustment', RecordBox, @PeakAdjustment_popupmenu_Callback, DATA.Adjustment_type);
-%         [GUI, textBox{12}, text_handles{12}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Class_popupmenu', 'Class', RecordBox, @Class_popupmenu_Callback, DATA.GUI_Class);
-%         [GUI, textBox{13}, text_handles{13}] = createGUIPopUpMenuLine(GUI, 'GUIRecord', 'Rhythms_popupmenu', 'Rhythms', RecordBox, @Rhythms_popupmenu_Callback, DATA.Rhythms_Type);
-                
-        GUI.Adjust_textBox = textBox{11};
-        GUI.Adjustment_Text = text_handles{11};
-        GUI.Adjustment_Text.Visible = 'on';
-        
-%         GUI.Class_textBox = textBox{12};
-%         GUI.Rhythms_textBox = textBox{13};
-        
-%         GUI.GUIRecord.Class_popupmenu.Visible = 'off';
-%         GUI.GUIRecord.Class_popupmenu.Value = 3;
-%         GUI.Class_Text = text_handles{12};
-%         GUI.Class_Text.Visible = 'off';
-        
-%         GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
-%         GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
-%         GUI.Rhythms_Text = text_handles{13};
-%         GUI.Rhythms_Text.Visible = 'off';                
-        
-        max_extent_control = calc_max_control_x_extend(text_handles);
-        
-        field_size = [max_extent_control, -1, 1];
-        for i = 6 : 6
-            set(textBox{i}, 'Widths', field_size);
-        end
-        
-        if DATA.SmallScreen
-            field_size1 = [max_extent_control, -0.47, -0.5]; % -0.56, -0.2 -0.55
-        else
-            field_size1 = [max_extent_control, -0.4, -0.55]; % + 5 % -0.45, -0.5
-        end
-        
-        for i = 7 : 11 % 13
-            set(textBox{i}, 'Widths', field_size1);
-        end
-        
-        popupmenu_position = get(GUI.GUIRecord.Mammal_popupmenu, 'Position');
-                
-        if DATA.SmallScreen
-            field_size = [max_extent_control, popupmenu_position(3) + 20, 25];
-        else
-            field_size = [max_extent_control, popupmenu_position(3) + 45, 25];
-        end
-        for i = 1 : 5
-            set(textBox{i}, 'Widths', field_size);
-        end
-        
-        GUI.RhythmsHBox = uix.HBox('Parent', RecordBox, 'Spacing', DATA.Spacing, 'Visible', 'off');                                                
-        
-        uix.Empty('Parent', GUI.RhythmsHBox);
-        Rhythms_grid = uix.Grid('Parent', GUI.RhythmsHBox, 'Spacing', DATA.Spacing);
-        uix.Empty('Parent', GUI.RhythmsHBox);
-        
-        for i = 1 : length(DATA.Rhythms_Type)
-            GUI.rhythms_legend(i) = uicontrol('Style', 'ToggleButton', 'Parent', Rhythms_grid, 'Enable', 'on', 'String', DATA.Rhythms_Type{i}, ...
-                'Tooltip', DATA.rhythms_tooltip{i}, 'Callback', @Rhythms_ToggleButton_Callback, 'Value', 0, 'UserData', i);
-        end
-        if DATA.SmallScreen
-            set(Rhythms_grid, 'Widths', 34*ones(1, 3), 'Heights', -1*ones(1, length(DATA.Rhythms_Type)/3)); % 34
-        else
-            set(Rhythms_grid, 'Widths', 39*ones(1, 3), 'Heights', -1*ones(1, length(DATA.Rhythms_Type)/3)); % 60
-        end
-        
-        set(GUI.RhythmsHBox, 'Widths', field_size1);
-        
-        if DATA.SmallScreen
-            hf = -0.12; % -0.1
-            %             uix.Empty( 'Parent', RecordBox);
-            set(RecordBox, 'Heights', [hf * ones(1, 11), -1]);
-        else
-            hf = -0.12; % -0.155
-            set(RecordBox, 'Heights', [hf * ones(1, 11), -1]);
-        end
-        
-        load_config_name_button_position = get(GUI.GUIRecord.Config_text_pushbutton_handle, 'Position');
-        updated_position = [load_config_name_button_position(1) load_config_name_button_position(2) + 10 load_config_name_button_position(3) load_config_name_button_position(4) - 10];
-        set(GUI.GUIRecord.RecordFileName_text_pushbutton_handle, 'Position', updated_position, 'Enable', 'on');
-        set(GUI.GUIRecord.PeaksFileName_text_pushbutton_handle, 'Position', updated_position);
-        set(GUI.GUIRecord.Config_text_pushbutton_handle, 'Position', updated_position);
-        set(GUI.GUIRecord.DataQualityFileName_text_pushbutton_handle, 'Position', updated_position);
-        set(GUI.GUIRecord.RhythmsFileName_text_pushbutton_handle, 'Position', updated_position);
-        
-        GUI.Adjust_textBox_position = get(GUI.Adjust_textBox, 'Position');
-%         GUI.Class_textBox_position = get(GUI.Class_textBox, 'Position');
-%         GUI.Rhythms_textBox_position = get(GUI.Rhythms_textBox, 'Position');        
-%         GUI.RhythmsHBox_position = get(GUI.RhythmsHBox, 'Position');
-                
-        
-%         set(GUI.RhythmsHBox, 'Position', GUI.Class_textBox_position);
-%         get(GUI.RhythmsHBox, 'Position')
-        %-------------------------------------------------------
-        % Config Params Tab
-        
-        %         field_size = [80, 150, 10 -1];
-        
-        uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'rqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
-        
-        %         uix.Empty( 'Parent', GUI.ConfigBox );
-        
-        [GUI, textBox{1}, text_handles{1}] = createGUISingleEditLine(GUI, 'GUIConfig', 'HR', 'HR', 'BPM', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'HR');
-        [GUI, textBox{2}, text_handles{2}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QS', 'QS', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QS');
-        [GUI, textBox{3}, text_handles{3}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QT', 'QT', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QT');
-        [GUI, textBox{4}, text_handles{4}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSa', 'QRSa', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSa');
-        [GUI, textBox{5}, text_handles{5}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSamin', 'QRSamin', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSamin');
-        [GUI, textBox{6}, text_handles{6}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmin', 'RRmin', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmin');
-        [GUI, textBox{7}, text_handles{7}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmax', 'RRmax', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmax');
-        
-        uix.Empty('Parent', GUI.ConfigBox );
-        
-        uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'jqrs/wjqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
-        [GUI, textBox{8}, text_handles{8}] = createGUISingleEditLine(GUI, 'GUIConfig', 'lcf', 'Lower cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'lcf');
-        [GUI, textBox{9}, text_handles{9}] = createGUISingleEditLine(GUI, 'GUIConfig', 'hcf', 'Upper cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'hcf');
-        [GUI, textBox{10}, text_handles{10}] = createGUISingleEditLine(GUI, 'GUIConfig', 'thr', 'Threshold', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'thr');
-        [GUI, textBox{11}, text_handles{11}] = createGUISingleEditLine(GUI, 'GUIConfig', 'rp', 'Refractory period', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'rp');
-        [GUI, textBox{12}, text_handles{12}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ws', 'Window size', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ws');
-        
-        uix.Empty('Parent', GUI.ConfigBox );
-        
-        % ORI's algorithm for EGM peaks
-        uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'EGM peaks', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
-        [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ref_per', 'Refractory period', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ref_per');
-        [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIConfig', 'bi', 'BI', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'bi');
-        [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh1', 'Prominence threshold 1', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh1');
-        [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh2', 'Prominence threshold 2', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh2');
-        
-        uix.Empty('Parent', GUI.ConfigBox );
-        
-        GUI.AutoPeakWin_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', SmallFontSize, 'String', 'Auto', 'Value', 1);
-        [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window');
-        
-        uix.Empty('Parent', GUI.ConfigBox );
-        
-        %         uix.Empty('Parent', GUI.ConfigBox );
-        %         uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'Adjust R-peak location', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
-        
-        
-        %         uix.Empty('Parent', GUI.ConfigBox );
-        %
-        %         tempBox = uix.HBox('Parent', GUI.ConfigBox, 'Spacing', DATA.Spacing);
-        %         uix.Empty('Parent', tempBox );
-        %         GUI.AutoCompute_pushbutton = uicontrol( 'Style', 'PushButton', 'Parent', tempBox, 'Callback', @Del_win_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Del Win');
-        %         uix.Empty('Parent', tempBox );
-        %         uix.Empty('Parent', tempBox );
-        
-        %         uix.Empty('Parent', GUI.ConfigBox );
-        %         set(GUI.ConfigBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7   -1 -7 -7 -7 -7 -7 -7   -8 -7 -7   -7 -7] );
-        
-        
-        
-        set(GUI.ConfigBox, 'Heights', [-15 * ones(1, 8)   -0.5 -15 * ones(1, 6) -0.5 -15 * ones(1, 5)  -0.5 -15 -15 -150]);
-        %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)   -1 -7 * ones(1, 6) -1 -7 * ones(1, 4)  -8 -7 -7 ] );
-        %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)    -7 * ones(1, 6) -7 * ones(1, 4)  -7 -7 ] );
-        %-------------------------------------------------------
-        % Display Tab
-        %         field_size = [110, 140, 10, -1];
-        
-        uix.Empty('Parent', DisplayBox);
-        
-        [GUI, textBox{18}, text_handles{18}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', 0);
-        [GUI, textBox{19}, text_handles{19}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', 0);
-        
-        %         field_size = [110, 64, 4, 63, 10];
-        [GUI, YLimitBox, text_handles{20}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', []);
-        
-        uix.Empty('Parent', DisplayBox);
-        
-        [GUI, textBox{21}, text_handles{21}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
-        [GUI, YLimitBox2, text_handles{22}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', []);
-        
-        uix.Empty('Parent', DisplayBox);
-        
-        [GUI, textBox{23}, text_handles{23}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'Movie_Delay', 'Movie Speed:', 'n.u.', DisplayBox, @Movie_Delay_Callback, '', 2);
-        GUI.GUIDisplay.Movie_Delay.String = 2;
-        
-        uix.Empty('Parent', DisplayBox);
-        
-        tempBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
-        
-        GUI.GridX_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox, 'Callback', @GridX_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid X', 'Value', 1);
-        GUI.GridY_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox, 'Callback', @GridY_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid Y', 'Value', 1);
-        uix.Empty('Parent', tempBox);
-        uix.Empty('Parent', tempBox);
-        
-        uix.Empty('Parent', DisplayBox);
-        
-%         GUI.ChannelsBox = uix.HBox( 'Parent', DisplayBox, 'Spacing', DATA.Spacing);
-        
-%         GUI.RawSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ChannelsBox, 'Callback', @ShowRawSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show raw signal', 'Value', 1);
-        
-        GUI.FilteredSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', DisplayBox, 'Callback', @ShowFilteredSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show filtered signal', 'Value', 0);
-        
-%         uix.Empty('Parent', DisplayBox);
-        
-        [GUI, textBox{24}, text_handles{24}] = createGUIPopUpMenuLine(GUI, 'GUIDisplay', 'FilterLevel_popupmenu', 'Filter level', DisplayBox,...
-            @FilterLevel_popupmenu_Callback, {'Weak'; 'Moderate'; 'Strong'});
-        
-        [GUI, CutoffFr, text_handles{25}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'LowCutoffFr_Edit'; 'HightCutoffFr_Edit'}, 'Cutoff Frequency:', 'Hz', DisplayBox, {@LowHightCutoffFr_Edit; @LowHightCutoffFr_Edit}, '', []);
-        set_default_filter_level_user_data();
-        
-        uix.Empty('Parent', DisplayBox);
-
-
-        [GUI, textBox{26}, text_handles{26}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinRhythmsRange_Edit'; 'MaxRhythmsRange_Edit'}, 'Rhythms range:', 'h:min:sec', DisplayBox, {@MinMaxRhythmsRange_Edit_Callback; @MinMaxRhythmsRange_Edit_Callback}, '', []);
-        
-        RhythmsHBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
-        text_handles{27} = uicontrol('Style', 'text', 'Parent', RhythmsHBox, 'String', 'Rhythms', 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
-        GUI.RhythmsListbox = uicontrol('Style', 'ListBox', 'Parent', RhythmsHBox, 'Callback', @Rhythms_listbox_Callback, 'FontSize', DATA.SmallFontSize, 'Tag', 'RhythmsList');
-        
-        
-        uix.Empty('Parent', DisplayBox);
-        
-        GUI.FilterLevelBox = textBox{24};
-        GUI.CutoffFrBox = CutoffFr;
-        
-        GUI.FilterLevelBox.Visible = 'off';
-        GUI.CutoffFrBox.Visible = 'off';
-        
-        set(GUI.GUIDisplay.FirstSecond, 'Enable', 'on');
-        set(GUI.GUIDisplay.WindowSize, 'Enable', 'on');
-        set(GUI.GUIDisplay.MinYLimit_Edit, 'Enable', 'inactive');
-        set(GUI.GUIDisplay.MaxYLimit_Edit, 'Enable', 'inactive');
-        set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'Enable', 'inactive');
-        set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'Enable', 'inactive');
-        
-        max_extent_control = calc_max_control_x_extend(text_handles);
-        
-        if DATA.SmallScreen
-            field_size = [max_extent_control, 120, 1 -1]; % max_extent_control, 150, 10 -1
-        else
-            field_size = [max_extent_control, 140, 1 -1]; % max_extent_control, 150, 10 -1
-        end
-        
-        for i = 1 : length(text_handles) - 4
-            set(textBox{i}, 'Widths', field_size);
-        end
-        
-        set(textBox{23}, 'Widths', field_size);
-        set(tempBox, 'Widths', field_size);
-        
-        if DATA.SmallScreen
-            field_size = [max_extent_control, 120, -1];
-        else
-            field_size = [max_extent_control, 140, -1];
-        end
-        set(textBox{24}, 'Widths', field_size);
-        
-        if DATA.SmallScreen
-            field_size = [max_extent_control, 56, 5, 53, 1];
-        else
-            field_size = [max_extent_control, 66, 5, 63, 1];
-        end
-        set(YLimitBox, 'Widths', field_size);
-        set(YLimitBox2, 'Widths', field_size);
-        
-        GUI.AutoScaleY_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox, 'Callback', @AutoScaleY_pushbutton_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
-        set(YLimitBox, 'Widths', [field_size, 150]);
-        
-        GUI.AutoScaleYLowAxes_checkbox = uicontrol('Style', 'Checkbox', 'Parent', YLimitBox2, 'Callback', @AutoScaleYLowAxes_pushbutton_Callback, 'FontSize', DATA.BigFontSize, 'String', 'Auto Scale Y', 'Value', 1, 'Enable', 'on');
-        set(YLimitBox2, 'Widths', [field_size, 150]);
-        
-        if DATA.SmallScreen
-            field_size = [max_extent_control, 56, 5, 53, 1, -1];
-        else
-            field_size = [max_extent_control, 66, 5, 63, 1, -1];
-        end
-        set(CutoffFr, 'Widths', field_size);
-        set(textBox{26}, 'Widths', field_size);
-        
-        if DATA.SmallScreen
-            set(RhythmsHBox, 'Widths', [max_extent_control 120]);
-        else
-            set(RhythmsHBox, 'Widths', [max_extent_control 140]);
-        end
-                        
-        if DATA.SmallScreen
-            set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6  -4 -6  -2   -6  -7 -6 -2 -6 -30 -30]);
-        else
-            set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6  -3 -6  -2   -6  -7 -6 -6 -6 -40 -1]);
-        end
-        
-        %-------------------------------------------------------
-        
-        % Low Part
-        
-        Low_TabPanel = uix.TabPanel('Parent', Low_Part_BoxPanel, 'Padding', DATA.Padding);
-        
-        PeaksTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
-        RhythmsTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
-        
-        Low_TabPanel.TabTitles = {'Peaks', 'Rhythms'};
-        Low_TabPanel.TabWidth = 100;
-        Low_TabPanel.FontSize = BigFontSize;
-        
-        Low_Part_Box = uix.VBox('Parent', PeaksTab, 'Spacing', DATA.Spacing);
-        
-        GUI.PeaksTable = uitable('Parent', Low_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{550 'auto'}, 'FontName', 'Calibri');
-        GUI.PeaksTable.ColumnName = {'Description'; 'Values'};
-        GUI.PeaksTable.RowName = {'NB PEAKS (n.u.)'; 'NB PEAKS ADD (n.u.)'; 'NB PEAKS RM (n.u.)'; 'PR BAD SQ (%)'};
-        GUI.PeaksTable.Data = {''};
-        GUI.PeaksTable.Data(1, 1) = {'Total number of peaks'};    % Number of peaks detected by the peak detection algorithm
-        GUI.PeaksTable.Data(2, 1) = {'Number of peaks manually added by the user'}; % Number of peaks manually added by the user
-        GUI.PeaksTable.Data(3, 1) = {'Number of peaks manually removed by the user'}; % Number of peaks manually removed by the user
-        GUI.PeaksTable.Data(4, 1) = {['Percentage of the record annotated as bad quality (i.e. signal quality ' sprintf('\x2260') ' ''A'')']};
-        GUI.PeaksTable.Data(:, 2) = {0};
-        
-        %--------------------------------------------------------------------------
-        
-        Rhythms_Part_Box = uix.VBox('Parent', RhythmsTab, 'Spacing', DATA.Spacing);
-        GUI.RhythmsTable = uitable('Parent', Rhythms_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{250 'auto' 'auto' 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
-        GUI.RhythmsTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Median (sec)'; 'Q1 (sec)'; 'Q3 (sec)'; 'Burden (%)'; 'Nb events'};
-        GUI.RhythmsTable.Data = {};
-        GUI.RhythmsTable.RowName = {};
-        
-        %--------------------------------------------------------------------------
-        
-        set(findobj(Upper_Part_Box,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
-        set(findobj(Upper_Part_Box,'Style', 'text'), 'BackgroundColor', myUpBackgroundColor);
-        set(findobj(Upper_Part_Box,'Style', 'slider'), 'BackgroundColor', mySliderColor);
-        set(findobj(Upper_Part_Box,'Style', 'checkbox'), 'BackgroundColor', myUpBackgroundColor);
-        set(findobj(Upper_Part_Box,'Style', 'ToggleButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
-        set(findobj(Upper_Part_Box,'Style', 'PushButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
-        set(findobj(Upper_Part_Box,'Type', 'uicontainer'), 'BackgroundColor', myUpBackgroundColor);
-        set(findobj(Upper_Part_Box,'Type', 'uipanel'), 'BackgroundColor', myUpBackgroundColor);
-        
-        % Low Part
-        set(findobj(Low_Part_BoxPanel,'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
-        set(findobj(Low_Part_BoxPanel,'Type', 'uipanel'), 'BackgroundColor', myLowBackgroundColor);
-        set(findobj(Low_Part_BoxPanel,'Style', 'edit'), 'BackgroundColor', myEditTextColor);
-        set(findobj(Low_Part_BoxPanel,'Style', 'text'), 'BackgroundColor', myLowBackgroundColor);
-        
-        GUI.Rhythms_handle.BackgroundColor = [52 204 255]/255; % [131 255 226]/255   255 131 160
-        GUI.Rhythms_handle.ForegroundColor = [255 255 255]/255;
-        
-        for i = 1 : length(DATA.Rhythms_Type)
-            GUI.rhythms_legend(i).BackgroundColor = DATA.rhythms_color{i};
-        end
-        
-        GUI.OpenDataQuality.Enable = 'off';
-        GUI.SaveDataQuality.Enable = 'off';
-        
-        GUI.SaveRhythms.Enable = 'off';
-        GUI.OpenRhythms.Enable = 'off';
-        
-        GUI.LoadConfigurationFile.Enable = 'off';
-        GUI.SaveConfigurationFile.Enable = 'off';
-        GUI.SavePeaks.Enable = 'off';
-        GUI.SaveFiguresFile.Enable = 'off';
-        %GUI.LoadPeaks.Enable = 'off';
-        
-        GUI.PlayStopForwMovieButton.ForegroundColor = [0 1 0];
-        GUI.PlayStopReverseMovieButton.ForegroundColor = [0 1 0];
-        GUI.PageDownButton.ForegroundColor = [0 0 1];
-        GUI.PageUpButton.ForegroundColor = [0 0 1];
     end
 %%
     function [GUI, TempBox, uicontrol_handle] = createGUITextLine(GUI, gui_struct, field_name, string_field_name, box_container, style, isOpenButton, callback_openButton)
@@ -1349,7 +1396,7 @@ end
                         DATA.sig = data.Data.Data;
                         time_data = data.Time.Data;
                         DATA.tm = time_data - time_data(1);
-%                         DATA.tm = time_data;
+                        %                         DATA.tm = time_data;
                         
                         %                         [t_max, h, m, s ,ms] = mhrv.wfdb.signal_duration(length(DATA.tm), DATA.Fs);
                         %                         header_info = struct('duration', struct('h', h, 'm', m, 's', s, 'ms', ms), 'total_seconds', t_max);
@@ -1405,7 +1452,7 @@ end
                                             return;
                                         else
                                             throw(MException('OpenFile:LoadPeaks', 'Load Peaks failed'));
-                                        end                                        
+                                        end
                                     end
                                 else
                                     isM2 = 0;
@@ -1416,10 +1463,10 @@ end
                                         close(waitbar_handle);
                                     end
                                     if nargin < 3
-                                            return;
+                                        return;
                                     else
                                         throw(MException('OpenFile:NoECGFile', 'Please, load ECG file first'));
-                                    end                                    
+                                    end
                                 end
                             case 'Cancel'
                                 isM2 = 1;
@@ -1461,7 +1508,7 @@ end
                 
                 GUI.RawChannelsData_handle(1) = GUI.RawData_handle;
                 
-                [~, ch_no] = size(DATA.sig);  
+                [~, ch_no] = size(DATA.sig);
                 GUI.offset_array = zeros(1, ch_no);
                 GUI.offset_array(1) = 0;
                 
@@ -1469,12 +1516,12 @@ end
                     GUI.offset_array(i) = offset;
                     GUI.RawChannelsData_handle(i) = line(DATA.tm, DATA.sig(:, i) + offset, 'Parent', GUI.ECG_Axes,...
                         'Tag', ['RawData_' num2str(i)], 'Color', DATA.Ch_Colors{mod(i-1, 3)+1});
-                    offset = min(GUI.RawChannelsData_handle(i).YData)*1.05; % +offset                    
+                    offset = min(GUI.RawChannelsData_handle(i).YData)*1.05; % +offset
                     GUI.RawChannelsData_handle(i).Visible = 'off';
                 end
                 
                 DATA.amp_counter = zeros(1, length(GUI.RawChannelsData_handle));
-                                
+                
                 PathName = strrep(PathName, '\', '\\');
                 PathName = strrep(PathName, '_', '\_');
                 ECG_FileName_title = strrep(ECG_FileName, '_', '\_');
@@ -1482,10 +1529,10 @@ end
                 TitleName = [PathName ECG_FileName_title] ;
                 title(GUI.ECG_Axes, TitleName, 'FontWeight', 'normal', 'FontSize', 11);
                 
-% -----------------------------------------------------                
+                % -----------------------------------------------------
                 DATA.firstZoom = min(60, max(DATA.tm)); % sec
                 DATA.zoom_rect_limits = [0 DATA.firstZoom];
-% -----------------------------------------------------                  
+                % -----------------------------------------------------
                 
                 right_limit2plot = min(DATA.firstZoom, max(DATA.tm));
                 setECGXLim(0, right_limit2plot);
@@ -1499,7 +1546,7 @@ end
                 %                     num2str(header_info.duration.s) '.' num2str(header_info.duration.ms)] '    h:min:sec.msec']);
                 
                 set(GUI.GUIRecord.TimeSeriesLength_text, 'String', [calcDuration(DATA.tm(end), 1) '    h:min:sec.msec']);
-                              
+                
                 if GUI.AutoCalc_checkbox.Value
                     try
                         RunAndPlotPeakDetector();
@@ -1536,20 +1583,20 @@ end
                 end
                 
                 table_data = cell(ch_no, 2);
-%                 table_data(1, 1) = {data.Data.Names{1}};
+                %                 table_data(1, 1) = {data.Data.Names{1}};
                 table_data(1, 1) = {names_array{1}};
-                table_data(1, 2) = {true};                                
+                table_data(1, 2) = {true};
                 
-%                 [~, ch_no] = size(DATA.sig);                
+                %                 [~, ch_no] = size(DATA.sig);
                 for i = 2 : ch_no
-%                     GUI.ChISignal_checkbox(i-1) = uicontrol('Style', 'Checkbox', 'Parent', GUI.ChannelsBox, 'Callback', @ShowChISignal_checkbox_Callback, 'FontSize', DATA.SmallFontSize);
-%                     GUI.ChISignal_checkbox(i-1).String = ['Show ''' data.Data.Names{i} ''' channel'];
-%                     GUI.ChISignal_checkbox(i-1).Visible = 'on';
-%                     GUI.ChISignal_checkbox(i-1).Value = 0;
-%                     GUI.ChISignal_checkbox(i-1).UserData = i-1;
-%                     GUI.ChISignal_checkbox(i-1).BackgroundColor = myUpBackgroundColor;
-
-%                     table_data(i, 1) = {data.Data.Names{i}};
+                    %                     GUI.ChISignal_checkbox(i-1) = uicontrol('Style', 'Checkbox', 'Parent', GUI.ChannelsBox, 'Callback', @ShowChISignal_checkbox_Callback, 'FontSize', DATA.SmallFontSize);
+                    %                     GUI.ChISignal_checkbox(i-1).String = ['Show ''' data.Data.Names{i} ''' channel'];
+                    %                     GUI.ChISignal_checkbox(i-1).Visible = 'on';
+                    %                     GUI.ChISignal_checkbox(i-1).Value = 0;
+                    %                     GUI.ChISignal_checkbox(i-1).UserData = i-1;
+                    %                     GUI.ChISignal_checkbox(i-1).BackgroundColor = myUpBackgroundColor;
+                    
+                    %                     table_data(i, 1) = {data.Data.Names{i}};
                     table_data(i, 1) = {names_array{i}};
                     table_data(i, 2) = {false};
                 end
@@ -1827,7 +1874,7 @@ end
 %%
     function [low_y_lim, hight_y_lim] = calc_auto_y_low_axes_lim()
         xlim = get(GUI.RRInt_Axes, 'XLim');
-%         ylim = get(GUI.RRInt_Axes, 'YLim');
+        %         ylim = get(GUI.RRInt_Axes, 'YLim');
         
         if isfield(DATA, 'rr_data_filtered') && ~isempty(DATA.rr_data_filtered)
             
@@ -1845,10 +1892,10 @@ end
                 max_y_lim = max(min_sig, max_sig) + delta;
             end
             
-%             if DATA.PlotHR == 1
-%                 max_y_lim = 60 ./ max_y_lim;
-%                 min_y_lim = 60 ./ min_y_lim;
-%             end
+            %             if DATA.PlotHR == 1
+            %                 max_y_lim = 60 ./ max_y_lim;
+            %                 min_y_lim = 60 ./ min_y_lim;
+            %             end
             
             low_y_lim = min(min_y_lim, max_y_lim);
             hight_y_lim = max(min_y_lim, max_y_lim);
@@ -1950,6 +1997,27 @@ end
             if isfield(GUI, 'red_peaks_handle') && ishandle(GUI.red_peaks_handle) && isvalid(GUI.red_peaks_handle)
                 delete(GUI.red_peaks_handle);
             end
+            if isfield(GUI, 'P_linehandle') && ishandle(GUI.P_linehandle) && isvalid(GUI.P_linehandle)
+                delete(GUI.P_linehandle);
+                GUI = rmfield(GUI, 'P_linehandle');
+            end
+            if isfield(GUI, 'Q_linehandle') && ishandle(GUI.Q_linehandle) && isvalid(GUI.Q_linehandle)
+                delete(GUI.Q_linehandle);
+                GUI = rmfield(GUI, 'Q_linehandle');
+            end
+            if isfield(GUI, 'S_linehandle') && ishandle(GUI.S_linehandle) && isvalid(GUI.S_linehandle)
+                delete(GUI.S_linehandle);
+                GUI = rmfield(GUI, 'S_linehandle');
+            end
+            if isfield(GUI, 'T_linehandle') && ishandle(GUI.T_linehandle) && isvalid(GUI.T_linehandle)
+                delete(GUI.T_linehandle);
+                GUI = rmfield(GUI, 'T_linehandle');
+            end
+            GUI.P_checkbox.Value = 0;
+            GUI.Q_checkbox.Value = 0;
+            GUI.R_checkbox.Value = 1;
+            GUI.S_checkbox.Value = 0;
+            GUI.T_checkbox.Value = 0;
             try
                 if isfield(DATA, 'customConfigFile') && ~strcmp(DATA.customConfigFile, '')
                     
@@ -2015,14 +2083,14 @@ end
                         GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
                         uistack(GUI.red_peaks_handle, 'top');  % bottom
                         
-% ---------------------------                                                
+                        % ---------------------------
                         if DATA.amp_counter(1) > 0
                             coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(1));
                         else
                             coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
                         end
                         GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData / coeff;
-% ---------------------------                        
+                        % ---------------------------
                         
                         plot_rr_data();
                         plot_red_rectangle(DATA.zoom_rect_limits);
@@ -2074,6 +2142,13 @@ end
             GUI.timer_object = timer;
             GUI.timer_object.ExecutionMode = 'fixedRate';
             GUI.timer_object.StopFcn = @EnablePageUpDown;
+            
+            if ~isempty(DATA.qrs) && ~all(isnan(DATA.qrs))
+                GUI.CalcPeaksButton_handle.Enable = 'on';
+            else
+                GUI.CalcPeaksButton_handle.Enable = 'inactive';
+            end
+            
         end
     end
 %%
@@ -2105,7 +2180,7 @@ end
                 GUI.RRInt_handle = line(rr_time, rr_data, 'Parent', GUI.RRInt_Axes, 'Marker', '*', 'MarkerSize', 2, 'Tag', 'RRInt');
                 
                 DATA.maxRRTime = max(DATA.tm);
-%                 DATA.RRIntPage_Length = DATA.maxRRTime;
+                %                 DATA.RRIntPage_Length = DATA.maxRRTime;
                 DATA.RRIntPage_Length = max(rr_time);
                 ylabel(GUI.RRInt_Axes, yString);
                 
@@ -2135,7 +2210,7 @@ end
                         else
                             DATA.rr_data_filtered = rr_data_filtered;
                             DATA.rr_time_filtered = rr_time_filtered;
-                        end                        
+                        end
                     catch e
                         %                     rethrow(e);
                         DATA.rr_data_filtered = rr_data;
@@ -2486,9 +2561,9 @@ end
                             Mammal = data.General.mammal;
                             integration = data.General.integration_level;
                             DATA.Fs = data.Time.Fs;
-                                                                                    
+                            
                             time_data = data.Time.Data;
-                            DATA.qrs = int64(time_data * DATA.Fs);                            
+                            DATA.qrs = int64(time_data * DATA.Fs);
                             DATA.qrs_saved = DATA.qrs;
                             
                             if ~strcmp(Mammal, DATA.config_map('mammal')) || ~strcmp(integration, DATA.Integration_From_Files{DATA.integration_index})
@@ -2512,7 +2587,7 @@ end
                     h_e = errordlg(['onOpenFile error: ' e.message], 'Input Error');
                     setLogo(h_e, 'M1');
                     rethrow(e);
-%                     return;
+                    %                     return;
                 end
             else
                 h_e = errordlg(['on Load Peaks error: ' 'Please, choose another file type.'], 'Input Error');
@@ -2535,26 +2610,48 @@ end
                 if isfield(GUI, 'red_peaks_handle') && ishandle(GUI.red_peaks_handle) && isvalid(GUI.red_peaks_handle)
                     delete(GUI.red_peaks_handle);
                 end
+                if isfield(GUI, 'P_linehandle') && ishandle(GUI.P_linehandle) && isvalid(GUI.P_linehandle)
+                    delete(GUI.P_linehandle);
+                    GUI = rmfield(GUI, 'P_linehandle');
+                end
+                if isfield(GUI, 'Q_linehandle') && ishandle(GUI.Q_linehandle) && isvalid(GUI.Q_linehandle)
+                    delete(GUI.Q_linehandle);
+                    GUI = rmfield(GUI, 'Q_linehandle');
+                end
+                if isfield(GUI, 'S_linehandle') && ishandle(GUI.S_linehandle) && isvalid(GUI.S_linehandle)
+                    delete(GUI.S_linehandle);
+                    GUI = rmfield(GUI, 'S_linehandle');
+                end
+                if isfield(GUI, 'T_linehandle') && ishandle(GUI.T_linehandle) && isvalid(GUI.T_linehandle)
+                    delete(GUI.T_linehandle);
+                    GUI = rmfield(GUI, 'T_linehandle');
+                end
+                GUI.P_checkbox.Value = 0;
+                GUI.Q_checkbox.Value = 0;
+                GUI.R_checkbox.Value = 1;
+                GUI.S_checkbox.Value = 0;
+                GUI.T_checkbox.Value = 0;
+                
                 DATA.qrs = double(DATA.qrs);
                 GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
                 uistack(GUI.red_peaks_handle, 'top');
                 
-%  ---------------------------                                                
+                %  ---------------------------
                 if DATA.amp_counter(1) > 0
                     coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(1));
                 else
                     coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
                 end
                 GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData / coeff;
-% ---------------------------                   
+                % ---------------------------
                 
                 if isfield(GUI, 'RRInt_handle') && ishandle(GUI.RRInt_handle) && isvalid(GUI.RRInt_handle)
                     delete(GUI.RRInt_handle);
                 end
                 try
-%                     delete(GUI.red_rect_handle);
-%                     delete(GUI.RRInt_handle);
-                                                            
+                    %                     delete(GUI.red_rect_handle);
+                    %                     delete(GUI.RRInt_handle);
+                    
                     if isfield(GUI, 'red_rect_handle') && ishandle(GUI.red_rect_handle) && isvalid(GUI.red_rect_handle)
                         delete(GUI.red_rect_handle);
                     end
@@ -2577,7 +2674,7 @@ end
                     set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
                     set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
                     set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
-                                        
+                    
                     set(GUI.Window, 'WindowScrollWheelFcn', @my_WindowScrollWheelFcn);
                     set(GUI.Window, 'WindowKeyPressFcn', @my_WindowKeyPressFcn);
                     set(GUI.Window, 'WindowKeyReleaseFcn', @my_WindowKeyReleaseFcn);
@@ -2592,6 +2689,13 @@ end
                 h_e = errordlg('The algorithm could not run. Please, check input parameters.', 'Input Error');
                 setLogo(h_e, 'M1');
             end
+            
+            if ~isempty(DATA.qrs) && ~all(isnan(DATA.qrs))
+                GUI.CalcPeaksButton_handle.Enable = 'on';
+            else
+                GUI.CalcPeaksButton_handle.Enable = 'inactive';
+            end
+            
         end
     end
 %%
@@ -2745,7 +2849,7 @@ end
                 delete(GUI.red_rect_handle);
                 delete(GUI.RRInt_handle);
                 
-                plot_rr_data();                
+                plot_rr_data();
                 [low_y_lim, hight_y_lim] = calc_auto_y_low_axes_lim();
                 set(GUI.RRInt_Axes, 'YLim', [low_y_lim hight_y_lim]);
                 plot_red_rectangle(DATA.zoom_rect_limits);
@@ -2754,7 +2858,7 @@ end
                 
                 set_rectangles_YData();
             catch e
-%                 disp(e.message);
+                %                 disp(e.message);
             end
         end
     end
@@ -2772,11 +2876,11 @@ end
         if isfield(DATA, 'sig') && ~isempty(DATA.sig)
             
             GUI.RawData_handle.Visible = 'on';
-                                    
+            
             GUI.ChannelsTable.Data(:, 2) = {false};
             GUI.ChannelsTable.Data(1, 2) = {true};
             
-            for i = 1 : length(GUI.RawChannelsData_handle)                
+            for i = 1 : length(GUI.RawChannelsData_handle)
                 GUI.RawChannelsData_handle(i).Visible = 'on';
                 GUI.ChannelsTable.UserData = i;
                 amp_plus_minus_pushbutton_Callback(GUI.ChAmpSourceButton);
@@ -2785,7 +2889,7 @@ end
             GUI.ChannelsTable.UserData = [];
             GUI.RawChannelsData_handle(1).Visible = 'on';
             
-            DATA.amp_counter = zeros(1, length(GUI.RawChannelsData_handle));                        
+            DATA.amp_counter = zeros(1, length(GUI.RawChannelsData_handle));
             
             if isfield(GUI, 'quality_win')
                 delete(GUI.quality_win);
@@ -2797,6 +2901,28 @@ end
                 DATA.peaks_bad_quality = 0;
             end
             
+            GUI.P_checkbox.Value = 0;
+            GUI.Q_checkbox.Value = 0;
+            GUI.R_checkbox.Value = 1;
+            GUI.S_checkbox.Value = 0;
+            GUI.T_checkbox.Value = 0;
+            
+            if isfield(GUI, 'P_linehandle')
+                delete(GUI.P_linehandle);
+                GUI = rmfield(GUI, 'P_linehandle');
+            end
+            if isfield(GUI, 'Q_linehandle')
+                delete(GUI.Q_linehandle);
+                GUI = rmfield(GUI, 'Q_linehandle');
+            end
+            if isfield(GUI, 'S_linehandle')
+                delete(GUI.S_linehandle);
+                GUI = rmfield(GUI, 'S_linehandle');
+            end
+            if isfield(GUI, 'T_linehandle')
+                delete(GUI.T_linehandle);
+                GUI = rmfield(GUI, 'T_linehandle');
+            end
             
             GUI.RhythmsListbox.String = '';
             GUI.RhythmsListbox.UserData = [];
@@ -2833,27 +2959,27 @@ end
             set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
             
             GUI.GUIRecord.Annotation_popupmenu.Value = 1;
-%             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
-%             GUI.Class_Text.Visible = 'off';
-%             GUI.GUIRecord.Class_popupmenu.Value = 3;
+            %             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
+            %             GUI.Class_Text.Visible = 'off';
+            %             GUI.GUIRecord.Class_popupmenu.Value = 3;
             
-%             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
-%             GUI.Rhythms_Text.Visible = 'off';
-%             GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
+            %             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
+            %             GUI.Rhythms_Text.Visible = 'off';
+            %             GUI.GUIRecord.Rhythms_popupmenu.Value = 1;
             
             
-%             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
-%             GUI.Adjustment_Text.Visible = 'on';
-            GUI.Adjustment_Text.String = 'Peak adjustmen';            
-            GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;            
-            GUI.GUIRecord.PeakAdjustment_popupmenu.String = DATA.Adjustment_type;            
+            %             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
+            %             GUI.Adjustment_Text.Visible = 'on';
+            GUI.Adjustment_Text.String = 'Peak adjustmen';
+            GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
+            GUI.GUIRecord.PeakAdjustment_popupmenu.String = DATA.Adjustment_type;
             GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @PeakAdjustment_popupmenu_Callback;
             
             
-%             set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
-%             set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
-%             set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
-%             set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
+            %             set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
+            %             set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
+            %             set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
+            %             set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
             DATA.Adjust = 0;
             
             GUI.GridX_checkbox.Value = 1;
@@ -2866,8 +2992,8 @@ end
             GUI.AutoScaleY_checkbox.Value = 1;
             GUI.AutoScaleYLowAxes_checkbox.Value = 1;
             
-%             AutoScaleY_pushbutton_Callback(GUI.AutoScaleY_checkbox);
-%             AutoScaleYLowAxes_pushbutton_Callback(GUI.AutoScaleYLowAxes_checkbox);
+            %             AutoScaleY_pushbutton_Callback(GUI.AutoScaleY_checkbox);
+            %             AutoScaleYLowAxes_pushbutton_Callback(GUI.AutoScaleYLowAxes_checkbox);
             
             
             set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'UserData', []);
@@ -2885,7 +3011,7 @@ end
             DATA.Rhythms_file_name = '';
             set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
             
-%             GUI.RawSignal_checkbox.Value = 1;
+            %             GUI.RawSignal_checkbox.Value = 1;
             GUI.FilteredSignal_checkbox.Value = 0;
             GUI.GUIDisplay.FilterLevel_popupmenu.Value = 1;
             %             GUI.GUIDisplay.LowCutoffFr_Edit.String = 0.5;
@@ -3049,7 +3175,7 @@ end
         if isfield(DATA, 'Rhythms_Map')
             rhythms_starts =  DATA.Rhythms_Map.keys();
             for i = 1 : length(rhythms_starts)
-                                               
+                
                 rhythms_struct = DATA.Rhythms_Map(rhythms_starts{i});
                 
                 need2drawPatch = need2drawRhythm(xlim, rhythms_struct);
@@ -3069,7 +3195,7 @@ end
                     end
                     if isgraphics(rhythms_struct.rhythm_handle, 'patch')
                         set(rhythms_struct.rhythm_handle, 'YData', [min(ylim) min(ylim) max(ylim) max(ylim)]);
-                                                
+                        
                         r_start = GUI.RhythmsListbox.UserData(GUI.RhythmsListbox.Value);
                         if r_start == rhythms_starts{i}
                             rhythms_struct.rhythm_handle.LineWidth = 3;
@@ -3099,7 +3225,7 @@ end
     function plot_rhythms_line(DATA_QualityAnnotations_Data, DATA_Class)
         if ~isempty(DATA_QualityAnnotations_Data)
             
-%             reset_rhythm_linewidth_bottomaxes();
+            %             reset_rhythm_linewidth_bottomaxes();
             
             if isfield(GUI, 'RhythmsHandle_AllDataAxes')  && any(isvalid(GUI.RhythmsHandle_AllDataAxes))
                 prev_rhythms_win_num = length(GUI.RhythmsHandle_AllDataAxes);
@@ -3109,7 +3235,7 @@ end
             
             qd_size = size(DATA_QualityAnnotations_Data);
             intervals_num = qd_size(1);
-
+            
             ylim = get(GUI.RRInt_Axes, 'YLim');
             f = [1 2 3 4];
             
@@ -3121,8 +3247,8 @@ end
                 if ~is_member
                     class_ind = 1;
                 end
-%                 ylim = get(GUI.RRInt_Axes, 'YLim');
-%                 f = [1 2 3 4];
+                %                 ylim = get(GUI.RRInt_Axes, 'YLim');
+                %                 f = [1 2 3 4];
                 
                 rhythm_start = DATA_QualityAnnotations_Data(i,1);
                 rhythm_end = DATA_QualityAnnotations_Data(i,2);
@@ -3189,7 +3315,7 @@ end
 %%
     function patch_handle = plot_rhythms_rect(rhythms_range, rhythms_win_num, rhythms_class)
         
-        reset_rhythm_linewidth_topaxes();        
+        reset_rhythm_linewidth_topaxes();
         
         ylim = get(GUI.ECG_Axes, 'YLim');
         
@@ -3244,8 +3370,8 @@ end
                     if min(quality_range) ~= max(quality_range)
                         DATA.quality_win_num = DATA.quality_win_num + 1;
                         
-%                         classes = get(GUI.GUIRecord.Class_popupmenu, 'String');
-%                         quality_class = GUI.GUIRecord.Class_popupmenu.Value;
+                        %                         classes = get(GUI.GUIRecord.Class_popupmenu, 'String');
+                        %                         quality_class = GUI.GUIRecord.Class_popupmenu.Value;
                         
                         classes = get(GUI.GUIRecord.PeakAdjustment_popupmenu, 'String');
                         quality_class = GUI.GUIRecord.PeakAdjustment_popupmenu.Value;
@@ -3266,15 +3392,15 @@ end
                     if min(rhythms_range) ~= max(rhythms_range)
                         DATA.rhythms_win_num = DATA.rhythms_win_num + 1;
                         
-%                         classes = get(GUI.GUIRecord.Rhythms_popupmenu, 'String');
-%                         rhythms_class = GUI.GUIRecord.Rhythms_popupmenu.Value;
+                        %                         classes = get(GUI.GUIRecord.Rhythms_popupmenu, 'String');
+                        %                         rhythms_class = GUI.GUIRecord.Rhythms_popupmenu.Value;
                         
                         classes = get(GUI.GUIRecord.PeakAdjustment_popupmenu, 'String');
                         rhythms_class = GUI.GUIRecord.PeakAdjustment_popupmenu.Value;
-                                                
+                        
                         rhythms_handle = plot_rhythms_rect(rhythms_range, 0, rhythms_class); % DATA.rhythms_win_num
                         
-%                         rhythms_handle.LineWidth = 3;
+                        %                         rhythms_handle.LineWidth = 3;
                         
                         rhythms_struct.rhythm_type = classes{rhythms_class};
                         rhythms_struct.rhythm_range = [min(rhythms_range) max(rhythms_range)];
@@ -3298,18 +3424,18 @@ end
                         
                         Update_Rhythms_ListBox(rhythms_struct);
                         
-%                         CurrentName = {[rhythms_struct.rhythm_type '_' num2str(min(rhythms_range))]};
-%                         if isempty(GUI.RhythmsListbox.String)
-%                             GUI.RhythmsListbox.String = CurrentName;
-%                             GUI.RhythmsListbox.UserData = min(rhythms_range);
-%                         else
-%                             GUI.RhythmsListbox.String(end+1) = CurrentName;
-%                             GUI.RhythmsListbox.UserData = [GUI.RhythmsListbox.UserData min(rhythms_range)];
-%                             GUI.RhythmsListbox.Value = length(GUI.RhythmsListbox.String);
-%                         end
-%                         
-%                         GUI.GUIDisplay.MinRhythmsRange_Edit.String = min(rhythms_range);
-%                         GUI.GUIDisplay.MaxRhythmsRange_Edit.String = max(rhythms_range);
+                        %                         CurrentName = {[rhythms_struct.rhythm_type '_' num2str(min(rhythms_range))]};
+                        %                         if isempty(GUI.RhythmsListbox.String)
+                        %                             GUI.RhythmsListbox.String = CurrentName;
+                        %                             GUI.RhythmsListbox.UserData = min(rhythms_range);
+                        %                         else
+                        %                             GUI.RhythmsListbox.String(end+1) = CurrentName;
+                        %                             GUI.RhythmsListbox.UserData = [GUI.RhythmsListbox.UserData min(rhythms_range)];
+                        %                             GUI.RhythmsListbox.Value = length(GUI.RhythmsListbox.String);
+                        %                         end
+                        %
+                        %                         GUI.GUIDisplay.MinRhythmsRange_Edit.String = min(rhythms_range);
+                        %                         GUI.GUIDisplay.MaxRhythmsRange_Edit.String = max(rhythms_range);
                         
                     end
                     set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
@@ -3321,12 +3447,12 @@ end
     end
 %%
     function my_WindowButtonMotionFcn(src, callbackdata, type)
-%         type
-%         if isfield(DATA, 'hObject')
-%             DATA.hObject
-%         else
-%             'NO'
-%         end
+        %         type
+        %         if isfield(DATA, 'hObject')
+        %             DATA.hObject
+        %         else
+        %             'NO'
+        %         end
         switch type
             case 'init'
                 reset_rhythm_button();
@@ -3455,7 +3581,7 @@ end
                                 GUI.RhythmsListbox.Value = 1;
                                 GUI.RhythmsListbox.String = GUI.RhythmsListbox.String(~iGroup);
                                 GUI.RhythmsListbox.UserData = GUI.RhythmsListbox.UserData(~iGroup);
-                                           
+                                
                                 if ~isempty(GUI.RhythmsListbox.String)
                                     
                                     reset_rhythm_linewidth_topaxes();
@@ -3464,14 +3590,14 @@ end
                                     r_h = DATA.Rhythms_Map(GUI.RhythmsListbox.UserData(1));
                                     r_h.low_axes_patch_handle.LineWidth = 2;
                                     r_h.rhythm_handle.LineWidth = 3;
-                                                                        
+                                    
                                     r_r = r_h.rhythm_range;
                                     
                                     GUI.GUIDisplay.MinRhythmsRange_Edit.String = calcDuration(r_r(1), 0, 1);
                                     GUI.GUIDisplay.MaxRhythmsRange_Edit.String = calcDuration(r_r(2), 0, 1);
                                     GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = r_r(1);
                                     GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = r_r(2);
-                                
+                                    
                                 else
                                     GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
                                     GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
@@ -3771,6 +3897,11 @@ end
             setRRIntYLim();
         catch
         end
+        if ~isempty(DATA.qrs) && ~all(isnan(DATA.qrs))
+            GUI.CalcPeaksButton_handle.Enable = 'on';
+        else
+            GUI.CalcPeaksButton_handle.Enable = 'inactive';
+        end
     end
 %%
     function Del_win(range2del)
@@ -3802,6 +3933,11 @@ end
                 end
             else
                 disp('Not in range!');
+            end
+            if ~isempty(DATA.qrs) && ~all(isnan(DATA.qrs))
+                GUI.CalcPeaksButton_handle.Enable = 'on';
+            else
+                GUI.CalcPeaksButton_handle.Enable = 'inactive';
             end
         end
     end
@@ -4182,43 +4318,43 @@ end
             GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
             GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @PeakAdjustment_popupmenu_Callback;
             
-%             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
-%             GUI.Class_Text.Visible = 'off';
-%             
-%             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
-%             GUI.Rhythms_Text.Visible = 'off';
-%             
-%             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
-%             GUI.Adjustment_Text.Visible = 'on';
-%             
-%             set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
-% %             set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
-% %             set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
-%             
-%             set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
+            %             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
+            %             GUI.Class_Text.Visible = 'off';
+            %
+            %             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
+            %             GUI.Rhythms_Text.Visible = 'off';
+            %
+            %             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'on';
+            %             GUI.Adjustment_Text.Visible = 'on';
+            %
+            %             set(GUI.Adjust_textBox, 'Position', GUI.Adjust_textBox_position);
+            % %             set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
+            % %             set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
+            %
+            %             set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
             GUI.RhythmsHBox.Visible = 'off';
         elseif index_selected == 2
-                        
             
-            GUI.Adjustment_Text.String = 'Class';            
+            
+            GUI.Adjustment_Text.String = 'Class';
             GUI.GUIRecord.PeakAdjustment_popupmenu.String = DATA.GUI_Class;
             GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
             GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @Class_popupmenu_Callback;
             
-%             GUI.GUIRecord.Class_popupmenu.Visible = 'on';
-%             GUI.Class_Text.Visible = 'on';
-%             
-%             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
-%             GUI.Rhythms_Text.Visible = 'off';
-%             
-%             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'off';
-%             GUI.Adjustment_Text.Visible = 'off';
-%             
-% %             set(GUI.Adjust_textBox, 'Position', GUI.Class_textBox_position);
-%             set(GUI.Class_textBox, 'Position', GUI.Adjust_textBox_position);
-% %             set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
-%             
-% %             set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
+            %             GUI.GUIRecord.Class_popupmenu.Visible = 'on';
+            %             GUI.Class_Text.Visible = 'on';
+            %
+            %             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'off';
+            %             GUI.Rhythms_Text.Visible = 'off';
+            %
+            %             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'off';
+            %             GUI.Adjustment_Text.Visible = 'off';
+            %
+            % %             set(GUI.Adjust_textBox, 'Position', GUI.Class_textBox_position);
+            %             set(GUI.Class_textBox, 'Position', GUI.Adjust_textBox_position);
+            % %             set(GUI.Rhythms_textBox, 'Position', GUI.Rhythms_textBox_position);
+            %
+            % %             set(GUI.RhythmsHBox, 'Position', GUI.RhythmsHBox_position);
             GUI.RhythmsHBox.Visible = 'off';
         else
             
@@ -4228,24 +4364,24 @@ end
             GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
             GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @Rhythms_popupmenu_Callback;
             
-%             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
-%             GUI.Class_Text.Visible = 'off';
-%             
-%             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'off';
-%             GUI.Adjustment_Text.Visible = 'off';
-%             
-% %             set(GUI.Adjust_textBox, 'Position', GUI.Rhythms_textBox_position);
-% %             set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
-%             set(GUI.Rhythms_textBox, 'Position', GUI.Adjust_textBox_position);
-%             
-%             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'on';
-%             GUI.Rhythms_Text.Visible = 'on';            
+            %             GUI.GUIRecord.Class_popupmenu.Visible = 'off';
+            %             GUI.Class_Text.Visible = 'off';
+            %
+            %             GUI.GUIRecord.PeakAdjustment_popupmenu.Visible = 'off';
+            %             GUI.Adjustment_Text.Visible = 'off';
+            %
+            % %             set(GUI.Adjust_textBox, 'Position', GUI.Rhythms_textBox_position);
+            % %             set(GUI.Class_textBox, 'Position', GUI.Class_textBox_position);
+            %             set(GUI.Rhythms_textBox, 'Position', GUI.Adjust_textBox_position);
+            %
+            %             GUI.GUIRecord.Rhythms_popupmenu.Visible = 'on';
+            %             GUI.Rhythms_Text.Visible = 'on';
             GUI.RhythmsHBox.Visible = 'on';
-%             
-%             set(GUI.RhythmsHBox, 'Position', [GUI.Class_textBox_position(1) GUI.Class_textBox_position(1) GUI.RhythmsHBox_position(3) GUI.RhythmsHBox_position(4)]);
-%             
+            %
+            %             set(GUI.RhythmsHBox, 'Position', [GUI.Class_textBox_position(1) GUI.Class_textBox_position(1) GUI.RhythmsHBox_position(3) GUI.RhythmsHBox_position(4)]);
+            %
             Rhythms_ToggleButton_Reset();
-%             GUI.rhythms_legend(GUI.GUIRecord.Rhythms_popupmenu.Value).Value = 1;            
+            %             GUI.rhythms_legend(GUI.GUIRecord.Rhythms_popupmenu.Value).Value = 1;
         end
     end
 %%
@@ -4305,18 +4441,40 @@ end
             if isfield(GUI, 'red_peaks_handle') && ishandle(GUI.red_peaks_handle) && isvalid(GUI.red_peaks_handle)
                 delete(GUI.red_peaks_handle);
             end
+            if isfield(GUI, 'P_linehandle')% && ishandle(GUI.P_linehandle) && isvalid(GUI.P_linehandle)
+                delete(GUI.P_linehandle);
+                GUI = rmfield(GUI, 'P_linehandle');
+            end
+            if isfield(GUI, 'Q_linehandle')% && ishandle(GUI.Q_linehandle) && isvalid(GUI.Q_linehandle)
+                delete(GUI.Q_linehandle);
+                GUI = rmfield(GUI, 'Q_linehandle');
+            end
+            if isfield(GUI, 'S_linehandle')% && ishandle(GUI.S_linehandle) && isvalid(GUI.S_linehandle)
+                delete(GUI.S_linehandle);
+                GUI = rmfield(GUI, 'S_linehandle');
+            end
+            if isfield(GUI, 'T_linehandle')% && ishandle(GUI.T_linehandle) && isvalid(GUI.T_linehandle)
+                delete(GUI.T_linehandle);
+                GUI = rmfield(GUI, 'T_linehandle');
+            end
+            GUI.P_checkbox.Value = 0;
+            GUI.Q_checkbox.Value = 0;
+            GUI.R_checkbox.Value = 1;
+            GUI.S_checkbox.Value = 0;
+            GUI.T_checkbox.Value = 0;
+            
             DATA.qrs = double(DATA.qrs);
             GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
             uistack(GUI.red_peaks_handle, 'top');
             
-%  ---------------------------                                                
+            %  ---------------------------
             if DATA.amp_counter(1) > 0
                 coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(1));
             else
                 coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
             end
             GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData / coeff;
-% ---------------------------               
+            % ---------------------------
             
             delete(GUI.red_rect_handle);
             delete(GUI.RRInt_handle);
@@ -4324,6 +4482,13 @@ end
             plot_rr_data();
             plot_red_rectangle(DATA.zoom_rect_limits);
             setRRIntYLim();
+            
+            if ~isempty(DATA.qrs) && ~all(isnan(DATA.qrs))
+                GUI.CalcPeaksButton_handle.Enable = 'on';
+            else
+                GUI.CalcPeaksButton_handle.Enable = 'inactive';
+            end
+            
         end
     end
 %%
@@ -5205,10 +5370,10 @@ end
 %             else
 %                 line_handle.Visible = 'off';
 %             end
-%                         
+%
 %             xdata = get(GUI.red_rect_handle, 'XData');
 %             setECGYLim(xdata(1), xdata(2));
-%             
+%
 %             redraw_quality_rect();
 %             redraw_rhythms_rect();
 %         end
@@ -5274,14 +5439,14 @@ end
             xdata = get(GUI.red_rect_handle, 'XData');
             setECGYLim(xdata(1), xdata(2));
             
-% ---------------------------
+            % ---------------------------
             if DATA.amp_counter(1) > 0
                 coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(1));
             else
                 coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
             end
             GUI.FilteredData_handle.YData = GUI.FilteredData_handle.YData / coeff;
-% ---------------------------
+            % ---------------------------
             
         catch e
             h_e = errordlg(['BP Filter error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
@@ -5294,9 +5459,9 @@ end
             GUI.rhythms_legend(i).Value = 0;
         end
         src.Value = 1;
-%         GUI.GUIRecord.Rhythms_popupmenu.Value = src.UserData;
+        %         GUI.GUIRecord.Rhythms_popupmenu.Value = src.UserData;
         
-        GUI.GUIRecord.PeakAdjustment_popupmenu.Value = src.UserData;                
+        GUI.GUIRecord.PeakAdjustment_popupmenu.Value = src.UserData;
     end
 %%
     function Rhythms_ToggleButton_Reset()
@@ -5306,7 +5471,7 @@ end
     end
 %%
     function OpenDir_Callback(~, ~)
-                
+        
         basepath = fileparts(fileparts(mfilename('fullpath')));
         
         files_folder = uigetdir([basepath filesep 'ExamplesTXT'], 'Choose folder with the ECG files');
@@ -5316,9 +5481,9 @@ end
         
         GUI.GUIDir.DirName_text.String = files_folder;
         
-        all_files_list = dir(files_folder);                
+        all_files_list = dir(files_folder);
         files_list_names = cell(1, length(all_files_list)-2);
-                
+        
         for i = 3 : length(all_files_list)
             files_list_names{1, i-2} = all_files_list(i).name;
         end
@@ -5326,19 +5491,19 @@ end
         GUI.GUIDir.FileList.String = files_list_names;
         clearData();
         clean_gui(true);
-        clean_gui_low_part();        
-%         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
+        clean_gui_low_part();
+        %         set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
     end
 %%
     function FileList_listbox_callback(src, ~)
-                        
+        
         fullFileName_ecg.FileName = src.String{src.Value};
-        fullFileName_ecg.PathName = [GUI.GUIDir.DirName_text.String filesep];        
+        fullFileName_ecg.PathName = [GUI.GUIDir.DirName_text.String filesep];
         
         peaks_file_name = strrep(fullFileName_ecg.FileName, '_ecg', '_Peaks');
-                
+        
         FileName = peaks_file_name;
-        PathName = [GUI.GUIDir.DirName_text.String filesep]; 
+        PathName = [GUI.GUIDir.DirName_text.String filesep];
         
         saved_val_AutoCalc_checkbox= GUI.AutoCalc_checkbox.Value;
         saved_val_AutoCompute_pushbutton = GUI.AutoCompute_pushbutton.Enable;
@@ -5346,20 +5511,20 @@ end
             GUI.AutoCalc_checkbox.Value = 0;
             GUI.AutoCompute_pushbutton.Enable = 'on';
             OpenFile_Callback([], [], fullFileName_ecg);
-            if exist([PathName, FileName], 'file')                
-                load_peaks(FileName, PathName, struct([]));                
-            else                
+            if exist([PathName, FileName], 'file')
+                load_peaks(FileName, PathName, struct([]));
+            else
                 RunAndPlotPeakDetector();
             end
         catch e
             h_e = errordlg(['load_peaks: ', e.message], 'Input Error'); setLogo(h_e, 'M1');
-%             disp(e.message);
+            %             disp(e.message);
         end
         GUI.AutoCalc_checkbox.Value = saved_val_AutoCalc_checkbox;
         GUI.AutoCompute_pushbutton.Enable = saved_val_AutoCompute_pushbutton;
     end
 %%
-    function ChannelsTableEditCallback(~, callbackdata)  
+    function ChannelsTableEditCallback(~, callbackdata)
         ch_num = callbackdata.Indices(1, 1);
         line_handle = GUI.RawChannelsData_handle(ch_num);
         if isvalid(line_handle)
@@ -5383,19 +5548,19 @@ end
                             GUI.red_peaks_handle.Visible = 'on';
                         else
                             GUI.red_peaks_handle.Visible = 'off';
-                        end                        
-%                         GUI.FilteredData_handle.Visible = 'off';
+                        end
+                        %                         GUI.FilteredData_handle.Visible = 'off';
                     end
                 catch
                 end
             end
-                        
+            
             xdata = get(GUI.red_rect_handle, 'XData');
             setECGYLim(xdata(1), xdata(2));
             
             redraw_quality_rect();
             redraw_rhythms_rect();
-        end        
+        end
     end
 %%
     function ChannelsTableSelectionCallback(obj, callbackdata)
@@ -5404,11 +5569,11 @@ end
         
         if ~isempty(callbackdata.Indices) && callbackdata.Indices(1, 2) == 1
             obj.UserData = callbackdata.Indices(1, 1);
-        end        
+        end
     end
 %%
     function amp_plus_minus_pushbutton_Callback(src, ~)
-                  
+        
         GUI.AutoScaleY_checkbox.Value = 0;
         GUI.GUIDisplay.MinYLimit_Edit.Enable = 'on';
         GUI.GUIDisplay.MaxYLimit_Edit.Enable = 'on';
@@ -5423,6 +5588,14 @@ end
                     
                     if ch_num == 1
                         GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData * DATA.amp_ch_factor;
+                        
+                        try
+                            GUI.P_linehandle.YData = GUI.P_linehandle.YData * DATA.amp_ch_factor;
+                            GUI.Q_linehandle.YData = GUI.Q_linehandle.YData * DATA.amp_ch_factor;
+                            GUI.S_linehandle.YData = GUI.S_linehandle.YData * DATA.amp_ch_factor;
+                            GUI.T_linehandle.YData = GUI.T_linehandle.YData * DATA.amp_ch_factor;
+                        catch
+                        end
                         try
                             GUI.FilteredData_handle.YData = GUI.FilteredData_handle.YData * DATA.amp_ch_factor;
                         catch
@@ -5435,6 +5608,14 @@ end
                     
                     if ch_num == 1
                         GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData / DATA.amp_ch_factor;
+                        
+                        try
+                            GUI.P_linehandle.YData = GUI.P_linehandle.YData / DATA.amp_ch_factor;
+                            GUI.Q_linehandle.YData = GUI.Q_linehandle.YData / DATA.amp_ch_factor;
+                            GUI.S_linehandle.YData = GUI.S_linehandle.YData / DATA.amp_ch_factor;
+                            GUI.T_linehandle.YData = GUI.T_linehandle.YData / DATA.amp_ch_factor;
+                        catch
+                        end
                         try
                             GUI.FilteredData_handle.YData = GUI.FilteredData_handle.YData / DATA.amp_ch_factor;
                         catch
@@ -5452,6 +5633,14 @@ end
                         line_handle.YData = ((line_handle.YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
                         if ch_num == 1
                             GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData * coeff;
+                            
+                            try
+                                GUI.P_linehandle.YData = GUI.P_linehandle.YData * coeff;
+                                GUI.Q_linehandle.YData = GUI.Q_linehandle.YData * coeff;
+                                GUI.S_linehandle.YData = GUI.S_linehandle.YData * coeff;
+                                GUI.T_linehandle.YData = GUI.T_linehandle.YData * coeff;
+                            catch
+                            end
                             try
                                 GUI.FilteredData_handle.YData = GUI.FilteredData_handle.YData * coeff;
                             catch
@@ -5466,143 +5655,144 @@ end
                 
                 redraw_quality_rect();
                 redraw_rhythms_rect();
+%                 setYECGGrid(GUI.ECG_Axes, GUI.GridY_checkbox);
             end
         end
     end
 %%
-    function SplitFile_Button_Callback(~, ~)   
+    function SplitFile_Button_Callback(~, ~)
         if isfield(DATA, 'DataFileName') && ~isempty(DATA.DataFileName)
             
-        Small_File_Length_Sec = str2double(GUI.GUIDir.Split_Sec.String);
+            Small_File_Length_Sec = str2double(GUI.GUIDir.Split_Sec.String);
             
-        basepath = fileparts(mfilename('fullpath'));
-        if isdeployed
-            res_parh = [userpath filesep 'PhysioZoo' filesep 'Results'];
-        else
-            res_parh = [fileparts(basepath) filesep 'Results'];
-        end
-        
-        small_files_folder = [res_parh, filesep, DATA.DataFileName];
-        
-        if ~isfolder(small_files_folder)
-            warning('off');
-            mkdir(small_files_folder);
-            warning('on');
-        end
-        
-        small_files_folder = uigetdir(small_files_folder, 'Choose folder for small files');
-        if small_files_folder == 0
-            return;
-        end
-        GUI.GUIDir.DirName_text.String = small_files_folder;
-        
-        Mammal = DATA.Mammal;
-        Fs = DATA.Fs;
-        Integration_level = DATA.Integration_From_Files{DATA.integration_index};
-        
-        %                         Channels{1}.name = 'Time';
-        %                         Channels{1}.enable = 'yes';
-        %                         Channels{1}.type = 'time';
-        %                         Channels{1}.unit = 'sec';
-        
-        %                         for j = 2 : ch_no + 1
-        [~, ch_no] = size(DATA.sig); 
-        for j = 1 : ch_no
-            Channels{j}.name = ['Data_' num2str(j)];
-            Channels{j}.enable = 'yes';
-            Channels{j}.type = 'electrography';
-            Channels{j}.unit = 'mV';
-        end
-        
-        waitbar_handle = waitbar(0, 'Saving', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
-        
-%         sm_files_num = ceil(max(DATA.tm)/DATA.Small_File_Length_Sec);
-        sm_files_num = ceil(max(DATA.tm)/Small_File_Length_Sec);
-        
-        file_list = cell(1, sm_files_num);
-        
-        minLimit = 0;
-        maxLimit = Small_File_Length_Sec;
-        
-        for i = 1 : sm_files_num
+            basepath = fileparts(mfilename('fullpath'));
+            if isdeployed
+                res_parh = [userpath filesep 'PhysioZoo' filesep 'Results'];
+            else
+                res_parh = [fileparts(basepath) filesep 'Results'];
+            end
             
-            file_name = ['part_' num2str(i) '_ecg.mat'];
-            full_file_name = [small_files_folder filesep file_name];
+            small_files_folder = [res_parh, filesep, DATA.DataFileName];
             
-            file_list{1, i} = file_name;
+            if ~isfolder(small_files_folder)
+                warning('off');
+                mkdir(small_files_folder);
+                warning('on');
+            end
             
-            Data = DATA.sig(DATA.tm >= minLimit & DATA.tm < maxLimit, :);
-            Time = DATA.tm(DATA.tm >= minLimit & DATA.tm < maxLimit, :);
+            small_files_folder = uigetdir(small_files_folder, 'Choose folder for small files');
+            if small_files_folder == 0
+                return;
+            end
+            GUI.GUIDir.DirName_text.String = small_files_folder;
             
-            %                             Data = [Time, Data];
+            Mammal = DATA.Mammal;
+            Fs = DATA.Fs;
+            Integration_level = DATA.Integration_From_Files{DATA.integration_index};
             
-            waitbar(i / sm_files_num, waitbar_handle, ['Saving file number ' num2str(i)]); setLogo(waitbar_handle, 'M1');
-            save(full_file_name, 'Data', 'Mammal', 'Fs', 'Integration_level', 'Channels');
+            %                         Channels{1}.name = 'Time';
+            %                         Channels{1}.enable = 'yes';
+            %                         Channels{1}.type = 'time';
+            %                         Channels{1}.unit = 'sec';
             
-            minLimit = maxLimit;
-            maxLimit = min(maxLimit + Small_File_Length_Sec, max(DATA.tm));
-        end
-        
-        if isvalid(waitbar_handle)
-            close(waitbar_handle);
-        end
-        
-        GUI.GUIDir.FileList.String = file_list;
-        GUI.GUIDir.FileList.Value = 1;
-        
-        if ~isempty(DATA.qrs)
-            Channels={};
-            %                             Channels{1}.name = 'Time';
-            %                             Channels{1}.enable = 'yes';
-            %                             Channels{1}.type = 'time';
-            %                             Channels{1}.unit = 'sec';
+            %                         for j = 2 : ch_no + 1
+            [~, ch_no] = size(DATA.sig);
+            for j = 1 : ch_no
+                Channels{j}.name = ['Data_' num2str(j)];
+                Channels{j}.enable = 'yes';
+                Channels{j}.type = 'electrography';
+                Channels{j}.unit = 'mV';
+            end
             
-            Channels{1}.name = 'interval';
-            Channels{1}.enable = 'yes';
-            Channels{1}.type = 'peak';
-            Channels{1}.unit = 'index';
+            waitbar_handle = waitbar(0, 'Saving', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
             
-            qrs = double(DATA.qrs(~isnan(DATA.qrs)));
-            rr_time = qrs/DATA.Fs;
+            %         sm_files_num = ceil(max(DATA.tm)/DATA.Small_File_Length_Sec);
+            sm_files_num = ceil(max(DATA.tm)/Small_File_Length_Sec);
             
-            minLimit_rr = 0;
-            maxLimit_rr = min(Small_File_Length_Sec, max(rr_time));
+            file_list = cell(1, sm_files_num);
             
-            time_samples = 0;
+            minLimit = 0;
+            maxLimit = Small_File_Length_Sec;
+            
             for i = 1 : sm_files_num
                 
-                full_file_name_peaks_ind = [small_files_folder filesep 'part_' num2str(i) '_Peaks.mat'];
+                file_name = ['part_' num2str(i) '_ecg.mat'];
+                full_file_name = [small_files_folder filesep file_name];
                 
-                ecg_time = DATA.tm(DATA.tm >= minLimit_rr & DATA.tm < maxLimit_rr, :);
-                Data = DATA.qrs(rr_time >= minLimit_rr & rr_time <= maxLimit_rr, :);
+                file_list{1, i} = file_name;
                 
-                if i > 1
-                    time_samples = time_samples + ecg_time_length;
-                    Data = Data - time_samples;
-                    if Data(1) == 0
-                        Data(1) = 1;
-                    end
-                    ecg_time_length = numel(ecg_time);
-                else
-                    ecg_time_length = numel(ecg_time);
-                end
+                Data = DATA.sig(DATA.tm >= minLimit & DATA.tm < maxLimit, :);
+                Time = DATA.tm(DATA.tm >= minLimit & DATA.tm < maxLimit, :);
                 
-                save(full_file_name_peaks_ind, 'Data', 'Mammal', 'Fs', 'Integration_level', 'Channels');
+                %                             Data = [Time, Data];
                 
-                minLimit_rr = maxLimit_rr;
-                maxLimit_rr = min(maxLimit_rr + Small_File_Length_Sec, max(rr_time));
+                waitbar(i / sm_files_num, waitbar_handle, ['Saving file number ' num2str(i)]); setLogo(waitbar_handle, 'M1');
+                save(full_file_name, 'Data', 'Mammal', 'Fs', 'Integration_level', 'Channels');
+                
+                minLimit = maxLimit;
+                maxLimit = min(maxLimit + Small_File_Length_Sec, max(DATA.tm));
             end
-        end
-        GUI.RightLeft_TabPanel.Selection = 2;
-        GUI.GUIDir.FileList.Value = 1;
-        FileList_listbox_callback(GUI.GUIDir.FileList);
+            
+            if isvalid(waitbar_handle)
+                close(waitbar_handle);
+            end
+            
+            GUI.GUIDir.FileList.String = file_list;
+            GUI.GUIDir.FileList.Value = 1;
+            
+            if ~isempty(DATA.qrs)
+                Channels={};
+                %                             Channels{1}.name = 'Time';
+                %                             Channels{1}.enable = 'yes';
+                %                             Channels{1}.type = 'time';
+                %                             Channels{1}.unit = 'sec';
+                
+                Channels{1}.name = 'interval';
+                Channels{1}.enable = 'yes';
+                Channels{1}.type = 'peak';
+                Channels{1}.unit = 'index';
+                
+                qrs = double(DATA.qrs(~isnan(DATA.qrs)));
+                rr_time = qrs/DATA.Fs;
+                
+                minLimit_rr = 0;
+                maxLimit_rr = min(Small_File_Length_Sec, max(rr_time));
+                
+                time_samples = 0;
+                for i = 1 : sm_files_num
+                    
+                    full_file_name_peaks_ind = [small_files_folder filesep 'part_' num2str(i) '_Peaks.mat'];
+                    
+                    ecg_time = DATA.tm(DATA.tm >= minLimit_rr & DATA.tm < maxLimit_rr, :);
+                    Data = DATA.qrs(rr_time >= minLimit_rr & rr_time <= maxLimit_rr, :);
+                    
+                    if i > 1
+                        time_samples = time_samples + ecg_time_length;
+                        Data = Data - time_samples;
+                        if Data(1) == 0
+                            Data(1) = 1;
+                        end
+                        ecg_time_length = numel(ecg_time);
+                    else
+                        ecg_time_length = numel(ecg_time);
+                    end
+                    
+                    save(full_file_name_peaks_ind, 'Data', 'Mammal', 'Fs', 'Integration_level', 'Channels');
+                    
+                    minLimit_rr = maxLimit_rr;
+                    maxLimit_rr = min(maxLimit_rr + Small_File_Length_Sec, max(rr_time));
+                end
+            end
+            GUI.RightLeft_TabPanel.Selection = 2;
+            GUI.GUIDir.FileList.Value = 1;
+            FileList_listbox_callback(GUI.GUIDir.FileList);
         end
     end
 %%
     function Split_Sec_Callback(src, ~)
         newVal = str2double(src.String);
         isnumeric = isPositiveNumericValue(src.String);
-        if isnumeric && newVal > 0 && newVal <= max(DATA.tm)            
+        if isnumeric && newVal > 0 && newVal <= max(DATA.tm)
             src.UserData = newVal;
         else
             src.String = src.UserData;
@@ -5625,7 +5815,7 @@ end
             GUI.RhythmsListbox.UserData = [GUI.RhythmsListbox.UserData min_rhythms_range];
             GUI.RhythmsListbox.Value = length(GUI.RhythmsListbox.String);
         end
-                
+        
         GUI.GUIDisplay.MinRhythmsRange_Edit.String = calcDuration(min_rhythms_range, 0, 1);
         GUI.GUIDisplay.MaxRhythmsRange_Edit.String = calcDuration(max_rhythms_range, 0, 1);
         GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = min_rhythms_range;
@@ -5637,10 +5827,10 @@ end
             for i = 1 : length(GUI.rhythms_win)
                 GUI.rhythms_win(i).LineWidth = 1;
             end
-        end        
+        end
     end
 %%
-    function reset_rhythm_linewidth_bottomaxes()        
+    function reset_rhythm_linewidth_bottomaxes()
         if isfield(GUI, 'RhythmsHandle_AllDataAxes')
             for i = 1 : length(GUI.RhythmsHandle_AllDataAxes)
                 GUI.RhythmsHandle_AllDataAxes(i).LineWidth = 1;
@@ -5652,7 +5842,7 @@ end
         
         reset_rhythm_linewidth_topaxes();
         reset_rhythm_linewidth_bottomaxes();
-                
+        
         current_r = DATA.Rhythms_Map(src.UserData(src.Value));
         r_r = current_r.rhythm_range;
         
@@ -5669,15 +5859,15 @@ end
     end
 %%
     function MinMaxRhythmsRange_Edit_Callback(~, ~)
-                       
+        
         min_r_str = GUI.GUIDisplay.MinRhythmsRange_Edit.String;
         max_r_str = GUI.GUIDisplay.MaxRhythmsRange_Edit.String;
         
         [min_r_d, isInputNumeric_min] = calcDurationInSeconds(GUI.GUIDisplay.MinRhythmsRange_Edit, min_r_str, GUI.GUIDisplay.MinRhythmsRange_Edit.UserData);
         [max_r_d, isInputNumeric_max] = calcDurationInSeconds(GUI.GUIDisplay.MaxRhythmsRange_Edit, max_r_str, GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData);
-                
+        
         if isInputNumeric_min && isInputNumeric_max
-                                    
+            
             min_r = min(min_r_d, max_r_d);
             max_r = max(min_r_d, max_r_d);
             
@@ -5701,7 +5891,7 @@ end
             GUI.GUIDisplay.MaxRhythmsRange_Edit.String = calcDuration(max_r, 0, 1);
             
             GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = min_r;
-            GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = max_r;                        
+            GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = max_r;
             
             r_s.rhythm_range = [min_r max_r];
             
@@ -5733,6 +5923,107 @@ end
         end
     end
 %%
+    function CalcPQRSTPeaks(~, ~)
+        
+        GUI.P_checkbox.Value = 0;
+        GUI.Q_checkbox.Value = 0;
+        GUI.R_checkbox.Value = 1;
+        GUI.S_checkbox.Value = 0;
+        GUI.T_checkbox.Value = 0;
+        
+        if isfield(GUI, 'P_linehandle')
+            delete(GUI.P_linehandle);
+            GUI = rmfield(GUI, 'P_linehandle');
+        end
+        if isfield(GUI, 'Q_linehandle')
+            delete(GUI.Q_linehandle);
+            GUI = rmfield(GUI, 'Q_linehandle');
+        end
+        if isfield(GUI, 'S_linehandle')
+            delete(GUI.S_linehandle);
+            GUI = rmfield(GUI, 'S_linehandle');
+        end
+        if isfield(GUI, 'T_linehandle')
+            delete(GUI.T_linehandle);
+            GUI = rmfield(GUI, 'T_linehandle');
+        end
+        
+        heasig = struct("nsig", 1, "freq", DATA.Fs, "nsamp", length(DATA.sig));
+        try
+            waitbar_handle = waitbar(1/2, 'Calculating biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+            tic
+            [GUI.PQRST_position, ~, ~] = wavedet_3D(DATA.sig, DATA.qrs, heasig, []);
+            toc
+            if isvalid(waitbar_handle)
+                close(waitbar_handle);
+            end
+            
+            P = GUI.PQRST_position.P(~isnan(GUI.PQRST_position.P));
+            Q = GUI.PQRST_position.QRSon(~isnan(GUI.PQRST_position.QRSon));
+            S = GUI.PQRST_position.QRSoff(~isnan(GUI.PQRST_position.QRSoff));
+            T = GUI.PQRST_position.T(~isnan(GUI.PQRST_position.T));
+            
+            GUI.P_linehandle = line(DATA.tm(P), DATA.sig(P, 1), 'Parent', GUI.ECG_Axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', 5, 'MarkerFaceColor', [0.9290, 0.6940, 0.1250], 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250]);
+            GUI.Q_linehandle = line(DATA.tm(Q), DATA.sig(Q, 1), 'Parent', GUI.ECG_Axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', 5, 'MarkerFaceColor', [0.4940, 0.1840, 0.5560], 'MarkerEdgeColor', [0.4940, 0.1840, 0.5560]);
+            GUI.S_linehandle = line(DATA.tm(S), DATA.sig(S, 1), 'Parent', GUI.ECG_Axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', 5, 'MarkerFaceColor', [0.8500, 0.3250, 0.0980], 'MarkerEdgeColor', [0.8500, 0.3250, 0.0980]);
+            GUI.T_linehandle = line(DATA.tm(T), DATA.sig(T, 1), 'Parent', GUI.ECG_Axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', 5, 'MarkerFaceColor', [0.6350, 0.0780, 0.1840], 'MarkerEdgeColor', [0.6350, 0.0780, 0.1840]);
+            
+            if DATA.amp_counter(1) > 0
+                coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(1));
+            else
+                coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
+            end
+            
+            
+            if ~all(isnan(P))
+                GUI.P_checkbox.Value = 1;
+                GUI.P_linehandle.YData = GUI.P_linehandle.YData / coeff;
+            else
+                GUI.P_checkbox.Value = 0;
+            end
+            if ~all(isnan(Q))
+                GUI.Q_checkbox.Value = 1;
+                GUI.Q_linehandle.YData = GUI.Q_linehandle.YData / coeff;
+            else
+                GUI.Q_checkbox.Value = 0;
+            end
+            if ~all(isnan(S))
+                GUI.S_checkbox.Value = 1;
+                GUI.S_linehandle.YData = GUI.S_linehandle.YData / coeff;
+            else
+                GUI.S_checkbox.Value = 0;
+            end
+            if ~all(isnan(T))
+                GUI.T_checkbox.Value = 1;
+                GUI.T_linehandle.YData = GUI.T_linehandle.YData / coeff;
+            else
+                GUI.T_checkbox.Value = 0;
+            end                        
+        catch e
+            disp(['CalcPQRSTPeaks:', e.message]);
+            if isvalid(waitbar_handle)
+                close(waitbar_handle);
+            end
+        end
+    end
+%%
+    function PQRST_checkbox_Callback(src, ~)
+        
+        line_vis = src.Value;
+        
+        if strcmp(src.Tag, 'PPeaksCb') && isfield(GUI, 'P_linehandle') && ~isempty(GUI.P_linehandle) && ishandle(GUI.P_linehandle) && isvalid(GUI.P_linehandle)
+            GUI.P_linehandle.Visible = line_vis;
+        elseif strcmp(src.Tag, 'QPeaksCb') && isfield(GUI, 'Q_linehandle') && ~isempty(GUI.Q_linehandle) && ishandle(GUI.Q_linehandle) && isvalid(GUI.Q_linehandle)
+            GUI.Q_linehandle.Visible = line_vis;
+        elseif strcmp(src.Tag, 'RPeaksCb')   && isfield(GUI, 'red_peaks_handle') && ~isempty(GUI.red_peaks_handle) && ishandle(GUI.red_peaks_handle) && isvalid(GUI.red_peaks_handle)
+            GUI.red_peaks_handle.Visible = line_vis;
+        elseif strcmp(src.Tag, 'SPeaksCb') && isfield(GUI, 'S_linehandle') && ~isempty(GUI.S_linehandle) && ishandle(GUI.S_linehandle) && isvalid(GUI.S_linehandle)
+            GUI.S_linehandle.Visible = line_vis;
+        elseif strcmp(src.Tag, 'TPeaksCb') && isfield(GUI, 'T_linehandle') && ~isempty(GUI.T_linehandle) && ishandle(GUI.T_linehandle) && isvalid(GUI.T_linehandle)
+            GUI.T_linehandle.Visible = line_vis;
+        end
+    end
+%%
     function cancel_button_Callback(~, ~)
         delete(GUI.SaveFiguresWindow);
     end
@@ -5749,9 +6040,12 @@ end
     function Exit_Callback( ~, ~ )
         % User wants to quit out of the application
         delete_temp_wfdb_files();
-        if isfield(GUI, 'timer_object')
-            delete(GUI.timer_object);
+        try
+            if isfield(GUI, 'timer_object')
+                delete(GUI.timer_object);
+            end
+            delete(GUI.Window);
+        catch
         end
-        delete(GUI.Window);
     end % onExit
 end

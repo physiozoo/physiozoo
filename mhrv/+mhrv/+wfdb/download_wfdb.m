@@ -73,7 +73,7 @@ urlwrite(url, local_file);
 %% Extract archive
 fprintf('[%.3f] >> download_wfdb: Extracting %s...\n', cputime-t0, local_file);
 
-if regexpi(url, '.tar.gz$')
+if regexpi(url, '.tar.gz(\?.+)?$')
     untar(local_file, output_dir);
 elseif regexpi(url, '.zip$')
     unzip(local_file, output_dir);

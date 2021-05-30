@@ -15,6 +15,7 @@ if isdeployed
     disp(['ctfroot: ', ctfroot]);
     disp(['pwd: ', pwd]);
     disp(['userpath: ', userpath]);
+    disp(['tempdir: ', tempdir]);
     
     mhrv_init;    
 end

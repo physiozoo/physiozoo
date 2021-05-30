@@ -49,7 +49,7 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
     dlmwrite(signal_file, data, '\n');
         
     if sum(measures_cb_array) == length(measures_cb_array)
-        command = ['"' executable_file '" ' signal_file ' complexity ' func_args];
+        command = ['"' executable_file '" ' '"' signal_file '"' ' complexity ' func_args];
         result_measures = exec_pzpy(command);
     else
         result_measures.DFA = ' ';
@@ -59,23 +59,23 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
         result_measures.ApEn = ' ';
         
         if measures_cb_array(1)
-            command = ['"' executable_file '" ' signal_file ' comp_dfa ' func_args];
+            command = ['"' executable_file '" ' '"' signal_file '"' ' comp_dfa ' func_args];
             result_measures.DFA = exec_pzpy(command);        
         end
         if measures_cb_array(2)
-            command = ['"' executable_file '" ' signal_file ' comp_lz ' func_args];
+            command = ['"' executable_file '" ' '"' signal_file '"' ' comp_lz ' func_args];
             result_measures.LZ = exec_pzpy(command);
         end
         if measures_cb_array(3)
-            command = ['"' executable_file '" ' signal_file ' comp_ctm ' func_args];
+            command = ['"' executable_file '" ' '"' signal_file '"' ' comp_ctm ' func_args];
             result_measures.CTM = exec_pzpy(command);
         end
         if measures_cb_array(4)
-            command = ['"' executable_file '" ' signal_file ' comp_sampen ' func_args];
+            command = ['"' executable_file '" ' '"' signal_file '"' ' comp_sampen ' func_args];
             result_measures.SampEn = exec_pzpy(command);
         end
         if measures_cb_array(5)
-            command = ['"' executable_file '" ' signal_file ' comp_apen ' func_args];
+            command = ['"' executable_file '" ' '"' signal_file '"' ' comp_apen ' func_args];
             result_measures.ApEn = exec_pzpy(command);
         end
     end

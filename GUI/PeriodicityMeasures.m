@@ -39,10 +39,10 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
     dlmwrite(signal_file, data, '\n');
     
     if measures_cb_array
-        command1 = ['"' executable_file '" ' signal_file ' prsa_periodicity ' func_args1];
+        command1 = ['"' executable_file '" ' '"' signal_file '"' ' prsa_periodicity ' func_args1];
         result_measures = exec_pzpy(command1);
         
-        command2 = ['"' executable_file '" ' signal_file ' psd_periodicity ' func_args2];
+        command2 = ['"' executable_file '" ' '"' signal_file '"' ' psd_periodicity ' func_args2];
         result_measures_2 = exec_pzpy(command2);
                 
         pd_data.fft = comp_fft(data);

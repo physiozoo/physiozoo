@@ -115,6 +115,8 @@ end
         cla(GUI.ECG_Axes); % RawData_axes
         %         cla(GUI.RRInt_Axes); % RR_axes
         
+        legend(GUI.ECG_Axes, 'off');
+        
         if isfield(GUI, 'quality_win')
             delete(GUI.quality_win);
             GUI = rmfield(GUI, 'quality_win');
@@ -568,15 +570,37 @@ end
                 'ColumnName', {'Channels', 'Display'}, 'ColumnEditable', [false true], 'RowStriping', 'on', ...
                 'CellEditCallback', @ChannelsTableEditCallback, 'CellSelectionCallback', @ChannelsTableSelectionCallback);
             
-            AmpPlusMinusHButtons_Box = uix.HButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing);
+            
+            amp_box = uix.VBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding);
+            
+            
+            AmpPlusMinusHButtons_Box = uix.HButtonBox('Parent', amp_box, 'Spacing', DATA.Spacing);
             GUI.ChAmpDecreaseButton = uicontrol('Style', 'PushButton', 'Parent', AmpPlusMinusHButtons_Box, 'Callback', @amp_plus_minus_pushbutton_Callback,...
                 'FontSize', BigFontSize, 'String', sprintf('\x25BE'), 'Tooltip', 'Decrease channel amplitude', 'UserData', 'minus'); % sprintf('\x25A0') 25B2
             
             GUI.ChAmpSourceButton = uicontrol('Style', 'PushButton', 'Parent', AmpPlusMinusHButtons_Box, 'Callback', @amp_plus_minus_pushbutton_Callback,...
-                'FontSize', BigFontSize, 'String', sprintf('\x003D'), 'Tooltip', 'Decrease channel amplitude', 'UserData', 'source'); % sprintf('\x25A0') 25B2
+                'FontSize', BigFontSize, 'String', sprintf('\x003D'), 'Tooltip', 'Source channel amplitude', 'UserData', 'source'); % sprintf('\x25A0') 25B2
             
             GUI.ChAmpIncreaseButton = uicontrol('Style', 'PushButton', 'Parent', AmpPlusMinusHButtons_Box, 'Callback', @amp_plus_minus_pushbutton_Callback,...
                 'FontSize', BigFontSize, 'String', sprintf('\x25B4'), 'Tooltip', 'Increase channel amplitude', 'UserData', 'plus'); % sprintf('\x25A0') 25B2
+           
+            
+            
+            
+            
+%             YLimPlusMinusHButtons_Box = uix.HButtonBox('Parent', amp_box, 'Spacing', DATA.Spacing);
+%             GUI.YLimAmpDecreaseButton = uicontrol('Style', 'PushButton', 'Parent', YLimPlusMinusHButtons_Box, 'Callback', @y_lim_plus_minus_pushbutton_Callback,...
+%                 'FontSize', BigFontSize, 'String', sprintf('\x25BE'), 'Tooltip', 'Decrease y-lim', 'UserData', 'minus'); % sprintf('\x25A0') 25B2
+%             
+%             GUI.YLimSourceButton = uicontrol('Style', 'PushButton', 'Parent', YLimPlusMinusHButtons_Box, 'Callback', @y_lim_plus_minus_pushbutton_Callback,...
+%                 'FontSize', BigFontSize, 'String', sprintf('\x003D'), 'Tooltip', 'Decrease auto y-lim', 'UserData', 'source'); % sprintf('\x25A0') 25B2
+%             
+%             GUI.YLimIncreaseButton = uicontrol('Style', 'PushButton', 'Parent', YLimPlusMinusHButtons_Box, 'Callback', @y_lim_plus_minus_pushbutton_Callback,...
+%                 'FontSize', BigFontSize, 'String', sprintf('\x25B4'), 'Tooltip', 'Increase y-lim', 'UserData', 'plus'); % sprintf('\x25A0') 25B2            
+%             
+            
+            
+            
             
             %         Black Up-Pointing Small Triangle
             %         Black Down-Pointing Small Triangle
@@ -1046,8 +1070,10 @@ end
             
             PeaksTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
             RhythmsTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
+            DurationTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
+            AmplitudeTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
             
-            Low_TabPanel.TabTitles = {'Peaks', 'Rhythms'};
+            Low_TabPanel.TabTitles = {'Peaks', 'Rhythms', 'Duration', 'Amplitude'};
             Low_TabPanel.TabWidth = 100;
             Low_TabPanel.FontSize = BigFontSize;
             
@@ -1070,6 +1096,22 @@ end
             GUI.RhythmsTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Median (sec)'; 'Q1 (sec)'; 'Q3 (sec)'; 'Burden (%)'; 'Nb events'};
             GUI.RhythmsTable.Data = {};
             GUI.RhythmsTable.RowName = {};
+            
+            %--------------------------------------------------------------------------
+                                    
+            Amplitude_Part_Box = uix.VBox('Parent', AmplitudeTab, 'Spacing', DATA.Spacing);
+            GUI.AmplitudeTable = uitable('Parent', Amplitude_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{250 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
+            GUI.AmplitudeTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Median (sec)'; 'Q1 (sec)'; 'Q3 (sec)'};
+            GUI.AmplitudeTable.Data = {};
+            GUI.AmplitudeTable.RowName = {'Stat1'; 'Stat2'};
+            
+            %--------------------------------------------------------------------------
+            
+            Duration_Part_Box = uix.VBox('Parent', DurationTab, 'Spacing', DATA.Spacing);
+            GUI.DurationTable = uitable('Parent', Duration_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{250 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
+            GUI.DurationTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Median (sec)'; 'Q1 (sec)'; 'Q3 (sec)'};
+            GUI.DurationTable.Data = {};
+            GUI.DurationTable.RowName = {'Stat1'; 'Stat2'};
             
             %--------------------------------------------------------------------------
             
@@ -3028,6 +3070,9 @@ end
             end
             GUI.GUIDir.Split_Sec.String = DATA.Small_File_Length_Sec;
             GUI.GUIDir.Split_Sec.UserData = DATA.Small_File_Length_Sec;
+            
+            legend(GUI.ECG_Axes, 'off');
+            
             try
                 RunAndPlotPeakDetector();
             catch e
@@ -5660,6 +5705,26 @@ end
         end
     end
 %%
+    function y_lim_plus_minus_pushbutton_Callback(src, ~)
+        
+        GUI.AutoScaleY_checkbox.Value = 0;
+        GUI.GUIDisplay.MinYLimit_Edit.Enable = 'on';
+        GUI.GUIDisplay.MaxYLimit_Edit.Enable = 'on';
+        
+        y_lim = get(GUI.ECG_Axes, 'YLim');
+        
+        if strcmp(src.UserData, 'source')
+            GUI.AutoScaleY_checkbox.Value = 1;
+            AutoScaleY_pushbutton_Callback(GUI.AutoScaleY_checkbox);
+        elseif strcmp(src.UserData, 'plus')
+            set(GUI.ECG_Axes, 'YLim', y_lim/1.1);
+        elseif strcmp(src.UserData, 'minus')
+            set(GUI.ECG_Axes, 'YLim', y_lim*1.1);
+        end
+        redraw_quality_rect();
+        redraw_rhythms_rect();
+    end
+%%
     function SplitFile_Button_Callback(~, ~)
         if isfield(DATA, 'DataFileName') && ~isempty(DATA.DataFileName)
             
@@ -5840,21 +5905,36 @@ end
 %%
     function Rhythms_listbox_Callback(src, ~)
         
-        reset_rhythm_linewidth_topaxes();
-        reset_rhythm_linewidth_bottomaxes();
-        
-        current_r = DATA.Rhythms_Map(src.UserData(src.Value));
-        r_r = current_r.rhythm_range;
-        
-        GUI.GUIDisplay.MinRhythmsRange_Edit.String = calcDuration(r_r(1), 0, 1);
-        GUI.GUIDisplay.MaxRhythmsRange_Edit.String = calcDuration(r_r(2), 0, 1);
-        GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = r_r(1);
-        GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = r_r(2);
-        
-        current_r.low_axes_patch_handle.LineWidth = 2;
-        
-        if current_r.rhythm_plotted
-            current_r.rhythm_handle.LineWidth = 3;
+        if isfield(DATA, 'Rhythms_Map') && ~isempty(DATA.Rhythms_Map)
+            
+            reset_rhythm_linewidth_topaxes();
+            reset_rhythm_linewidth_bottomaxes();
+            
+            current_r = DATA.Rhythms_Map(src.UserData(src.Value));
+            r_r = current_r.rhythm_range;
+            
+            GUI.GUIDisplay.MinRhythmsRange_Edit.String = calcDuration(r_r(1), 0, 1);
+            GUI.GUIDisplay.MaxRhythmsRange_Edit.String = calcDuration(r_r(2), 0, 1);
+            GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = r_r(1);
+            GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = r_r(2);
+            
+            current_r.low_axes_patch_handle.LineWidth = 2;
+            
+            if current_r.rhythm_plotted
+                current_r.rhythm_handle.LineWidth = 3;
+            end
+            
+            switch get(GUI.Window, 'selectiontype')
+                %             case 'normal'
+                case 'open'                    
+                    x_lim = get(GUI.ECG_Axes, 'XLim');                                        
+                    delta = (max(x_lim) - min(x_lim))*0.1;
+                                        
+                    xdata = get(GUI.red_rect_handle, 'XData');
+                    xofs = r_r(1) - xdata(1, 1) - delta;
+                    Window_Move('normal', xofs);
+                otherwise
+            end
         end
     end
 %%
@@ -5973,8 +6053,7 @@ end
             else
                 coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
             end
-            
-            
+                        
             if ~all(isnan(P))
                 GUI.P_checkbox.Value = 1;
                 GUI.P_linehandle.YData = GUI.P_linehandle.YData / coeff;
@@ -5998,7 +6077,13 @@ end
                 GUI.T_linehandle.YData = GUI.T_linehandle.YData / coeff;
             else
                 GUI.T_checkbox.Value = 0;
-            end                        
+            end     
+            
+            warning('off');
+            l_h = legend(GUI.ECG_Axes, [GUI.P_linehandle, GUI.Q_linehandle, GUI.red_peaks_handle, GUI.S_linehandle, GUI.T_linehandle], {'P', 'Q', 'R', 'S', 'T'}, 'Location', 'best');
+            warning('on');
+            l_h.AutoUpdate = 'off';
+            
         catch e
             disp(['CalcPQRSTPeaks:', e.message]);
             if isvalid(waitbar_handle)

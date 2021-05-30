@@ -50,7 +50,7 @@ if ~all(isnan(data)) && exist(executable_file, 'file')
     dlmwrite(signal_file, data, '\n');
     
     if measures_cb_array
-        command = ['"' executable_file '" ' signal_file ' hypoxic_burden ' func_args];
+        command = ['"' executable_file '" ' '"' signal_file '"' ' hypoxic_burden ' func_args];
         result_measures = exec_pzpy(command);
     else
         result_measures.CA = ' ';

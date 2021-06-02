@@ -2032,8 +2032,46 @@ end
         end
     end
 %%
+    function clean_rhythms()
+        GUI.RhythmsListbox.String = '';
+        GUI.RhythmsListbox.UserData = [];
+        GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
+        GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
+        GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
+        GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
+        
+        DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
+        
+        if isfield(GUI, 'rhythms_win')
+            delete(GUI.rhythms_win);            
+            GUI = rmfield(GUI, 'rhythms_win');            
+            DATA.rhythms_win_num = 0;
+        end
+        
+        if isfield(GUI, 'RhythmsHandle_AllDataAxes')
+            delete(GUI.RhythmsHandle_AllDataAxes);
+            GUI = rmfield(GUI, 'RhythmsHandle_AllDataAxes');
+        end
+        
+        GUI.RhythmsTable.Data = {};
+        GUI.RhythmsTable.RowName = {};
+                
+        reset_rhythm_button();
+%         Rhythms_ToggleButton_Reset();
+%         GUI.RhythmsHBox.Visible = 'off';
+        
+        GUI.RhythmsTable.Data = {};
+        GUI.RhythmsTable.RowName = {};
+        DATA.Rhythms_file_name = '';
+        set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
+    end
+%%
     function RunAndPlotPeakDetector()
         if isfield(DATA, 'wfdb_record_name') && ~strcmp(DATA.wfdb_record_name, '')
+            
+            clean_rhythms();
+            
+            legend(GUI.ECG_Axes, 'off');
             
             cla(GUI.RRInt_Axes);
             if isfield(GUI, 'red_peaks_handle') && ishandle(GUI.red_peaks_handle) && isvalid(GUI.red_peaks_handle)
@@ -2966,32 +3004,32 @@ end
                 GUI = rmfield(GUI, 'T_linehandle');
             end
             
-            GUI.RhythmsListbox.String = '';
-            GUI.RhythmsListbox.UserData = [];
-            GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
-            GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
-            GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
-            GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
-            
-            DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
-            
-            if isfield(GUI, 'rhythms_win')
-                delete(GUI.rhythms_win);
-                
-                GUI = rmfield(GUI, 'rhythms_win');
-                
-                DATA.rhythms_win_num = 0;
-            end
+%             GUI.RhythmsListbox.String = '';
+%             GUI.RhythmsListbox.UserData = [];
+%             GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
+%             GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
+%             GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
+%             GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
+%             
+%             DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
+%             
+%             if isfield(GUI, 'rhythms_win')
+%                 delete(GUI.rhythms_win);
+%                 
+%                 GUI = rmfield(GUI, 'rhythms_win');
+%                 
+%                 DATA.rhythms_win_num = 0;
+%             end
             
             if isfield(GUI, 'PinkLineHandle_AllDataAxes')
                 delete(GUI.PinkLineHandle_AllDataAxes);
                 GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
             end
             
-            if isfield(GUI, 'RhythmsHandle_AllDataAxes')
-                delete(GUI.RhythmsHandle_AllDataAxes);
-                GUI = rmfield(GUI, 'RhythmsHandle_AllDataAxes');
-            end
+%             if isfield(GUI, 'RhythmsHandle_AllDataAxes')
+%                 delete(GUI.RhythmsHandle_AllDataAxes);
+%                 GUI = rmfield(GUI, 'RhythmsHandle_AllDataAxes');
+%             end
             
             GUI.AutoCalc_checkbox.Value = 1;
             GUI.RR_or_HR_plot_button.String = 'Plot HR';
@@ -3044,15 +3082,17 @@ end
             set(GUI.GUIDisplay.MinYLimit_Edit, 'UserData', '');
             set(GUI.GUIDisplay.MaxYLimit_Edit, 'UserData', '');
             
-            reset_rhythm_button();
+            clean_rhythms();
+            
+%             reset_rhythm_button();
             Rhythms_ToggleButton_Reset();
             GUI.RhythmsHBox.Visible = 'off';
             
-            GUI.RhythmsTable.Data = {};
-            GUI.RhythmsTable.RowName = {};
-            DATA.Rhythms_file_name = '';
-            set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
-            
+%             GUI.RhythmsTable.Data = {};
+%             GUI.RhythmsTable.RowName = {};
+%             DATA.Rhythms_file_name = '';
+%             set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
+%             
             %             GUI.RawSignal_checkbox.Value = 1;
             GUI.FilteredSignal_checkbox.Value = 0;
             GUI.GUIDisplay.FilterLevel_popupmenu.Value = 1;
@@ -4507,6 +4547,8 @@ end
             GUI.R_checkbox.Value = 1;
             GUI.S_checkbox.Value = 0;
             GUI.T_checkbox.Value = 0;
+            
+            legend(GUI.ECG_Axes, 'off');
             
             DATA.qrs = double(DATA.qrs);
             GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');

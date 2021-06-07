@@ -6074,7 +6074,7 @@ end
         try
             waitbar_handle = waitbar(1/2, 'Calculating biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
             tic
-            [GUI.PQRST_position, ~, ~] = wavedet_3D(DATA.sig, DATA.qrs, heasig, []);
+            [GUI.PQRST_position, ~, ~] = wavedet_3D(DATA.sig(:, 1), DATA.qrs, heasig, []);
             toc
             if isvalid(waitbar_handle)
                 close(waitbar_handle);

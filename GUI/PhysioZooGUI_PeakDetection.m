@@ -2358,20 +2358,33 @@ end
                 try
                     f_n = [DATA.Mammal '_' DATA.integration_level{DATA.integration_index}];
                     mhrv.defaults.mhrv_load_defaults(f_n);
-                    win_samples = mhrv.defaults.mhrv_get_default('filtrr.moving_average.win_length', 'value');
+%                     win_samples = mhrv.defaults.mhrv_get_default('filtrr.moving_average.win_length', 'value');
+%                     win_samples = mhrv.defaults.mhrv_get_default('filtrr.moving_average.win_length', 'value');
+
+                    rr_min = mhrv.defaults.mhrv_get_default('filtrr.range.rr_min', 'value');
+                    rr_max = mhrv.defaults.mhrv_get_default('filtrr.range.rr_max', 'value');
+
+                    if DATA.PlotHR == 1
+                        rr_min_t = 60 ./ rr_min;
+                        rr_max_t = 60 ./ rr_max;  
+                        rr_min = min(rr_min_t, rr_max_t);
+                        rr_max = max(rr_min_t, rr_max_t);
+                    end                                        
                 catch e
                     h_e = errordlg(['File "' f_n '.yml" does''t exists.'], 'Input Error'); setLogo(h_e, 'M1');
                     rethrow(e);
                 end
                 try
                     
-                    if length(rr_data) < 6 * win_samples
-                        win_samples = floor(length(rr_data)/6);
-                        h_e = warndlg(['The length of the MA filter will be set to ', num2str(win_samples) '!'], 'Warning');
-                        setLogo(h_e, 'M1');
-                    end
+%                     if length(rr_data) < 6 * win_samples
+%                         win_samples = floor(length(rr_data)/6);
+%                         h_e = warndlg(['The length of the MA filter will be set to ', num2str(win_samples) '!'], 'Warning');
+%                         setLogo(h_e, 'M1');
+%                     end
                     
-                    [rr_data_filtered, rr_time_filtered, ~] = mhrv.rri.filtrr(rr_data, rr_time, 'filter_quotient', false, 'filter_ma', true, 'filter_range', false, 'win_samples', win_samples);
+%                   [rr_data_filtered, rr_time_filtered, ~] = mhrv.rri.filtrr(rr_data, rr_time, 'filter_quotient', false, 'filter_ma', true, 'filter_range', false, 'win_samples', win_samples);
+                    [rr_data_filtered, rr_time_filtered, ~] = mhrv.rri.filtrr(rr_data, rr_time, 'filter_quotient', false, 'filter_ma', false, 'filter_range', true, 'rr_min', rr_min, 'rr_max', rr_max);
+
                     if isempty(rr_data_filtered)
                         throw(MException('mhrv_rri_filtrr:text', 'Not enough datapoints!'));
                     elseif length(rr_data) * 0.1 > length(rr_data_filtered)

@@ -55,7 +55,7 @@ end
         
         %         DATA.peak_search_win = 100;
         
-        DATA.PlotHR = 0;
+        DATA.PlotHR = 1;
         
         DATA.maxRRTime = 0;
         
@@ -303,7 +303,20 @@ end
             delete(GUI.T_linehandle);
             GUI = rmfield(GUI, 'T_linehandle');
         end
+        if isfield(GUI, 'RRInt_detrended_handle')
+            delete(GUI.RRInt_detrended_handle);
+            GUI = rmfield(GUI, 'RRInt_detrended_handle');
+        end
+        if isfield(GUI, 'RRInt_filtered_handle')
+            delete(GUI.RRInt_filtered_handle);
+            GUI = rmfield(GUI, 'RRInt_filtered_handle');
+        end
+        GUI.GridX_checkbox.Value = 1;
+        GUI.GridY_checkbox.Value = 1;
         
+        GUI.TrendHR_checkbox.Value = 1;
+        GUI.FilterHR_checkbox.Value = 0;
+        GUI.GridYHR_checkbox.Value = 1;
     end
 %%
     function DATA = createData()
@@ -311,7 +324,7 @@ end
         DATA.screensize = get( 0, 'Screensize' );
         
         %                 DEBUGGING MODE - Small Screen
-        %                 DATA.screensize = [0 0 1250 800];
+        %                         DATA.screensize = [0 0 1250 800];
         
         DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
         
@@ -334,7 +347,7 @@ end
         DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'};
         DATA.integration_level = {'ecg'; 'electrogram'; 'ap'};
         
-        DATA.GUI_PeakDetector = {'rqrs'; 'jqrs'; 'wjqrs'; 'EGM peaks'}; % 'EGM peaks'
+        DATA.GUI_PeakDetector = {'rqrs'; 'jqrs'; 'wjqrs'; 'egmbeat'}; % 'EGM peaks'
         DATA.peakDetector_index = 1;
         
         DATA.GUI_Annotation = {'Peak'; 'Signal quality'; 'Rhythms'};
@@ -344,7 +357,7 @@ end
             'B'; 'T'; 'IVR'; 'VFL'; 'VT';...
             'SBR'; 'BII'; 'NOD';...
             'P'; 'PREX';...
-            'J'; 'PAT'; 'AT'; 'VTS'; 'AIVRS'; 'IVRS'; 'AIVR'}; % 'N'
+            'J'; 'PAT'; 'AT'; 'SVT'; 'AIVRS'; 'IVRS'; 'AIVR'}; % 'N'
         
         %         rec_colors = lines(5);
         %         DATA.quality_color = {rec_colors(5, :); rec_colors(3, :); rec_colors(2, :)};
@@ -425,12 +438,12 @@ end
             'Pre-excitation (WPW)'...;
             
             ''; ...
+            'Paroxysmal Atrial Tachycardia'; ...
+            ''; ...
+            'Supraventricular Tachycardia'; ...
             ''; ...
             ''; ...
-            ''; ...
-            ''; ...
-            ''; ...
-            ''};
+            'Accelerated Idioventricular Rhythm'};
         
         DATA.temp_rec_name4wfdb = 'temp_ecg_wfdb';
         
@@ -462,7 +475,7 @@ end
             'MenuBar', 'none', ...
             'Position', [20, 50, DATA.window_size(1), DATA.window_size(2)], ...
             'Tag', 'fPhysioZooPD');
-                
+        
         set(GUI.Window, 'CloseRequestFcn', {@Exit_Callback});
         
         setLogo(GUI.Window, 'M1');
@@ -583,21 +596,21 @@ end
             
             GUI.ChAmpIncreaseButton = uicontrol('Style', 'PushButton', 'Parent', AmpPlusMinusHButtons_Box, 'Callback', @amp_plus_minus_pushbutton_Callback,...
                 'FontSize', BigFontSize, 'String', sprintf('\x25B4'), 'Tooltip', 'Increase channel amplitude', 'UserData', 'plus'); % sprintf('\x25A0') 25B2
-           
             
             
             
             
-%             YLimPlusMinusHButtons_Box = uix.HButtonBox('Parent', amp_box, 'Spacing', DATA.Spacing);
-%             GUI.YLimAmpDecreaseButton = uicontrol('Style', 'PushButton', 'Parent', YLimPlusMinusHButtons_Box, 'Callback', @y_lim_plus_minus_pushbutton_Callback,...
-%                 'FontSize', BigFontSize, 'String', sprintf('\x25BE'), 'Tooltip', 'Decrease y-lim', 'UserData', 'minus'); % sprintf('\x25A0') 25B2
-%             
-%             GUI.YLimSourceButton = uicontrol('Style', 'PushButton', 'Parent', YLimPlusMinusHButtons_Box, 'Callback', @y_lim_plus_minus_pushbutton_Callback,...
-%                 'FontSize', BigFontSize, 'String', sprintf('\x003D'), 'Tooltip', 'Decrease auto y-lim', 'UserData', 'source'); % sprintf('\x25A0') 25B2
-%             
-%             GUI.YLimIncreaseButton = uicontrol('Style', 'PushButton', 'Parent', YLimPlusMinusHButtons_Box, 'Callback', @y_lim_plus_minus_pushbutton_Callback,...
-%                 'FontSize', BigFontSize, 'String', sprintf('\x25B4'), 'Tooltip', 'Increase y-lim', 'UserData', 'plus'); % sprintf('\x25A0') 25B2            
-%             
+            
+            %             YLimPlusMinusHButtons_Box = uix.HButtonBox('Parent', amp_box, 'Spacing', DATA.Spacing);
+            %             GUI.YLimAmpDecreaseButton = uicontrol('Style', 'PushButton', 'Parent', YLimPlusMinusHButtons_Box, 'Callback', @y_lim_plus_minus_pushbutton_Callback,...
+            %                 'FontSize', BigFontSize, 'String', sprintf('\x25BE'), 'Tooltip', 'Decrease y-lim', 'UserData', 'minus'); % sprintf('\x25A0') 25B2
+            %
+            %             GUI.YLimSourceButton = uicontrol('Style', 'PushButton', 'Parent', YLimPlusMinusHButtons_Box, 'Callback', @y_lim_plus_minus_pushbutton_Callback,...
+            %                 'FontSize', BigFontSize, 'String', sprintf('\x003D'), 'Tooltip', 'Decrease auto y-lim', 'UserData', 'source'); % sprintf('\x25A0') 25B2
+            %
+            %             GUI.YLimIncreaseButton = uicontrol('Style', 'PushButton', 'Parent', YLimPlusMinusHButtons_Box, 'Callback', @y_lim_plus_minus_pushbutton_Callback,...
+            %                 'FontSize', BigFontSize, 'String', sprintf('\x25B4'), 'Tooltip', 'Increase y-lim', 'UserData', 'plus'); % sprintf('\x25A0') 25B2
+            %
             
             
             
@@ -618,8 +631,8 @@ end
             GUI.Q_checkbox.ForegroundColor = [0.4940, 0.1840, 0.5560];
             GUI.R_checkbox.ForegroundColor = [1 0 0];
             GUI.S_checkbox.ForegroundColor = [0.8500, 0.3250, 0.0980];
-            GUI.T_checkbox.ForegroundColor = [0.6350, 0.0780, 0.1840];                        
-                                    
+            GUI.T_checkbox.ForegroundColor = [0.6350, 0.0780, 0.1840];
+            
             GUI.CalcPeaksButton_handle = uicontrol('Style', 'PushButton', 'Parent', peaks_box, 'String', 'Calc Peaks', 'FontSize', DATA.SmallFontSize-1,...
                 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Enable', 'inactive', 'Tag', 'CalcPQRSTPeaks', 'Callback', @CalcPQRSTPeaks);
             %on' | 'off' | 'inactive'
@@ -649,12 +662,12 @@ end
             GUI.RRInt_Axes = axes('Parent', uicontainer('Parent', two_axes_box), 'Tag', 'GUI.RRInt_Axes');
             %         axis(GUI.ECG_Axes, 'square', 'equal');
             
-            set(two_axes_box, 'Heights', [-1, 100]);
+            set(two_axes_box, 'Heights', [-7, -3]);
             
             GUI.AutoCompute_pushbutton = uicontrol('Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @AutoCompute_pushbutton_Callback, 'FontSize', SmallFontSize, 'String', 'Compute', 'Enable', 'off');
             GUI.AutoCalc_checkbox = uicontrol('Style', 'Checkbox', 'Parent', CommandsButtons_Box, 'Callback', @AutoCalc_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'Auto Compute', 'Value', 1);
             
-            GUI.RR_or_HR_plot_button = uicontrol('Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot HR');
+            GUI.RR_or_HR_plot_button = uicontrol('Style', 'ToggleButton', 'Parent', CommandsButtons_Box, 'Callback', @RR_or_HR_plot_button_Callback, 'FontSize', BigFontSize, 'String', 'Plot RR', 'Value', 1);
             GUI.Reset_pushbutton = uicontrol('Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
             set(CommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing); % [70, 25]
             
@@ -901,11 +914,15 @@ end
             uix.Empty('Parent', GUI.ConfigBox );
             
             % ORI's algorithm for EGM peaks
-            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'EGM peaks', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'egmbeat', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
             [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ref_per', 'Refractory period', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ref_per');
-            [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIConfig', 'bi', 'BI', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'bi');
-            [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh1', 'Prominence threshold 1', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh1');
-            [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh2', 'Prominence threshold 2', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh2');
+            [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIConfig', 'bi', 'Average BI', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'bi');
+            
+            [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'init_prom_thresh', 'Initial prominence threshold', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'init_prom_thresh');
+            [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'classify_prom_thresh', 'Clasifying prominence threshold', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'classify_prom_thresh');
+            
+            %             [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh1', 'Prominence threshold 1', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh1');
+            %             [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh2', 'Prominence threshold 2', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh2');
             
             uix.Empty('Parent', GUI.ConfigBox );
             
@@ -958,13 +975,22 @@ end
             
             uix.Empty('Parent', DisplayBox);
             
+            
+            %--------------------------------------------------------------
             tempBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
             
             GUI.GridX_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox, 'Callback', @GridX_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid X', 'Value', 1);
             GUI.GridY_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox, 'Callback', @GridY_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid Y', 'Value', 1);
             uix.Empty('Parent', tempBox);
             uix.Empty('Parent', tempBox);
-            
+            %-----------------------------
+            tempBox1 = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
+            GUI.TrendHR_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox1, 'Callback', @TrendHR_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Trend HR', 'Value', 1);
+            GUI.FilterHR_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox1, 'Callback', @FilterHR_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Filter HR', 'Value', 0);
+            %             uix.Empty('Parent', tempBox1);
+            GUI.GridYHR_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox1, 'Callback', @GridYHR_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid Y HR', 'Value', 1);
+            uix.Empty('Parent', tempBox1);
+            %--------------------------------------------------------------
             uix.Empty('Parent', DisplayBox);
             
             %         GUI.ChannelsBox = uix.HBox( 'Parent', DisplayBox, 'Spacing', DATA.Spacing);
@@ -983,7 +1009,16 @@ end
             
             uix.Empty('Parent', DisplayBox);
             
+            % ---------------------------------------------------
+            %
+            %             tempBox1 = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
+            %             GUI.TrendHR_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox1, 'Callback', @TrendHR_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Trend HR', 'Value', 0);
+            %             GUI.FilterHR_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox1, 'Callback', @FilterHR_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Filter HR', 'Value', 0);
+            %             %             uix.Empty('Parent', tempBox1);
+            %             GUI.GridYHR_checkbox = uicontrol('Style', 'Checkbox', 'Parent', tempBox1, 'Callback', @GridYHR_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Grid Y HR', 'Value', 0);
+            %             %             uix.Empty('Parent', tempBox1);
             
+            % ---------------------------------------------------
             [GUI, textBox{26}, text_handles{26}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinRhythmsRange_Edit'; 'MaxRhythmsRange_Edit'}, 'Rhythms range:', 'h:min:sec', DisplayBox, {@MinMaxRhythmsRange_Edit_Callback; @MinMaxRhythmsRange_Edit_Callback}, '', []);
             
             RhythmsHBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
@@ -1019,7 +1054,8 @@ end
             end
             
             set(textBox{23}, 'Widths', field_size);
-            set(tempBox, 'Widths', field_size);
+            set(tempBox, 'Widths', [-1 -1 -1 -1]);
+            set(tempBox1, 'Widths', [-1 -1 -1 -1]);
             
             if DATA.SmallScreen
                 field_size = [max_extent_control, 120, -1];
@@ -1057,9 +1093,9 @@ end
             end
             
             if DATA.SmallScreen
-                set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6  -4 -6  -2   -6  -7 -6 -2 -6 -30 -30]);
+                set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6  -4 -6   -6   -2   -6  -7 -6 -2 -6 -30 -30]);
             else
-                set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6  -3 -6  -2   -6  -7 -6 -6 -6 -40 -1]);
+                set(DisplayBox, 'Heights', [-2 -6 -6 -6 -2 -6 -6 -2 -6  -3 -6   -6   -2   -6  -7 -6 -6 -6 -40 -1]);
             end
             
             %-------------------------------------------------------
@@ -1098,7 +1134,7 @@ end
             GUI.RhythmsTable.RowName = {};
             
             %--------------------------------------------------------------------------
-                                    
+            
             Amplitude_Part_Box = uix.VBox('Parent', AmplitudeTab, 'Spacing', DATA.Spacing);
             GUI.AmplitudeTable = uitable('Parent', Amplitude_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{250 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
             GUI.AmplitudeTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Median (sec)'; 'Q1 (sec)'; 'Q3 (sec)'};
@@ -1123,6 +1159,11 @@ end
             set(findobj(Upper_Part_Box,'Style', 'PushButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
             set(findobj(Upper_Part_Box,'Type', 'uicontainer'), 'BackgroundColor', myUpBackgroundColor);
             set(findobj(Upper_Part_Box,'Type', 'uipanel'), 'BackgroundColor', myUpBackgroundColor);
+            
+            if ismac()
+                set(findobj(Upper_Part_Box,'Style', 'ToggleButton'), 'ForegroundColor', [0 0 0]);
+            end
+            
             
             % Low Part
             set(findobj(Low_Part_BoxPanel,'Type', 'uicontainer'), 'BackgroundColor', myLowBackgroundColor);
@@ -1283,7 +1324,15 @@ end
             
             DATA.peakDetector = DATA.config_map('peak_detector');
             DATA.peakDetector_index = find(strcmpi(DATA.GUI_PeakDetector, DATA.peakDetector));
-            set(GUI.GUIRecord.PeakDetector_popupmenu, 'Value', DATA.peakDetector_index);
+            
+            if strcmp(integration, 'Electrogram')
+                set(GUI.GUIRecord.PeakDetector_popupmenu, 'String', DATA.GUI_PeakDetector, 'Value', DATA.peakDetector_index);
+                GUI.GUIRecord.PeakDetector_popupmenu.Enable = 'inactive';
+            else
+                set(GUI.GUIRecord.PeakDetector_popupmenu, 'String', DATA.GUI_PeakDetector(1:end-1, :), 'Value', DATA.peakDetector_index);
+                GUI.GUIRecord.PeakDetector_popupmenu.Enable = 'on';
+            end
+            
             
             adjust_index = find(strcmpi(DATA.Adjustment_type, DATA.config_map('peak_adjustment')));
             set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', adjust_index);
@@ -1318,6 +1367,16 @@ end
             index_selected = get(src, 'Value');
             DATA.integration_index = index_selected;
             DATA.config_map('integration_level') = items{index_selected};
+            
+            if index_selected == 2 % Electrogram
+                GUI.GUIRecord.PeakDetector_popupmenu.String = DATA.GUI_PeakDetector;
+                GUI.GUIRecord.PeakDetector_popupmenu.Value = 4;
+                GUI.GUIRecord.PeakDetector_popupmenu.Enable = 'inactive';
+            else
+                GUI.GUIRecord.PeakDetector_popupmenu.Value = 1;
+                GUI.GUIRecord.PeakDetector_popupmenu.String = DATA.GUI_PeakDetector(1:end-1, :);
+                GUI.GUIRecord.PeakDetector_popupmenu.Enable = 'on';
+            end
         end
     end
 %%
@@ -1910,37 +1969,41 @@ end
             
             set_min_max_low_axes_y_lim_string(low_y_lim, hight_y_lim);
         end
-        
         set_rectangles_YData();
+        setYHRGrid(GUI.RRInt_Axes, GUI.GridYHR_checkbox);
     end
 %%
     function [low_y_lim, hight_y_lim] = calc_auto_y_low_axes_lim()
         xlim = get(GUI.RRInt_Axes, 'XLim');
-        %         ylim = get(GUI.RRInt_Axes, 'YLim');
-        
-        if isfield(DATA, 'rr_data_filtered') && ~isempty(DATA.rr_data_filtered)
-            
-            current_y_data = DATA.rr_data_filtered(DATA.rr_time_filtered >= xlim(1) & DATA.rr_time_filtered <= xlim(2));
-            
-            if length(current_y_data) < 2
-                min_y_lim = current_y_data/1.5; % min(ylim)
-                max_y_lim = current_y_data*1.5; % max(ylim)
-            else
-                min_sig = min(current_y_data);
-                max_sig = max(current_y_data);
-                delta = (max_sig - min_sig)*0.1;
+        if GUI.FilterHR_checkbox.Value == 0
+            current_y_data = GUI.RRInt_handle.YData(GUI.RRInt_handle.XData >= xlim(1) & GUI.RRInt_handle.XData <= xlim(2));
+            low_y_lim = min(current_y_data);
+            hight_y_lim = max(current_y_data);
+        else
+            if isfield(DATA, 'rr_data_filtered') && ~isempty(DATA.rr_data_filtered)
                 
-                min_y_lim = min(min_sig, max_sig) - delta;
-                max_y_lim = max(min_sig, max_sig) + delta;
+                current_y_data = DATA.rr_data_filtered(DATA.rr_time_filtered >= xlim(1) & DATA.rr_time_filtered <= xlim(2));
+                
+                low_y_lim = min(current_y_data);
+                hight_y_lim = max(current_y_data);
+                
+                %                 if length(current_y_data) < 2
+                %                     min_y_lim = current_y_data/1.5; % min(ylim)
+                %                     max_y_lim = current_y_data*1.5; % max(ylim)
+                %                 else
+                %                     min_sig = min(current_y_data);
+                %                     max_sig = max(current_y_data);
+                %                     delta = (max_sig - min_sig)*0.01;
+                %
+                %                     min_y_lim = min(min_sig, max_sig) - delta;
+                %                     max_y_lim = max(min_sig, max_sig) + delta;
+                %                     %                 min_y_lim = min_sig;
+                %                     %                 max_y_lim = prctile(current_y_data,99.998);
+                %                 end
+                %
+                %                 low_y_lim = min(min_y_lim, max_y_lim);
+                %                 hight_y_lim = max(min_y_lim, max_y_lim);
             end
-            
-            %             if DATA.PlotHR == 1
-            %                 max_y_lim = 60 ./ max_y_lim;
-            %                 min_y_lim = 60 ./ min_y_lim;
-            %             end
-            
-            low_y_lim = min(min_y_lim, max_y_lim);
-            hight_y_lim = max(min_y_lim, max_y_lim);
         end
     end
 %%
@@ -2005,8 +2068,9 @@ end
                     try
                         param_value = DATA.config_map(fields_names{i});
                         tooltip = DATA.config_struct.(fields_names{i}).description;
-                        set(params_GUI_edit_values(i), 'String', param_value, 'Tooltip', tooltip);
+                        set(params_GUI_edit_values(i), 'String', param_value, 'Tooltip', tooltip, 'Enable', 'on');
                     catch
+                        set(params_GUI_edit_values(i), 'Enable', 'off');
                     end
                 end
             end
@@ -2043,8 +2107,8 @@ end
         DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
         
         if isfield(GUI, 'rhythms_win')
-            delete(GUI.rhythms_win);            
-            GUI = rmfield(GUI, 'rhythms_win');            
+            delete(GUI.rhythms_win);
+            GUI = rmfield(GUI, 'rhythms_win');
             DATA.rhythms_win_num = 0;
         end
         
@@ -2055,10 +2119,10 @@ end
         
         GUI.RhythmsTable.Data = {};
         GUI.RhythmsTable.RowName = {};
-                
+        
         reset_rhythm_button();
-%         Rhythms_ToggleButton_Reset();
-%         GUI.RhythmsHBox.Visible = 'off';
+        %         Rhythms_ToggleButton_Reset();
+        %         GUI.RhythmsHBox.Visible = 'off';
         
         GUI.RhythmsTable.Data = {};
         GUI.RhythmsTable.RowName = {};
@@ -2109,7 +2173,7 @@ end
                     waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing');
                     setLogo(waitbar_handle, 'M1');
                     
-                    if ~strcmpi(peak_detector, 'rqrs') && ~strcmpi(peak_detector, 'EGM peaks')
+                    if ~strcmpi(peak_detector, 'rqrs') && ~strcmpi(peak_detector, 'egmbeat')
                         
                         lcf = DATA.config_map('lcf');
                         hcf = DATA.config_map('hcf');
@@ -2126,15 +2190,15 @@ end
                     elseif strcmp(peak_detector, 'wjqrs')
                         qrs_pos = mhrv.ecg.wjqrs(bpecg, DATA.Fs, thr, rp, ws);
                         DATA.qrs = qrs_pos';
-                    elseif strcmp(peak_detector, 'EGM peaks')
+                    elseif strcmp(peak_detector, 'egmbeat')
                         params_struct = struct();
                         
                         params_struct.Fs = DATA.Fs;
                         try
                             params_struct.ref_per = DATA.config_map('ref_per');
                             params_struct.bi = DATA.config_map('bi');
-                            params_struct.prom_thresh1 = DATA.config_map('prom_thresh1');
-                            params_struct.prom_thresh2 = DATA.config_map('prom_thresh2');
+                            params_struct.init_prom_thresh = DATA.config_map('init_prom_thresh');
+                            params_struct.classify_prom_thresh = DATA.config_map('classify_prom_thresh');
                             
                             qrs_pos = EGM_peaks(DATA.sig(:, 1), params_struct, 0);
                             DATA.qrs = qrs_pos;
@@ -2158,6 +2222,7 @@ end
                     end
                     
                     if ~isempty(DATA.qrs)
+                        DATA.qrs = unique(DATA.qrs);
                         DATA.qrs_saved = DATA.qrs;
                         DATA.qrs = double(DATA.qrs);
                         GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
@@ -2173,6 +2238,7 @@ end
                         % ---------------------------
                         
                         plot_rr_data();
+                        TrendHR_checkbox_Callback(GUI.TrendHR_checkbox);
                         plot_red_rectangle(DATA.zoom_rect_limits);
                         GUI.PeaksTable.Data(:, 2) = {0};
                         DATA.peaks_added = 0;
@@ -2239,67 +2305,90 @@ end
         GUI.red_rect_handle = line(x_box, y_box, 'Color', 'r', 'Linewidth', 2, 'Parent', GUI.RRInt_Axes, 'Tag', 'red_zoom_rect');
     end
 %%
+    function [rr_time, rr_data, yString] = calc_rr()
+        
+        qrs = double(DATA.qrs(~isnan(DATA.qrs)));
+        
+        rr_time = qrs(1:end-1)/DATA.Fs;
+        rr_data = diff(qrs)/DATA.Fs;
+        
+        if isempty(rr_data)
+            throw(MException('plot_rr_data:text', 'Not enough datapoints!'));
+        else
+            if DATA.PlotHR == 1
+                rr_data = 60 ./ rr_data;
+                yString = 'HR (BPM)';
+            else
+                yString = 'RR (sec)';
+            end
+        end
+    end
+%%
     function plot_rr_data()
         if isfield(DATA, 'qrs')
             
-            qrs = double(DATA.qrs(~isnan(DATA.qrs)));
+            try
+                [rr_time, rr_data, yString] = calc_rr();
+            catch e
+                rethrow(e);
+            end
             
-            rr_time = qrs(1:end-1)/DATA.Fs;
-            rr_data = diff(qrs)/DATA.Fs;
             
-            if isempty(rr_data)
-                throw(MException('plot_rr_data:text', 'Not enough datapoints!'));
+            %             if isempty(rr_data)
+            %                 throw(MException('plot_rr_data:text', 'Not enough datapoints!'));
+            %             else
+            %                 if (DATA.PlotHR == 1)
+            %                     rr_data = 60 ./ rr_data;
+            %                     yString = 'HR (BPM)';
+            %                 else
+            %                     yString = 'RR (sec)';
+            %                 end
+            
+            GUI.RRInt_handle = line(rr_time, rr_data, 'Parent', GUI.RRInt_Axes, 'LineWidth', 0.5, 'Tag', 'RRInt'); % 'Marker', '*', 'MarkerSize', 2,
+            
+            DATA.maxRRTime = max(DATA.tm);
+            %                 DATA.RRIntPage_Length = DATA.maxRRTime;
+            DATA.RRIntPage_Length = max(rr_time);
+            ylabel(GUI.RRInt_Axes, yString);
+            
+            if length(rr_data) == 1
+                DATA.rr_data_filtered = rr_data;
+                DATA.rr_time_filtered = rr_time;
             else
-                if (DATA.PlotHR == 1)
-                    rr_data = 60 ./ rr_data;
-                    yString = 'HR (BPM)';
-                else
-                    yString = 'RR (sec)';
+                try
+                    f_n = [DATA.Mammal '_' DATA.integration_level{DATA.integration_index}];
+                    mhrv.defaults.mhrv_load_defaults(f_n);
+                    win_samples = mhrv.defaults.mhrv_get_default('filtrr.moving_average.win_length', 'value');
+                catch e
+                    h_e = errordlg(['File "' f_n '.yml" does''t exists.'], 'Input Error'); setLogo(h_e, 'M1');
+                    rethrow(e);
                 end
-                
-                GUI.RRInt_handle = line(rr_time, rr_data, 'Parent', GUI.RRInt_Axes, 'Marker', '*', 'MarkerSize', 2, 'Tag', 'RRInt');
-                
-                DATA.maxRRTime = max(DATA.tm);
-                %                 DATA.RRIntPage_Length = DATA.maxRRTime;
-                DATA.RRIntPage_Length = max(rr_time);
-                ylabel(GUI.RRInt_Axes, yString);
-                
-                if length(rr_data) == 1
-                    DATA.rr_data_filtered = rr_data;
-                    DATA.rr_time_filtered = rr_time;
-                else
-                    try
-                        mhrv.defaults.mhrv_load_defaults([DATA.Mammal '_' DATA.integration_level{DATA.integration_index}]);
-                        win_samples = mhrv.defaults.mhrv_get_default('filtrr.moving_average.win_length', 'value');
-                    catch e
-                        rethrow(e);
-                    end
-                    try
-                        
-                        if length(rr_data) < 6 * win_samples
-                            win_samples = floor(length(rr_data)/6);
-                            h_e = warndlg(['The length of the MA filter will be set to ', num2str(win_samples) '!'], 'Warning');
-                            setLogo(h_e, 'M1');
-                        end
-                        
-                        [rr_data_filtered, rr_time_filtered, ~] = mhrv.rri.filtrr(rr_data, rr_time, 'filter_quotient', false, 'filter_ma', true, 'filter_range', false, 'win_samples', win_samples);
-                        if isempty(rr_data_filtered)
-                            throw(MException('mhrv.rri.filtrr:text', 'Not enough datapoints!'));
-                        elseif length(rr_data) * 0.1 > length(rr_data_filtered)
-                            throw(MException('mhrv.rri.filtrr:text', 'Not enough datapoints!'));
-                        else
-                            DATA.rr_data_filtered = rr_data_filtered;
-                            DATA.rr_time_filtered = rr_time_filtered;
-                        end
-                    catch e
-                        %                     rethrow(e);
-                        DATA.rr_data_filtered = rr_data;
-                        DATA.rr_time_filtered = rr_time;
-                        h_e = warndlg(['filtrr error: ', e.message], 'Warning');
+                try
+                    
+                    if length(rr_data) < 6 * win_samples
+                        win_samples = floor(length(rr_data)/6);
+                        h_e = warndlg(['The length of the MA filter will be set to ', num2str(win_samples) '!'], 'Warning');
                         setLogo(h_e, 'M1');
                     end
+                    
+                    [rr_data_filtered, rr_time_filtered, ~] = mhrv.rri.filtrr(rr_data, rr_time, 'filter_quotient', false, 'filter_ma', true, 'filter_range', false, 'win_samples', win_samples);
+                    if isempty(rr_data_filtered)
+                        throw(MException('mhrv_rri_filtrr:text', 'Not enough datapoints!'));
+                    elseif length(rr_data) * 0.1 > length(rr_data_filtered)
+                        throw(MException('mhrv_rri_filtrr:text', 'Not enough datapoints!'));
+                    else
+                        DATA.rr_data_filtered = rr_data_filtered;
+                        DATA.rr_time_filtered = rr_time_filtered;
+                    end
+                catch e
+                    %                     rethrow(e);
+                    DATA.rr_data_filtered = rr_data;
+                    DATA.rr_time_filtered = rr_time;
+                    h_e = warndlg(['filtrr error: ', e.message], 'Warning');
+                    setLogo(h_e, 'M1');
                 end
             end
+            %             end
         end
     end
 %%
@@ -2737,6 +2826,7 @@ end
                     end
                     
                     plot_rr_data();
+                    TrendHR_checkbox_Callback(GUI.TrendHR_checkbox);
                     plot_red_rectangle(DATA.zoom_rect_limits);
                     
                     set(GUI.RRInt_Axes, 'XLim', [0 DATA.maxRRTime]);
@@ -2929,7 +3019,24 @@ end
                 delete(GUI.red_rect_handle);
                 delete(GUI.RRInt_handle);
                 
+%                 GUI.TrendHR_checkbox.Value = 1;
+%                 GUI.FilterHR_checkbox.Value = 0;
+%                 try
+%                     if isfield(GUI, 'RRInt_detrended_handle')
+%                         delete(GUI.RRInt_detrended_handle);
+%                         GUI = rmfield(GUI, 'RRInt_detrended_handle');
+%                     end
+%                     if isfield(GUI, 'RRInt_filtered_handle')
+%                         delete(GUI.RRInt_filtered_handle);
+%                         GUI = rmfield(GUI, 'RRInt_filtered_handle');
+%                     end
+%                 catch e
+%                     disp(e.message);
+%                 end
+                
                 plot_rr_data();
+                FilterHR_checkbox_Callback(GUI.FilterHR_checkbox);
+%                 TrendHR_checkbox_Callback(GUI.TrendHR_checkbox);
                 [low_y_lim, hight_y_lim] = calc_auto_y_low_axes_lim();
                 set(GUI.RRInt_Axes, 'YLim', [low_y_lim hight_y_lim]);
                 plot_red_rectangle(DATA.zoom_rect_limits);
@@ -2938,7 +3045,7 @@ end
                 
                 set_rectangles_YData();
             catch e
-                %                 disp(e.message);
+                disp(e.message);
             end
         end
     end
@@ -3004,36 +3111,36 @@ end
                 GUI = rmfield(GUI, 'T_linehandle');
             end
             
-%             GUI.RhythmsListbox.String = '';
-%             GUI.RhythmsListbox.UserData = [];
-%             GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
-%             GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
-%             GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
-%             GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
-%             
-%             DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
-%             
-%             if isfield(GUI, 'rhythms_win')
-%                 delete(GUI.rhythms_win);
-%                 
-%                 GUI = rmfield(GUI, 'rhythms_win');
-%                 
-%                 DATA.rhythms_win_num = 0;
-%             end
+            %             GUI.RhythmsListbox.String = '';
+            %             GUI.RhythmsListbox.UserData = [];
+            %             GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
+            %             GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
+            %             GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
+            %             GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
+            %
+            %             DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
+            %
+            %             if isfield(GUI, 'rhythms_win')
+            %                 delete(GUI.rhythms_win);
+            %
+            %                 GUI = rmfield(GUI, 'rhythms_win');
+            %
+            %                 DATA.rhythms_win_num = 0;
+            %             end
             
             if isfield(GUI, 'PinkLineHandle_AllDataAxes')
                 delete(GUI.PinkLineHandle_AllDataAxes);
                 GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
             end
             
-%             if isfield(GUI, 'RhythmsHandle_AllDataAxes')
-%                 delete(GUI.RhythmsHandle_AllDataAxes);
-%                 GUI = rmfield(GUI, 'RhythmsHandle_AllDataAxes');
-%             end
+            %             if isfield(GUI, 'RhythmsHandle_AllDataAxes')
+            %                 delete(GUI.RhythmsHandle_AllDataAxes);
+            %                 GUI = rmfield(GUI, 'RhythmsHandle_AllDataAxes');
+            %             end
             
             GUI.AutoCalc_checkbox.Value = 1;
             GUI.RR_or_HR_plot_button.String = 'Plot HR';
-            DATA.PlotHR = 0;
+            DATA.PlotHR = 1;
             set(GUI.GUIRecord.PeaksFileName_text, 'String', '');
             set(GUI.GUIRecord.DataQualityFileName_text, 'String', '');
             set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
@@ -3064,6 +3171,11 @@ end
             
             GUI.GridX_checkbox.Value = 1;
             GUI.GridY_checkbox.Value = 1;
+            
+            GUI.TrendHR_checkbox.Value = 1;
+            GUI.FilterHR_checkbox.Value = 0;
+            GUI.GridYHR_checkbox.Value = 1;
+            
             set_new_mammal(DATA.init_config_file_name);
             
             reset_movie_buttons();
@@ -3084,15 +3196,15 @@ end
             
             clean_rhythms();
             
-%             reset_rhythm_button();
+            %             reset_rhythm_button();
             Rhythms_ToggleButton_Reset();
             GUI.RhythmsHBox.Visible = 'off';
             
-%             GUI.RhythmsTable.Data = {};
-%             GUI.RhythmsTable.RowName = {};
-%             DATA.Rhythms_file_name = '';
-%             set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
-%             
+            %             GUI.RhythmsTable.Data = {};
+            %             GUI.RhythmsTable.RowName = {};
+            %             DATA.Rhythms_file_name = '';
+            %             set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
+            %
             %             GUI.RawSignal_checkbox.Value = 1;
             GUI.FilteredSignal_checkbox.Value = 0;
             GUI.GUIDisplay.FilterLevel_popupmenu.Value = 1;
@@ -3978,6 +4090,7 @@ end
             delete(GUI.RRInt_handle);
             
             plot_rr_data();
+            TrendHR_checkbox_Callback(GUI.TrendHR_checkbox);
             plot_red_rectangle(DATA.zoom_rect_limits);
             setRRIntYLim();
         catch
@@ -4012,6 +4125,7 @@ end
                     delete(GUI.red_rect_handle);
                     delete(GUI.RRInt_handle);
                     plot_rr_data();
+                    TrendHR_checkbox_Callback(GUI.TrendHR_checkbox);
                     plot_red_rectangle(DATA.zoom_rect_limits);
                     setRRIntYLim();
                 catch
@@ -4567,6 +4681,7 @@ end
             delete(GUI.RRInt_handle);
             
             plot_rr_data();
+            TrendHR_checkbox_Callback(GUI.TrendHR_checkbox);
             plot_red_rectangle(DATA.zoom_rect_limits);
             setRRIntYLim();
             
@@ -5407,6 +5522,94 @@ end
         setYECGGrid(GUI.ECG_Axes, GUI.GridY_checkbox);
     end
 %%
+    function GridYHR_checkbox_Callback(~, ~)
+        setYHRGrid(GUI.RRInt_Axes, GUI.GridYHR_checkbox);
+    end
+%%
+    function TrendHR_checkbox_Callback(src, ~)
+        if src.Value
+            try
+                if isfield(GUI, 'RRInt_detrended_handle')
+                    delete(GUI.RRInt_detrended_handle);
+                    GUI = rmfield(GUI, 'RRInt_detrended_handle');
+                end
+                f_n = [DATA.Mammal '_' DATA.integration_level{DATA.integration_index}];
+                mhrv.defaults.mhrv_load_defaults(f_n);
+                lambda = mhrv.defaults.mhrv_get_default('filtrr.detrending.lambda');
+                                
+                if GUI.FilterHR_checkbox.Value
+                    signal2detrend = DATA.rr_data_filtered;
+                    rr_time = DATA.rr_time_filtered;
+                else
+                    try
+                        [rr_time, rr_data, ~] = calc_rr();
+                    catch e
+                        h_e = errordlg(['TrendHR_checkbox_Callback, calc_rr error:' e.message], 'Detrending error'); setLogo(h_e, 'M1');
+                    end
+                    signal2detrend = rr_data;
+                end
+                
+                waitbar_handle = waitbar(0, 'Detrending', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+                
+                tic
+                nni_detrended_trans = split_detrend(signal2detrend, lambda.value, DATA.Fs, waitbar_handle);
+                toc
+                if isvalid(waitbar_handle)
+                    close(waitbar_handle);
+                end
+                nni_detrended = signal2detrend - nni_detrended_trans;
+                %                 nni_detrended_trans = nni_detrended_trans + mean(nni);
+                hold(GUI.RRInt_Axes, 'on');
+                GUI.RRInt_detrended_handle = line(rr_time, nni_detrended, 'Color', 'r', 'Parent', GUI.RRInt_Axes);
+            catch e          
+                if isvalid(waitbar_handle)
+                    close(waitbar_handle);
+                end
+                h_e = errordlg(['TrendHR_checkbox_Callback error: ' e.message], 'Detrending error'); setLogo(h_e, 'M1');
+                GUI.TrendHR_checkbox.Value = 0;                
+            end
+        else
+            try
+                if isfield(GUI, 'RRInt_detrended_handle')
+                    delete(GUI.RRInt_detrended_handle);
+                    GUI = rmfield(GUI, 'RRInt_detrended_handle');
+                end
+            catch e
+                disp(e.message);
+            end
+        end
+    end
+%%
+    function FilterHR_checkbox_Callback(src, ~)
+                
+        try
+            if isfield(GUI, 'RRInt_filtered_handle')
+                delete(GUI.RRInt_filtered_handle);
+                GUI = rmfield(GUI, 'RRInt_filtered_handle');
+            end
+        catch e
+            disp(e.message);
+        end
+        
+        if src.Value
+            %             hold(GUI.RRInt_Axes, 'on');
+            GUI.RRInt_handle.Visible = 'off';
+            GUI.RRInt_filtered_handle = line(DATA.rr_time_filtered, DATA.rr_data_filtered, 'Color', 'b');
+        else
+            GUI.RRInt_handle.Visible = 'on';
+%             try
+%                 if isfield(GUI, 'RRInt_filtered_handle')
+%                     delete(GUI.RRInt_filtered_handle);
+%                     GUI = rmfield(GUI, 'RRInt_filtered_handle');
+%                 end
+%             catch e
+%                 disp(e.message);
+%             end
+        end
+        TrendHR_checkbox_Callback(GUI.TrendHR_checkbox);
+        setRRIntYLim();
+    end
+%%
     function LowHightCutoffFr_Edit(src, ~)
         lcf = GUI.GUIDisplay.LowCutoffFr_Edit.String;
         hcf = GUI.GUIDisplay.HightCutoffFr_Edit.String;
@@ -5742,7 +5945,7 @@ end
                 
                 redraw_quality_rect();
                 redraw_rhythms_rect();
-%                 setYECGGrid(GUI.ECG_Axes, GUI.GridY_checkbox);
+                %                 setYECGGrid(GUI.ECG_Axes, GUI.GridY_checkbox);
             end
         end
     end
@@ -5968,10 +6171,10 @@ end
             
             switch get(GUI.Window, 'selectiontype')
                 %             case 'normal'
-                case 'open'                    
-                    x_lim = get(GUI.ECG_Axes, 'XLim');                                        
+                case 'open'
+                    x_lim = get(GUI.ECG_Axes, 'XLim');
                     delta = (max(x_lim) - min(x_lim))*0.1;
-                                        
+                    
                     xdata = get(GUI.red_rect_handle, 'XData');
                     xofs = r_r(1) - xdata(1, 1) - delta;
                     Window_Move('normal', xofs);
@@ -6095,7 +6298,7 @@ end
             else
                 coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
             end
-                        
+            
             if ~all(isnan(P))
                 GUI.P_checkbox.Value = 1;
                 GUI.P_linehandle.YData = GUI.P_linehandle.YData / coeff;
@@ -6119,7 +6322,7 @@ end
                 GUI.T_linehandle.YData = GUI.T_linehandle.YData / coeff;
             else
                 GUI.T_checkbox.Value = 0;
-            end     
+            end
             
             warning('off');
             l_h = legend(GUI.ECG_Axes, [GUI.P_linehandle, GUI.Q_linehandle, GUI.red_peaks_handle, GUI.S_linehandle, GUI.T_linehandle], {'P', 'Q', 'R', 'S', 'T'}, 'Location', 'best');

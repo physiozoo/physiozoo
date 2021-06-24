@@ -1087,6 +1087,10 @@ displayEndOfDemoMessage('');
         set(findobj(Upper_Part_Box,'Style', 'ToggleButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
         set(findobj(Upper_Part_Box,'Style', 'PushButton'), 'BackgroundColor', myPushButtonColor, 'ForegroundColor', [1 1 1], 'FontWeight', 'bold');
         
+        if ismac()
+            set(findobj(Upper_Part_Box,'Style', 'ToggleButton'), 'ForegroundColor', [0 0 0]);
+        end
+        
         set(GUI.BlueRectFocusButton, 'BackgroundColor', DATA.rectangle_color);
         
         set(findobj(Upper_Part_Box,'Type', 'uicontainer'), 'BackgroundColor', myUpBackgroundColor);

@@ -1,87 +1,7 @@
 mammal:             rabbit
 integration_level:  Electrogram
-peak_detector:      EGM peaks
+peak_detector:      egmbeat
 peak_adjustment:    default
-
-# rqrs config file for rabbit:
-
-HR:
-    value: 264
-    units: bpm
-    description:  Typical heart rate
-    name: HR
-QS:
-    value: 0.02
-    units: sec
-    description: Typical QRS duration
-    name: QS
-QT:
-    value: 0.12
-    units: sec
-    description: Typical QT duration
-    name: QT
-QRSa:
-    value: 294
-    units: microvolts
-    description: Typical QRS peak-to-peak amplitude
-    name: QRSa
-QRSamin:
-    value: 114
-    units: microvolts
-    description: Minimum QRS peak-to-peak amplitude
-    name: QRSamin
-RRmin:
-    value: 0.14
-    units: sec
-    description: Minimum RR interval ("refractory period")
-    name: RRmin
-RRmax:
-    value: 0.58
-    units: sec
-    description: Maximum RR interval; thresholds will be adjusted if no peaks are detected within this interval
-    name: RRmax
-window_size_sec:
-               # 0.8*QS
-        value: 0.016 
-        description: Size of rqrs forward-search window
-        name: rqrs Window Size
-        units: Seconds    
-
-# jqrs/wjqrs
-
-lcf:
-    value: 3
-    units: Hz
-    description: Low cutoff frequency
-    name: lcf
-hcf:
-    value: 150
-    units: Hz
-    description: High cutoff frequency
-    name: hcf
-thr:
-    value: 0.5
-    units: n.u.
-    description: Energy threshold
-    name: thr
-rp:
-    value: 0.088
-    units: sec
-    description: Refractory period
-    name: rp
-ws:
-    value: 10
-    units: sec
-    description: Window size
-    name: ws
-    
-# adjusting peaks location
-
-peaks_window:
-    value: 40
-    units: ms
-    description: Search for a peak within a window of size peak_window. Used for manual correction of peaks location or peak_adjustment.
-    name: Peaks window       
     
 # EGM peaks
 
@@ -96,15 +16,25 @@ bi:
     description: Typical beating interval
     name: bi    
     
-prom_thresh1:
+init_prom_thresh:
     value: 20
     units: '%'
     description: Prominence threshold coefficient for initial peak detection
-    name: prom_thresh1    
+    name: Initial prominence threshold    
     
-prom_thresh2:
+classify_prom_thresh:
     value: 80
     units: '%'
     description: Prominence threshold coefficient for peak clasification
-    name: prom_thresh2    
+    name: Clasifying prominence threshold   
+    
+    
+# adjusting peaks location
+
+peaks_window:
+    value: 40
+    units: ms
+    description: Search for a peak within a window of size peak_window. Used for manual correction of peaks location or peak_adjustment.
+    name: Peaks window
+    
     

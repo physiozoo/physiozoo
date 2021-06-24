@@ -7110,8 +7110,15 @@ function plotDesaturationsRegions()
 %%
     function [nni_detrended_trans, nni_detrended] = detrend_data(nni)
         try
-            lambda = mhrv.defaults.mhrv_get_default('filtrr.detrending.lambda');
-            nni_detrended_trans = mhrv.rri.detrendrr(nni, lambda.value, DATA.SamplingFrequency);
+            lambda = mhrv.defaults.mhrv_get_default('filtrr.detrending.lambda');                        
+%             nni_detrended_trans = mhrv.rri.detrendrr(nni, lambda.value, DATA.SamplingFrequency);
+            
+            waitbar_handle = waitbar(0, 'Detrending', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+            nni_detrended_trans = split_detrend(nni, lambda.value, DATA.SamplingFrequency, waitbar_handle);
+            if isvalid(waitbar_handle)
+                    close(waitbar_handle);
+            end
+            
             nni_detrended = nni - nni_detrended_trans;
             nni_detrended_trans = nni_detrended_trans + mean(nni);
         catch

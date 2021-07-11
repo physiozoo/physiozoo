@@ -34,11 +34,11 @@ if ~all(isnan(signal)) && exist(executable_file, 'file')
         result_measures.Twave_int = ' ';
         result_measures.TP_seg = ' ';
         result_measures.RR_int = ' ';
-        result_measures.QTcB_int = ' ';
+        result_measures.QTc_b = ' ';
         
-        result_measures.QTcFri_int = ' ';
-        result_measures.QTcFra_int = ' ';
-        result_measures.QTcH_int = ' ';
+        result_measures.QTc_frid = ' ';
+        result_measures.QTc_fra = ' ';
+        result_measures.QTc_hod = ' ';
         
     end
 end
@@ -54,11 +54,11 @@ if isempty(result_measures)
     result_measures.Twave_int = NaN;
     result_measures.TP_seg = NaN;
     result_measures.RR_int = NaN;
-    result_measures.QTcB_int = NaN;
+    result_measures.QTc_b = NaN;
     
-    result_measures.QTcFri_int = NaN;
-    result_measures.QTcFra_int = NaN;
-    result_measures.QTcH_int = NaN;   
+    result_measures.QTc_frid = NaN;
+    result_measures.QTc_fra = NaN;
+    result_measures.QTc_hod = NaN;   
 end
 
 pebm_intervals_stat.Properties.Description = 'Fiducials Biomarkers Interval duration and segments';

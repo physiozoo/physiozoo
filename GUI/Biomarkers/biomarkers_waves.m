@@ -32,7 +32,7 @@ if ~all(isnan(signal)) && exist(executable_file, 'file')
         
         result_measures.QRSarea = ' ';
         result_measures.STamp = ' ';
-        result_measures.J_point = ' ';                
+        result_measures.Jpoint = ' ';                
     end
 end
 
@@ -45,7 +45,7 @@ if isempty(result_measures)
     
     result_measures.QRSarea = NaN;
     result_measures.STamp = NaN;
-    result_measures.J_point = NaN;     
+    result_measures.Jpoint = NaN;     
 end
 
 pebm_waves_stat.Properties.Description = 'Fiducials Biomarkers Wave characteristics';

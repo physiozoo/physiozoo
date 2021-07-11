@@ -317,6 +317,12 @@ end
         GUI.TrendHR_checkbox.Value = 1;
         GUI.FilterHR_checkbox.Value = 0;
         GUI.GridYHR_checkbox.Value = 1;
+        
+        GUI.DurationTable.Data = {};
+        GUI.DurationTable.RowName = {};
+        
+        GUI.AmplitudeTable.Data = {};
+        GUI.AmplitudeTable.RowName = {};
     end
 %%
     function DATA = createData()
@@ -633,7 +639,7 @@ end
             GUI.S_checkbox.ForegroundColor = [0.8500, 0.3250, 0.0980];
             GUI.T_checkbox.ForegroundColor = [0.6350, 0.0780, 0.1840];
             
-            GUI.CalcPeaksButton_handle = uicontrol('Style', 'PushButton', 'Parent', peaks_box, 'String', 'Calc Peaks', 'FontSize', DATA.SmallFontSize-1,...
+            GUI.CalcPeaksButton_handle = uicontrol('Style', 'PushButton', 'Parent', peaks_box, 'String', 'Find Fiducials', 'FontSize', DATA.SmallFontSize-1,...
                 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Enable', 'inactive', 'Tag', 'CalcPQRSTPeaks', 'Callback', @CalcPQRSTPeaks);
             %on' | 'off' | 'inactive'
             
@@ -1137,17 +1143,18 @@ end
             
             Amplitude_Part_Box = uix.VBox('Parent', AmplitudeTab, 'Spacing', DATA.Spacing);
             GUI.AmplitudeTable = uitable('Parent', Amplitude_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{250 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
-            GUI.AmplitudeTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Median (sec)'; 'Q1 (sec)'; 'Q3 (sec)'};
+%             GUI.AmplitudeTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Mean (sec)'; 'Median (sec)'; 'STD (sec)'; 'IQR (sec)'};
+            GUI.AmplitudeTable.ColumnName = {'Description'; 'Mean (sec)'; 'Median (sec)'; 'Min (sec)'; 'Max (sec)'; 'IQR (sec)'; 'STD (sec)'};
             GUI.AmplitudeTable.Data = {};
-            GUI.AmplitudeTable.RowName = {'Stat1'; 'Stat2'};
+            GUI.AmplitudeTable.RowName = {};
             
             %--------------------------------------------------------------------------
             
             Duration_Part_Box = uix.VBox('Parent', DurationTab, 'Spacing', DATA.Spacing);
             GUI.DurationTable = uitable('Parent', Duration_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{250 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
-            GUI.DurationTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Median (sec)'; 'Q1 (sec)'; 'Q3 (sec)'};
+            GUI.DurationTable.ColumnName = {'Description'; 'Mean (sec)'; 'Median (sec)'; 'Min (sec)'; 'Max (sec)'; 'IQR (sec)'; 'STD (sec)'};
             GUI.DurationTable.Data = {};
-            GUI.DurationTable.RowName = {'Stat1'; 'Stat2'};
+            GUI.DurationTable.RowName = {};
             
             %--------------------------------------------------------------------------
             
@@ -6263,6 +6270,8 @@ end
 %%
     function CalcPQRSTPeaks(~, ~)
         
+        waitbar_handle = waitbar(0, 'Calculating pebm biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+        
         GUI.P_checkbox.Value = 0;
         GUI.Q_checkbox.Value = 0;
         GUI.R_checkbox.Value = 1;
@@ -6288,13 +6297,13 @@ end
         
         heasig = struct("nsig", 1, "freq", DATA.Fs, "nsamp", length(DATA.sig));
         try
-            waitbar_handle = waitbar(1/2, 'Calculating biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+            waitbar_handle = waitbar(1/3, waitbar_handle, 'Calculating biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
             tic
             [GUI.PQRST_position, ~, ~] = wavedet_3D(DATA.sig(:, 1), DATA.qrs, heasig, []);
             toc
-            if isvalid(waitbar_handle)
-                close(waitbar_handle);
-            end
+%             if isvalid(waitbar_handle)
+%                 close(waitbar_handle);
+%             end
             
             P = GUI.PQRST_position.P(~isnan(GUI.PQRST_position.P));
             Q = GUI.PQRST_position.QRSon(~isnan(GUI.PQRST_position.QRSon));
@@ -6342,6 +6351,26 @@ end
             warning('on');
             l_h.AutoUpdate = 'off';
             
+%------------------------------------------   
+            
+%             Fud_points = GUI.PQRST_position;
+            waitbar_handle = waitbar(2/3, waitbar_handle, 'Calculating pebm intervals stat', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+            pebm_intervals_stat = biomarkers_intervals(DATA.sig, DATA.Fs, GUI.PQRST_position, 1);
+            waitbar_handle = waitbar(3/3, waitbar_handle, 'Calculating pebm waves stat', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+            pebm_waves_stat = biomarkers_waves(DATA.sig, DATA.Fs, GUI.PQRST_position, 1);
+            if isvalid(waitbar_handle)
+                close(waitbar_handle);
+            end
+            
+           [pebm_intervalsData, pebm_intervalsRowsNames, pebm_intervalsDescriptions] = table2cell_StatisticsParam(pebm_intervals_stat);
+           [pebm_wavesData, pebm_wavesRowsNames, pebm_wavesDescriptions] = table2cell_StatisticsParam(pebm_waves_stat);
+            
+            GUI.DurationTable.RowName = pebm_intervalsRowsNames;
+            GUI.DurationTable.Data = [pebm_intervalsDescriptions pebm_intervalsData];
+            
+            GUI.AmplitudeTable.RowName = pebm_wavesRowsNames;
+            GUI.AmplitudeTable.Data = [pebm_wavesDescriptions pebm_wavesData];                
+%------------------------------------------                        
         catch e
             disp(['CalcPQRSTPeaks:', e.message]);
             if isvalid(waitbar_handle)

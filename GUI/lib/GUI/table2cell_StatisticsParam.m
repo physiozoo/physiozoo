@@ -17,6 +17,11 @@
             
             if isstruct(stat_table.(var_name))                                                                
                 st = struct2cell(stat_table.(var_name));
+                if strcmp(table_properties.VariableUnits{i}, 'ms')
+                    st = cellfun(@(x) round(x), st, 'UniformOutput', false);
+                else
+                    st = cellfun(@(x) sprintf('%.3f', x), st, 'UniformOutput', false);
+                end
                 stat_data_cell(i, :) = st';
             else
                 if length(stat_table.(var_name)) == 1

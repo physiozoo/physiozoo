@@ -11,7 +11,7 @@ if ~nargin
     [f,p] = uigetfile({'*.*', 'All files';...
         '*.mat','MAT-files (*.mat)'; ...
         '*.dat',  'WFDB Files (*.dat)'; ...
-        '*.qrs; *.atr',  'WFDB Files (*.qrs; *.atr)';...
+        '*.qrs; *.atr; *.rdt',  'WFDB Files (*.qrs; *.atr; *.rdt)';...
         '*.txt','Text Files (*.txt)'}, ...
         'Open Data-Quality-Annotations File',[P,'*',Ext]);
     if p
@@ -51,7 +51,7 @@ switch ext(2:end)
         if ~isempty(fieldnames(header))
             UniqueMap('IsHeader') = true;
         end
-    case {'txt', 'csv','yml'}
+    case {'txt', 'csv', 'yml'}
         data = ImportDataFile(FileName);
         if ~isfield(data,'data')
             close(waitbar_handle);
@@ -77,7 +77,7 @@ switch ext(2:end)
             UniqueMap('IsHeader') = true;
         end
         
-    case {'dat'}  % WFDB ECG files
+    case {'dat', 'rdt'}  % WFDB ECG files
         FileName = [file_path,filesep,name];                                                                                                                       % build filename w/o ext, for WFDB
         try
             header_info = mhrv.wfdb.wfdb_header(FileName);                                                                                   % parse WFDB header file

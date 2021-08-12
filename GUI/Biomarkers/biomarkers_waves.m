@@ -1,8 +1,9 @@
 %%
 
-function pebm_waves_stat = biomarkers_waves(signal_file, Fs, fud_file, measures_cb_array)
+function [pebm_waves_stat, pebm_waves_table] = biomarkers_waves(signal_file, Fs, fud_file, measures_cb_array)
 
-pebm_waves_stat= table;
+pebm_waves_stat = table;
+pebm_waves_table_1 = table;
 
 exe_file_path = fileparts(fileparts(mfilename('fullpath')));
 executable_file = [exe_file_path filesep 'pebm' filesep 'pebm_compiled.exe'];
@@ -36,15 +37,23 @@ if exist(executable_file, 'file')
 end
 
 if isempty(result_measures)
-    result_measures.Pwave_amp = NaN;
-    result_measures.Twave_amp = NaN;
-    result_measures.Rwave_amp = NaN;
-    result_measures.Parea = NaN;
-    result_measures.Tarea = NaN;
     
-    result_measures.QRSarea = NaN;
-    result_measures.STamp = NaN;
-    result_measures.Jpoint = NaN;
+    str_NaN.mean = NaN;
+    str_NaN.median = NaN;
+    str_NaN.min = NaN;
+    str_NaN.max = NaN;
+    str_NaN.iqr = NaN;
+    str_NaN.std = NaN;
+    
+    result_measures.Pwave_amp = str_NaN;
+    result_measures.Twave_amp = str_NaN;
+    result_measures.Rwave_amp = str_NaN;
+    result_measures.Parea = str_NaN;
+    result_measures.Tarea = str_NaN;
+    
+    result_measures.QRSarea = str_NaN;
+    result_measures.STamp = str_NaN;
+    result_measures.Jpoint = str_NaN;
 end
 
 pebm_waves_stat.Properties.Description = 'Fiducials Biomarkers Wave characteristics';
@@ -55,32 +64,64 @@ pebm_waves_stat.Pwave = result_measures.Pwave_amp;
 pebm_waves_stat.Properties.VariableUnits{'Pwave'} = 'mV'; %'1e-4v';
 pebm_waves_stat.Properties.VariableDescriptions{'Pwave'} = 'Amplitude difference between P peak and P off';
 
+Pwave_table = struct2table(result_measures.Pwave_amp);
+
 pebm_waves_stat.Twave = result_measures.Twave_amp;
 pebm_waves_stat.Properties.VariableUnits{'Twave'} = 'mV'; %sprintf('10\x207B\x2074v');
 pebm_waves_stat.Properties.VariableDescriptions{'Twave'} = 'Amplitude difference between T peak on and T off';
+
+Twave_table = struct2table(result_measures.Twave_amp);
 
 pebm_waves_stat.Rwave = result_measures.Rwave_amp;
 pebm_waves_stat.Properties.VariableUnits{'Rwave'} = 'mV';
 pebm_waves_stat.Properties.VariableDescriptions{'Rwave'} = 'R peak amplitude';
 
+Rwave_table = struct2table(result_measures.Rwave_amp);
+
 pebm_waves_stat.Pwave_area = result_measures.Parea;
 pebm_waves_stat.Properties.VariableUnits{'Pwave_area'} = 'mV*ms'; %'1e-4v*ms';
-pebm_waves_stat.Properties.VariableDescriptions{'Pwave_area'} = 'P wave interval area  defined as integral  between P-onset and P-offset';
+pebm_waves_stat.Properties.VariableDescriptions{'Pwave_area'} = 'P wave interval area defined as integral between P-onset and P-offset';
+
+Pwave_area_table = struct2table(result_measures.Parea);
 
 pebm_waves_stat.Twave_area = result_measures.Tarea;
 pebm_waves_stat.Properties.VariableUnits{'Twave_area'} = 'mV*ms';
-pebm_waves_stat.Properties.VariableDescriptions{'Twave_area'} = 'T wave interval area   defined as integral between T-onset and T-offset';
+pebm_waves_stat.Properties.VariableDescriptions{'Twave_area'} = 'T wave interval area defined as integral between T-onset and T-offset';
 
+Twave_area_table = struct2table(result_measures.Tarea);
 
 pebm_waves_stat.QRS_area = result_measures.QRSarea;
 pebm_waves_stat.Properties.VariableUnits{'QRS_area'} = 'mV*ms';
-pebm_waves_stat.Properties.VariableDescriptions{'QRS_area'} = 'QRS interval area  defined as integral between Q-onset and S-offset';
+pebm_waves_stat.Properties.VariableDescriptions{'QRS_area'} = 'QRS interval area defined as integral between Q-onset and S-offset';
+
+QRSarea_table = struct2table(result_measures.QRSarea);
 
 pebm_waves_stat.ST_seg = result_measures.STamp;
 pebm_waves_stat.Properties.VariableUnits{'ST_seg'} = 'mV';
 pebm_waves_stat.Properties.VariableDescriptions{'ST_seg'} = 'Amplitude difference between S-offset and T-onset';
 
+ST_seg_table = struct2table(result_measures.STamp);
+
 pebm_waves_stat.Jpoint = result_measures.Jpoint;
 pebm_waves_stat.Properties.VariableUnits{'Jpoint'} = 'mV';
 pebm_waves_stat.Properties.VariableDescriptions{'Jpoint'} = 'Amplitude 40ms after S-offset'; %  as defined by Hollander et al6
 
+Jpoint_table = struct2table(result_measures.Jpoint);
+
+table_descriptions = {'Amplitude difference between P peak and P off', 'Amplitude difference between T peak on and T off', ...
+    'R peak amplitude', 'P wave interval area  defined as integral  between P-onset and P-offset'...
+    'T wave interval area   defined as integral between T-onset and T-offset', 'QRS interval area defined as integral between Q-onset and S-offset',...
+    'Amplitude difference between S-offset and T-onset', 'Amplitude 40ms after S-offset'};
+pebm_waves_table_1.Descriptions = table_descriptions';
+
+pebm_waves_table_2 = [Pwave_table; Twave_table; Rwave_table; Pwave_area_table; Twave_area_table; QRSarea_table; ST_seg_table; Jpoint_table];
+
+T = cell2table(arrayfun(@(x) sprintf('%.3f', x), pebm_waves_table_2.Variables, 'UniformOutput', false));
+
+T.Properties.VariableNames = pebm_waves_table_2.Properties.VariableNames;
+
+pebm_waves_table = [pebm_waves_table_1, T];
+
+pebm_waves_table.Properties.RowNames = {'Pwave (mV)', 'Twave (mV)', 'Rwave (mV)', 'Pwave_area (mV*ms)', 'Twave_area (mV*ms)', 'QRSarea (mV*ms)', 'ST_seg (mV)', 'Jpoint (mV)'};
+
+pebm_waves_table.Properties.DimensionNames = {'Fiducials Points', 'Data'};

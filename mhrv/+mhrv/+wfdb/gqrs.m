@@ -45,7 +45,8 @@ DEFAULT_GQPOST = false;
 
 % Define input
 p = inputParser;
-p.addRequired('rec_name', @isrecord);
+% p.addRequired('rec_name', @isrecord);
+p.addRequired('rec_name', @(x) isrecord(x, 'rdt') || isrecord(x, 'dat'));
 p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('to', DEFAULT_TO_SAMPLE, @(x) isnumeric(x) && (isscalar(x)||isempty(x)));
 p.addParameter('ecg_channel', DEFAULT_ECG_CHANNEL, @isnumeric);

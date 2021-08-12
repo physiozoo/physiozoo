@@ -31,7 +31,9 @@ DEFAULT_TO_SAMPLE = [];
 
 % Define input
 p = inputParser;
-p.addRequired('rec_name', @isrecord);
+% p.addRequired('rec_name', @isrecord);
+p.addRequired('rec_name', @(x) isrecord(x, 'rdt') || isrecord(x, 'dat'));
+
 p.addOptional('chan_list', DEFAULT_CHAN_LIST, @(x)isempty(x)||isvector(x));
 p.addParameter('header_info', [], @(x) isempty(x) || isstruct(x));
 p.addParameter('from', DEFAULT_FROM_SAMPLE, @(x) isnumeric(x) && isscalar(x));

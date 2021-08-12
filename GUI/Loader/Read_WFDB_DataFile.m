@@ -6,14 +6,15 @@ if (isempty(header_info.N_channels))                                            
     data = [];
     return
 end
-for iCh = 1 :  length(header_info.channel_info)
-    Description = strsplit(header_info.channel_info{iCh}.description,'(');                     % get mammal and integration level from description
+ch_num = length(header_info.channel_info);
+for iCh = 1 :  ch_num
+    Description = strsplit(header_info.channel_info{iCh}.description,'('); % get mammal and integration level from description
     try
-        Channel_Type = strsplit(Description{2},')');                     % get mammal and integration level from description
+        Channel_Type = strsplit(Description{2},')'); % get mammal and integration level from description
         Channel.name = Description{1};
         Channel.type = Channel_Type{1};
         Channel_Enable = strsplit(Channel.type,',');
-%         Channel.enable = Channel_Enable{2};
+        %         Channel.enable = Channel_Enable{2};
         switch Channel_Enable{2}
             case 'enable'
                 Channel.enable = true;
@@ -22,17 +23,21 @@ for iCh = 1 :  length(header_info.channel_info)
         end
         Channel.type = Channel_Enable{1};
     catch
-        Channel.type = 'select';
-        Channel.name = 'data';
+        if ch_num == 12 % only for 12 leads
+            Channel.type = 'electrography';
+            Channel.name = Description{1};
+        else
+            Channel.type = 'select';
+            Channel.name = 'data';
+        end
         Channel.enable = true;
     end
-%     Channel.enable = 'yes';
     try
         Channel.unit = header_info.channel_info{iCh}.units;
     catch
         Channel.unit = 'select';
     end
-        Channels{iCh} = Channel;
+    Channels{iCh} = Channel;
 end
 try
     comment = header_info.comments{1};
@@ -41,12 +46,15 @@ try
     comment = strsplit(comment{2},',');
     header.Mammal = comment{1};
 catch
-    
+    if ch_num == 12 % only for 12 leads
+        header.Integration_level = 'electrocardiogram';
+        header.Mammal = 'human';
+    end
 end
 
 %% -----------  Read data from WFDB file ------------------------
-    [tm, sig, Fs] = mhrv.wfdb.rdsamp(FileName, 1:header_info.N_channels, 'header_info', header_info);
-    data.data = [tm,sig];
+[tm, sig, Fs] = mhrv.wfdb.rdsamp(FileName, 1:header_info.N_channels, 'header_info', header_info);
+data.data = [tm,sig];
 
 %% --------------------Build Channels Information for Loader ---------------------------------------------
 if ~isempty(tm)

@@ -45,7 +45,8 @@ DEFAULT_WINDOW_SIZE_SECONDS = mhrv_get_default('rqrs.window_size_sec', 'value');
 % Define input
 p = inputParser;
 p.KeepUnmatched = true;
-p.addRequired('rec_name', @isrecord);
+% p.addRequired('rec_name', @isrecord);
+p.addRequired('rec_name', @(x) isrecord(x, 'rdt') || isrecord(x, 'dat'));
 p.addParameter('header_info', [], @(x) isempty(x) || isstruct(x));
 p.addParameter('ecg_channel', DEFAULT_ECG_CHANNEL, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('gqpost', DEFAULT_GQPOST, @(x) islogical(x) && isscalar(x));

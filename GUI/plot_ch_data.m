@@ -1,9 +1,10 @@
 %%
-function RawData_lines_handle = plot_ch_data(ECG_Axes_Array, tm, ch_data, names_array, GridX_checkbox, GridY_checkbox)
+function [RawData_lines_handle, ch_name_handles] = plot_ch_data(ECG_Axes_Array, tm, ch_data, names_array, GridX_checkbox, GridY_checkbox)
 
 [~, ch_num] = size(ch_data);
 
 RawData_lines_handle = gobjects(1, ch_num);
+ch_name_handles = gobjects(1, ch_num); 
 
 for i = 1 : ch_num
     curr_ch = ch_data(:, i);
@@ -27,7 +28,7 @@ for i = 1 : ch_num
     x_lim = ECG_Axes_Array(i).XLim;
     y_lim = ECG_Axes_Array(i).YLim;
     
-    text(ECG_Axes_Array(i), x_lim(1) + 0.1, y_lim(2) - 0.2, names_array{i}, 'FontSize', 11);
+    ch_name_handles(i) = text(ECG_Axes_Array(i), x_lim(1) + 0.1, y_lim(2) - 0.2, names_array{i}, 'FontSize', 11);
         
 %     axis(ECG_Axes_Array(i), 'equal');
 %     set(ECG_Axes_Array(i), 'DataAspectRatio', [1 1 1]);
@@ -52,7 +53,7 @@ for i = 1 : ch_num
     %     ylabel(ECG_Axes_Array(i), '');
 end
 
-
+linkaxes(ECG_Axes_Array, 'x');
 
 % Horizontal unit:
 % the unwinding speed of the graph paper of 25 mm/sec

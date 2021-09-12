@@ -12,7 +12,7 @@ for i = 1 : ch_num
     axes_name = ['ch_axes_' num2str(ch_num)];    
 %     ECG_Axes_Handles(i) = axes(uicontainer('Parent', tempPanel), 'ActivePositionProperty', 'Position', 'Tag', axes_name);
     ECG_Axes_Handles(i) = axes('Parent', tempPanel, 'ActivePositionProperty', 'Position', 'Tag', axes_name);
-        
+                               
 %     ECG_Axes_Handles(i).XTick = [];
 %     ECG_Axes_Handles(i).YTick = [];  
 %     ECG_Axes_Handles(i).XTickLabel = [];
@@ -20,6 +20,8 @@ for i = 1 : ch_num
     ECG_Axes_Handles(i).XAxis.Visible = 'off';
     ECG_Axes_Handles(i).YAxis.Visible = 'off';
 end
+
+[tb1, btns1] = axtoolbar(ECG_Axes_Handles(1),{'pan', 'zoomin','zoomout','restoreview'});
 
 set(grid_panel, 'Widths', [-2 -2], 'Heights', [-6 -6 -6 -6 -6 -6]);
 

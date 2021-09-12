@@ -16,7 +16,7 @@ end
     function clearHandles()
         GUI.RRInt_handle = [];
         GUI.RawData_handle = [];
-        GUI.red_peaks_handle = [];
+        GUI.red_peaks_handle = [];        
         GUI.red_peaks_handle_Filt = [];
         GUI.red_rect_handle = [];
         GUI.del_rect_handle = [];
@@ -114,15 +114,19 @@ end
     end
 %%
     function clean_gui(clear_sm_files_names)
-        
+               
+        pan(GUI.Window, 'off');
+        zoom(GUI.Window, 'off');
+
         delete(GUI.graphs_panel_up_central.Children);
         
         if isfield(GUI, 'ECG_Axes') && isvalid(GUI.ECG_Axes)
+                      
             cla(GUI.ECG_Axes); % RawData_axes
             legend(GUI.ECG_Axes, 'off');
             title(GUI.ECG_Axes, '');
         end
-        
+                                
         if isfield(GUI, 'quality_win')
             delete(GUI.quality_win);
             GUI = rmfield(GUI, 'quality_win');
@@ -286,12 +290,24 @@ end
             GUI = rmfield(GUI, 'FilteredData_handle');
         catch
         end
+        try
+            GUI.ChannelsTable.Data(:, 2) = false;
+            GUI.ChannelsTable.Data(:, 3) = false;
+            GUI.ChannelsTable.Data(:, 4) = false;
+        catch
+            GUI.ChannelsTable.Data(:, 2) = {false};
+            GUI.ChannelsTable.Data(:, 3) = {false};
+            GUI.ChannelsTable.Data(:, 4) = {false};
+        end
+        
         GUI.GUIDir.FileName2Split.String = '';
         GUI.GUIDir.Split_Sec.String = DATA.Small_File_Length_Sec;
         GUI.GUIDir.Split_Sec.UserData = DATA.Small_File_Length_Sec;
         
-        clear_fiducials();
-        
+        clear_fiducials_handles();
+        clear_fiducials_filt_handles();
+        reset_fiducials_checkboxs();
+                
         if isfield(GUI, 'RRInt_detrended_handle')
             delete(GUI.RRInt_detrended_handle);
             GUI = rmfield(GUI, 'RRInt_detrended_handle');
@@ -314,17 +330,28 @@ end
         GUI.AmplitudeTable.Data = {};
         GUI.AmplitudeTable.RowName = {};
         GUI.AmplitudeTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
-        
-        %         clear(GUI.PQRST_position);
+                
         GUI.PQRST_position = {};
+        GUI.RawSignal_checkbox.Value = 1;
         
         if isfield(GUI, 'pebm_waves_table')
             GUI = rmfield(GUI, 'pebm_waves_table');
-        end
-        
+        end        
         if isfield(GUI, 'pebm_intervals_table')
             GUI = rmfield(GUI, 'pebm_intervals_table');
-        end
+        end        
+        GUI.pebm_intervals_stat = {};
+        GUI.pebm_waves_stat = {};
+        
+        GUI.pebm_intervalsData = {};
+        GUI.pebm_wavesData = {};
+        
+%         GUI.pebm_waves_table = {};
+%         GUI.pebm_intervals_table = {};
+        
+        
+        GUI.RawData_lines_handle = gobjects;
+        GUI.ch_name_handles = gobjects;
     end
 %%
     function DATA = createData()
@@ -332,7 +359,7 @@ end
         DATA.screensize = get( 0, 'Screensize' );
         
         %                 DEBUGGING MODE - Small Screen
-        %                         DATA.screensize = [0 0 1250 800];
+%                                 DATA.screensize = [0 0 1250 800];
         
         DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
         
@@ -571,11 +598,11 @@ end
             
             if DATA.SmallScreen
                 left_part = 0.48; % 0.4
-                set(Upper_Part_Box, 'Widths', [-29 -58 -13]);
+                set(Upper_Part_Box, 'Widths', [-29 -55 -13]);
                 Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
             else
                 left_part = 0.285;  % 0.285  %0.265
-                set(Upper_Part_Box, 'Widths', [-29.5 -64 -10.5]); % [-25.5 -64 -10.5]
+                set(Upper_Part_Box, 'Widths', [-27 -55 -10.5]); % [-29.5 -65 -10.5]
                 Left_Part_widths_in_pixels = 0.3 * DATA.window_size(1); % 0.3
             end
             right_part = 0.99; % 0.9
@@ -590,10 +617,10 @@ end
             CommandsButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
             
             GUI.ChannelsTable = uitable('Parent', temp_vbox_buttons, 'FontSize', SmallFontSize, 'FontName', 'Calibri', 'Tag', 'ChannelsTable',...
-                'ColumnName', {'Ch.', 'Disp.', 'Disp.Fid.'}, 'ColumnEditable', [false true true], 'RowStriping', 'on', ...
+                'ColumnName', {'Ch.', 'Disp.', 'D.Filt.', 'D.Fiducials'}, 'ColumnEditable', [false true true true], 'RowStriping', 'on', ...
                 'CellEditCallback', @ChannelsTableEditCallback, 'CellSelectionCallback', @ChannelsTableSelectionCallback);
             GUI.ChannelsTable.RowName = {};
-            GUI.ChannelsTable.ColumnWidth = {45, 50, 50};
+            GUI.ChannelsTable.ColumnWidth = {30, 35, 40, 58};
             %--------------------------------------
             amp_box = uix.VBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding);
             
@@ -1018,13 +1045,11 @@ end
             %--------------------------------------------------------------
             uix.Empty('Parent', DisplayBox);
             
-            %         GUI.ChannelsBox = uix.HBox( 'Parent', DisplayBox, 'Spacing', DATA.Spacing);
-            
-            %         GUI.RawSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ChannelsBox, 'Callback', @ShowRawSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show raw signal', 'Value', 1);
-            
-            GUI.FilteredSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', DisplayBox, 'Callback', @ShowFilteredSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show filtered signal', 'Value', 0);
-            
-            %         uix.Empty('Parent', DisplayBox);
+            ChannelsBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
+                                    
+%             GUI.FilteredSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', DisplayBox, 'Callback', @ShowFilteredSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show filtered signal', 'Value', 0);
+            GUI.FilteredSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', ChannelsBox, 'Callback', @ShowFilteredSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show filtered signal', 'Value', 0);
+            GUI.RawSignal_checkbox =      uicontrol('Style', 'Checkbox', 'Parent', ChannelsBox, 'Callback', @ShowRawSignal_checkbox_Callback,      'FontSize', SmallFontSize, 'String', 'Show raw signal', 'Value', 1);                        
             
             [GUI, textBox{24}, text_handles{24}] = createGUIPopUpMenuLine(GUI, 'GUIDisplay', 'FilterLevel_popupmenu', 'Filter level', DisplayBox,...
                 @FilterLevel_popupmenu_Callback, {'Weak'; 'Moderate'; 'Strong'});
@@ -1419,7 +1444,24 @@ end
             if get(GUI.AutoCalc_checkbox, 'Value')
                 try
                     RunAndPlotPeakDetector();
-                    set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', 1);
+                    set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', 1);                    
+                    [~, ch_num] = size(DATA.sig);
+                    if ch_num == 12
+                        parent_axes = GUI.ECG_Axes_Array(1);
+                        ch_marker_size = 4;                                               
+                    else
+                        parent_axes = GUI.ECG_Axes;
+                        ch_marker_size = 5;
+                    end                    
+                    create_fiducials_filt_handles(1, ch_marker_size, parent_axes);
+                    set_fid_visible(1);
+                    if ch_num == 12
+                        set12LEDYLim();
+                    end
+                    if isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)
+                        xdata = get(GUI.red_rect_handle, 'XData');
+                        setECGYLim(xdata(1), xdata(2));
+                    end
                 catch e
                     h_e = errordlg(['PeakDetector error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
                     return;
@@ -1643,14 +1685,16 @@ end
                     names_array = data.Data.Names;
                 end
                 
-                table_data = cell(ch_no, 3);
+                table_data = cell(ch_no, 4);
                 table_data(1, 1) = {names_array{1}};
                 table_data(1, 2) = {true};
-                table_data(1, 3) = {true};
+                table_data(1, 4) = {true};
+                table_data(1, 3) = {false};
                 
                 for i = 2 : ch_no
                     table_data(i, 1) = {names_array{i}};
                     table_data(i, 2) = {false};
+                    table_data(i, 4) = {false};
                     table_data(i, 3) = {false};
                 end
                 
@@ -1735,7 +1779,7 @@ end
                     %                     DATA.sig = DATA.sig/0.5;
                     
                     GUI.ECG_Axes_Array = create_grid_panel(GUI.graphs_panel_up_central, DATA.Spacing, DATA.Padding, myUpBackgroundColor, ch_no);
-                    GUI.RawChannelsData_handle = plot_ch_data(GUI.ECG_Axes_Array, DATA.tm, DATA.sig, names_array, GUI.GridX_checkbox, GUI.GridY_checkbox);
+                    [GUI.RawChannelsData_handle, GUI.ch_name_handles] = plot_ch_data(GUI.ECG_Axes_Array, DATA.tm, DATA.sig, names_array, GUI.GridX_checkbox, GUI.GridY_checkbox);
                     
                     GUI.ECG_Axes = GUI.ECG_Axes_Array(1);
                     GUI.RawData_handle = GUI.RawChannelsData_handle(1);
@@ -1778,16 +1822,13 @@ end
                 
                 set(GUI.GUIRecord.TimeSeriesLength_text, 'String', [calcDuration(DATA.tm(end), 1) '    h:min:sec.msec']);
                 
-                if GUI.AutoCalc_checkbox.Value
-                    %                     if ch_no ~= 12
+                if GUI.AutoCalc_checkbox.Value                    
                     try
                         RunAndPlotPeakDetector();
                     catch e
                         h_e = errordlg(['OpenFile error: ' e.message], 'Input Error');
                         setLogo(h_e, 'M1');
-                    end
-                    %                     else
-                    %                     end
+                    end                    
                 end
                 
                 GUI.LoadConfigurationFile.Enable = 'on';
@@ -1938,11 +1979,15 @@ end
             end
             
             if isfield(GUI, 'FilteredData_handle')
-                [min_value, max_value] = CheckHandle_CalcMin(GUI.FilteredData_handle, minLimit, maxLimit);
-                
-                if ~isempty(min_value)
-                    min_sig = min(min_sig, min_value);
-                    max_sig = max(max_sig, max_value);
+                for i = 1 : ch_data_no
+                    if ishandle(GUI.FilteredData_handle(i)) && isvalid(GUI.FilteredData_handle(i))
+                        [min_value, max_value] = CheckHandle_CalcMin(GUI.FilteredData_handle(i), minLimit, maxLimit);
+                        
+                        if ~isempty(min_value)
+                            min_sig = min(min_sig, min_value);
+                            max_sig = max(max_sig, max_value);
+                        end
+                    end
                 end
             end
             
@@ -2156,12 +2201,27 @@ end
             if isfield(GUI, 'red_peaks_handle') && ishandle(GUI.red_peaks_handle) && isvalid(GUI.red_peaks_handle)
                 delete(GUI.red_peaks_handle);
             end
+                      
+            GUI.PQRST_position = {};
             
-            if isfield(GUI, 'red_peaks_handle_Filt') && ishandle(GUI.red_peaks_handle_Filt) && isvalid(GUI.red_peaks_handle_Filt)
-                delete(GUI.red_peaks_handle_Filt);
+            if isfield(GUI, 'pebm_waves_table')
+                GUI = rmfield(GUI, 'pebm_waves_table');
+            end            
+            if isfield(GUI, 'pebm_intervals_table')
+                GUI = rmfield(GUI, 'pebm_intervals_table');
             end
+            GUI.pebm_intervals_stat = cell(1, ch_no);
+            GUI.pebm_waves_stat = cell(1, ch_no);
             
-            clear_fiducials();
+            GUI.pebm_intervalsData = cell(1, ch_no);
+            GUI.pebm_wavesData = cell(1, ch_no);
+            
+            GUI.ChannelsTable.Data(:, 4) = {false};
+            GUI.ChannelsTable.Data(1, 4) = {true};
+            
+            clear_fiducials_handles();
+            clear_fiducials_filt_handles();
+            reset_fiducials_checkboxs();
             
             try
                 if isfield(DATA, 'customConfigFile') && ~strcmp(DATA.customConfigFile, '')
@@ -2221,14 +2281,8 @@ end
                     if ~isempty(DATA.qrs)
                         DATA.qrs = unique(DATA.qrs);
                         DATA.qrs_saved = DATA.qrs;
-                        DATA.qrs = double(DATA.qrs);
-                        
-                        
-                        
-                        
-                        %                         GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
-                        %                         uistack(GUI.red_peaks_handle, 'top');  % bottom
-                        
+                        DATA.qrs = double(DATA.qrs);                        
+                                                
                         if ch_no == 12
                             parent_axes = GUI.ECG_Axes_Array(1);
                             vis_ax = 'on';
@@ -2241,11 +2295,8 @@ end
                                 coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(1));
                             else
                                 coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
-                            end
-                            %                             GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData / coeff;
-                            % ---------------------------
-                            
-                            
+                            end                            
+                            % ---------------------------                                                        
                             plot_rr_data();
                             TrendHR_checkbox_Callback(GUI.TrendHR_checkbox);
                             plot_red_rectangle(DATA.zoom_rect_limits);
@@ -2456,8 +2507,7 @@ end
             
             if get(GUI.AutoCalc_checkbox, 'Value')
                 try
-                    RunAndPlotPeakDetector();
-                    
+                    RunAndPlotPeakDetector();                    
                     if DATA.Adjust % no default
                         PeakAdjustment(DATA.qrs_saved);
                     end
@@ -2671,6 +2721,23 @@ end
                     try
                         RunAndPlotPeakDetector();
                         set(GUI.GUIRecord.PeakAdjustment_popupmenu, 'Value', 1);
+                        [~, ch_num] = size(DATA.sig);
+                        if ch_num == 12
+                            parent_axes = GUI.ECG_Axes_Array(1);
+                            ch_marker_size = 4;
+                        else
+                            parent_axes = GUI.ECG_Axes;
+                            ch_marker_size = 5;
+                        end
+                        create_fiducials_filt_handles(1, ch_marker_size, parent_axes);
+                        set_fid_visible(1);
+                        if ch_num == 12
+                            set12LEDYLim();
+                        end
+                        if isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)
+                            xdata = get(GUI.red_rect_handle, 'XData');
+                            setECGYLim(xdata(1), xdata(2));
+                        end
                     catch e
                         h_e = errordlg(['config_edit_Callback error: ' e.message], 'Input Error');
                         setLogo(h_e, 'M1');
@@ -2811,11 +2878,19 @@ end
                     delete(GUI.red_peaks_handle);
                 end
                 
-                if isfield(GUI, 'red_peaks_handle_Filt') && ishandle(GUI.red_peaks_handle_Filt) && isvalid(GUI.red_peaks_handle_Filt)
-                    delete(GUI.red_peaks_handle_Filt);
+                try
+                    delete(GUI.FilteredData_handle);
+                    GUI = rmfield(GUI, 'FilteredData_handle');
+                catch
                 end
                 
-                clear_fiducials();
+                GUI.ChannelsTable.Data(:, 3) = {false};
+                GUI.ChannelsTable.Data(:, 4) = {false};
+                GUI.ChannelsTable.Data(1, 4) = {true};
+                
+                clear_fiducials_handles();
+                clear_fiducials_filt_handles();
+                reset_fiducials_checkboxs();
                 
                 DATA.qrs = double(DATA.qrs);
                 GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
@@ -3087,8 +3162,13 @@ end
                 GUI.ChannelsTable.Data(:, 2) = {true};
             end
             GUI.ChannelsTable.Data(1, 2) = {true};
+            GUI.ChannelsTable.Data(:, 4) = {false};
+            GUI.ChannelsTable.Data(1, 4) = {true};
             GUI.ChannelsTable.Data(:, 3) = {false};
-            GUI.ChannelsTable.Data(1, 3) = {true};
+            
+            GUI.PQRST_position = {};
+            
+            GUI.RawSignal_checkbox.Value = 1;
             
             for i = 1 : ch_num
                 GUI.RawChannelsData_handle(i).Visible = 'on';
@@ -3113,9 +3193,10 @@ end
                 DATA.peaks_bad_quality = 0;
             end
             
-            clear_fiducials();
-            
-            
+            clear_fiducials_handles();
+            clear_fiducials_filt_handles();
+            reset_fiducials_checkboxs();
+                        
             %             GUI.RhythmsListbox.String = '';
             %             GUI.RhythmsListbox.UserData = [];
             %             GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
@@ -3180,6 +3261,12 @@ end
             GUI.TrendHR_checkbox.Value = 1;
             GUI.FilterHR_checkbox.Value = 0;
             GUI.GridYHR_checkbox.Value = 1;
+                        
+            try
+                delete(GUI.FilteredData_handle);
+                GUI = rmfield(GUI, 'FilteredData_handle');
+            catch
+            end
             
             set_new_mammal(DATA.init_config_file_name);
             
@@ -3222,11 +3309,7 @@ end
             GUI.FilterLevelBox.Visible = 'off';
             GUI.CutoffFrBox.Visible = 'off';
             set_default_filter_level_user_data();
-            try
-                delete(GUI.FilteredData_handle);
-                GUI = rmfield(GUI, 'FilteredData_handle');
-            catch
-            end
+            
             GUI.GUIDir.Split_Sec.String = DATA.Small_File_Length_Sec;
             GUI.GUIDir.Split_Sec.UserData = DATA.Small_File_Length_Sec;
             
@@ -3240,11 +3323,15 @@ end
             
             if isfield(GUI, 'pebm_waves_table')
                 GUI = rmfield(GUI, 'pebm_waves_table');
-            end
-            
+            end            
             if isfield(GUI, 'pebm_intervals_table')
                 GUI = rmfield(GUI, 'pebm_intervals_table');
             end
+            GUI.pebm_intervals_stat = cell(1, ch_num);
+            GUI.pebm_waves_stat = cell(1, ch_num);
+            
+            GUI.pebm_intervalsData = cell(1, ch_num);
+            GUI.pebm_wavesData = cell(1, ch_num);
             
             try
                 RunAndPlotPeakDetector();
@@ -3252,6 +3339,9 @@ end
                 h_e = errordlg(['AutoCompute_pushbutton_Callback error: ' e.message], 'Input Error');
                 setLogo(h_e, 'M1');
                 return;
+            end
+            if ch_num == 12
+                set12LEDYLim();
             end
         end
     end
@@ -4103,8 +4193,7 @@ end
             GUI.PeaksTable.Data(3, 2) = {DATA.peaks_deleted};
             
             DATA.peaks_total = DATA.peaks_total - length(peak_ind);
-            GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
-            
+            GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};            
         end
         try
             delete(GUI.red_rect_handle);
@@ -4121,6 +4210,37 @@ end
         else
             GUI.CalcPeaksButton_handle.Enable = 'inactive';
         end
+%---------------------------------------        
+        GUI.PQRST_position = {};
+        [~, ch_num] = size(DATA.sig);
+        if isfield(GUI, 'pebm_waves_table')
+            GUI = rmfield(GUI, 'pebm_waves_table');
+        end
+        if isfield(GUI, 'pebm_intervals_table')
+            GUI = rmfield(GUI, 'pebm_intervals_table');
+        end
+        GUI.pebm_intervals_stat = cell(1, ch_num);
+        GUI.pebm_waves_stat = cell(1, ch_num);
+        
+        GUI.pebm_intervalsData = cell(1, ch_num);
+        GUI.pebm_wavesData = cell(1, ch_num);
+            
+        GUI.ChannelsTable.Data(:, 4) = {false};
+        GUI.ChannelsTable.Data(1, 4) = {true};
+        
+        clear_fiducials_handles();
+        clear_fiducials_filt_handles();
+        reset_fiducials_checkboxs();
+                
+        if ch_num == 12
+            parent_axes = GUI.ECG_Axes_Array(1);
+            ch_marker_size = 4;
+        else
+            parent_axes = GUI.ECG_Axes;
+            ch_marker_size = 5;
+        end        
+        create_fiducials_filt_handles(1, ch_marker_size, parent_axes);
+        set_fid_visible(1);
     end
 %%
     function Del_win(range2del)
@@ -4159,6 +4279,38 @@ end
             else
                 GUI.CalcPeaksButton_handle.Enable = 'inactive';
             end
+            
+%---------------------------------------
+            GUI.PQRST_position = {};
+             [~, ch_num] = size(DATA.sig);
+            if isfield(GUI, 'pebm_waves_table')
+                GUI = rmfield(GUI, 'pebm_waves_table');
+            end            
+            if isfield(GUI, 'pebm_intervals_table')
+                GUI = rmfield(GUI, 'pebm_intervals_table');
+            end
+            GUI.pebm_intervals_stat = cell(1, ch_num);
+            GUI.pebm_waves_stat = cell(1, ch_num);
+            
+            GUI.pebm_intervalsData = cell(1, ch_num);
+            GUI.pebm_wavesData = cell(1, ch_num);
+            
+            GUI.ChannelsTable.Data(:, 4) = {false};
+            GUI.ChannelsTable.Data(1, 4) = {true};
+            
+            clear_fiducials_handles();
+            clear_fiducials_filt_handles();
+            reset_fiducials_checkboxs();
+                       
+            if ch_num == 12
+                parent_axes = GUI.ECG_Axes_Array(1);
+                ch_marker_size = 4;
+            else
+                parent_axes = GUI.ECG_Axes;
+                ch_marker_size = 5;
+            end
+            create_fiducials_filt_handles(1, ch_marker_size, parent_axes);  
+            set_fid_visible(1);
         end
     end
 %%
@@ -4631,6 +4783,20 @@ end
             if get(GUI.AutoCalc_checkbox, 'Value')
                 PeakAdjustment(DATA.qrs);
             end
+            [~, ch_num] = size(DATA.sig);
+            if ch_num == 12
+                parent_axes = GUI.ECG_Axes_Array(1);
+                ch_marker_size = 4;
+            else
+                parent_axes = GUI.ECG_Axes;
+                ch_marker_size = 5;
+            end
+            create_fiducials_filt_handles(1, ch_marker_size, parent_axes);
+            set_fid_visible(1);
+            if isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)
+                xdata = get(GUI.red_rect_handle, 'XData');
+                setECGYLim(xdata(1), xdata(2));
+            end
         end
     end
 %%
@@ -4660,18 +4826,19 @@ end
         if ~isempty(DATA.qrs)
             if isfield(GUI, 'red_peaks_handle') && ishandle(GUI.red_peaks_handle) && isvalid(GUI.red_peaks_handle)
                 delete(GUI.red_peaks_handle);
-            end
+            end                       
+
+            GUI.ChannelsTable.Data(:, 4) = {false};
+            GUI.ChannelsTable.Data(1, 4) = {true};
             
-            if isfield(GUI, 'red_peaks_handle_Filt') && ishandle(GUI.red_peaks_handle_Filt) && isvalid(GUI.red_peaks_handle_Filt)
-                delete(GUI.red_peaks_handle_Filt);
-            end
-            
-            clear_fiducials();
+            clear_fiducials_handles();
+            clear_fiducials_filt_handles();
+            reset_fiducials_checkboxs();
             
             legend(GUI.ECG_Axes, 'off');
             
             DATA.qrs = double(DATA.qrs);
-            GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
+            GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 1, 'Tag', 'Peaks');
             uistack(GUI.red_peaks_handle, 'top');
             
             %  ---------------------------
@@ -4914,14 +5081,13 @@ end
             DIRS.analyzedDataDirectory = res_parh;
         end
         if isempty(EXT)
-            EXT = 'txt';
+            EXT = 'xlsx';
         end
         
         original_file_name = DATA.DataFileName;
         file_name = [original_file_name, '_fiducialsPoints'];
         
-        [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...
-            '*.txt','Text Files (*.txt)';...
+        [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...            
             '*.xlsx','Excel Files (*.xlsx)';...
             '*.mat','MAT-files (*.mat)'},...
             'Choose Fiducials Points File Name',...
@@ -4950,9 +5116,9 @@ end
                                 
                 if strcmpi(ExtensionFileName, 'mat')
                     save(full_file_name, 'fid_points');
-                elseif strcmpi(ExtensionFileName, 'txt')
-                    header_fileID = fopen(full_file_name, 'wt');
-                    fclose(header_fileID);
+%                 elseif strcmpi(ExtensionFileName, 'txt')
+%                     header_fileID = fopen(full_file_name, 'wt');
+%                     fclose(header_fileID);
                 elseif strcmpi(ExtensionFileName, 'xlsx')
                     warning('off');
                     
@@ -4963,9 +5129,10 @@ end
                                         
                     fid_points = GUI.PQRST_position;
                     for i = 1 : length(fid_points)
-                        writecell([fieldnames(fid_points{i}), struct2cell(fid_points{i})], full_file_name, 'Sheet', [GUI.ChannelsTable.Data{i, 1}]);
-                    end
-                    
+                        if ~isempty(fid_points{i})
+                            writecell([fieldnames(fid_points{i}), struct2cell(fid_points{i})], full_file_name, 'Sheet', [GUI.ChannelsTable.Data{i, 1}]);
+                        end
+                    end                    
                     warning('on');
                 end
             end
@@ -4996,14 +5163,13 @@ end
             DIRS.analyzedDataDirectory = res_parh;
         end
         if isempty(EXT)
-            EXT = 'txt';
+            EXT = 'xlsx';
         end
         
         original_file_name = DATA.DataFileName;
         file_name = [original_file_name, '_fiducialsStatistics'];
         
-        [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...
-            '*.txt','Text Files (*.txt)';...
+        [filename, results_folder_name, ~] = uiputfile({'*.*', 'All files';...            
             '*.xlsx','Excel Files (*.xlsx)';...
             '*.mat','MAT-files (*.mat)'},...
             'Choose Fiducials Points File Name',...
@@ -5018,8 +5184,7 @@ end
             full_file_name = [results_folder_name, filename];
             
             fid_intervals = GUI.pebm_intervals_stat;
-            fid_waves = GUI.pebm_waves_stat;
-            
+            fid_waves = GUI.pebm_waves_stat;            
             
             RecordName = GUI.GUIRecord.RecordFileName_text.String;
             Mammal = GUI.GUIRecord.Mammal_popupmenu.String;
@@ -5032,9 +5197,9 @@ end
             
             if strcmpi(ExtensionFileName, 'mat')
                 save(full_file_name, 'fid_intervals', 'fid_waves', 'RecordName', 'Mammal', 'IntegrationLevel', 'PeakDetector', 'PeakAdjustment', 'WindowStart', 'WindowLength');
-            elseif strcmpi(ExtensionFileName, 'txt')
-                header_fileID = fopen(full_file_name, 'wt');
-                fclose(header_fileID);
+%             elseif strcmpi(ExtensionFileName, 'txt')
+%                 header_fileID = fopen(full_file_name, 'wt');
+%                 fclose(header_fileID);
             elseif strcmpi(ExtensionFileName, 'xlsx')
                 warning('off');
                 
@@ -5046,13 +5211,17 @@ end
                 if isfield(GUI, 'pebm_waves_table')
                     pebm_waves_table = GUI.pebm_waves_table;                    
                     for i = 1 : length(pebm_waves_table)
-                        writetable(pebm_waves_table{1, i}, full_file_name, 'WriteRowNames', true, 'Sheet', ['Amp. ', GUI.ChannelsTable.Data{i, 1}]);
+                        if ~isempty(pebm_waves_table{1, i})
+                            writetable(pebm_waves_table{1, i}, full_file_name, 'WriteRowNames', true, 'Sheet', ['Amp. ', GUI.ChannelsTable.Data{i, 1}]);
+                        end
                     end                    
                 end
                 if isfield(GUI, 'pebm_intervals_table')
                     pebm_intervals_table = GUI.pebm_intervals_table;                    
                     for i = 1 : length(pebm_intervals_table)
-                        writetable(pebm_intervals_table{1, i}, full_file_name, 'WriteRowNames', true, 'Sheet', ['Dur. ', GUI.ChannelsTable.Data{i, 1}]);
+                        if ~isempty(pebm_intervals_table{1, i})
+                            writetable(pebm_intervals_table{1, i}, full_file_name, 'WriteRowNames', true, 'Sheet', ['Dur. ', GUI.ChannelsTable.Data{i, 1}]);
+                        end
                     end                    
                 end
                 warning('on');
@@ -5778,8 +5947,7 @@ end
         end
     end
 %%
-    function FilterHR_checkbox_Callback(src, ~)
-        
+    function FilterHR_checkbox_Callback(src, ~)        
         try
             if isfield(GUI, 'RRInt_filtered_handle')
                 delete(GUI.RRInt_filtered_handle);
@@ -5787,22 +5955,12 @@ end
             end
         catch e
             disp(e.message);
-        end
-        
-        if src.Value
-            %             hold(GUI.RRInt_Axes, 'on');
+        end        
+        if src.Value            
             GUI.RRInt_handle.Visible = 'off';
             GUI.RRInt_filtered_handle = line(DATA.rr_time_filtered, DATA.rr_data_filtered, 'Color', 'b');
         else
-            GUI.RRInt_handle.Visible = 'on';
-            %             try
-            %                 if isfield(GUI, 'RRInt_filtered_handle')
-            %                     delete(GUI.RRInt_filtered_handle);
-            %                     GUI = rmfield(GUI, 'RRInt_filtered_handle');
-            %                 end
-            %             catch e
-            %                 disp(e.message);
-            %             end
+            GUI.RRInt_handle.Visible = 'on';            
         end
         TrendHR_checkbox_Callback(GUI.TrendHR_checkbox);
         setRRIntYLim();
@@ -5814,7 +5972,15 @@ end
         
         if isPositiveNumericValue(lcf) && isPositiveNumericValue(hcf) && str2double(lcf) < str2double(hcf) && str2double(hcf) < DATA.Fs/2
             try
+                clear_fiducials_filt_handles();
                 calc_plot_flitered_data();
+                [~, ch_num] = size(DATA.sig);
+                for i = 1 : ch_num
+                    set_fid_visible(i);
+                end
+                if ch_num == 12
+                    set12LEDYLim();
+                end
                 src.UserData(GUI.GUIDisplay.FilterLevel_popupmenu.Value) = str2double(src.String);
             catch e
             end
@@ -5843,7 +6009,15 @@ end
         GUI.GUIDisplay.LowCutoffFr_Edit.String = GUI.GUIDisplay.LowCutoffFr_Edit.UserData(src.Value);
         GUI.GUIDisplay.HightCutoffFr_Edit.String = GUI.GUIDisplay.HightCutoffFr_Edit.UserData(src.Value);
         try
+            clear_fiducials_filt_handles();
             calc_plot_flitered_data();
+            [~, ch_num] = size(DATA.sig);
+            for i = 1 : ch_num
+                set_fid_visible(i);
+            end
+            if ch_num == 12
+                set12LEDYLim();
+            end
         catch e
             disp(e.message);
         end
@@ -5867,32 +6041,60 @@ end
 %         end
 %     end
 %%
-%     function ShowRawSignal_checkbox_Callback(src, ~)
-%         if isfield(GUI, 'RawData_handle')
-%             if src.Value
-%                 GUI.RawData_handle.Visible = 'on';
-%                 uistack(GUI.RawData_handle, 'top');
-%             else
-%                 GUI.RawData_handle.Visible = 'off';
-%             end
-%             xdata = get(GUI.red_rect_handle, 'XData');
-%             setECGYLim(xdata(1), xdata(2));
-%         end
-%     end
+    function ShowRawSignal_checkbox_Callback(src, ~)
+        [~, ch_num] = size(DATA.sig);
+        if isfield(GUI, 'RawChannelsData_handle')
+            if src.Value
+                set(GUI.RawChannelsData_handle, 'Visible', 'on');
+                for i = 1 : ch_num
+                    if GUI.ChannelsTable.Data{i, 2}
+                        GUI.RawChannelsData_handle(i).Visible = 'on';
+                    else
+                        GUI.RawChannelsData_handle(i).Visible = 'off';
+                    end
+                    set_fid_visible(i);
+                end
+            else
+                set(GUI.RawChannelsData_handle, 'Visible', 'off');
+                for i = 1 : ch_num
+                    set_fid_visible(i);
+                end
+            end
+            if isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)
+                xdata = get(GUI.red_rect_handle, 'XData');
+                setECGYLim(xdata(1), xdata(2));
+            end
+            if ch_num == 12
+                set12LEDYLim();
+            end
+        end
+    end
 %%
     function ShowFilteredSignal_checkbox_Callback(src, ~)
         if isfield(GUI, 'RawData_handle')
-            if src.Value
-                if isfield(GUI, 'FilteredData_handle') && ishandle(GUI.FilteredData_handle) && isvalid(GUI.FilteredData_handle)
-                    GUI.FilteredData_handle.Visible = 'on';
-                    if strcmp(GUI.RawChannelsData_handle(1).Visible, 'off') && GUI.ChannelsTable.Data{1, 3} == 1
-                        %                         GUI.red_peaks_handle.Visible = 'on';
-                        select_fid_handles(1, 1);
+            [~, ch_num] = size(DATA.sig);
+            if src.Value                
+                if isfield(GUI, 'FilteredData_handle') && any(ishandle(GUI.FilteredData_handle)) && any(isvalid(GUI.FilteredData_handle))                                        
+                    for i = 1 : ch_num
+                        if GUI.ChannelsTable.Data{i, 3}
+                            GUI.FilteredData_handle(i).Visible = 'on';
+                        else
+                            GUI.FilteredData_handle(i).Visible = 'off';
+                        end                    
+                        set_fid_visible(i);
                     end
                 else
                     if isfield(DATA, 'sig')
-                        try
+                        try                            
+                            for i = 1 : ch_num
+                                if GUI.ChannelsTable.Data{i, 2}
+                                    GUI.ChannelsTable.Data(i, 3) = {true};
+                                end
+                            end
                             calc_plot_flitered_data();
+                            for i = 1 : ch_num
+                                set_fid_visible(i);
+                            end
                         catch e
                             src.Value = 0;
                         end
@@ -5901,26 +6103,47 @@ end
                 GUI.FilterLevelBox.Visible = 'on';
                 GUI.CutoffFrBox.Visible = 'on';
             else
-                if isfield(GUI, 'FilteredData_handle') && ishandle(GUI.FilteredData_handle) && isvalid(GUI.FilteredData_handle)
-                    GUI.FilteredData_handle.Visible = 'off';
-                    if strcmp(GUI.RawChannelsData_handle(1).Visible, 'off')
-                        GUI.red_peaks_handle.Visible = 'off';
-                        if isfield(GUI, 'P_linehandle') && ishandle(GUI.P_linehandle) && isvalid(GUI.P_linehandle)
-                            GUI.P_linehandle(1).Visible = 'off';
-                        end
-                        if isfield(GUI, 'Q_linehandle') && ishandle(GUI.Q_linehandle) && isvalid(GUI.Q_linehandle)
-                            GUI.Q_linehandle(1).Visible = 'off';
-                        end
-                        if isfield(GUI, 'S_linehandle') && ishandle(GUI.S_linehandle) && isvalid(GUI.S_linehandle)
-                            GUI.S_linehandle(1).Visible = 'off';
-                        end
-                        if isfield(GUI, 'T_linehandle') && ishandle(GUI.T_linehandle) && isvalid(GUI.T_linehandle)
-                            GUI.T_linehandle(1).Visible = 'off';
-                        end
-                    end
+                if isfield(GUI, 'FilteredData_handle') && any(ishandle(GUI.FilteredData_handle)) && any(isvalid(GUI.FilteredData_handle))                    
+                    set(GUI.FilteredData_handle, 'Visible', 'off');                    
                 end
                 GUI.FilterLevelBox.Visible = 'off';
                 GUI.CutoffFrBox.Visible = 'off';
+                for i = 1 : ch_num
+                    set_fid_visible(i);
+                end
+            end
+            if isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)
+                xdata = get(GUI.red_rect_handle, 'XData');
+                setECGYLim(xdata(1), xdata(2));
+            end  
+            if ch_num == 12
+                set12LEDYLim();
+            end
+        end
+    end
+%%
+    function set12LEDYLim()
+        
+        names_array = GUI.ChannelsTable.Data(:, 1);
+        
+        for j = 1 : length(GUI.ECG_Axes_Array)
+            parent_axes = GUI.ECG_Axes_Array(j);
+            
+            lines_obj = findobj(parent_axes.Children, 'Type', 'Line', 'Visible', 'on');
+            if ~isempty(lines_obj)
+                [min_YLim, max_YLim] = bounds(lines_obj(1).YData);
+                for i = 2 : length(lines_obj)
+                    [min_yData, max_yData] = bounds(lines_obj(i).YData);
+                    min_YLim = min(min_YLim, min_yData);
+                    max_YLim = max(max_YLim, max_yData);
+                end
+                parent_axes.YLim = [min_YLim*1.1 max_YLim*1.1];
+                
+                x_lim = parent_axes.XLim;
+                y_lim = parent_axes.YLim;
+                
+                delete(GUI.ch_name_handles(j));
+                GUI.ch_name_handles(j) = text(parent_axes, x_lim(1) + 0.1, y_lim(2) - 0.2, names_array{j}, 'FontSize', 11);                
             end
         end
     end
@@ -5931,35 +6154,83 @@ end
             GUI = rmfield(GUI, 'FilteredData_handle');
         catch
         end
+        try
+            delete(GUI.red_peaks_handle_Filt);
+            GUI = rmfield(GUI, 'red_peaks_handle_Filt');
+        catch
+        end
+                       
         lcf = str2double(GUI.GUIDisplay.LowCutoffFr_Edit.String);
         hcf = str2double(GUI.GUIDisplay.HightCutoffFr_Edit.String);
-        try
-            bpecg = mhrv.ecg.bpfilt(DATA.sig(:, 1), DATA.Fs, lcf, hcf, [], 0);
-            GUI.FilteredData_handle = line(DATA.tm, bpecg, 'Parent', GUI.ECG_Axes, 'Tag', 'FilteredData', 'Color', 'b');
+        try            
+            [~, ch_num] = size(DATA.sig);
+            
+            if ch_num ~= 12
+                ch_marker_size = 5;
+            else
+                ch_marker_size = 4;
+            end
+        
+            parent_axes = GUI.ECG_Axes;
+            
+            for i = 1 : ch_num
+                if ch_num == 12
+                    parent_axes = GUI.ECG_Axes_Array(i);
+                end
+                bpecg = mhrv.ecg.bpfilt(DATA.sig(:, i), DATA.Fs, lcf, hcf, [], 0);
+                GUI.FilteredData_handle(i) = line(DATA.tm, bpecg, 'Parent', parent_axes, 'Tag', 'FilteredData', 'Color', 'b');
+                
+                if GUI.ChannelsTable.Data{i, 3} 
+                    GUI.FilteredData_handle(i).Visible = 'on';
+                else
+                    GUI.FilteredData_handle(i).Visible = 'off';
+                end
+                                
+                % ---------------------------------------------------------------
+                                                                                                
+                if DATA.amp_counter(i) > 0
+                    coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(i));
+                else
+                    coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(i));
+                end
+                
+                GUI.FilteredData_handle(i).YData = GUI.FilteredData_handle(i).YData + GUI.offset_array(i);                                                    
+                GUI.FilteredData_handle(i).YData = ((GUI.FilteredData_handle(i).YData - GUI.offset_array(i)) / coeff) + GUI.offset_array(i);                
+
+                create_fiducials_filt_handles(i, ch_marker_size, parent_axes); 
+                                                      
+                % ---------------------------
+            end
             if isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)
                 xdata = get(GUI.red_rect_handle, 'XData');
                 setECGYLim(xdata(1), xdata(2));
             end
-            
-            % ---------------------------------------------------------------
-            %
-            %             GUI.red_peaks_handle_Filt = line(DATA.tm(DATA.qrs), bpecg(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'g', 'LineStyle', 'none', 'Marker', 'x', 'MarkerSize', 5, 'LineWidth', 1, 'Tag', 'PeaksFilt');
-            %             GUI.red_peaks_handle_Filt.Visible = 'off';
-            %             uistack(GUI.red_peaks_handle_Filt, 'top');  % bottom
-            
-            % ---------------------------
-            if DATA.amp_counter(1) > 0
-                coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(1));
-            else
-                coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(1));
-            end
-            GUI.FilteredData_handle.YData = GUI.FilteredData_handle.YData / coeff;
-            %             GUI.red_peaks_handle_Filt.YData = GUI.red_peaks_handle_Filt.YData / coeff;
-            % ---------------------------
-            
         catch e
             h_e = errordlg(['BP Filter error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
             rethrow(e);
+        end
+    end
+%%
+    function create_fiducials_filt_handles(ch_num, ch_marker_size, parent_axes)        
+        try
+            filt_ch_data = GUI.FilteredData_handle(ch_num).YData;
+            if ch_num == 1 && ~isfield(GUI, 'red_peaks_handle_Filt')
+                GUI.red_peaks_handle_Filt(ch_num) = line(DATA.tm(DATA.qrs), filt_ch_data(DATA.qrs), 'Parent', parent_axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'MarkerSize', ch_marker_size, 'LineWidth', 1, 'Tag', 'RedPeaksFilt');
+                GUI.red_peaks_handle_Filt(ch_num).Visible = 'off';
+                uistack(GUI.red_peaks_handle_Filt(ch_num), 'top');  % bottom
+            end
+            if isfield(GUI, 'PQRST_position') && ~isempty(GUI.PQRST_position)
+                [P, Q, S, T, R] = return_PQST(GUI.PQRST_position{1, ch_num}, numel(DATA.tm(DATA.tm >= 0 & DATA.tm < GUI.Fiducials_winStart.UserData, :)));
+                GUI.P_linehandle_filt(ch_num) = line(DATA.tm(P), filt_ch_data(P), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.9290, 0.6940, 0.1250], 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250], 'Visible', 'off', 'Tag', 'PFilt');
+                GUI.Q_linehandle_filt(ch_num) = line(DATA.tm(Q), filt_ch_data(Q), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.4940, 0.1840, 0.5560], 'MarkerEdgeColor', [0.4940, 0.1840, 0.5560], 'Visible', 'off', 'Tag', 'QFilt');
+                GUI.S_linehandle_filt(ch_num) = line(DATA.tm(S), filt_ch_data(S), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.8500, 0.3250, 0.0980], 'MarkerEdgeColor', [0.8500, 0.3250, 0.0980], 'Visible', 'off', 'Tag', 'SFilt');
+                GUI.T_linehandle_filt(ch_num) = line(DATA.tm(T), filt_ch_data(T), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.6350, 0.0780, 0.1840], 'MarkerEdgeColor', [0.6350, 0.0780, 0.1840], 'Visible', 'off', 'Tag', 'TFilt');
+                
+                if ch_num ~= 1
+                    GUI.red_peaks_handle_Filt(ch_num) = line(DATA.tm(R), filt_ch_data(R), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 1, 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [1 0 0], 'MarkerEdgeColor', [1 0 0], 'Visible', 'off');
+                end
+            end
+        catch
         end
     end
 %%
@@ -6023,6 +6294,11 @@ end
             if exist([PathName, FileName], 'file')
                 load_peaks(FileName, PathName, struct([]));
             else
+                try
+                    delete(GUI.FilteredData_handle);
+                    GUI = rmfield(GUI, 'FilteredData_handle');
+                catch
+                end
                 RunAndPlotPeakDetector();
             end
         catch e
@@ -6033,71 +6309,73 @@ end
         GUI.AutoCompute_pushbutton.Enable = saved_val_AutoCompute_pushbutton;
     end
 %%
-    function select_fid_handles(ch_num, if_visible)
+    function select_fid_handles(ch_num, if_visible, if_filt)
         try
-            if ch_num == 1
-                R_line_handle = GUI.red_peaks_handle;
-                %                 R_line_handle = GUI.red_peaks_handle_Filt;
+            if ~if_filt
+                if ch_num == 1
+                    R_line_handle = GUI.red_peaks_handle;
+                else
+                    R_line_handle = GUI.qrs_ch(ch_num-1);
+                end
             else
-                R_line_handle = GUI.qrs_ch(ch_num-1);
+                R_line_handle = GUI.red_peaks_handle_Filt(ch_num);
             end
             if isvalid(R_line_handle)
                 R_line_handle.Visible = GUI.R_checkbox.Value * if_visible;
-                %                 hand_array(3) = R_line_handle;
             end
         catch
         end
         try
-            P_line_handle = GUI.P_linehandle(ch_num);
-            Q_line_handle = GUI.Q_linehandle(ch_num);
-            S_line_handle = GUI.S_linehandle(ch_num);
-            T_line_handle = GUI.T_linehandle(ch_num);
+            if ~if_filt
+                P_line_handle = GUI.P_linehandle(ch_num);
+                Q_line_handle = GUI.Q_linehandle(ch_num);
+                S_line_handle = GUI.S_linehandle(ch_num);
+                T_line_handle = GUI.T_linehandle(ch_num);
+            else
+                P_line_handle = GUI.P_linehandle_filt(ch_num);
+                Q_line_handle = GUI.Q_linehandle_filt(ch_num);
+                S_line_handle = GUI.S_linehandle_filt(ch_num);
+                T_line_handle = GUI.T_linehandle_filt(ch_num);
+            end
             
-            %             hand_array = [];
-            if isvalid(P_line_handle)
-                %                 hand_array(1) = P_line_handle;
+            if isvalid(P_line_handle)            
                 P_line_handle.Visible = GUI.P_checkbox.Value * if_visible;
             end
-            if isvalid(Q_line_handle)
-                %                 hand_array(2) = Q_line_handle;
+            if isvalid(Q_line_handle)                
                 Q_line_handle.Visible = GUI.Q_checkbox.Value * if_visible;
             end
             
             if isvalid(S_line_handle)
-                S_line_handle.Visible = GUI.S_checkbox.Value * if_visible;
-                %                 hand_array(4) = S_line_handle;
+                S_line_handle.Visible = GUI.S_checkbox.Value * if_visible;                
             end
             if isvalid(T_line_handle)
-                T_line_handle.Visible = GUI.T_checkbox.Value * if_visible;
-                %                 hand_array(5) = T_line_handle;
-            end
-            %             set(hand_array, 'Visible', if_visible);
+                T_line_handle.Visible = GUI.T_checkbox.Value * if_visible;                
+            end            
         catch
         end
     end
 %%
     function ChannelsTableEditCallback(src, callbackdata)
         
-        if callbackdata.Indices(1, 2) == 2 || callbackdata.Indices(1, 2) == 3
+        if callbackdata.Indices(1, 2) == 2 || callbackdata.Indices(1, 2) == 3 || callbackdata.Indices(1, 2) == 4
             ch_num = callbackdata.Indices(1, 1);
             
-            if_sig_visible = src.Data{ch_num, 2};
-            if_fid_visible = src.Data{ch_num, 3};
+            if_sig_visible = src.Data{ch_num, 2} * GUI.RawSignal_checkbox.Value;
+%             if_fid_visible = src.Data{ch_num, 4};
+            if_filt_visible = src.Data{ch_num, 3} * GUI.FilteredSignal_checkbox.Value;
             
+            try
+                filt_line_handle = GUI.FilteredData_handle(ch_num);
+                if isvalid(filt_line_handle)
+                    filt_line_handle.Visible = if_filt_visible;
+                end
+            catch
+            end
             line_handle = GUI.RawChannelsData_handle(ch_num);
             if isvalid(line_handle)
-                line_handle.Visible = if_sig_visible;
-                if ~if_sig_visible && if_fid_visible
-                    if ~GUI.FilteredSignal_checkbox.Value
-                        if_fid_visible = 0;
-                    elseif ch_num ~= 1
-                        if_fid_visible = 0;
-                    end
-                    select_fid_handles(ch_num, if_fid_visible);
-                end
-                select_fid_handles(ch_num, if_fid_visible);
-                
-                
+                line_handle.Visible = if_sig_visible; 
+                set_fid_visible(ch_num);
+              
                 if isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)
                     xdata = get(GUI.red_rect_handle, 'XData');
                     setECGYLim(xdata(1), xdata(2));
@@ -6106,6 +6384,75 @@ end
                     redraw_rhythms_rect();
                 end
             end
+            if length(GUI.RawChannelsData_handle) == 12
+                set12LEDYLim();
+            end
+        end
+                
+        if callbackdata.Indices(1, 2) == 4
+            
+            ind = find(cellfun(@(x) x == 1, src.Data(:, 4)));
+            ind_stat = find(cellfun(@(x) ~isempty(x), GUI.pebm_intervalsData));
+            
+            show_stat_ind = intersect(ind, ind_stat');
+            
+            if length(show_stat_ind) == 1 %length(ind) == 1 || length(ind_stat) == 1
+                GUI.DurationTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
+                GUI.AmplitudeTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
+                if ~isempty(GUI.DurationTable.Data)
+                    GUI.DurationTable.Data = [GUI.DurationTable.Data(:, 1) GUI.pebm_intervalsData{1, show_stat_ind}];
+                end                
+                if ~isempty(GUI.AmplitudeTable.Data)
+                    GUI.AmplitudeTable.Data = [GUI.AmplitudeTable.Data(:, 1) GUI.pebm_wavesData{1, show_stat_ind}];
+                end  
+            elseif length(show_stat_ind) == 0
+                if ~isempty(GUI.DurationTable.Data)
+                    GUI.DurationTable.Data = GUI.DurationTable.Data(:, 1);
+                end                
+                if ~isempty(GUI.AmplitudeTable.Data)
+                    GUI.AmplitudeTable.Data = GUI.AmplitudeTable.Data(:, 1);
+                end  
+            else
+                if ~isempty(GUI.DurationTable.Data) && ~isempty(GUI.AmplitudeTable.Data)
+                    [~, ch_number] = size(DATA.sig);
+                    
+                    ColumnName = cell(1, ch_number + 1);
+                    ColumnName(1, 1) = {'Description'};
+                    GUI.DurationTable.Data = GUI.DurationTable.Data(:, 1);
+                    GUI.AmplitudeTable.Data = GUI.AmplitudeTable.Data(:, 1);
+                    
+                    for i = 1 : length(show_stat_ind)
+                        if ~isempty(GUI.pebm_intervalsData{1, show_stat_ind(i)})
+                            fid_int = GUI.pebm_intervalsData{1, show_stat_ind(i)};
+                            GUI.DurationTable.Data = [GUI.DurationTable.Data fid_int(:, 2)];
+                        end
+                        if ~isempty(GUI.pebm_wavesData{1, show_stat_ind(i)})
+                            fid_waves = GUI.pebm_wavesData{1, show_stat_ind(i)};
+                            GUI.AmplitudeTable.Data = [GUI.AmplitudeTable.Data fid_waves(:, 2)];
+                        end
+                        ColumnName(1, i + 1) = {[GUI.ChannelsTable.Data{show_stat_ind(i), 1}, ' (med)']};
+                    end
+                    GUI.DurationTable.ColumnName = ColumnName;
+                    GUI.AmplitudeTable.ColumnName = ColumnName;
+                end
+            end
+        end
+    end
+%%
+    function set_fid_visible(ch_num)
+        if_sig_visible = GUI.ChannelsTable.Data{ch_num, 2} * GUI.RawSignal_checkbox.Value;
+        if_fid_visible = GUI.ChannelsTable.Data{ch_num, 4};
+        if_filt_visible = GUI.ChannelsTable.Data{ch_num, 3} * GUI.FilteredSignal_checkbox.Value;
+        
+        if if_sig_visible && if_fid_visible
+            select_fid_handles(ch_num, 1, 0);
+            select_fid_handles(ch_num, 0, 1);
+        elseif ~if_sig_visible && if_fid_visible && if_filt_visible
+            select_fid_handles(ch_num, 0, 0);
+            select_fid_handles(ch_num, 1, 1);
+        else
+            select_fid_handles(ch_num, 0, 0);
+            select_fid_handles(ch_num, 0, 1);
         end
     end
 %%
@@ -6127,17 +6474,22 @@ end
         if ~isempty(GUI.ChannelsTable.UserData)
             ch_num = GUI.ChannelsTable.UserData;
             line_handle = GUI.RawChannelsData_handle(ch_num);
-            if isvalid(line_handle) && GUI.ChannelsTable.Data{ch_num, 2}
+            try
+                filt_line_handle =  GUI.FilteredData_handle(ch_num);
+            catch
+            end
+            if isvalid(line_handle) %&& GUI.ChannelsTable.Data{ch_num, 2}
                 if strcmp(src.UserData, 'plus')
                     line_handle.YData = ((line_handle.YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
-                    DATA.amp_counter(ch_num) = DATA.amp_counter(ch_num) + 1;
+                    DATA.amp_counter(ch_num) = DATA.amp_counter(ch_num) + 1;                    
                     
+                    try
+                        filt_line_handle.YData = ((filt_line_handle.YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
+                    catch
+                    end
+                                                            
                     if ch_num == 1
                         GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData * DATA.amp_ch_factor;
-                        try
-                            GUI.FilteredData_handle.YData = GUI.FilteredData_handle.YData * DATA.amp_ch_factor;
-                        catch
-                        end
                     end
                     try
                         GUI.P_linehandle(ch_num).YData = ((GUI.P_linehandle(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
@@ -6145,49 +6497,62 @@ end
                         GUI.S_linehandle(ch_num).YData = ((GUI.S_linehandle(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                         GUI.T_linehandle(ch_num).YData = ((GUI.T_linehandle(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                         GUI.qrs_ch(ch_num-1).YData =     ((GUI.qrs_ch(ch_num-1).YData     - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
-                    catch e
-                        %                         disp(e.message);
+                    catch e                    
                     end
-                    
-                    %                     end
-                    
+                    try
+                        GUI.P_linehandle_filt(ch_num).YData = ((GUI.P_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
+                        GUI.Q_linehandle_filt(ch_num).YData = ((GUI.Q_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
+                        GUI.S_linehandle_filt(ch_num).YData = ((GUI.S_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
+                        GUI.T_linehandle_filt(ch_num).YData = ((GUI.T_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);                                                
+                    catch e                    
+                    end
+                    try
+                        GUI.red_peaks_handle_Filt(ch_num).YData = ((GUI.red_peaks_handle_Filt(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);                        
+                    catch
+                    end                                        
                 elseif strcmp(src.UserData, 'minus')
                     line_handle.YData = ((line_handle.YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
-                    DATA.amp_counter(ch_num) = DATA.amp_counter(ch_num) - 1;
-                    
+                    DATA.amp_counter(ch_num) = DATA.amp_counter(ch_num) - 1;                    
+                    try
+                        filt_line_handle.YData = ((filt_line_handle.YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
+                    catch
+                    end                    
                     if ch_num == 1
                         GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData / DATA.amp_ch_factor;
-                        try
-                            GUI.FilteredData_handle.YData = GUI.FilteredData_handle.YData / DATA.amp_ch_factor;
-                        catch
-                        end
                     end
                     try
                         GUI.P_linehandle(ch_num).YData = ((GUI.P_linehandle(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                         GUI.Q_linehandle(ch_num).YData = ((GUI.Q_linehandle(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                         GUI.S_linehandle(ch_num).YData = ((GUI.S_linehandle(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                         GUI.T_linehandle(ch_num).YData = ((GUI.T_linehandle(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
-                        GUI.qrs_ch(ch_num-1).YData =     ((GUI.qrs_ch(ch_num-1).YData     - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
-                    catch e
-                        %                         disp(e.message);
+                        GUI.qrs_ch(ch_num-1).YData =     ((GUI.qrs_ch(ch_num-1).YData     - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);                        
+                    catch e                        
+                    end                    
+                    try
+                        GUI.P_linehandle_filt(ch_num).YData = ((GUI.P_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
+                        GUI.Q_linehandle_filt(ch_num).YData = ((GUI.Q_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
+                        GUI.S_linehandle_filt(ch_num).YData = ((GUI.S_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
+                        GUI.T_linehandle_filt(ch_num).YData = ((GUI.T_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);                        
+                    catch e                        
                     end
-                    %                     end
-                    
-                elseif strcmp(src.UserData, 'source')
-                    
+                    try
+                        GUI.red_peaks_handle_Filt(ch_num).YData = ((GUI.red_peaks_handle_Filt(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
+                    catch
+                    end
+                elseif strcmp(src.UserData, 'source')                    
                     if DATA.amp_counter(ch_num) ~= 0
                         if DATA.amp_counter(ch_num) > 0
                             coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(ch_num));
                         else
                             coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(ch_num));
                         end
-                        line_handle.YData = ((line_handle.YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
+                        line_handle.YData = ((line_handle.YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);                        
+                        try
+                            filt_line_handle.YData = ((filt_line_handle.YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
+                        catch
+                        end                        
                         if ch_num == 1
                             GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData * coeff;
-                            try
-                                GUI.FilteredData_handle.YData = GUI.FilteredData_handle.YData * coeff;
-                            catch
-                            end
                         end
                         try
                             GUI.P_linehandle(ch_num).YData = ((GUI.P_linehandle(ch_num).YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
@@ -6196,19 +6561,23 @@ end
                             GUI.T_linehandle(ch_num).YData = ((GUI.T_linehandle(ch_num).YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
                             GUI.qrs_ch(ch_num-1).YData =     ((GUI.qrs_ch(ch_num-1).YData     - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
                         catch
+                        end  
+                        try
+                            GUI.P_linehandle_filt(ch_num).YData = ((GUI.P_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
+                            GUI.Q_linehandle_filt(ch_num).YData = ((GUI.Q_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
+                            GUI.S_linehandle_filt(ch_num).YData = ((GUI.S_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
+                            GUI.T_linehandle_filt(ch_num).YData = ((GUI.T_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);                            
+                        catch
+                        end 
+                        try
+                            GUI.red_peaks_handle_Filt(ch_num).YData = ((GUI.red_peaks_handle_Filt(ch_num).YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
+                        catch
                         end
-                        
-                        %                         end
                     end
                     DATA.amp_counter(ch_num) = 0;
-                end
-                
-                %                 xdata = get(GUI.red_rect_handle, 'XData');
-                %                 setECGYLim(xdata(1), xdata(2));
-                
+                end                                
                 redraw_quality_rect();
-                redraw_rhythms_rect();
-                %                 setYECGGrid(GUI.ECG_Axes, GUI.GridY_checkbox);
+                redraw_rhythms_rect();                
             end
         end
     end
@@ -6513,17 +6882,21 @@ end
 %%
     function CalcPQRSTPeaks(~, ~)
         
-        clear_fiducials();
+        [~, ch_num] = size(DATA.sig);
         
-        GUI.ChannelsTable.Data(:, 3) = {false};
+        if ch_num == 12
+            clear_fiducials_handles();
+            clear_fiducials_filt_handles();
+            reset_fiducials_checkboxs();
+            GUI.ChannelsTable.Data(:, 4) = {true};
+        end
+        
         try
             winStart = GUI.Fiducials_winStart.UserData;
             winLength = GUI.Fiducials_winLength.UserData;
             
             if winLength > 0
-                
-                [~, ch_num] = size(DATA.sig);
-                
+                                                
                 waitbar_handle = waitbar(0, 'Calculating pebm biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
                 waitbar_handle = waitbar(1/(1+ch_num*2), waitbar_handle, 'Calculating biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
                 disp('wavedet_3D:');
@@ -6531,7 +6904,11 @@ end
                 ecg_time_1 = DATA.tm(DATA.tm >= 0 & DATA.tm < winStart, :);
                 time_samples = numel(ecg_time_1);
                 
-                GUI.PQRST_position = cell(1, ch_num);
+                if ch_num == 12
+                    GUI.PQRST_position = cell(1, ch_num);
+                elseif isfield(GUI, 'PQRST_position') && isempty(GUI.PQRST_position)
+                    GUI.PQRST_position = cell(1, ch_num);
+                end
                 
                 parent_axes = GUI.ECG_Axes;
                 if ch_num ~= 12
@@ -6540,201 +6917,220 @@ end
                     ch_marker_size = 4;
                 end
                 
+                qrs = double(DATA.qrs(~isnan(DATA.qrs)));
+                rr_time = qrs/DATA.Fs;
+                time = DATA.tm;
+                   
+                P = cell(1, ch_num);
+                Q = cell(1, ch_num);
+                S = cell(1, ch_num);
+                T = cell(1, ch_num);
+                
                 for i = 1 : ch_num
-                    
-                    data = DATA.sig(:, i);
-                    time = DATA.tm;
-                    
-                    data = data(time >= winStart & time < winStart+winLength, :);
-                    
-                    % ----------------------------------
-                    qrs = double(DATA.qrs(~isnan(DATA.qrs)));
-                    rr_time = qrs/DATA.Fs;
-                    
-                    if i == 1
-                        qrs_2 = DATA.qrs(rr_time >= winStart & rr_time < winStart+winLength, :);
-                        qrs_2 = qrs_2 - time_samples;
-                        
-                        if qrs_2(1) == 0
-                            qrs_2(1) = 1;
+                    if isempty(GUI.PQRST_position{1, i}) && GUI.ChannelsTable.Data{i, 4}
+                        data = DATA.sig(:, i);
+                        data = data(time >= winStart & time < winStart+winLength, :);
+                        % ----------------------------------
+                        if i == 1
+                            qrs_2 = DATA.qrs(rr_time >= winStart & rr_time < winStart+winLength, :);
+                            qrs_2 = qrs_2 - time_samples;
+                            
+                            if qrs_2(1) == 0
+                                qrs_2(1) = 1;
+                            end
+                        else
+                            peak_detector = GUI.GUIRecord.PeakDetector_popupmenu.String{GUI.GUIRecord.PeakDetector_popupmenu.Value};
+                            try
+                                qrs_2 = calc_r_peaks_from_ch(DATA, data, peak_detector);
+                            catch e
+                                h_e = errordlg(['Fiducials points error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
+                                return;
+                            end
                         end
-                    else
-                        peak_detector = GUI.GUIRecord.PeakDetector_popupmenu.String{GUI.GUIRecord.PeakDetector_popupmenu.Value};
-                        try
-                            qrs_2 = calc_r_peaks_from_ch(DATA, data, peak_detector);
+                        % ----------------------------------
+                        if ch_num == 12
+                            parent_axes = GUI.ECG_Axes_Array(i);
+                        end
+                        % ----------------------------------
+                        tic
+                        heasig = struct("nsig", 1, "freq", DATA.Fs, "nsamp", length(data));
+                        [GUI.PQRST_position{i}, ~, ~] = wavedet_3D(data, qrs_2, heasig, []);
+                        toc
+                        [P{i}, Q{i}, S{i}, T{i}, ~] = return_PQST(GUI.PQRST_position{1, i}, time_samples);
+                        
+                        GUI.P_linehandle(i) = line(DATA.tm(P{i}), GUI.RawChannelsData_handle(i).YData(P{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.9290, 0.6940, 0.1250], 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250], 'Tag', 'P');
+                        GUI.Q_linehandle(i) = line(DATA.tm(Q{i}), GUI.RawChannelsData_handle(i).YData(Q{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.4940, 0.1840, 0.5560], 'MarkerEdgeColor', [0.4940, 0.1840, 0.5560], 'Tag', 'Q');
+                        GUI.S_linehandle(i) = line(DATA.tm(S{i}), GUI.RawChannelsData_handle(i).YData(S{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.8500, 0.3250, 0.0980], 'MarkerEdgeColor', [0.8500, 0.3250, 0.0980], 'Tag', 'S');
+                        GUI.T_linehandle(i) = line(DATA.tm(T{i}), GUI.RawChannelsData_handle(i).YData(T{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.6350, 0.0780, 0.1840], 'MarkerEdgeColor', [0.6350, 0.0780, 0.1840], 'Tag', 'T');
+                        
+                        if ~all(isnan(P{i}))
+                            GUI.P_checkbox.Value = 1;
+                        else
+                            GUI.P_checkbox.Value = 0;
+                        end
+                        if ~all(isnan(Q{i}))
+                            GUI.Q_checkbox.Value = 1;
+                        else
+                            GUI.Q_checkbox.Value = 0;
+                        end
+                        if ~all(isnan(S{i}))
+                            GUI.S_checkbox.Value = 1;
+                        else
+                            GUI.S_checkbox.Value = 0;
+                        end
+                        if ~all(isnan(T{i}))
+                            GUI.T_checkbox.Value = 1;
+                        else
+                            GUI.T_checkbox.Value = 0;
+                        end
+                        
+                        if i ~= 1
+                            GUI.qrs_ch(i-1) = line(DATA.tm(qrs_2 + time_samples), GUI.RawChannelsData_handle(i).YData(qrs_2 + time_samples), 'Parent', parent_axes, 'LineStyle', 'none', 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'MarkerSize', ch_marker_size+1, 'LineWidth', 1, 'MarkerEdgeColor', [1, 0, 0], 'Visible', 'off');
+                            GUI.R_checkbox.Value = 1;
+                        end
+                        
+                        create_fiducials_filt_handles(i, ch_marker_size, parent_axes);                        
+                        set_fid_visible(i);
+                    end
+                end % for ch_num
+                %-------------------------------------------------------------------------------
+                if ~isempty(GUI.PQRST_position)
+                    GUI.SaveFiducials.Enable = 'on';                    
+                end
+                                
+                if ~all(isnan(cell2mat(P)))
+                    GUI.P_checkbox.Value = 1;
+                else
+                    GUI.P_checkbox.Value = 0;
+                end
+                if ~all(isnan(cell2mat(Q)))
+                    GUI.Q_checkbox.Value = 1;
+                else
+                    GUI.Q_checkbox.Value = 0;
+                end
+                if ~all(isnan(cell2mat(S)))
+                    GUI.S_checkbox.Value = 1;
+                else
+                    GUI.S_checkbox.Value = 0;
+                end
+                if ~all(isnan(cell2mat(T)))
+                    GUI.T_checkbox.Value = 1;
+                else
+                    GUI.T_checkbox.Value = 0;
+                end
+                        
+                try
+                    if ch_num ~= 12
+                        warning('off');
+                        if isfield(GUI, 'P_linehandle') || isfield(GUI, 'Q_linehandle') || isfield(GUI, 'S_linehandle') || isfield(GUI, 'T_linehandle')
+                            
+                            P_valid = findobj(GUI.P_linehandle, 'Type', 'line');
+                            Q_valid = findobj(GUI.Q_linehandle, 'Type', 'line');
+                            S_valid = findobj(GUI.S_linehandle, 'Type', 'line');
+                            T_valid = findobj(GUI.T_linehandle, 'Type', 'line');
+                            
+                            l_h = legend(parent_axes, [GUI.red_peaks_handle; P_valid(1);...
+                                Q_valid(1);...
+                                S_valid(1);...
+                                T_valid(1)],...
+                                {'R', 'P', 'Q', 'S', 'T'}, 'Location', 'best');
+                            warning('on');
+                            l_h.AutoUpdate = 'off';
+                        end
+                    end
+                catch e
+                    disp(e.message);
+                end
+                if ch_num == 12
+                    set12LEDYLim();
+                end
+                %------------------------------------------
+                if ch_num == 12
+                    GUI.pebm_intervals_stat = cell(1, ch_num);
+                    GUI.pebm_waves_stat = cell(1, ch_num);
+                    
+                    GUI.pebm_intervalsData = cell(1, ch_num);
+                    GUI.pebm_wavesData = cell(1, ch_num);
+                    
+                    GUI.pebm_waves_table = cell(1, ch_num);
+                    GUI.pebm_intervals_table = cell(1, ch_num);
+                end
+                %------------------------------------------
+                for i = 1 : ch_num
+                    if ~isempty(GUI.PQRST_position{1, i}) && isempty(GUI.pebm_intervals_stat{1, i})
+                        try                            
+                            fud_points = GUI.PQRST_position{1, i};
+                            disp('save temp files:');
+                            tic
+                            
+                            signal_file = [tempdir 'temp.mat'];
+                            signal = DATA.sig(:, i);
+                            save(signal_file, 'signal');
+                            
+                            fid_file = [tempdir 'fid_temp.mat'];
+                            save(fid_file, 'fud_points');
+                            toc
+                            
+                            waitbar_handle = waitbar((2*i)/(1+ch_num*2), waitbar_handle, ['Calculating pebm intervals stat ch. ' num2str(i)], 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+                            disp('Intervals:');
+                            tic
+                            [GUI.pebm_intervals_stat{1, i}, GUI.pebm_intervals_table{1, i}] = biomarkers_intervals(signal_file, DATA.Fs, fid_file, 1);
+                            toc
+                            
+                            waitbar_handle = waitbar((1+2*i)/(1+ch_num*2), waitbar_handle, ['Calculating pebm waves stat ch. ' num2str(i)], 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+                            disp('waves:');
+                            tic
+                            [GUI.pebm_waves_stat{1, i}, GUI.pebm_waves_table{1, i}] = biomarkers_waves(signal_file, DATA.Fs, fid_file, 1);
+                            toc
+                                                        
+                            delete([tempdir 'temp.mat']);
+                            delete([tempdir 'fid_temp.mat']);
+                            
+                            GUI.SaveFiducialsStat.Enable = 'on';
+                                                        
                         catch e
                             h_e = errordlg(['Fiducials points problems error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
                             return;
                         end
+                        [GUI.pebm_intervalsData{1, i}, pebm_intervalsRowsNames, pebm_intervalsDescriptions] = table2cell_StatisticsParam(GUI.pebm_intervals_stat{1, i});
+                        [GUI.pebm_wavesData{1, i}, pebm_wavesRowsNames, pebm_wavesDescriptions] = table2cell_StatisticsParam(GUI.pebm_waves_stat{1, i});
                     end
-                    % ----------------------------------
-                    if ch_num == 12
-                        parent_axes = GUI.ECG_Axes_Array(i);
-                    end
-                    
-                    % ----------------------------------
-                    
-                    
-                    tic
-                    heasig = struct("nsig", 1, "freq", DATA.Fs, "nsamp", length(data));
-                    [GUI.PQRST_position{i}, ~, ~] = wavedet_3D(data, qrs_2, heasig, []);
-                    toc
-                    
-                    P{i} = GUI.PQRST_position{1, i}.P(~isnan(GUI.PQRST_position{1, i}.P)) + time_samples;
-                    Q{i} = GUI.PQRST_position{1, i}.QRSon(~isnan(GUI.PQRST_position{1, i}.QRSon)) + time_samples;
-                    S{i} = GUI.PQRST_position{1, i}.QRSoff(~isnan(GUI.PQRST_position{1, i}.QRSoff)) + time_samples;
-                    T{i} = GUI.PQRST_position{1, i}.T(~isnan(GUI.PQRST_position{1, i}.T)) + time_samples;
-                    
-                    GUI.P_linehandle(i) = line(DATA.tm(P{i}), DATA.sig(P{i}, i), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.9290, 0.6940, 0.1250], 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250]);
-                    GUI.Q_linehandle(i) = line(DATA.tm(Q{i}), DATA.sig(Q{i}, i), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.4940, 0.1840, 0.5560], 'MarkerEdgeColor', [0.4940, 0.1840, 0.5560]);
-                    GUI.S_linehandle(i) = line(DATA.tm(S{i}), DATA.sig(S{i}, i), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.8500, 0.3250, 0.0980], 'MarkerEdgeColor', [0.8500, 0.3250, 0.0980]);
-                    GUI.T_linehandle(i) = line(DATA.tm(T{i}), DATA.sig(T{i}, i), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.6350, 0.0780, 0.1840], 'MarkerEdgeColor', [0.6350, 0.0780, 0.1840]);
-                    
-                    if DATA.amp_counter(i) > 0
-                        coeff = 1/(DATA.amp_ch_factor ^ DATA.amp_counter(i));
-                    else
-                        coeff = DATA.amp_ch_factor ^ abs(DATA.amp_counter(i));
-                    end
-                    
-                    if ~all(isnan(P{i}))
-                        GUI.P_checkbox.Value = 1;
-                        %                         GUI.P_linehandle(i).YData = GUI.P_linehandle(i).YData / coeff;
-                        %                         GUI.P_linehandle(i).YData = ((GUI.P_linehandle(i).YData - GUI.offset_array(i)) * coeff) + GUI.offset_array(i);
-                        GUI.P_linehandle(i).YData = GUI.P_linehandle(i).YData + GUI.offset_array(i);
-                        %                         GUI.P_linehandle(i).YData = ((GUI.P_linehandle(i).YData - GUI.offset_array(i)) * coeff) + GUI.offset_array(i);
-                    else
-                        GUI.P_checkbox.Value = 0;
-                    end
-                    if ~all(isnan(Q{i}))
-                        GUI.Q_checkbox.Value = 1;
-                        %                       GUI.Q_linehandle(i).YData = GUI.Q_linehandle(i).YData / coeff;
-                        %                       GUI.Q_linehandle(i).YData = ((GUI.Q_linehandle(i).YData - GUI.offset_array(i)) * coeff) + GUI.offset_array(i);
-                        GUI.Q_linehandle(i).YData = GUI.Q_linehandle(i).YData + GUI.offset_array(i);
-                    else
-                        GUI.Q_checkbox.Value = 0;
-                    end
-                    if ~all(isnan(S{i}))
-                        GUI.S_checkbox.Value = 1;
-                        %                       GUI.S_linehandle(i).YData = GUI.S_linehandle(i).YData / coeff;
-                        %                       GUI.S_linehandle(i).YData = ((GUI.S_linehandle(i).YData - GUI.offset_array(i)) * coeff) + GUI.offset_array(i);
-                        GUI.S_linehandle(i).YData = GUI.S_linehandle(i).YData + GUI.offset_array(i);
-                    else
-                        GUI.S_checkbox.Value = 0;
-                    end
-                    if ~all(isnan(T{i}))
-                        GUI.T_checkbox.Value = 1;
-                        %                       GUI.T_linehandle(i).YData = GUI.T_linehandle(i).YData / coeff;
-                        %                       GUI.T_linehandle(i).YData = ((GUI.T_linehandle(i).YData - GUI.offset_array(i)) * coeff) + GUI.offset_array(i);
-                        GUI.T_linehandle(i).YData = GUI.T_linehandle(i).YData + GUI.offset_array(i);
-                    else
-                        GUI.T_checkbox.Value = 0;
-                    end
-                    
-                    if i ~= 1
-                        GUI.qrs_ch(i-1) = line(DATA.tm(qrs_2 + time_samples), DATA.sig(qrs_2 + time_samples, i), 'Parent', parent_axes, 'LineStyle', 'none', 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'MarkerSize', ch_marker_size+1, 'LineWidth', 1, 'MarkerEdgeColor', [1, 0, 0]);
-                        GUI.qrs_ch(i-1).YData = GUI.qrs_ch(i-1).YData + GUI.offset_array(i);
-                        GUI.qrs_ch(i-1).YData = ((GUI.qrs_ch(i-1).YData - GUI.offset_array(i)) * coeff) + GUI.offset_array(i);
-                        GUI.R_checkbox.Value = 1;
-                    end
-                    
-                    if GUI.ChannelsTable.Data{i, 2}
-                        if_visible = true;
-                    else
-                        if_visible = false;
-                    end
-                    GUI.ChannelsTable.Data(i, 3) = {if_visible};
-                    select_fid_handles(i, if_visible);
-                end
+                end % for ch_num
                 
-                GUI.SaveFiducials.Enable = 'on';
-                
-                if ch_num ~= 12
-                    warning('off');
-                    l_h = legend(parent_axes, [GUI.red_peaks_handle, GUI.P_linehandle(1), GUI.Q_linehandle(1), GUI.S_linehandle(1), GUI.T_linehandle(1)], {'R', 'P', 'Q', 'S', 'T'}, 'Location', 'best');
-                    warning('on');
-                    l_h.AutoUpdate = 'off';
-                end
-                
-                
-                %------------------------------------------
-                pebm_intervals_stat = cell(1, ch_num);
-                pebm_waves_stat = cell(1, ch_num);
-                pebm_intervalsData = cell(1, ch_num);
-                pebm_wavesData = cell(1, ch_num);
-                
-                pebm_waves_table = cell(1, ch_num);
-                
-                for i = 1 : ch_num
-                    try
-                        fud_points = GUI.PQRST_position{1, i};
-                        disp('save temp files:');
-                        tic
-                        
-                        signal_file = [tempdir 'temp.mat'];
-                        signal = DATA.sig(:, i);
-                        save(signal_file, 'signal');
-                        
-                        fid_file = [tempdir 'fid_temp.mat'];
-                        save(fid_file, 'fud_points');
-                        toc
-                        
-                        waitbar_handle = waitbar((2*i)/(1+ch_num*2), waitbar_handle, ['Calculating pebm intervals stat ch. ' num2str(i)], 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
-                        disp('Intervals:');
-                        tic
-                        [pebm_intervals_stat{1, i}, pebm_intervals_table{1, i}] = biomarkers_intervals(signal_file, DATA.Fs, fid_file, 1);
-                        toc
-                        
-                        waitbar_handle = waitbar((1+2*i)/(1+ch_num*2), waitbar_handle, ['Calculating pebm waves stat ch. ' num2str(i)], 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
-                        disp('waves:');
-                        tic
-                        [pebm_waves_stat{1, i}, pebm_waves_table{1, i}] = biomarkers_waves(signal_file, DATA.Fs, fid_file, 1);
-                        toc
-                        
-                        %                     delete([tempdir 'temp.txt']);
-                        delete([tempdir 'temp.mat']);
-                        delete([tempdir 'fid_temp.mat']);
-                        
-                        GUI.SaveFiducialsStat.Enable = 'on';
-                        
-                    catch e
-                        h_e = errordlg(['Fiducials points problems error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
-                        return;
-                    end
-                    [pebm_intervalsData{1, i}, pebm_intervalsRowsNames, pebm_intervalsDescriptions] = table2cell_StatisticsParam(pebm_intervals_stat{1, i});
-                    [pebm_wavesData{1, i}, pebm_wavesRowsNames, pebm_wavesDescriptions] = table2cell_StatisticsParam(pebm_waves_stat{1, i});
-                end
-                %------------------------------------------------------------------
-                GUI.pebm_intervals_stat = pebm_intervals_stat;
-                GUI.pebm_waves_stat = pebm_waves_stat;
-                
-                GUI.pebm_waves_table = pebm_waves_table;
-                GUI.pebm_intervals_table = pebm_intervals_table;
-                %------------------------------------------------------------------
                 if isvalid(waitbar_handle)
                     close(waitbar_handle);
                 end
-                GUI.DurationTable.RowName = pebm_intervalsRowsNames;
-                GUI.AmplitudeTable.RowName = pebm_wavesRowsNames;
-                if ch_num == 1
-                    GUI.DurationTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
-                    GUI.AmplitudeTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
-                    GUI.DurationTable.Data = [pebm_intervalsDescriptions pebm_intervalsData{1, 1}];
-                    GUI.AmplitudeTable.Data = [pebm_wavesDescriptions pebm_wavesData{1, 1}];
-                else
-                    GUI.DurationTable.Data = pebm_intervalsDescriptions;
-                    GUI.AmplitudeTable.Data = pebm_wavesDescriptions;
-                    
-                    ColumnName = cell(1, ch_num + 1);
-                    ColumnName(1, 1) = {'Description'};
-                    for i = 1 : ch_num
-                        fid_int = pebm_intervalsData{1, i};
-                        fid_waves = pebm_wavesData{1, i};
-                        GUI.DurationTable.Data = [GUI.DurationTable.Data fid_int(:, 2)];
-                        GUI.AmplitudeTable.Data = [GUI.AmplitudeTable.Data fid_waves(:, 2)];
-                        ColumnName(1, i + 1) = {[GUI.ChannelsTable.Data{i, 1}, ' (med)']};
+                %------------------------------------------------------------------
+                try
+                    GUI.DurationTable.RowName = pebm_intervalsRowsNames;
+                    GUI.AmplitudeTable.RowName = pebm_wavesRowsNames;
+                                        
+                    ind = find(cellfun(@(x) x == 1, GUI.ChannelsTable.Data(:, 4)));
+                    ind_stat = find(cellfun(@(x) ~isempty(x), GUI.pebm_intervalsData));                    
+                    show_stat_ind = intersect(ind, ind_stat');
+                                        
+                    if length(find(cellfun(@(x) ~isempty(x), GUI.pebm_intervalsData))) == 1
+                        GUI.DurationTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
+                        GUI.AmplitudeTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
+                        GUI.DurationTable.Data = [pebm_intervalsDescriptions GUI.pebm_intervalsData{1, show_stat_ind}];
+                        GUI.AmplitudeTable.Data = [pebm_wavesDescriptions GUI.pebm_wavesData{1, show_stat_ind}];
+                    else
+                        GUI.DurationTable.Data = pebm_intervalsDescriptions;
+                        GUI.AmplitudeTable.Data = pebm_wavesDescriptions;
+                        
+                        ColumnName = cell(1, ch_num + 1);
+                        ColumnName(1, 1) = {'Description'};
+                        for i = 1 : length(show_stat_ind)
+                            fid_int = GUI.pebm_intervalsData{1, show_stat_ind(i)};
+                            fid_waves = GUI.pebm_wavesData{1, show_stat_ind(i)};
+                            GUI.DurationTable.Data = [GUI.DurationTable.Data fid_int(:, 2)];
+                            GUI.AmplitudeTable.Data = [GUI.AmplitudeTable.Data fid_waves(:, 2)];
+                            ColumnName(1, i + 1) = {[GUI.ChannelsTable.Data{show_stat_ind(i), 1}, ' (med)']};
+                        end
+                        GUI.DurationTable.ColumnName = ColumnName;
+                        GUI.AmplitudeTable.ColumnName = ColumnName;
                     end
-                    GUI.DurationTable.ColumnName = ColumnName;
-                    GUI.AmplitudeTable.ColumnName = ColumnName;
+                catch
                 end
                 %------------------------------------------
             else
@@ -6748,31 +7144,33 @@ end
         end
     end
 %%
-    function clear_fiducials()
+    function reset_fiducials_checkboxs()
         GUI.P_checkbox.Value = 0;
         GUI.Q_checkbox.Value = 0;
         GUI.R_checkbox.Value = 1;
         GUI.S_checkbox.Value = 0;
         GUI.T_checkbox.Value = 0;
-        
-        if isfield(GUI, 'P_linehandle') && any(isvalid(GUI.P_linehandle))
+    end
+%%
+    function clear_fiducials_handles()                       
+        if isfield(GUI, 'P_linehandle')% && any(isvalid(GUI.P_linehandle))
             delete(GUI.P_linehandle);
             GUI = rmfield(GUI, 'P_linehandle');
         end
-        if isfield(GUI, 'Q_linehandle') && any(isvalid(GUI.Q_linehandle))
+        if isfield(GUI, 'Q_linehandle')% && any(isvalid(GUI.Q_linehandle))
             delete(GUI.Q_linehandle);
             GUI = rmfield(GUI, 'Q_linehandle');
         end
-        if isfield(GUI, 'S_linehandle') && any(isvalid(GUI.S_linehandle))
+        if isfield(GUI, 'S_linehandle')% && any(isvalid(GUI.S_linehandle))
             delete(GUI.S_linehandle);
             GUI = rmfield(GUI, 'S_linehandle');
         end
-        if isfield(GUI, 'T_linehandle') && any(isvalid(GUI.T_linehandle))
+        if isfield(GUI, 'T_linehandle')% && any(isvalid(GUI.T_linehandle))
             delete(GUI.T_linehandle);
             GUI = rmfield(GUI, 'T_linehandle');
-        end
-        
-        if isfield(GUI, 'qrs_ch') && any(isvalid(GUI.qrs_ch))
+        end                                                      
+%-----------------------------------------------               
+        if isfield(GUI, 'qrs_ch')% && any(isvalid(GUI.qrs_ch))
             delete(GUI.qrs_ch);
             GUI = rmfield(GUI, 'qrs_ch');
         end
@@ -6781,9 +7179,31 @@ end
             legend(GUI.ECG_Axes, 'off');
         end
         GUI.DurationTable.Data = {};
-        GUI.AmplitudeTable.Data = {};
-        
-        %         GUI.ChannelsTable.Data(:, 3) = false;
+        GUI.AmplitudeTable.Data = {};                
+    end
+%%
+    function clear_fiducials_filt_handles()                               
+        if isfield(GUI, 'P_linehandle_filt') %&& any(isvalid(GUI.P_linehandle_filt))
+            delete(GUI.P_linehandle_filt);
+            GUI = rmfield(GUI, 'P_linehandle_filt');
+        end
+        if isfield(GUI, 'Q_linehandle_filt')% && any(isvalid(GUI.Q_linehandle_filt))
+            delete(GUI.Q_linehandle_filt);
+            GUI = rmfield(GUI, 'Q_linehandle_filt');
+        end
+        if isfield(GUI, 'S_linehandle_filt')% && any(isvalid(GUI.S_linehandle_filt))
+            delete(GUI.S_linehandle_filt);
+            GUI = rmfield(GUI, 'S_linehandle_filt');
+        end
+        if isfield(GUI, 'T_linehandle_filt')% && any(isvalid(GUI.T_linehandle_filt))
+            delete(GUI.T_linehandle_filt);
+            GUI = rmfield(GUI, 'T_linehandle_filt');
+        end        
+        try
+            delete(GUI.red_peaks_handle_Filt);
+            GUI = rmfield(GUI, 'red_peaks_handle_Filt');
+        catch
+        end                         
     end
 %%
     function PQRST_checkbox_Callback(src, ~)
@@ -6791,40 +7211,59 @@ end
         line_vis = src.Value;
         
         handles_fid = gobjects(0);
+        handles_fid_filt = gobjects(0);
         
-        array_vis = cell2mat(GUI.ChannelsTable.Data(:, 3)) * line_vis .* cell2mat(GUI.ChannelsTable.Data(:, 2));
-        
-        if strcmp(src.Tag, 'PPeaksCb') && isfield(GUI, 'P_linehandle') && ~isempty(GUI.P_linehandle) && any(ishandle(GUI.P_linehandle)) && any(isvalid(GUI.P_linehandle))
-            handles_fid = GUI.P_linehandle;
-            %             set(GUI.P_linehandle, 'Visible', line_vis);
-        elseif strcmp(src.Tag, 'QPeaksCb') && isfield(GUI, 'Q_linehandle') && ~isempty(GUI.Q_linehandle) && any(ishandle(GUI.Q_linehandle)) && any(isvalid(GUI.Q_linehandle))
-            handles_fid = GUI.Q_linehandle;
-            %             set(GUI.Q_linehandle, 'Visible', line_vis);
-        elseif strcmp(src.Tag, 'RPeaksCb')   && isfield(GUI, 'red_peaks_handle') && ~isempty(GUI.red_peaks_handle) && any(ishandle(GUI.red_peaks_handle)) && any(isvalid(GUI.red_peaks_handle))
-            handles_fid = GUI.red_peaks_handle;
-            %             GUI.red_peaks_handle.Visible = line_vis;
-        elseif strcmp(src.Tag, 'SPeaksCb') && isfield(GUI, 'S_linehandle') && ~isempty(GUI.S_linehandle) && any(ishandle(GUI.S_linehandle)) && any(isvalid(GUI.S_linehandle))
-            handles_fid = GUI.S_linehandle;
-            %             set(GUI.S_linehandle, 'Visible', line_vis);
-        elseif strcmp(src.Tag, 'TPeaksCb') && isfield(GUI, 'T_linehandle') && ~isempty(GUI.T_linehandle) && any(ishandle(GUI.T_linehandle)) && any(isvalid(GUI.T_linehandle))
-            handles_fid = GUI.T_linehandle;
-            %             set(GUI.T_linehandle, 'Visible', line_vis);
+        if GUI.RawSignal_checkbox.Value 
+            array_vis = cell2mat(GUI.ChannelsTable.Data(:, 4)) * line_vis .* cell2mat(GUI.ChannelsTable.Data(:, 2));
+            if GUI.FilteredSignal_checkbox.Value
+                array_vis_filt = ~cell2mat(GUI.ChannelsTable.Data(:, 2)) * line_vis .* cell2mat(GUI.ChannelsTable.Data(:, 3)).* cell2mat(GUI.ChannelsTable.Data(:, 4));
+            else
+                array_vis_filt = zeros(size(array_vis));
+            end            
+        elseif GUI.FilteredSignal_checkbox.Value && ~GUI.RawSignal_checkbox.Value
+            array_vis_filt = cell2mat(GUI.ChannelsTable.Data(:, 4)) * line_vis .* cell2mat(GUI.ChannelsTable.Data(:, 3));  
+            array_vis = zeros(size(array_vis_filt));
+        elseif ~GUI.FilteredSignal_checkbox.Value && ~GUI.RawSignal_checkbox.Value
+            array_vis = zeros(size(cell2mat(GUI.ChannelsTable.Data(:, 4))));
+            array_vis_filt = zeros(size(array_vis));
         end
+                        
+        if strcmp(src.Tag, 'PPeaksCb') && isfield(GUI, 'P_linehandle') && ~isempty(GUI.P_linehandle) && any(ishandle(GUI.P_linehandle)) && any(isvalid(GUI.P_linehandle))
+            handles_fid = GUI.P_linehandle;            
+        elseif strcmp(src.Tag, 'QPeaksCb') && isfield(GUI, 'Q_linehandle') && ~isempty(GUI.Q_linehandle) && any(ishandle(GUI.Q_linehandle)) && any(isvalid(GUI.Q_linehandle))
+            handles_fid = GUI.Q_linehandle;            
+        elseif strcmp(src.Tag, 'RPeaksCb')   && isfield(GUI, 'red_peaks_handle') && ~isempty(GUI.red_peaks_handle) && any(ishandle(GUI.red_peaks_handle)) && any(isvalid(GUI.red_peaks_handle))
+            handles_fid = GUI.red_peaks_handle;            
+        elseif strcmp(src.Tag, 'SPeaksCb') && isfield(GUI, 'S_linehandle') && ~isempty(GUI.S_linehandle) && any(ishandle(GUI.S_linehandle)) && any(isvalid(GUI.S_linehandle))
+            handles_fid = GUI.S_linehandle;            
+        elseif strcmp(src.Tag, 'TPeaksCb') && isfield(GUI, 'T_linehandle') && ~isempty(GUI.T_linehandle) && any(ishandle(GUI.T_linehandle)) && any(isvalid(GUI.T_linehandle))
+            handles_fid = GUI.T_linehandle;            
+        end
+        if strcmp(src.Tag, 'PPeaksCb') && isfield(GUI, 'P_linehandle_filt') && ~isempty(GUI.P_linehandle_filt) && any(ishandle(GUI.P_linehandle_filt)) && any(isvalid(GUI.P_linehandle_filt))
+            handles_fid_filt = GUI.P_linehandle_filt;            
+        elseif strcmp(src.Tag, 'QPeaksCb') && isfield(GUI, 'Q_linehandle_filt') && ~isempty(GUI.Q_linehandle_filt) && any(ishandle(GUI.Q_linehandle_filt)) && any(isvalid(GUI.Q_linehandle_filt))
+            handles_fid_filt = GUI.Q_linehandle_filt;            
+        elseif strcmp(src.Tag, 'RPeaksCb')   && isfield(GUI, 'red_peaks_handle_Filt') && ~isempty(GUI.red_peaks_handle_Filt) && any(ishandle(GUI.red_peaks_handle_Filt)) && any(isvalid(GUI.red_peaks_handle_Filt))
+            handles_fid_filt = GUI.red_peaks_handle_Filt;            
+        elseif strcmp(src.Tag, 'SPeaksCb') && isfield(GUI, 'S_linehandle_filt') && ~isempty(GUI.S_linehandle_filt) && any(ishandle(GUI.S_linehandle_filt)) && any(isvalid(GUI.S_linehandle_filt))
+            handles_fid_filt = GUI.S_linehandle_filt;            
+        elseif strcmp(src.Tag, 'TPeaksCb') && isfield(GUI, 'T_linehandle_filt') && ~isempty(GUI.T_linehandle_filt) && any(ishandle(GUI.T_linehandle_filt)) && any(isvalid(GUI.T_linehandle_filt))
+            handles_fid_filt = GUI.T_linehandle_filt;            
+        end                                
         if strcmp(src.Tag, 'RPeaksCb') && isfield(GUI, 'qrs_ch') && ~isempty(GUI.qrs_ch) && any(ishandle(GUI.qrs_ch)) && any(isvalid(GUI.qrs_ch))
-            handles_fid = [handles_fid GUI.qrs_ch];
-            %             set(GUI.qrs_ch, 'Visible', line_vis);
+            handles_fid = [handles_fid GUI.qrs_ch];            
         end
         
         for i = 1 : length(handles_fid)
-            handles_fid(i).Visible = array_vis(i);
-        end
-        
-        try
-            if strcmp(GUI.FilteredData_handle.Visible, 'on') && GUI.ChannelsTable.Data{1, 3} == 1
-                handles_fid(1).Visible = 1 * line_vis;
+            if ishandle(handles_fid(i))
+                handles_fid(i).Visible = array_vis(i);
             end
-        catch
         end
+        for i = 1 : length(handles_fid_filt)
+            if ishandle(handles_fid_filt(i))
+                handles_fid_filt(i).Visible = array_vis_filt(i);
+            end
+        end        
     end
 %%
     function Fiducials_winStartLength_Edit_Callback(src, ~)
@@ -6848,7 +7287,36 @@ end
                     GUI.Fiducials_winStart.UserData = fid_winstart;
                     h_e = warndlg('Win length was adapted so that start time plus win lenght will be less than signal length!', 'Input error'); setLogo(h_e, 'M1');
                 end
-                clear_fiducials();
+
+                GUI.PQRST_position = {};
+                [~, ch_num] = size(DATA.sig);
+                if isfield(GUI, 'pebm_waves_table')
+                    GUI = rmfield(GUI, 'pebm_waves_table');
+                end
+                if isfield(GUI, 'pebm_intervals_table')
+                    GUI = rmfield(GUI, 'pebm_intervals_table');
+                end
+                GUI.pebm_intervals_stat = cell(1, ch_num);
+                GUI.pebm_waves_stat = cell(1, ch_num);
+                
+                GUI.pebm_intervalsData = cell(1, ch_num);
+                GUI.pebm_wavesData = cell(1, ch_num);
+                
+                clear_fiducials_handles();
+                clear_fiducials_filt_handles();
+                reset_fiducials_checkboxs();
+                GUI.ChannelsTable.Data(:, 4) = {false};
+                GUI.ChannelsTable.Data(1, 4) = {true};
+                
+                if ch_num == 12
+                    parent_axes = GUI.ECG_Axes_Array(1);
+                    ch_marker_size = 4;
+                else
+                    parent_axes = GUI.ECG_Axes;
+                    ch_marker_size = 5;
+                end
+                create_fiducials_filt_handles(1, ch_marker_size, parent_axes);
+                set_fid_visible(1);
             end
         end
     end

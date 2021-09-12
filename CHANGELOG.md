@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.6.01] - 2021-09-12
+
+### Added
+
+Add complete 12-lead support (pebm toolbox)
+Add SpO2 support (obm toolbox)
+
 ## [1.5.7] - 2020-11-19
 
 ### Removed

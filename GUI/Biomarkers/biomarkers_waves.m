@@ -53,9 +53,9 @@ for i = 1 : length(fieldnames(total_result_measures))
         str_NaN.iqr = NaN;
         str_NaN.std = NaN;
         
-        result_measures.Pwave_amp = str_NaN;
-        result_measures.Twave_amp = str_NaN;
-        result_measures.Rwave_amp = str_NaN;
+        result_measures.Pwave = str_NaN;
+        result_measures.Twave = str_NaN;
+        result_measures.Rwave = str_NaN;
         result_measures.Parea = str_NaN;
         result_measures.Tarea = str_NaN;
         
@@ -68,23 +68,23 @@ for i = 1 : length(fieldnames(total_result_measures))
     
     pebm_waves_stat.Properties.UserData = 6;
     
-    pebm_waves_stat.Pwave = result_measures.Pwave_amp;
+    pebm_waves_stat.Pwave = result_measures.Pwave;
     pebm_waves_stat.Properties.VariableUnits{'Pwave'} = 'mV'; %'1e-4v';
     pebm_waves_stat.Properties.VariableDescriptions{'Pwave'} = 'Amplitude difference between P peak and P off';
     
-    Pwave_table = struct2table(result_measures.Pwave_amp);
+    Pwave_table = struct2table(result_measures.Pwave);
     
-    pebm_waves_stat.Twave = result_measures.Twave_amp;
+    pebm_waves_stat.Twave = result_measures.Twave;
     pebm_waves_stat.Properties.VariableUnits{'Twave'} = 'mV'; %sprintf('10\x207B\x2074v');
     pebm_waves_stat.Properties.VariableDescriptions{'Twave'} = 'Amplitude difference between T peak on and T off';
     
-    Twave_table = struct2table(result_measures.Twave_amp);
+    Twave_table = struct2table(result_measures.Twave);
     
-    pebm_waves_stat.Rwave = result_measures.Rwave_amp;
+    pebm_waves_stat.Rwave = result_measures.Rwave;
     pebm_waves_stat.Properties.VariableUnits{'Rwave'} = 'mV';
     pebm_waves_stat.Properties.VariableDescriptions{'Rwave'} = 'R peak amplitude';
     
-    Rwave_table = struct2table(result_measures.Rwave_amp);
+    Rwave_table = struct2table(result_measures.Rwave);
     
     pebm_waves_stat.Pwave_area = result_measures.Parea;
     pebm_waves_stat.Properties.VariableUnits{'Pwave_area'} = 'mV*ms'; %'1e-4v*ms';

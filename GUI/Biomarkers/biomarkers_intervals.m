@@ -164,12 +164,12 @@ for i = 1 : length(fieldnames(total_result_measures))
     QTcH_table = struct2table(result_measures.QTc_hod);
     
 %     pebm_intervals_stat.R_depol = result_measures.R_depolarization;
-    pebm_intervals_stat.R_depol = result_measures.R_def;
+    pebm_intervals_stat.R_depol = result_measures.R_dep;
     pebm_intervals_stat.Properties.VariableUnits{'R_depol'} = 'ms';
     pebm_intervals_stat.Properties.VariableDescriptions{'R_depol'} = 'Time interval between Q-onset and R-peak';
     
 %     R_depol_table = struct2table(result_measures.R_depolarization);
-    R_depol_table = struct2table(result_measures.R_def);
+    R_depol_table = struct2table(result_measures.R_dep);
     
     
     

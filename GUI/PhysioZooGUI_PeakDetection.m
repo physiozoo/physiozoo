@@ -6898,9 +6898,7 @@ end
             if winLength > 0
                 
                 waitbar_handle = waitbar(0, 'Calculating pebm biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
-                waitbar_handle = waitbar(1/(1+ch_num*2), waitbar_handle, 'Calculating biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
-                disp('wavedet_3D:');
-                
+                                
                 ecg_time_1 = DATA.tm(DATA.tm >= 0 & DATA.tm < winStart, :);
                 time_samples = numel(ecg_time_1);
                 
@@ -6955,6 +6953,8 @@ end
                             parent_axes = GUI.ECG_Axes_Array(i);
                         end
                         % ----------------------------------
+                        disp(['wavedet_3D: channel ', num2str(i)]);
+                        waitbar_handle = waitbar(i/(1+ch_num*2), waitbar_handle, ['Calculating pebm biomarkers ch. ' num2str(i)], 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
                         tic
                         heasig = struct("nsig", 1, "freq", DATA.Fs, "nsamp", length(data));
                         [GUI.PQRST_position{i}, ~, ~] = wavedet_3D(data, qrs_2, heasig, []);
@@ -6996,6 +6996,9 @@ end
                         set_fid_visible(i);
                     end
                 end % for ch_num
+                if isvalid(waitbar_handle)
+                    close(waitbar_handle);
+                end
                 %-------------------------------------------------------------------------------
                 if ~isempty(GUI.PQRST_position)
                     GUI.SaveFiducials.Enable = 'on';
@@ -7060,10 +7063,12 @@ end
                 end
                 %------------------------------------------
                 
+                waitbar_handle = waitbar(0, 'Calculating pebm statistics', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+                
                 pqrst_pos_4saving = {};
                 signal_4saving = [];
                 ind2calc = zeros(1, ch_num);
-                j = 1;                
+                j = 1;
                 
                 for i = 1 : ch_num
                     if ~isempty(GUI.PQRST_position{1, i}) && GUI.ChannelsTable.Data{i, 4} && isempty(GUI.pebm_intervals_stat{1, i})
@@ -7073,59 +7078,60 @@ end
                         j = j + 1;
                     end
                 end
-                                
-                try
-                    disp('save temp files:');
-                    tic
-                    
-                    signal_file = [tempdir 'temp.mat'];
-                    %                     signal = DATA.sig;
-                    signal = signal_4saving;
-                    save(signal_file, 'signal');
-                    
-                    fid_file = [tempdir 'fid_temp.mat'];
-                    %                     fud_points = GUI.PQRST_position;
-                    fud_points = pqrst_pos_4saving;
-                    save(fid_file, 'fud_points');
-                    toc
-                catch e
-                    disp(e.message);
-                end
                 
-                clear pqrst_pos_4saving;
-                clear signal_4saving;
-                
-                disp('Intervals:');
-                tic
-                [pebm_intervals_stat_curr, pebm_intervals_table_curr] = biomarkers_intervals(signal_file, DATA.Fs, fid_file, 1);
-                toc
-                
-                disp('waves:');
-                tic
-                [pebm_waves_stat_curr, pebm_waves_table_curr] = biomarkers_waves(signal_file, DATA.Fs, fid_file, 1);
-                toc
-                
-                delete([tempdir 'temp.mat']);
-                delete([tempdir 'fid_temp.mat']);
-                %------------------------------------------
-                GUI.SaveFiducialsStat.Enable = 'on';
-                
-                for i = 1 : ch_num                    
-                    if ind2calc(i)                        
-                        GUI.pebm_intervals_stat(1, i) = pebm_intervals_stat_curr(ind2calc(i));
-                        GUI.pebm_intervals_table(1, i) = pebm_intervals_table_curr(ind2calc(i));
-                        GUI.pebm_waves_stat(1, i) = pebm_waves_stat_curr(ind2calc(i));
-                        GUI.pebm_waves_table(1, i) = pebm_waves_table_curr(ind2calc(i));
+                if ~isempty(signal_4saving)
+                    try
+                        disp('save temp files:');
+                        tic
                         
-                        [GUI.pebm_intervalsData{1, i}, pebm_intervalsRowsNames, pebm_intervalsDescriptions] = table2cell_StatisticsParam(GUI.pebm_intervals_stat{1, i});
-                        [GUI.pebm_wavesData{1, i}, pebm_wavesRowsNames, pebm_wavesDescriptions] = table2cell_StatisticsParam(GUI.pebm_waves_stat{1, i});
+                        signal_file = [tempdir 'temp.mat'];
+                        %                     signal = DATA.sig;
+                        signal = signal_4saving;
+                        save(signal_file, 'signal');
+                        
+                        fid_file = [tempdir 'fid_temp.mat'];
+                        %                     fud_points = GUI.PQRST_position;
+                        fud_points = pqrst_pos_4saving;
+                        save(fid_file, 'fud_points');
+                        toc
+                    catch e
+                        disp(e.message);
                     end
-                end
-                
-                
-                
-%                 j = 1;
-%                 for i = 1 : ch_num
+                    
+                    clear pqrst_pos_4saving;
+                    clear signal_4saving;
+                    
+                    disp('Intervals:');
+                    tic
+                    [pebm_intervals_stat_curr, pebm_intervals_table_curr] = biomarkers_intervals(signal_file, DATA.Fs, fid_file, 1);
+                    toc
+                    
+                    disp('waves:');
+                    tic
+                    [pebm_waves_stat_curr, pebm_waves_table_curr] = biomarkers_waves(signal_file, DATA.Fs, fid_file, 1);
+                    toc
+                    
+                    delete([tempdir 'temp.mat']);
+                    delete([tempdir 'fid_temp.mat']);
+                    %------------------------------------------
+                    GUI.SaveFiducialsStat.Enable = 'on';
+                    
+                    for i = 1 : ch_num
+                        if ind2calc(i)
+                            GUI.pebm_intervals_stat(1, i) = pebm_intervals_stat_curr(ind2calc(i));
+                            GUI.pebm_intervals_table(1, i) = pebm_intervals_table_curr(ind2calc(i));
+                            GUI.pebm_waves_stat(1, i) = pebm_waves_stat_curr(ind2calc(i));
+                            GUI.pebm_waves_table(1, i) = pebm_waves_table_curr(ind2calc(i));
+                            
+                            [GUI.pebm_intervalsData{1, i}, pebm_intervalsRowsNames, pebm_intervalsDescriptions] = table2cell_StatisticsParam(GUI.pebm_intervals_stat{1, i});
+                            [GUI.pebm_wavesData{1, i}, pebm_wavesRowsNames, pebm_wavesDescriptions] = table2cell_StatisticsParam(GUI.pebm_waves_stat{1, i});
+                        end
+                    end
+                    
+                    
+                    
+                    %                 j = 1;
+                    %                 for i = 1 : ch_num
                     %                     if ~isempty(GUI.PQRST_position{1, i}) && isempty(GUI.pebm_intervals_stat{1, i})
                     %                         try
                     %                             fud_points = GUI.PQRST_position{1, i};
@@ -7161,50 +7167,54 @@ end
                     %                             h_e = errordlg(['Fiducials points problems error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
                     %                             return;
                     %                         end
-%                     if ~isempty(GUI.PQRST_position{1, i})
-%                         [GUI.pebm_intervalsData{1, i}, pebm_intervalsRowsNames, pebm_intervalsDescriptions] = table2cell_StatisticsParam(GUI.pebm_intervals_stat{1, j});
-%                         [GUI.pebm_wavesData{1, i}, pebm_wavesRowsNames, pebm_wavesDescriptions] = table2cell_StatisticsParam(GUI.pebm_waves_stat{1, j});
-%                         j = j + 1;
-%                     end
+                    %                     if ~isempty(GUI.PQRST_position{1, i})
+                    %                         [GUI.pebm_intervalsData{1, i}, pebm_intervalsRowsNames, pebm_intervalsDescriptions] = table2cell_StatisticsParam(GUI.pebm_intervals_stat{1, j});
+                    %                         [GUI.pebm_wavesData{1, i}, pebm_wavesRowsNames, pebm_wavesDescriptions] = table2cell_StatisticsParam(GUI.pebm_waves_stat{1, j});
+                    %                         j = j + 1;
                     %                     end
-%                 end % for ch_num
-                
+                    %                     end
+                    %                 end % for ch_num
+                    
+%                     if isvalid(waitbar_handle)
+%                         close(waitbar_handle);
+%                     end
+                    %------------------------------------------------------------------
+                    try
+                        GUI.DurationTable.RowName = pebm_intervalsRowsNames;
+                        GUI.AmplitudeTable.RowName = pebm_wavesRowsNames;
+                        
+                        ind = find(cellfun(@(x) x == 1, GUI.ChannelsTable.Data(:, 4)));
+                        ind_stat = find(cellfun(@(x) ~isempty(x), GUI.pebm_intervalsData));
+                        show_stat_ind = intersect(ind, ind_stat');
+                        
+                        if length(find(cellfun(@(x) ~isempty(x), GUI.pebm_intervalsData))) == 1
+                            GUI.DurationTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
+                            GUI.AmplitudeTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
+                            GUI.DurationTable.Data = [pebm_intervalsDescriptions GUI.pebm_intervalsData{1, show_stat_ind}];
+                            GUI.AmplitudeTable.Data = [pebm_wavesDescriptions GUI.pebm_wavesData{1, show_stat_ind}];
+                        else
+                            GUI.DurationTable.Data = pebm_intervalsDescriptions;
+                            GUI.AmplitudeTable.Data = pebm_wavesDescriptions;
+                            
+                            ColumnName = cell(1, ch_num + 1);
+                            ColumnName(1, 1) = {'Description'};
+                            for i = 1 : length(show_stat_ind)
+                                fid_int = GUI.pebm_intervalsData{1, show_stat_ind(i)};
+                                fid_waves = GUI.pebm_wavesData{1, show_stat_ind(i)};
+                                GUI.DurationTable.Data = [GUI.DurationTable.Data fid_int(:, 2)];
+                                GUI.AmplitudeTable.Data = [GUI.AmplitudeTable.Data fid_waves(:, 2)];
+                                ColumnName(1, i + 1) = {[GUI.ChannelsTable.Data{show_stat_ind(i), 1}, ' (med)']};
+                            end
+                            GUI.DurationTable.ColumnName = ColumnName;
+                            GUI.AmplitudeTable.ColumnName = ColumnName;
+                        end
+                    catch
+                    end                    
+                    %------------------------------------------
+                end
                 if isvalid(waitbar_handle)
                     close(waitbar_handle);
                 end
-                %------------------------------------------------------------------
-                try
-                    GUI.DurationTable.RowName = pebm_intervalsRowsNames;
-                    GUI.AmplitudeTable.RowName = pebm_wavesRowsNames;
-                    
-                    ind = find(cellfun(@(x) x == 1, GUI.ChannelsTable.Data(:, 4)));
-                    ind_stat = find(cellfun(@(x) ~isempty(x), GUI.pebm_intervalsData));
-                    show_stat_ind = intersect(ind, ind_stat');
-                    
-                    if length(find(cellfun(@(x) ~isempty(x), GUI.pebm_intervalsData))) == 1
-                        GUI.DurationTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
-                        GUI.AmplitudeTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
-                        GUI.DurationTable.Data = [pebm_intervalsDescriptions GUI.pebm_intervalsData{1, show_stat_ind}];
-                        GUI.AmplitudeTable.Data = [pebm_wavesDescriptions GUI.pebm_wavesData{1, show_stat_ind}];
-                    else
-                        GUI.DurationTable.Data = pebm_intervalsDescriptions;
-                        GUI.AmplitudeTable.Data = pebm_wavesDescriptions;
-                        
-                        ColumnName = cell(1, ch_num + 1);
-                        ColumnName(1, 1) = {'Description'};
-                        for i = 1 : length(show_stat_ind)
-                            fid_int = GUI.pebm_intervalsData{1, show_stat_ind(i)};
-                            fid_waves = GUI.pebm_wavesData{1, show_stat_ind(i)};
-                            GUI.DurationTable.Data = [GUI.DurationTable.Data fid_int(:, 2)];
-                            GUI.AmplitudeTable.Data = [GUI.AmplitudeTable.Data fid_waves(:, 2)];
-                            ColumnName(1, i + 1) = {[GUI.ChannelsTable.Data{show_stat_ind(i), 1}, ' (med)']};
-                        end
-                        GUI.DurationTable.ColumnName = ColumnName;
-                        GUI.AmplitudeTable.ColumnName = ColumnName;
-                    end
-                catch
-                end
-                %------------------------------------------
             else
                 h_e = errordlg('The window length must be grather than 0!', 'Input Error'); setLogo(h_e, 'M1');
             end

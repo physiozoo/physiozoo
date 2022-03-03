@@ -4757,7 +4757,8 @@ displayEndOfDemoMessage('');
                             psd_fileID = fopen([full_file_name_psd_W num2str(i) ext], 'w');
                             fprintf(psd_fileID, 'Frequency\tPSD_AR\t\tPSD_Welch\r\n');
                             dlmwrite([full_file_name_psd_W num2str(i) ext], [plot_data.f_axis plot_data.pxx_ar plot_data.pxx_welch], ...
-                                'precision', '%.5f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
+                                'precision', '%.5f\t', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
+%                             'precision', '%.5f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
                             fclose(psd_fileID);
                         end
                     elseif strcmp(ext, '.mat')
@@ -4796,7 +4797,7 @@ displayEndOfDemoMessage('');
                             plot_data = DATA.NonLinStat.PlotData{i};
                             fprintf(mse_fileID, 'scale_axis\tmse_result\r\n');
                             dlmwrite(mse_win_file_name, [plot_data.mse.scale_axis; plot_data.mse.mse_result]', ...
-                                'precision', '%.3f\t\n', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
+                                'precision', '%.3f\t', 'delimiter', '\t', 'newline', 'pc', 'roffset', 2, '-append');
                             fclose(mse_fileID);
                         end
                     elseif strcmp(ext, '.mat')
@@ -5576,7 +5577,7 @@ displayEndOfDemoMessage('');
                     psd_fileID = fopen(full_file_name_filtered, 'w');
                     
                     dlmwrite(full_file_name_filtered, [FilteredData_tnn FilteredData_nni], ...
-                        'precision', '%10.5f\t\n', 'delimiter', '\t', 'newline', 'pc', '-append');
+                        'precision', '%10.5f\t', 'delimiter', '\t', 'newline', 'pc', '-append');
                     
                     fclose(psd_fileID);
                 else

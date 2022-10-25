@@ -1,4 +1,3 @@
-
 function [] = PhysioZoo()
 % PhyzioZoo: Starts the physiozoo application.
 

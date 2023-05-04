@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+
+## [1.6.05] - 2023-05-04
+
+### Changed
+
+Fix pebm toolbox
+
+
 ## [1.6.04] - 2022-03-04
 
 ### Changed

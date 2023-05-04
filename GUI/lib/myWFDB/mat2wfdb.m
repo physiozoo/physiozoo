@@ -278,7 +278,7 @@ if (~count)
 end
 
 % fprintf(['Generated *.dat file: ' fname '\n'])
-disp(['Generated *.dat file: ' fname '.dat']);
+% disp(['Generated *.dat file: ' fname '.dat']);
 fclose(fid);
 
 %Write *.hea file
@@ -304,7 +304,7 @@ if(nargout==1)
     varargout(1)={y};
 end
 % fprintf(['Generated *.hea file: ' fname '\n'])
-disp(['Generated *.hea file: ' fname '.hea']);
+% disp(['Generated *.hea file: ' fname '.hea']);
 fclose(fid);
 
 end

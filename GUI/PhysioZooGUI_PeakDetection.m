@@ -349,6 +349,8 @@ end
         %         GUI.pebm_waves_table = {};
         %         GUI.pebm_intervals_table = {};
         
+        GUI.BandpassFilter_checkbox.Value = 1;
+        GUI.GUIConfig.NotchFilter_popupmenu.Value = 1;
         
         GUI.RawData_lines_handle = gobjects;
         GUI.ch_name_handles = gobjects;
@@ -359,7 +361,7 @@ end
         DATA.screensize = get( 0, 'Screensize' );
         
         %                 DEBUGGING MODE - Small Screen
-        %                                 DATA.screensize = [0 0 1250 800];
+        %                                         DATA.screensize = [0 0 1250 800];
         
         DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
         
@@ -738,8 +740,10 @@ end
             GUI.Reset_pushbutton = uicontrol('Style', 'PushButton', 'Parent', CommandsButtons_Box, 'Callback', @Reset_pushbutton_Callback, 'FontSize', BigFontSize, 'String', 'Reset');
             set(CommandsButtons_Box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing); % [70, 25]
             
-            GUI.Rhythms_handle = uicontrol('Style', 'PushButton', 'Parent', play_box, 'String', 'Rhythms', 'FontSize', DATA.SmallFontSize,...
-                'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Enable', 'inactive');
+            %             GUI.Rhythms_handle = uicontrol('Style', 'PushButton', 'Parent', play_box, 'String', 'Rhythms', 'FontSize', DATA.SmallFontSize,...
+            %                 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Enable', 'inactive');
+            GUI.Rhythms_handle = uicontrol('Style', 'PushButton', 'Parent', play_box, 'String', 'ArNet2', 'FontSize', DATA.SmallFontSize,...
+                'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Enable', 'inactive', 'Callback', @ArNet2_pushbutton_Callback);
             
             MovieStartStioHButtons_Box = uix.HButtonBox('Parent', play_box, 'Spacing', DATA.Spacing); % , 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom'
             GUI.PlayStopReverseMovieButton = uicontrol('Style', 'ToggleButton', 'Parent', MovieStartStioHButtons_Box, 'Callback', @play_stop_reverse_movie_pushbutton_Callback,...
@@ -942,44 +946,52 @@ end
             
             %         field_size = [80, 150, 10 -1];
             
-            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'rqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'rqrs', 'FontSize', BigFontSize-1, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
             
             %         uix.Empty( 'Parent', GUI.ConfigBox );
             
-            [GUI, textBox{1}, text_handles{1}] = createGUISingleEditLine(GUI, 'GUIConfig', 'HR', 'HR', 'BPM', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'HR');
-            [GUI, textBox{2}, text_handles{2}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QS', 'QS', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QS');
-            [GUI, textBox{3}, text_handles{3}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QT', 'QT', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QT');
-            [GUI, textBox{4}, text_handles{4}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSa', 'QRSa', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSa');
-            [GUI, textBox{5}, text_handles{5}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSamin', 'QRSamin', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSamin');
-            [GUI, textBox{6}, text_handles{6}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmin', 'RRmin', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmin');
-            [GUI, textBox{7}, text_handles{7}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmax', 'RRmax', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmax');
+            [GUI, textBox{1}, text_handles{1}] = createGUISingleEditLine(GUI, 'GUIConfig', 'HR', 'HR', 'BPM', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'HR', BigFontSize-2);
+            [GUI, textBox{2}, text_handles{2}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QS', 'QS', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QS', BigFontSize-2);
+            [GUI, textBox{3}, text_handles{3}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QT', 'QT', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QT', BigFontSize-2);
+            [GUI, textBox{4}, text_handles{4}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSa', 'QRSa', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSa', BigFontSize-2);
+            [GUI, textBox{5}, text_handles{5}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSamin', 'QRSamin', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSamin', BigFontSize-2);
+            [GUI, textBox{6}, text_handles{6}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmin', 'RRmin', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmin', BigFontSize-2);
+            [GUI, textBox{7}, text_handles{7}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmax', 'RRmax', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmax', BigFontSize-2);
             
-            uix.Empty('Parent', GUI.ConfigBox );
+            %             uix.Empty('Parent', GUI.ConfigBox );
             
-            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'jqrs/wjqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
-            [GUI, textBox{8}, text_handles{8}] = createGUISingleEditLine(GUI, 'GUIConfig', 'lcf', 'Lower cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'lcf');
-            [GUI, textBox{9}, text_handles{9}] = createGUISingleEditLine(GUI, 'GUIConfig', 'hcf', 'Upper cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'hcf');
-            [GUI, textBox{10}, text_handles{10}] = createGUISingleEditLine(GUI, 'GUIConfig', 'thr', 'Threshold', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'thr');
-            [GUI, textBox{11}, text_handles{11}] = createGUISingleEditLine(GUI, 'GUIConfig', 'rp', 'Refractory period', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'rp');
-            [GUI, textBox{12}, text_handles{12}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ws', 'Window size', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ws');
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'jqrs/wjqrs', 'FontSize', BigFontSize-1, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            [GUI, textBox{8}, text_handles{8}] = createGUISingleEditLine(GUI, 'GUIConfig', 'lcf', 'Lower cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'lcf', BigFontSize-2);
+            [GUI, textBox{9}, text_handles{9}] = createGUISingleEditLine(GUI, 'GUIConfig', 'hcf', 'Upper cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'hcf', BigFontSize-2);
+            [GUI, textBox{10}, text_handles{10}] = createGUISingleEditLine(GUI, 'GUIConfig', 'thr', 'Threshold', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'thr', BigFontSize-2);
+            [GUI, textBox{11}, text_handles{11}] = createGUISingleEditLine(GUI, 'GUIConfig', 'rp', 'Refractory period', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'rp', BigFontSize-2);
+            [GUI, textBox{12}, text_handles{12}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ws', 'Window size', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ws', BigFontSize-2);
             
-            uix.Empty('Parent', GUI.ConfigBox );
+            %             uix.Empty('Parent', GUI.ConfigBox );
             
             % ORI's algorithm for EGM peaks
-            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'egmbeat', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
-            [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ref_per', 'Refractory period', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ref_per');
-            [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIConfig', 'bi', 'Average BI', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'bi');
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'egmbeat', 'FontSize', BigFontSize-1, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ref_per', 'Refractory period', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ref_per', BigFontSize-2);
+            [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIConfig', 'bi', 'Average BI', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'bi', BigFontSize-2);
             
-            [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'init_prom_thresh', 'Initial prominence threshold', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'init_prom_thresh');
-            [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'classify_prom_thresh', 'Clasifying prominence threshold', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'classify_prom_thresh');
+            [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'init_prom_thresh', 'Initial prominence threshold', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'init_prom_thresh', BigFontSize-2);
+            [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'classify_prom_thresh', 'Clasifying prominence threshold', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'classify_prom_thresh', BigFontSize-2);
             
             %             [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh1', 'Prominence threshold 1', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh1');
             %             [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh2', 'Prominence threshold 2', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh2');
             
-            uix.Empty('Parent', GUI.ConfigBox );
+            %             uix.Empty('Parent', GUI.ConfigBox );
             
-            GUI.AutoPeakWin_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', SmallFontSize, 'String', 'Auto', 'Value', 1);
-            [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window');
+            GUI.AutoPeakWin_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', BigFontSize-1, 'String', 'Auto', 'Value', 1);
+            [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window', BigFontSize-2);
+            
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'Fiducials filtering parameters', 'FontSize', BigFontSize-1, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            GUI.BandpassFilter_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', BigFontSize-2, 'String', 'Bandpass filter', 'Value', 1);
+            
+            [GUI, textBox{18}, text_handles{18}] = createGUIPopUpMenuLine(GUI, 'GUIConfig', 'NotchFilter_popupmenu', 'Notch filter', GUI.ConfigBox, @NotchFilter_popupmenu_Callback, {'None'; '50'; '60'});
+            text_handles{18}.FontSize = BigFontSize-2;
+            GUI.GUIConfig.NotchFilter_popupmenu.FontSize = BigFontSize-2;
+            uicontrol( 'Style', 'text', 'Parent', textBox{18}, 'String', 'Hz', 'FontSize', BigFontSize-2, 'HorizontalAlignment', 'left');
             
             uix.Empty('Parent', GUI.ConfigBox );
             
@@ -1000,7 +1012,8 @@ end
             
             
             
-            set(GUI.ConfigBox, 'Heights', [-15 * ones(1, 8)   -0.5 -15 * ones(1, 6) -0.5 -15 * ones(1, 5)  -0.5 -15 -15 -150]);
+            %             set(GUI.ConfigBox, 'Heights', [-15 -10 * ones(1, 7) -0.25 -15 -10 * ones(1, 5) -0.25 -15 -10 * ones(1, 4)  -0.25 -10 -10 -100]);
+            set(GUI.ConfigBox, 'Heights', [-10 -10 * ones(1, 7)  -10 -10 * ones(1, 5)  -10 -10 * ones(1, 4)  -10 -10 -10 -10 -15 -80]);
             %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)   -1 -7 * ones(1, 6) -1 -7 * ones(1, 4)  -8 -7 -7 ] );
             %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)    -7 * ones(1, 6) -7 * ones(1, 4)  -7 -7 ] );
             %-------------------------------------------------------
@@ -1009,20 +1022,20 @@ end
             
             uix.Empty('Parent', DisplayBox);
             
-            [GUI, textBox{18}, text_handles{18}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', 0);
-            [GUI, textBox{19}, text_handles{19}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', 0);
+            [GUI, textBox{19}, text_handles{19}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', 0, BigFontSize);
+            [GUI, textBox{20}, text_handles{20}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', 0, BigFontSize);
             
             %         field_size = [110, 64, 4, 63, 10];
-            [GUI, YLimitBox, text_handles{20}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, '', []);
+            [GUI, YLimitBox, text_handles{21}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, {'', ''}, []);
             
             uix.Empty('Parent', DisplayBox);
             
-            [GUI, textBox{21}, text_handles{21}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '');
-            [GUI, YLimitBox2, text_handles{22}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, '', []);
+            [GUI, textBox{22}, text_handles{22}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'RRIntPage_Length', 'Display duration:', 'h:min:sec', DisplayBox, @RRIntPage_Length_Callback, '', '', BigFontSize);
+            [GUI, YLimitBox2, text_handles{23}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimitLowAxes_Edit'; 'MaxYLimitLowAxes_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimitLowAxes_Edit_Callback; @MinMaxYLimitLowAxes_Edit_Callback}, {'', ''}, []);
             
             uix.Empty('Parent', DisplayBox);
             
-            [GUI, textBox{23}, text_handles{23}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'Movie_Delay', 'Movie Speed:', 'n.u.', DisplayBox, @Movie_Delay_Callback, '', 2);
+            [GUI, textBox{24}, text_handles{24}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'Movie_Delay', 'Movie Speed:', 'n.u.', DisplayBox, @Movie_Delay_Callback, '', 2, BigFontSize);
             GUI.GUIDisplay.Movie_Delay.String = 2;
             
             uix.Empty('Parent', DisplayBox);
@@ -1051,10 +1064,10 @@ end
             GUI.FilteredSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', ChannelsBox, 'Callback', @ShowFilteredSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show filtered signal', 'Value', 0);
             GUI.RawSignal_checkbox =      uicontrol('Style', 'Checkbox', 'Parent', ChannelsBox, 'Callback', @ShowRawSignal_checkbox_Callback,      'FontSize', SmallFontSize, 'String', 'Show raw signal', 'Value', 1);
             
-            [GUI, textBox{24}, text_handles{24}] = createGUIPopUpMenuLine(GUI, 'GUIDisplay', 'FilterLevel_popupmenu', 'Filter level', DisplayBox,...
+            [GUI, textBox{25}, text_handles{25}] = createGUIPopUpMenuLine(GUI, 'GUIDisplay', 'FilterLevel_popupmenu', 'Filter level', DisplayBox,...
                 @FilterLevel_popupmenu_Callback, {'Weak'; 'Moderate'; 'Strong'});
             
-            [GUI, CutoffFr, text_handles{25}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'LowCutoffFr_Edit'; 'HightCutoffFr_Edit'}, 'Cutoff Frequency:', 'Hz', DisplayBox, {@LowHightCutoffFr_Edit; @LowHightCutoffFr_Edit}, '', []);
+            [GUI, CutoffFr, text_handles{26}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'LowCutoffFr_Edit'; 'HightCutoffFr_Edit'}, 'Cutoff Frequency:', 'Hz', DisplayBox, {@LowHightCutoffFr_Edit; @LowHightCutoffFr_Edit}, {'', ''}, []);
             set_default_filter_level_user_data();
             
             uix.Empty('Parent', DisplayBox);
@@ -1069,16 +1082,16 @@ end
             %             %             uix.Empty('Parent', tempBox1);
             
             % ---------------------------------------------------
-            [GUI, textBox{26}, text_handles{26}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinRhythmsRange_Edit'; 'MaxRhythmsRange_Edit'}, 'Rhythms range:', 'h:min:sec', DisplayBox, {@MinMaxRhythmsRange_Edit_Callback; @MinMaxRhythmsRange_Edit_Callback}, '', []);
+            [GUI, textBox{27}, text_handles{27}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinRhythmsRange_Edit'; 'MaxRhythmsRange_Edit'}, 'Rhythms range:', 'h:min:sec', DisplayBox, {@MinMaxRhythmsRange_Edit_Callback; @MinMaxRhythmsRange_Edit_Callback}, {'Min'; 'Max'}, []);            
             
             RhythmsHBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
-            text_handles{27} = uicontrol('Style', 'text', 'Parent', RhythmsHBox, 'String', 'Rhythms', 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
+            text_handles{28} = uicontrol('Style', 'text', 'Parent', RhythmsHBox, 'String', 'Rhythms', 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
             GUI.RhythmsListbox = uicontrol('Style', 'ListBox', 'Parent', RhythmsHBox, 'Callback', @Rhythms_listbox_Callback, 'FontSize', DATA.SmallFontSize, 'Tag', 'RhythmsList');
             
             
             uix.Empty('Parent', DisplayBox);
             
-            GUI.FilterLevelBox = textBox{24};
+            GUI.FilterLevelBox = textBox{25};
             GUI.CutoffFrBox = CutoffFr;
             
             GUI.FilterLevelBox.Visible = 'off';
@@ -1103,7 +1116,7 @@ end
                 set(textBox{i}, 'Widths', field_size);
             end
             
-            set(textBox{23}, 'Widths', field_size);
+            set(textBox{24}, 'Widths', field_size);
             set(tempBox, 'Widths', [-1 -1 -1 -1]);
             set(tempBox1, 'Widths', [-1 -1 -1 -1]);
             
@@ -1112,7 +1125,7 @@ end
             else
                 field_size = [max_extent_control, 140, -1];
             end
-            set(textBox{24}, 'Widths', field_size);
+            set(textBox{25}, 'Widths', field_size);
             
             if DATA.SmallScreen
                 field_size = [max_extent_control, 56, 5, 53, 1];
@@ -1134,7 +1147,7 @@ end
                 field_size = [max_extent_control, 66, 5, 63, 1, -1];
             end
             set(CutoffFr, 'Widths', field_size);
-            set(textBox{26}, 'Widths', field_size);
+            set(textBox{27}, 'Widths', field_size);
             
             if DATA.SmallScreen
                 set(RhythmsHBox, 'Widths', [max_extent_control 120]);
@@ -1268,17 +1281,17 @@ end
         %         set( TempBox, 'Widths', field_size  );
     end
 %%
-    function [GUI, TempBox, uicontrol_handle] = createGUISingleEditLine(GUI, gui_struct, field_name, string_field_name, field_units, box_container, callback_function, tag, user_data)
+    function [GUI, TempBox, uicontrol_handle] = createGUISingleEditLine(GUI, gui_struct, field_name, string_field_name, field_units, box_container, callback_function, tag, user_data, FontSize)
         
         TempBox = uix.HBox( 'Parent', box_container, 'Spacing', DATA.Spacing);
-        uicontrol_handle = uicontrol( 'Style', 'text', 'Parent', TempBox, 'String', string_field_name, 'FontSize', DATA.BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.(gui_struct).(field_name) = uicontrol( 'Style', 'edit', 'Parent', TempBox, 'Callback', callback_function, 'FontSize', DATA.BigFontSize, 'Tag', tag, 'UserData', user_data);
+        uicontrol_handle = uicontrol( 'Style', 'text', 'Parent', TempBox, 'String', string_field_name, 'FontSize', FontSize, 'HorizontalAlignment', 'left');
+        GUI.(gui_struct).(field_name) = uicontrol( 'Style', 'edit', 'Parent', TempBox, 'Callback', callback_function, 'FontSize', FontSize, 'Tag', tag, 'UserData', user_data);
         uix.Empty( 'Parent', TempBox );
         if ~isempty(strfind(field_units, 'micro')) % https://unicode-table.com/en/
             field_units = strrep(field_units, 'micro', '');
             field_units = [sprintf('\x3bc') field_units];
         end
-        uicontrol( 'Style', 'text', 'Parent', TempBox, 'String', field_units, 'FontSize', DATA.BigFontSize, 'HorizontalAlignment', 'left');
+        uicontrol( 'Style', 'text', 'Parent', TempBox, 'String', field_units, 'FontSize', FontSize, 'HorizontalAlignment', 'left');
         %         set( TempBox, 'Widths', field_size  );
     end
 %%
@@ -1286,9 +1299,9 @@ end
         
         TempBox = uix.HBox( 'Parent', box_container, 'Spacing', DATA.Spacing);
         uicontrol_handle = uicontrol( 'Style', 'text', 'Parent', TempBox, 'String', string_field_name, 'FontSize', DATA.BigFontSize, 'HorizontalAlignment', 'left');
-        GUI.(gui_struct).(field_name{1}) = uicontrol( 'Style', 'edit', 'Parent', TempBox, 'Callback', callback_function{1}, 'FontSize', DATA.BigFontSize, 'Tag', tag, 'UserData', user_data);
+        GUI.(gui_struct).(field_name{1}) = uicontrol( 'Style', 'edit', 'Parent', TempBox, 'Callback', callback_function{1}, 'FontSize', DATA.BigFontSize, 'Tag', tag{1}, 'UserData', user_data);
         uicontrol( 'Style', 'text', 'Parent', TempBox, 'String', '-', 'FontSize', DATA.BigFontSize);
-        GUI.(gui_struct).(field_name{2}) = uicontrol( 'Style', 'edit', 'Parent', TempBox, 'Callback', callback_function{2}, 'FontSize', DATA.BigFontSize, 'Tag', tag, 'UserData', user_data);
+        GUI.(gui_struct).(field_name{2}) = uicontrol( 'Style', 'edit', 'Parent', TempBox, 'Callback', callback_function{2}, 'FontSize', DATA.BigFontSize, 'Tag', tag{2}, 'UserData', user_data);
         
         uix.Empty( 'Parent', TempBox );
         
@@ -1611,6 +1624,8 @@ end
                                         if isvalid(waitbar_handle)
                                             close(waitbar_handle);
                                         end
+%                                         GUI.Rhythms_handle.Enable = 'on';
+                                        GUI.Rhythms_handle.Enable = 'inactive';
                                         return;
                                     catch e
                                         clean_gui_low_part();
@@ -1771,6 +1786,9 @@ end
                     xlabel(GUI.ECG_Axes, 'Time (h:min:sec)');
                     ylabel(GUI.ECG_Axes, 'ECG (mV)');
                     hold(GUI.ECG_Axes, 'on');
+                    
+                    GUI.Rhythms_handle.Enable = 'inactive';
+%                     GUI.Rhythms_handle.Enable = 'on';
                     
                     GUI.hT = text(0, 0, 'Test', 'Parent', GUI.ECG_Axes);
                 else
@@ -2163,8 +2181,9 @@ end
         if isfield(GUI, 'rhythms_win')
             delete(GUI.rhythms_win);
             GUI = rmfield(GUI, 'rhythms_win');
-            DATA.rhythms_win_num = 0;
+%             DATA.rhythms_win_num = 0;
         end
+        DATA.rhythms_win_num = 0;
         
         if isfield(GUI, 'RhythmsHandle_AllDataAxes')
             delete(GUI.RhythmsHandle_AllDataAxes);
@@ -2746,6 +2765,9 @@ end
                 end
             end
         end
+    end
+%%
+    function NotchFilter_popupmenu_Callback(~, ~)
     end
 %%
     function Peaks_Window_edit_Callback(src, ~)
@@ -3333,6 +3355,12 @@ end
             GUI.pebm_intervalsData = cell(1, ch_num);
             GUI.pebm_wavesData = cell(1, ch_num);
             
+            GUI.Rhythms_handle.Enable = 'inactive';
+%             GUI.Rhythms_handle.Enable = 'on';
+            
+            GUI.BandpassFilter_checkbox.Value = 1;
+            GUI.GUIConfig.NotchFilter_popupmenu.Value = 1;
+            
             try
                 RunAndPlotPeakDetector();
             catch e
@@ -3638,8 +3666,9 @@ end
     end
 %%
     function reset_rhythm_button()
-        GUI.Rhythms_handle.String = 'Rhythms';
-        GUI.Rhythms_handle.BackgroundColor = [52 204 255]/255;
+        %         GUI.Rhythms_handle.String = 'Rhythms';
+        %         GUI.Rhythms_handle.BackgroundColor = [52 204 255]/255;
+        
         try
             GUI.hT.Visible = 'off';
         catch
@@ -3648,8 +3677,8 @@ end
 %%
     function update_rhythm_button(r_m_num)
         rhythm_name = DATA.Rhythms_Type{r_m_num};
-        GUI.Rhythms_handle.String = (rhythm_name);
-        GUI.Rhythms_handle.BackgroundColor = DATA.rhythms_color{r_m_num};
+        %         GUI.Rhythms_handle.String = (rhythm_name);
+        %         GUI.Rhythms_handle.BackgroundColor = DATA.rhythms_color{r_m_num};
         
         hP = get(GUI.ECG_Axes, 'CurrentPoint');
         GUI.hT.Visible = 'on';
@@ -4912,7 +4941,7 @@ end
         
         if ~isequal(results_folder_name, 0)
             DIRS.analyzedDataDirectory = results_folder_name;
-            [~, ~, ExtensionFileName] = fileparts(filename);
+            [~, filename_no_ext, ExtensionFileName] = fileparts(filename);
             ExtensionFileName = ExtensionFileName(2:end);
             EXT = ExtensionFileName;
             
@@ -4955,10 +4984,12 @@ end
                 %
                 %                 mhrv.wfdb.wrann([results_folder_name filename_noExt], 'atr', int64(Rhythms_annotations_for_wfdb*DATA.Fs), 'fs', DATA.Fs, 'aux', rhythms_class_for_wfdb);
             else
-                h_e = errordlg('Please, choose only *.mat, *.txt, *.atr or *.qrs file .', 'Input Error');
+                h_e = errordlg('Please, choose only *.mat or *.txt file.', 'Input Error'); % , *.atr or *.qrs
                 setLogo(h_e, 'M1');
                 return;
             end
+            set(GUI.GUIRecord.RhythmsFileName_text, 'String', filename);
+            DATA.Rhythms_file_name = [results_folder_name, filename_no_ext];
         end
     end
 %%
@@ -5234,6 +5265,174 @@ end
         %                     pebm_wintervals_table.Properties.DimensionNames = {'Fiducials Points', 'Data'};
     end
 %%
+    function [ExtensionFileName, PathName, was_return] = LoadRhythmsFile(Rhythms_FileName, PathName)
+        
+        [~, RhythmsFileName, ExtensionFileName] = fileparts(Rhythms_FileName);
+        ExtensionFileName = ExtensionFileName(2:end);
+        %         EXT = ExtensionFileName;
+        %         DIRS.analyzedDataDirectory = PathName;
+        was_return = 0;
+        if isfield(DATA, 'Rhythms_file_name') && ~isempty(DATA.Rhythms_file_name)
+            if strcmp(DATA.Rhythms_file_name, [PathName, RhythmsFileName])
+                choice = questdlg(['The file "' RhythmsFileName '" already loaded. Do you want to open the same rhythm file?'], ...
+                    'Same Rhythm file', 'Open', 'Cancel', 'Cancel');
+                
+                switch choice
+                    case 'Open'                        
+                    case 'Cancel'
+                        was_return = 1;
+                        return;
+                end
+            end
+        end
+       
+        DATA.Rhythms_file_name = [PathName, RhythmsFileName];
+        
+        if strcmpi(ExtensionFileName, 'mat')
+            
+            RhythmsAnnotations = load([PathName Rhythms_FileName]);
+            RhythmsAnnotations_field_names = fieldnames(RhythmsAnnotations);
+            
+            RhythmsAnnotations_Data = [];
+            type = [];
+            
+            for i = 1 : length(RhythmsAnnotations_field_names)
+                if ~isempty(regexpi(RhythmsAnnotations_field_names{i}, 'rhythms'))
+                    RhythmsAnnotations_Data = RhythmsAnnotations.(RhythmsAnnotations_field_names{i});
+                elseif ~isempty(regexpi(RhythmsAnnotations_field_names{i}, 'class'))
+                    RhythmsClass = RhythmsAnnotations.(RhythmsAnnotations_field_names{i});
+                elseif ~isempty(regexpi(RhythmsAnnotations_field_names{i}, 'type'))
+                    type = RhythmsAnnotations.(RhythmsAnnotations_field_names{i});
+                end
+            end
+            if ~isempty(RhythmsAnnotations_Data) && strcmpi(type, 'rhythms annotation')
+                DATA_RhythmsAnnotations_Data = RhythmsAnnotations_Data;
+            else
+                h_e = errordlg('Please, choose the Rhythms Annotations File.', 'Input Error');
+                setLogo(h_e, 'M1');
+                return;
+            end
+            if ~isempty(RhythmsClass)
+                DATA_RhythmsClass = RhythmsClass;
+            end
+        elseif strcmpi(ExtensionFileName, 'txt')
+            
+            file_name = [PathName Rhythms_FileName];
+            fileID = fopen(file_name);
+            if fileID ~= -1
+                
+                rhythms_data = textscan(fileID, '%f %f %s', 'Delimiter', '\t', 'HeaderLines', 7);
+                
+                frewind(fileID);
+                
+                tline1 = fgetl(fileID);
+                tline2 = fgetl(fileID);
+                tline3 = fgetl(fileID);
+                tline4 = fgetl(fileID);
+                tline5 = fgetl(fileID);
+                tline6 = fgetl(fileID);
+                tline7 = fgetl(fileID);
+                %                     tline3 = fgetl(fileID);
+                type_line = strsplit(tline2, ': ');
+                type_line2= strsplit(tline7, '\t');
+                %                     source_line = strsplit(tline3, ': ');
+                
+                if strcmp(tline1, '---') && strcmp(type_line{1}, 'type') && strcmp(type_line{2}, 'rhythms annotation') && ...
+                   strcmp(tline5, '---') && strcmp(type_line2{1}, 'Beginning') && strcmp(type_line2{2}, 'End') && strcmp(type_line2{3}, 'Class')
+                    
+                    if ~isempty(rhythms_data{1}) && ~isempty(rhythms_data{2}) && ~isempty(rhythms_data{3})
+                        DATA_RhythmsAnnotations_Data = [cell2mat(rhythms_data(1)) cell2mat(rhythms_data(2))];
+                        class = rhythms_data(3);
+                        DATA_RhythmsClass = class{1};
+                    else
+                        DATA_RhythmsAnnotations_Data = [0 0];                        
+                        DATA_RhythmsClass = {'AB'};
+%                         h_e = errordlg('Please, choose the Rhythms Annotations File.', 'Input Error');
+%                         setLogo(h_e, 'M1');
+%                         return;
+                    end
+                else
+                    h_e = errordlg('Please, choose the right format for Rhythms Annotations File.', 'Input Error');
+                    setLogo(h_e, 'M1');
+                    return;
+                end
+                fclose(fileID);
+            else
+                return;
+            end
+            %             elseif strcmpi(ExtensionFileName, 'atr') || strcmpi(ExtensionFileName, 'qrs')
+            %                 [rhythms_data, class] = mhrv.wfdb.rdann([PathName RhythmsFileName], ExtensionFileName);
+            %                 rhythms_data = double(rhythms_data)/DATA.Fs;
+            %                 DATA_RhythmsAnnotations_Data = [rhythms_data(1:2:end), rhythms_data(2:2:end)];
+            %                 DATA_RhythmsClass = class(1:2:end);
+        else
+            h_e = errordlg('Please, choose only *.mat, *.txt, *.qrs or *.atr file.', 'Input Error');
+            setLogo(h_e, 'M1');
+            return;
+        end
+        
+        set(GUI.GUIRecord.RhythmsFileName_text, 'String', Rhythms_FileName);
+        
+        GUI.GUIRecord.Annotation_popupmenu.Value = 3;
+        Annotation_popupmenu_Callback();
+        
+        if isfield(DATA, 'rhythms_win_num') && DATA.rhythms_win_num           
+            rhythms_keys = DATA.Rhythms_Map.keys;
+            keys_num = length(rhythms_keys);    
+            rhythms_keys_str = cellfun(@num2str, rhythms_keys, 'UniformOutput', false);        
+            temp_rhythms_map = containers.Map(rhythms_keys_str, zeros(1, keys_num));
+        else
+            DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
+            GUI.RhythmsListbox.String = '';
+            GUI.RhythmsListbox.UserData = [];
+            GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
+            GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
+            GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
+            GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
+            
+            temp_rhythms_map = containers.Map;
+        end
+        
+        waitbar_handle = waitbar(0, 'Loadind', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+        
+        rhythms_annotations_num = length(DATA_RhythmsClass);
+        
+        Rhythms_Data = [];
+        RhythmsClass = {};
+                
+        for i = 1 : rhythms_annotations_num
+            [is_member, class_ind] = ismember(DATA_RhythmsClass{i}, DATA.Rhythms_Type);
+            if ~is_member
+                class_ind = 1;
+            end
+            if DATA_RhythmsAnnotations_Data(i, 1) ~= DATA_RhythmsAnnotations_Data(i, 2)                                              
+%                 if ~isKey(DATA.Rhythms_Map, DATA_RhythmsAnnotations_Data(i, 1))
+                 if ~isKey(temp_rhythms_map, num2str(DATA_RhythmsAnnotations_Data(i, 1)))
+                    waitbar(i / rhythms_annotations_num, waitbar_handle, ['Ploting rhythms for ' num2str(i) ' annotation']); setLogo(waitbar_handle, 'M1');
+                    
+                    rhythms_struct.rhythm_type = DATA_RhythmsClass{i};
+                    rhythms_struct.rhythm_range = DATA_RhythmsAnnotations_Data(i, :);
+                    rhythms_struct.rhythm_class_ind = class_ind;
+                    rhythms_struct.rhythm_plotted = false;
+                    
+                    DATA.Rhythms_Map(DATA_RhythmsAnnotations_Data(i, 1)) = rhythms_struct;                                        
+                    DATA.rhythms_win_num = DATA.rhythms_win_num + 1;
+                    
+                    Rhythms_Data = [Rhythms_Data; DATA_RhythmsAnnotations_Data(i, :)];
+                    RhythmsClass = [RhythmsClass; DATA_RhythmsClass{i}];
+                    
+                    Update_Rhythms_ListBox(rhythms_struct);
+                end
+            end
+        end
+        redraw_rhythms_rect();
+        if isvalid(waitbar_handle)
+            close(waitbar_handle);
+        end        
+        plot_rhythms_line(Rhythms_Data, RhythmsClass);
+        Update_Rhytms_Stat_Table();
+    end
+%%
     function OpenRhythms_Callback(~, ~)
         persistent DIRS;
         persistent EXT;
@@ -5257,163 +5456,171 @@ end
         
         if ~isequal(Rhythms_FileName, 0)
             
-            [~, RhythmsFileName, ExtensionFileName] = fileparts(Rhythms_FileName);
-            ExtensionFileName = ExtensionFileName(2:end);
-            EXT = ExtensionFileName;
-            DIRS.analyzedDataDirectory = PathName;
+            %             [~, RhythmsFileName, ExtensionFileName] = fileparts(Rhythms_FileName);
+            %             ExtensionFileName = ExtensionFileName(2:end);
+            %             EXT = ExtensionFileName;
+            %             DIRS.analyzedDataDirectory = PathName;
             
-            if isfield(DATA, 'Rhythms_file_name') && ~isempty(DATA.Rhythms_file_name)
-                if strcmp(DATA.Rhythms_file_name, [PathName, RhythmsFileName])
-                    choice = questdlg(['The file "' RhythmsFileName '" already loaded. Do you want to open the same rhythm file?'], ...
-                        'Same Rhythm file', 'Open', 'Cancel', 'Cancel');
-                    
-                    switch choice
-                        case 'Open'
-                        case 'Cancel'
-                            return;
-                    end
-                end
+            [ExtensionFileName, PathName, was_return] = LoadRhythmsFile(Rhythms_FileName, PathName);
+            if ~was_return
+                EXT = ExtensionFileName;
+                DIRS.analyzedDataDirectory = PathName;
             end
+            %-----------------------------------------------------
             
-            DATA.Rhythms_file_name = [PathName, RhythmsFileName];
-            
-            if strcmpi(ExtensionFileName, 'mat')
-                
-                RhythmsAnnotations = load([PathName Rhythms_FileName]);
-                RhythmsAnnotations_field_names = fieldnames(RhythmsAnnotations);
-                
-                RhythmsAnnotations_Data = [];
-                type = [];
-                
-                for i = 1 : length(RhythmsAnnotations_field_names)
-                    if ~isempty(regexpi(RhythmsAnnotations_field_names{i}, 'rhythms'))
-                        RhythmsAnnotations_Data = RhythmsAnnotations.(RhythmsAnnotations_field_names{i});
-                    elseif ~isempty(regexpi(RhythmsAnnotations_field_names{i}, 'class'))
-                        RhythmsClass = RhythmsAnnotations.(RhythmsAnnotations_field_names{i});
-                    elseif ~isempty(regexpi(RhythmsAnnotations_field_names{i}, 'type'))
-                        type = RhythmsAnnotations.(RhythmsAnnotations_field_names{i});
-                    end
-                end
-                if ~isempty(RhythmsAnnotations_Data) && strcmpi(type, 'rhythms annotation')
-                    DATA_RhythmsAnnotations_Data = RhythmsAnnotations_Data;
-                else
-                    h_e = errordlg('Please, choose the Rhythms Annotations File.', 'Input Error');
-                    setLogo(h_e, 'M1');
-                    return;
-                end
-                if ~isempty(RhythmsClass)
-                    DATA_RhythmsClass = RhythmsClass;
-                end
-            elseif strcmpi(ExtensionFileName, 'txt')
-                
-                file_name = [PathName Rhythms_FileName];
-                fileID = fopen(file_name);
-                if fileID ~= -1
-                    
-                    rhythms_data = textscan(fileID, '%f %f %s', 'Delimiter', '\t', 'HeaderLines', 7);
-                    
-                    frewind(fileID);
-                    
-                    tline1 = fgetl(fileID);
-                    tline2 = fgetl(fileID);
-                    %                     tline3 = fgetl(fileID);
-                    type_line = strsplit(tline2, ': ');
-                    %                     source_line = strsplit(tline3, ': ');
-                    
-                    if strcmp(tline1, '---') && strcmp(type_line{1}, 'type') && strcmp(type_line{2}, 'rhythms annotation')
-                        %                         if strcmp(source_line{1}, 'source file') && strcmp(source_line{2}, 'rhythms annotation')
-                        %                         end
-                        if ~isempty(rhythms_data{1}) && ~isempty(rhythms_data{2}) && ~isempty(rhythms_data{3})
-                            DATA_RhythmsAnnotations_Data = [cell2mat(rhythms_data(1)) cell2mat(rhythms_data(2))];
-                            class = rhythms_data(3);
-                            DATA_RhythmsClass = class{1};
-                        else
-                            h_e = errordlg('Please, choose the Rhythms Annotations File.', 'Input Error');
-                            setLogo(h_e, 'M1');
-                            return;
-                        end
-                    else
-                        h_e = errordlg('Please, choose the right format for Rhythms Annotations File.', 'Input Error');
-                        setLogo(h_e, 'M1');
-                        return;
-                    end
-                    fclose(fileID);
-                else
-                    return;
-                end
-                %             elseif strcmpi(ExtensionFileName, 'atr') || strcmpi(ExtensionFileName, 'qrs')
-                %                 [rhythms_data, class] = mhrv.wfdb.rdann([PathName RhythmsFileName], ExtensionFileName);
-                %                 rhythms_data = double(rhythms_data)/DATA.Fs;
-                %                 DATA_RhythmsAnnotations_Data = [rhythms_data(1:2:end), rhythms_data(2:2:end)];
-                %                 DATA_RhythmsClass = class(1:2:end);
-            else
-                h_e = errordlg('Please, choose only *.mat, *.txt, *.qrs or *.atr file.', 'Input Error');
-                setLogo(h_e, 'M1');
-                return;
-            end
-            
-            set(GUI.GUIRecord.RhythmsFileName_text, 'String', Rhythms_FileName);
-            
-            GUI.GUIRecord.Annotation_popupmenu.Value = 3;
-            Annotation_popupmenu_Callback();
-            
-            if isfield(DATA, 'rhythms_win_num') && DATA.rhythms_win_num
-                rhythms_win_num = DATA.rhythms_win_num + 1;
-            else
-                rhythms_win_num = 1;
-                DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
-                GUI.RhythmsListbox.String = '';
-                GUI.RhythmsListbox.UserData = [];
-                GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
-                GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
-                GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
-                GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
-            end
-            
-            waitbar_handle = waitbar(0, 'Loadind', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
-            
-            rhythms_annotations_num = length(DATA_RhythmsClass);
-            
-            Rhythms_Data = [];
-            RhythmsClass = {};
-            
-            for i = 1 : rhythms_annotations_num
-                [is_member, class_ind] = ismember(DATA_RhythmsClass{i}, DATA.Rhythms_Type);
-                if ~is_member
-                    class_ind = 1;
-                end
-                if DATA_RhythmsAnnotations_Data(i, 1) ~= DATA_RhythmsAnnotations_Data(i, 2)
-                    
-                    if ~isKey(DATA.Rhythms_Map, DATA_RhythmsAnnotations_Data(i, 1))
-                        waitbar(i / rhythms_annotations_num, waitbar_handle, ['Ploting rhythms for ' num2str(i) ' annotation']); setLogo(waitbar_handle, 'M1');
-                        
-                        rhythms_struct.rhythm_type = DATA_RhythmsClass{i};
-                        rhythms_struct.rhythm_range = DATA_RhythmsAnnotations_Data(i, :);
-                        rhythms_struct.rhythm_class_ind = class_ind;
-                        rhythms_struct.rhythm_plotted = false;
-                        
-                        DATA.Rhythms_Map(DATA_RhythmsAnnotations_Data(i, 1)) = rhythms_struct;
-                        
-                        %                     plot_rhythms_rect(DATA_RhythmsAnnotations_Data(i, :), rhythms_win_num, class_ind);
-                        DATA.rhythms_win_num = DATA.rhythms_win_num + 1;
-                        %                     rhythms_win_num = rhythms_win_num + 1;
-                        %                     Update_Rhytms_Stat_Table(DATA_RhythmsAnnotations_Data(i, :));
-                        
-                        Rhythms_Data = [Rhythms_Data; DATA_RhythmsAnnotations_Data(i, :)];
-                        RhythmsClass = [RhythmsClass; DATA_RhythmsClass{i}];
-                        
-                        Update_Rhythms_ListBox(rhythms_struct);
-                    end
-                end
-            end
-            redraw_rhythms_rect();
-            if isvalid(waitbar_handle)
-                close(waitbar_handle);
-            end
-            %             plot_rhythms_line(DATA_RhythmsAnnotations_Data, DATA_RhythmsClass);
-            plot_rhythms_line(Rhythms_Data, RhythmsClass);
-            Update_Rhytms_Stat_Table();
+            %             if isfield(DATA, 'Rhythms_file_name') && ~isempty(DATA.Rhythms_file_name)
+            %                 if strcmp(DATA.Rhythms_file_name, [PathName, RhythmsFileName])
+            %                     choice = questdlg(['The file "' RhythmsFileName '" already loaded. Do you want to open the same rhythm file?'], ...
+            %                         'Same Rhythm file', 'Open', 'Cancel', 'Cancel');
+            %
+            %                     switch choice
+            %                         case 'Open'
+            %                         case 'Cancel'
+            %                             return;
+            %                     end
+            %                 end
+            %             end
+            %
+            %             DATA.Rhythms_file_name = [PathName, RhythmsFileName];
+            %
+            %             if strcmpi(ExtensionFileName, 'mat')
+            %
+            %                 RhythmsAnnotations = load([PathName Rhythms_FileName]);
+            %                 RhythmsAnnotations_field_names = fieldnames(RhythmsAnnotations);
+            %
+            %                 RhythmsAnnotations_Data = [];
+            %                 type = [];
+            %
+            %                 for i = 1 : length(RhythmsAnnotations_field_names)
+            %                     if ~isempty(regexpi(RhythmsAnnotations_field_names{i}, 'rhythms'))
+            %                         RhythmsAnnotations_Data = RhythmsAnnotations.(RhythmsAnnotations_field_names{i});
+            %                     elseif ~isempty(regexpi(RhythmsAnnotations_field_names{i}, 'class'))
+            %                         RhythmsClass = RhythmsAnnotations.(RhythmsAnnotations_field_names{i});
+            %                     elseif ~isempty(regexpi(RhythmsAnnotations_field_names{i}, 'type'))
+            %                         type = RhythmsAnnotations.(RhythmsAnnotations_field_names{i});
+            %                     end
+            %                 end
+            %                 if ~isempty(RhythmsAnnotations_Data) && strcmpi(type, 'rhythms annotation')
+            %                     DATA_RhythmsAnnotations_Data = RhythmsAnnotations_Data;
+            %                 else
+            %                     h_e = errordlg('Please, choose the Rhythms Annotations File.', 'Input Error');
+            %                     setLogo(h_e, 'M1');
+            %                     return;
+            %                 end
+            %                 if ~isempty(RhythmsClass)
+            %                     DATA_RhythmsClass = RhythmsClass;
+            %                 end
+            %             elseif strcmpi(ExtensionFileName, 'txt')
+            %
+            %                 file_name = [PathName Rhythms_FileName];
+            %                 fileID = fopen(file_name);
+            %                 if fileID ~= -1
+            %
+            %                     rhythms_data = textscan(fileID, '%f %f %s', 'Delimiter', '\t', 'HeaderLines', 7);
+            %
+            %                     frewind(fileID);
+            %
+            %                     tline1 = fgetl(fileID);
+            %                     tline2 = fgetl(fileID);
+            %                     %                     tline3 = fgetl(fileID);
+            %                     type_line = strsplit(tline2, ': ');
+            %                     %                     source_line = strsplit(tline3, ': ');
+            %
+            %                     if strcmp(tline1, '---') && strcmp(type_line{1}, 'type') && strcmp(type_line{2}, 'rhythms annotation')
+            %                         %                         if strcmp(source_line{1}, 'source file') && strcmp(source_line{2}, 'rhythms annotation')
+            %                         %                         end
+            %                         if ~isempty(rhythms_data{1}) && ~isempty(rhythms_data{2}) && ~isempty(rhythms_data{3})
+            %                             DATA_RhythmsAnnotations_Data = [cell2mat(rhythms_data(1)) cell2mat(rhythms_data(2))];
+            %                             class = rhythms_data(3);
+            %                             DATA_RhythmsClass = class{1};
+            %                         else
+            %                             h_e = errordlg('Please, choose the Rhythms Annotations File.', 'Input Error');
+            %                             setLogo(h_e, 'M1');
+            %                             return;
+            %                         end
+            %                     else
+            %                         h_e = errordlg('Please, choose the right format for Rhythms Annotations File.', 'Input Error');
+            %                         setLogo(h_e, 'M1');
+            %                         return;
+            %                     end
+            %                     fclose(fileID);
+            %                 else
+            %                     return;
+            %                 end
+            %                 %             elseif strcmpi(ExtensionFileName, 'atr') || strcmpi(ExtensionFileName, 'qrs')
+            %                 %                 [rhythms_data, class] = mhrv.wfdb.rdann([PathName RhythmsFileName], ExtensionFileName);
+            %                 %                 rhythms_data = double(rhythms_data)/DATA.Fs;
+            %                 %                 DATA_RhythmsAnnotations_Data = [rhythms_data(1:2:end), rhythms_data(2:2:end)];
+            %                 %                 DATA_RhythmsClass = class(1:2:end);
+            %             else
+            %                 h_e = errordlg('Please, choose only *.mat, *.txt, *.qrs or *.atr file.', 'Input Error');
+            %                 setLogo(h_e, 'M1');
+            %                 return;
+            %             end
+            %
+            %             set(GUI.GUIRecord.RhythmsFileName_text, 'String', Rhythms_FileName);
+            %
+            %             GUI.GUIRecord.Annotation_popupmenu.Value = 3;
+            %             Annotation_popupmenu_Callback();
+            %
+            %             if isfield(DATA, 'rhythms_win_num') && DATA.rhythms_win_num
+            %                 rhythms_win_num = DATA.rhythms_win_num + 1;
+            %             else
+            %                 rhythms_win_num = 1;
+            %                 DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
+            %                 GUI.RhythmsListbox.String = '';
+            %                 GUI.RhythmsListbox.UserData = [];
+            %                 GUI.GUIDisplay.MinRhythmsRange_Edit.String = '';
+            %                 GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
+            %                 GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
+            %                 GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
+            %             end
+            %
+            %             waitbar_handle = waitbar(0, 'Loadind', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+            %
+            %             rhythms_annotations_num = length(DATA_RhythmsClass);
+            %
+            %             Rhythms_Data = [];
+            %             RhythmsClass = {};
+            %
+            %             for i = 1 : rhythms_annotations_num
+            %                 [is_member, class_ind] = ismember(DATA_RhythmsClass{i}, DATA.Rhythms_Type);
+            %                 if ~is_member
+            %                     class_ind = 1;
+            %                 end
+            %                 if DATA_RhythmsAnnotations_Data(i, 1) ~= DATA_RhythmsAnnotations_Data(i, 2)
+            %
+            %                     if ~isKey(DATA.Rhythms_Map, DATA_RhythmsAnnotations_Data(i, 1))
+            %                         waitbar(i / rhythms_annotations_num, waitbar_handle, ['Ploting rhythms for ' num2str(i) ' annotation']); setLogo(waitbar_handle, 'M1');
+            %
+            %                         rhythms_struct.rhythm_type = DATA_RhythmsClass{i};
+            %                         rhythms_struct.rhythm_range = DATA_RhythmsAnnotations_Data(i, :);
+            %                         rhythms_struct.rhythm_class_ind = class_ind;
+            %                         rhythms_struct.rhythm_plotted = false;
+            %
+            %                         DATA.Rhythms_Map(DATA_RhythmsAnnotations_Data(i, 1)) = rhythms_struct;
+            %
+            %                         %                     plot_rhythms_rect(DATA_RhythmsAnnotations_Data(i, :), rhythms_win_num, class_ind);
+            %                         DATA.rhythms_win_num = DATA.rhythms_win_num + 1;
+            %                         %                     rhythms_win_num = rhythms_win_num + 1;
+            %                         %                     Update_Rhytms_Stat_Table(DATA_RhythmsAnnotations_Data(i, :));
+            %
+            %                         Rhythms_Data = [Rhythms_Data; DATA_RhythmsAnnotations_Data(i, :)];
+            %                         RhythmsClass = [RhythmsClass; DATA_RhythmsClass{i}];
+            %
+            %                         Update_Rhythms_ListBox(rhythms_struct);
+            %                     end
+            %                 end
+            %             end
+            %             redraw_rhythms_rect();
+            %             if isvalid(waitbar_handle)
+            %                 close(waitbar_handle);
+            %             end
+            %             %             plot_rhythms_line(DATA_RhythmsAnnotations_Data, DATA_RhythmsClass);
+            %             plot_rhythms_line(Rhythms_Data, RhythmsClass);
+            %             Update_Rhytms_Stat_Table();
         end
+        %-----------------------------------------------------
     end
 %%
     function OpenDataQuality_Callback(~, ~)
@@ -5909,7 +6116,7 @@ end
                     rr_time = DATA.rr_time_filtered;
                 else
                     try
-                        [rr_time, rr_data, ~] = calc_rr();
+                        [rr_time, rr_data, ~] = calc_rr();                                                                                                
                     catch e
                         h_e = errordlg(['TrendHR_checkbox_Callback, calc_rr error:' e.message], 'Detrending error'); setLogo(h_e, 'M1');
                     end
@@ -6042,30 +6249,32 @@ end
 %     end
 %%
     function ShowRawSignal_checkbox_Callback(src, ~)
-        [~, ch_num] = size(DATA.sig);
-        if isfield(GUI, 'RawChannelsData_handle')
-            if src.Value
-                set(GUI.RawChannelsData_handle, 'Visible', 'on');
-                for i = 1 : ch_num
-                    if GUI.ChannelsTable.Data{i, 2}
-                        GUI.RawChannelsData_handle(i).Visible = 'on';
-                    else
-                        GUI.RawChannelsData_handle(i).Visible = 'off';
+        if isfield(DATA, 'sig')
+            [~, ch_num] = size(DATA.sig);
+            if isfield(GUI, 'RawChannelsData_handle')
+                if src.Value
+                    set(GUI.RawChannelsData_handle, 'Visible', 'on');
+                    for i = 1 : ch_num
+                        if GUI.ChannelsTable.Data{i, 2}
+                            GUI.RawChannelsData_handle(i).Visible = 'on';
+                        else
+                            GUI.RawChannelsData_handle(i).Visible = 'off';
+                        end
+                        set_fid_visible(i);
                     end
-                    set_fid_visible(i);
+                else
+                    set(GUI.RawChannelsData_handle, 'Visible', 'off');
+                    for i = 1 : ch_num
+                        set_fid_visible(i);
+                    end
                 end
-            else
-                set(GUI.RawChannelsData_handle, 'Visible', 'off');
-                for i = 1 : ch_num
-                    set_fid_visible(i);
+                if isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)
+                    xdata = get(GUI.red_rect_handle, 'XData');
+                    setECGYLim(xdata(1), xdata(2));
                 end
-            end
-            if isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)
-                xdata = get(GUI.red_rect_handle, 'XData');
-                setECGYLim(xdata(1), xdata(2));
-            end
-            if ch_num == 12
-                set12LEDYLim();
+                if ch_num == 12
+                    set12LEDYLim();
+                end
             end
         end
     end
@@ -6815,13 +7024,22 @@ end
         end
     end
 %%
-    function MinMaxRhythmsRange_Edit_Callback(~, ~)
+    function MinMaxRhythmsRange_Edit_Callback(src, ~)
+        
+%         src.Tag
         
         min_r_str = GUI.GUIDisplay.MinRhythmsRange_Edit.String;
         max_r_str = GUI.GUIDisplay.MaxRhythmsRange_Edit.String;
         
-        [min_r_d, isInputNumeric_min] = calcDurationInSeconds(GUI.GUIDisplay.MinRhythmsRange_Edit, min_r_str, GUI.GUIDisplay.MinRhythmsRange_Edit.UserData);
-        [max_r_d, isInputNumeric_max] = calcDurationInSeconds(GUI.GUIDisplay.MaxRhythmsRange_Edit, max_r_str, GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData);
+        if strcmp(src.Tag, 'Min')
+            [min_r_d, isInputNumeric_min] = calcDurationInSeconds(GUI.GUIDisplay.MinRhythmsRange_Edit, min_r_str, GUI.GUIDisplay.MinRhythmsRange_Edit.UserData);
+            isInputNumeric_max = 1;
+            max_r_d = GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData;
+        elseif strcmp(src.Tag, 'Max')
+            isInputNumeric_min = 1;
+            min_r_d = GUI.GUIDisplay.MinRhythmsRange_Edit.UserData;
+            [max_r_d, isInputNumeric_max] = calcDurationInSeconds(GUI.GUIDisplay.MaxRhythmsRange_Edit, max_r_str, GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData);
+        end
         
         if isInputNumeric_min && isInputNumeric_max
             
@@ -6897,8 +7115,8 @@ end
             
             if winLength > 0
                 
-                waitbar_handle = waitbar(0, 'Calculating pebm biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
-                                
+                %                 waitbar_handle = waitbar(0, 'Calculating pebm biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+                
                 ecg_time_1 = DATA.tm(DATA.tm >= 0 & DATA.tm < winStart, :);
                 time_samples = numel(ecg_time_1);
                 
@@ -6923,10 +7141,50 @@ end
                 Q = cell(1, ch_num);
                 S = cell(1, ch_num);
                 T = cell(1, ch_num);
-                
+                % ----------------------------------
+                waitbar_handle = waitbar(0, 'Filtering data', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+                disp('Bandpath and notch filters:');
+                tic
+                bpecg_data = DATA.sig;
+                if GUI.BandpassFilter_checkbox.Value || GUI.GUIConfig.NotchFilter_popupmenu.Value ~= 1
+                    
+                    if_bpf = GUI.BandpassFilter_checkbox.Value;
+                    if_notch = GUI.GUIConfig.NotchFilter_popupmenu.Value ~= 1;
+                    
+                    try
+                        if GUI.GUIConfig.NotchFilter_popupmenu.Value ~= 1
+                            notch_fr = str2num(GUI.GUIConfig.NotchFilter_popupmenu.String{GUI.GUIConfig.NotchFilter_popupmenu.Value});
+                        else
+                            notch_fr = [];
+                        end
+                        
+                        temp_data_file = [tempdir 'temp_signal.mat'];
+                            save(temp_data_file, 'bpecg_data');
+
+                            waitbar_handle = waitbar(1/2, waitbar_handle, 'Calculating bandpass filter', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
+                            bpecg_data = preprocesing_pecg(temp_data_file, DATA.Fs, notch_fr, [tempdir 'temp_preprocecg.mat'], [if_bpf if_notch]);
+                            if isempty(bpecg_data)
+                                h_e = errordlg('Filtering error in fiducials calc', 'Input Error'); setLogo(h_e, 'M1');
+                                return;
+                            end
+                    catch e
+                        disp(e.message);
+                    end
+                    delete([tempdir 'temp_signal.mat']);
+                    if exist([tempdir 'temp_preprocecg.mat'], 'file')
+                        delete([tempdir 'temp_preprocecg.mat']);
+                    end
+                end
+                toc
+                if isvalid(waitbar_handle)
+                    close(waitbar_handle);
+                end
+                % ----------------------------------
+                waitbar_handle = waitbar(0, 'Calculating pebm biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
                 for i = 1 : ch_num
-                    if isempty(GUI.PQRST_position{1, i}) && GUI.ChannelsTable.Data{i, 4}
-                        data = DATA.sig(:, i);
+                    if GUI.ChannelsTable.Data{i, 4} %% isempty(GUI.PQRST_position{1, i}) && 
+                        %                         data = DATA.sig(:, i);
+                        data = bpecg_data(:, i);
                         data = data(time >= winStart & time < winStart+winLength, :);
                         % ----------------------------------
                         if i == 1
@@ -6941,7 +7199,9 @@ end
                         else
                             peak_detector = GUI.GUIRecord.PeakDetector_popupmenu.String{GUI.GUIRecord.PeakDetector_popupmenu.Value};
                             try
-                                qrs_2 = calc_r_peaks_from_ch(DATA, data, peak_detector);
+%                                 qrs_2 = calc_r_peaks_from_ch(DATA, data, peak_detector);
+                                ch_data = DATA.sig(:, i);
+                                qrs_2 = calc_r_peaks_from_ch(DATA, ch_data(time >= winStart & time < winStart+winLength, :), peak_detector);
                                 %                                 qrs_temp = [qrs_temp qrs_2];
                             catch e
                                 h_e = errordlg(['Fiducials points error: ' e.message], 'Input Error'); setLogo(h_e, 'M1');
@@ -6953,18 +7213,27 @@ end
                             parent_axes = GUI.ECG_Axes_Array(i);
                         end
                         % ----------------------------------
-                        disp(['wavedet_3D: channel ', num2str(i)]);
+                                                
+%                       disp(['wavedet_3D: channel ', num2str(i)]);
                         waitbar_handle = waitbar(i/(1+ch_num*2), waitbar_handle, ['Calculating pebm biomarkers ch. ' num2str(i)], 'Name', 'Working on it...'); setLogo(waitbar_handle, 'M1');
-                        tic
+%                         tic
                         heasig = struct("nsig", 1, "freq", DATA.Fs, "nsamp", length(data));
-                        [GUI.PQRST_position{i}, ~, ~] = wavedet_3D(data, qrs_2, heasig, []);
-                        toc
+                        [GUI.PQRST_position{i}, ~, ~] = wavedet_3D(data, qrs_2, heasig, []); % Enter pre-filtered data according to user
+%                         toc
                         [P{i}, Q{i}, S{i}, T{i}, ~] = return_PQST(GUI.PQRST_position{1, i}, time_samples);
                         
-                        GUI.P_linehandle(i) = line(DATA.tm(P{i}), GUI.RawChannelsData_handle(i).YData(P{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.9290, 0.6940, 0.1250], 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250], 'Tag', 'P');
-                        GUI.Q_linehandle(i) = line(DATA.tm(Q{i}), GUI.RawChannelsData_handle(i).YData(Q{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.4940, 0.1840, 0.5560], 'MarkerEdgeColor', [0.4940, 0.1840, 0.5560], 'Tag', 'Q');
-                        GUI.S_linehandle(i) = line(DATA.tm(S{i}), GUI.RawChannelsData_handle(i).YData(S{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.8500, 0.3250, 0.0980], 'MarkerEdgeColor', [0.8500, 0.3250, 0.0980], 'Tag', 'S');
-                        GUI.T_linehandle(i) = line(DATA.tm(T{i}), GUI.RawChannelsData_handle(i).YData(T{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.6350, 0.0780, 0.1840], 'MarkerEdgeColor', [0.6350, 0.0780, 0.1840], 'Tag', 'T');
+                        if ~isempty(P{i})
+                            GUI.P_linehandle(i) = line(DATA.tm(P{i}), GUI.RawChannelsData_handle(i).YData(P{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.9290, 0.6940, 0.1250], 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250], 'Tag', 'P');
+                        end
+                        if ~isempty(Q{i})
+                            GUI.Q_linehandle(i) = line(DATA.tm(Q{i}), GUI.RawChannelsData_handle(i).YData(Q{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.4940, 0.1840, 0.5560], 'MarkerEdgeColor', [0.4940, 0.1840, 0.5560], 'Tag', 'Q');
+                        end
+                        if ~isempty(S{i})
+                            GUI.S_linehandle(i) = line(DATA.tm(S{i}), GUI.RawChannelsData_handle(i).YData(S{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.8500, 0.3250, 0.0980], 'MarkerEdgeColor', [0.8500, 0.3250, 0.0980], 'Tag', 'S');
+                        end
+                        if ~isempty(T{i})
+                            GUI.T_linehandle(i) = line(DATA.tm(T{i}), GUI.RawChannelsData_handle(i).YData(T{i}), 'Parent', parent_axes, 'LineStyle', 'none', 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', [0.6350, 0.0780, 0.1840], 'MarkerEdgeColor', [0.6350, 0.0780, 0.1840], 'Tag', 'T');
+                        end
                         
                         if ~all(isnan(P{i}))
                             GUI.P_checkbox.Value = 1;
@@ -7073,16 +7342,18 @@ end
                 for i = 1 : ch_num
                     if ~isempty(GUI.PQRST_position{1, i}) && GUI.ChannelsTable.Data{i, 4} && isempty(GUI.pebm_intervals_stat{1, i})
                         pqrst_pos_4saving{1, end+1} = GUI.PQRST_position{1, i};
-                        signal_4saving(:, end+1) = DATA.sig(:, i);
+                        %                         signal_4saving(:, end+1) = DATA.sig(:, i);
+                        signal_4saving(:, end+1) = bpecg_data(:, i);
                         ind2calc(i) = j;
                         j = j + 1;
                     end
                 end
                 
+                tic
                 if ~isempty(signal_4saving)
                     try
                         disp('save temp files:');
-                        tic
+                        
                         
                         signal_file = [tempdir 'temp.mat'];
                         %                     signal = DATA.sig;
@@ -7093,7 +7364,7 @@ end
                         %                     fud_points = GUI.PQRST_position;
                         fud_points = pqrst_pos_4saving;
                         save(fid_file, 'fud_points');
-                        toc
+                        
                     catch e
                         disp(e.message);
                     end
@@ -7102,17 +7373,18 @@ end
                     clear signal_4saving;
                     
                     disp('Intervals:');
-                    tic
+                    
                     [pebm_intervals_stat_curr, pebm_intervals_table_curr] = biomarkers_intervals(signal_file, DATA.Fs, fid_file, 1);
-                    toc
+                    
                     
                     disp('waves:');
-                    tic
+                    
                     [pebm_waves_stat_curr, pebm_waves_table_curr] = biomarkers_waves(signal_file, DATA.Fs, fid_file, 1);
-                    toc
+                    
                     
                     delete([tempdir 'temp.mat']);
                     delete([tempdir 'fid_temp.mat']);
+                    toc
                     %------------------------------------------
                     GUI.SaveFiducialsStat.Enable = 'on';
                     
@@ -7175,9 +7447,9 @@ end
                     %                     end
                     %                 end % for ch_num
                     
-%                     if isvalid(waitbar_handle)
-%                         close(waitbar_handle);
-%                     end
+                    %                     if isvalid(waitbar_handle)
+                    %                         close(waitbar_handle);
+                    %                     end
                     %------------------------------------------------------------------
                     try
                         GUI.DurationTable.RowName = pebm_intervalsRowsNames;
@@ -7209,7 +7481,7 @@ end
                             GUI.AmplitudeTable.ColumnName = ColumnName;
                         end
                     catch
-                    end                    
+                    end
                     %------------------------------------------
                 end
                 if isvalid(waitbar_handle)
@@ -7400,6 +7672,64 @@ end
                 create_fiducials_filt_handles(1, ch_marker_size, parent_axes);
                 set_fid_visible(1);
             end
+        end
+    end
+%%
+    function ArNet2_pushbutton_Callback(~, ~)
+        
+        %         command = ['"' executable_file '" ' '"' 'D:\Alexandra\OneDrive - Technion\Work\ARNet2 Shany\qrs.mat' '" ' '"' 'D:\Alexandra\OneDrive - Technion\Work\ARNet2 Shany\' '"' ];
+        waitbar_handle = waitbar(0, 'Calculating ArNet2', 'Name', 'ArNet2'); setLogo(waitbar_handle, 'M1');
+        try
+            [rr_time, rr_data, ~] = calc_rr();
+            
+            if DATA.PlotHR == 1
+                rr_data = 60./ rr_data;
+            end
+                        
+            disp('save temp files:');
+            waitbar_handle = waitbar(1/2, waitbar_handle, 'Saving ArNet2 temp files'); setLogo(waitbar_handle, 'M1');
+            tic
+            peaks_file = [tempdir 'temp_4arnet2.mat'];
+            save(peaks_file, 'rr_data', 'rr_time');
+            toc
+        catch e
+            disp(e.message);
+        end
+        
+        exe_file_path = fileparts(mfilename('fullpath'));
+        executable_file = [exe_file_path filesep 'ArNet2' filesep 'ArNet2_for_physiozoo.exe'];
+        
+        tempdir_name = tempdir;
+        
+        if exist(executable_file, 'file')
+        
+            command = ['"' executable_file '" ' '"' peaks_file '" ' '"' tempdir_name(1:end-1) '"'];
+            
+            waitbar_handle = waitbar(2/2, waitbar_handle, 'Calc ArNet2 rhythms'); setLogo(waitbar_handle, 'M1');
+            tic
+            [res, out, error] = jsystem(command, 'noshell');
+            toc            
+            if(res ~= 0)
+                disp(['jsystem error: ', error, '\n', out]);            
+            else
+                rhythms_file_name = [tempdir_name '\' 'rhythms.txt'];
+            end
+                        
+            delete(peaks_file);
+            if ~exist(rhythms_file_name, 'file')
+                h_e = errordlg('ArNet2_pushbutton_Callback error: The exe file was not executed', 'Input Error'); setLogo(h_e, 'M1');
+            else
+                LoadRhythmsFile('rhythms.txt', tempdir_name);
+                try
+                    delete(rhythms_file_name);
+                catch
+                end
+                SaveRhythms_Callback();
+%                 set(GUI.GUIRecord.RhythmsFileName_text, 'String', Rhythms_FileName);
+            end
+        end
+        if isvalid(waitbar_handle)
+            close(waitbar_handle);
         end
     end
 %%

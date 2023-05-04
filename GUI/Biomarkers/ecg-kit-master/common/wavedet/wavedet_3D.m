@@ -1197,4 +1197,4 @@ end
 if exist('fid','var') && fid > 2
     fclose(fid);  % JBOLEA 11MAY2010
 end
-disp(position);
+% disp(position);

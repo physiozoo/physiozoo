@@ -16,10 +16,14 @@ for i = 1 : length(axes_array)
             set(af, 'Name', fig_title, 'NumberTitle', 'off');
             new_axes = copyobj(axes_handle, af);
             
-            fig_title = strrep(fig_title, '_', ' $\space$ ');
-            fig_title = strrep(fig_title, '2', '$_2$');
+%             fig_title = strrep(fig_title, '_', ' $\space $');
+%             fig_title = strrep(fig_title, '_', ' $\_$ ');
+            fig_title = strrep(fig_title, '_', '\_');
+%             fig_title = strrep(fig_title, '2', '$_2$');
+            fig_title = strrep(fig_title, '2', '_2');
             
-            title(new_axes, fig_title, 'Interpreter', 'Latex');
+%             title(new_axes, fig_title, 'Interpreter', 'Latex');
+            title(new_axes, fig_title, 'FontWeight', 'normal');
             
             if ~isempty(new_axes.Children)
                 file_name = [export_path_name DATA.FiguresNames{i}];
@@ -34,7 +38,7 @@ for i = 1 : length(axes_array)
                 if strcmpi(ext, 'fig')
                     savefig(af, file_name, 'compact');
                 elseif ~strcmpi(ext, 'fig')
-                    mhrv.util.fig_print( af, file_name, 'output_format', ext, 'font_size', 16, 'width', 20);
+                    mhrv.util.fig_print( af, file_name, 'output_format', ext, 'font_size', 16, 'width', 20, 'font_weight', 'normal');
                 end                
             end
             close(af);

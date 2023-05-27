@@ -94,12 +94,12 @@ displayEndOfDemoMessage('');
         DATA.filter_spo2_range = true;
         %         DATA.filter_spo2_median = false;
         DATA.filter_spo2_block = false;
-        DATA.filter_spo2_dfilter = false;
+        DATA.filter_spo2_dfilter = false;                
         
         %         DEBUGGING MODE - Small Screen
-        %         DATA.screensize = [0 0 1250 800];
+%         DATA.screensize = [0 0 1250 800];
         
-        DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
+        DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];                
         
         if DATA.screensize(3) < 1535 %1920 %1080
             DATA.BigFontSize = 9;
@@ -138,6 +138,8 @@ displayEndOfDemoMessage('');
         
         DATA.ox_filt_data_color = [0 1 0]; % [0 1 0] % [0.9290 0.6940 0.1250] % 0 0.75 0.75
         DATA.ox_fd_lw = 1.25;
+        
+        DATA.font_name = 'Times New Roman';
         
     end % createData
 %-------------------------------------------------------------------------%
@@ -657,7 +659,8 @@ displayEndOfDemoMessage('');
         GUI.DataLengthBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         a{4} = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'String', 'Time series length', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
         GUI.RecordLength_text = uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
-        uix.Empty( 'Parent', GUI.DataLengthBox );
+        uicontrol( 'Style', 'text', 'Parent', GUI.DataLengthBox, 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left', 'String', 'h:min:sec.msec');
+%         uix.Empty( 'Parent', GUI.DataLengthBox );
         
         GUI.MammalBox = uix.HBox( 'Parent', GUI.OptionsBox, 'Spacing', DATA.Spacing);
         a{5} = uicontrol( 'Style', 'text', 'Parent', GUI.MammalBox, 'String', 'Mammal', 'FontSize', SmallFontSize, 'HorizontalAlignment', 'left');
@@ -702,7 +705,7 @@ displayEndOfDemoMessage('');
         max_extent_control = calc_max_control_x_extend(a);
         field_size = [max_extent_control + 5, -1, 1];
         
-        set( GUI.DataLengthBox, 'Widths', field_size );
+%         set( GUI.DataLengthBox, 'Widths', field_size );
         
         if DATA.SmallScreen
             field_size = [max_extent_control + 5, -0.2, -0.35]; % -0.65, -0.35
@@ -729,6 +732,8 @@ displayEndOfDemoMessage('');
         set( GUI.ConfigFileNameBox, 'Widths', field_size );
         set( GUI.RecordNameBox, 'Widths',     field_size );
         set( GUI.DataQualityBox, 'Widths',    field_size );
+        
+        set( GUI.DataLengthBox, 'Widths', [max_extent_control + 5, popupmenu_position(3) + 15, -1] );
         
         set( GUI.FilteringBox, 'Widths', [max_extent_control + 5, popupmenu_position(3), 15,  -1] );
         
@@ -1713,13 +1718,14 @@ displayEndOfDemoMessage('');
 %%
     function plotAllData()
         ha = GUI.AllDataAxes;
+        ha.FontName = DATA.font_name;
+        
         if ~DATA.PlotHR  % == 0
             data =  DATA.rri;
         else
             data =  60 ./ DATA.rri;
         end
-        
-        
+                
         if strcmp(DATA.Integration, 'oximetry')
             data_color = DATA.ox_raw_data_color;
         else
@@ -1729,7 +1735,7 @@ displayEndOfDemoMessage('');
         GUI.all_data_handle = line(DATA.trr, data, 'Color', data_color, 'Parent', ha, 'Marker', '*', 'MarkerSize', 2, 'DisplayName', 'Hole time series'); % 'LineWidth', 1.5
         
         set(ha, 'XLim', [0 DATA.RRIntPage_Length]);
-        ha.TickLabelInterpreter = 'Latex';
+%         ha.TickLabelInterpreter = 'Latex';
         
         % PLot red rectangle
         %         my_ylim = get(ha, 'YLim');
@@ -1796,7 +1802,7 @@ displayEndOfDemoMessage('');
 %%
     function plotRawData()
         ha = GUI.RRDataAxes;
-        
+                        
         signal_time = DATA.trr;
         signal_data = DATA.rri;
         
@@ -1804,7 +1810,8 @@ displayEndOfDemoMessage('');
             case 'oximetry'
                 data =  signal_data;
                 data(end) = NaN;
-                yString = '$SpO_2(\%)$';
+%                 yString = '$SpO_2(\%)$';
+                yString = 'SpO_2 (%)';
                 color_data = create_color_array4oximetry();
                 %               GUI.raw_data_handle = patch(signal_time, data, color_data, 'EdgeColor', 'flat', 'LineWidth', 2.5, 'Parent', ha, 'DisplayName', 'Time series');
                 GUI.raw_data_handle = plot(ha, signal_time, data, 'Color', DATA.ox_raw_data_color, 'LineStyle', '-', 'LineWidth', DATA.ox_rd_lw, 'DisplayName', 'Time series');
@@ -1816,10 +1823,12 @@ displayEndOfDemoMessage('');
             otherwise
                 if ~DATA.PlotHR
                     data =  signal_data;
-                    yString = '$RR $\space$ (sec)$';
+%                     yString = '$RR $\space$ (sec)$';
+                    yString = 'RR (sec)';
                 else
                     data =  60 ./ signal_data;
-                    yString = '$HR $\space$ (BPM)$';
+%                     yString = '$HR $\space$ (BPM)$';
+                    yString = 'HR (BPM)';
                 end
                 GUI.raw_data_handle = plot(ha, signal_time, data, 'b-', 'LineWidth', 2, 'DisplayName', 'Time series');
                 GUI.filtered_handle = line(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected filtered time series', 'Parent', ha);
@@ -1834,20 +1843,21 @@ displayEndOfDemoMessage('');
         %             GUI.only_filtered_handle = line(ones(1, length(DATA.tnn))*NaN, ones(1, length(DATA.nni))*NaN, 'LineWidth', 1, 'Color', 'g', 'LineStyle', '-', 'DisplayName', 'Selected only filtered time series', 'Parent', ha);
         %         end
         
-        xlabel(ha, '$Time (h:min:sec)$', 'Interpreter', 'Latex');
-        ylabel(ha, yString, 'Interpreter', 'Latex');
-        ha.TickLabelInterpreter = 'Latex';
+%         xlabel(ha, '$Time (h:min:sec)$', 'Interpreter', 'Latex');
+        xlabel(ha, 'Time (h:min:sec)');
+        ylabel(ha, yString); % , 'Interpreter', 'Latex'
+%         ha.TickLabelInterpreter = 'Latex';
         
         if ~strcmp(DATA.Integration, 'oximetry')
-            DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal', 'Interpreter', 'Latex'); % , 'interpreter', 'latex'
+            DATA.legend_handle = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal'); % , 'interpreter', 'latex'
             if sum(ismember(properties(DATA.legend_handle), 'AutoUpdate'))
                 DATA.legend_handle.AutoUpdate = 'off';
                 DATA.legend_handle.Box = 'off';
             end
-            DATA.legend_handle.String = DATA.legend_handle.String(1:end-1);
+            DATA.legend_handle.String = DATA.legend_handle.String(1:end-1);            
             %             legend([GUI.raw_data_handle, GUI.filtered_handle], DATA.legend_handle.String(1 : end - 1));
         else
-            [DATA.legend_handle, legObj] = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal', 'Interpreter', 'Latex'); % , 'interpreter', 'latex'
+            [DATA.legend_handle, legObj] = legend(ha, 'show', 'Location', 'southeast', 'Orientation', 'horizontal'); % , 'interpreter', 'latex'
             if sum(ismember(properties(DATA.legend_handle), 'AutoUpdate'))
                 DATA.legend_handle.AutoUpdate = 'off';
                 DATA.legend_handle.Box = 'off';
@@ -1866,6 +1876,9 @@ displayEndOfDemoMessage('');
             
             %         https://www.mathworks.com/matlabcentral/answers/515053-legend-of-a-patch-object-with-a-line-in-the-center
         end
+        
+        DATA.legend_handle.FontName = DATA.font_name;
+        ha.FontName = DATA.font_name;
         
         set(ha, 'XLim', [DATA.firstSecond2Show, DATA.firstSecond2Show + DATA.MyWindowSize]);
         
@@ -2677,13 +2690,13 @@ displayEndOfDemoMessage('');
                     EnablePageUpDown();
                     
                     if isfield(GUI, 'RRDataAxes')
-                        %                         PathName = strrep(PathName, '\', '\\');
-                        PathName = strrep(PathName, '\', '$ \backslash $');
+                        PathName = strrep(PathName, '\', '\\');                        
+%                         PathName = strrep(PathName, '\', '$ \backslash $');
                         PathName = strrep(PathName, '_', '\_');
                         QRS_FileName_title = strrep(QRS_FileName, '_', '\_');
                         
                         TitleName = [PathName QRS_FileName_title] ;
-                        title(GUI.RRDataAxes, TitleName, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize, 'Interpreter', 'Latex');
+                        title(GUI.RRDataAxes, TitleName, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize, 'FontName', DATA.font_name); % , 'Interpreter', 'Latex'
                         
                         set(GUI.RecordName_text, 'String', QRS_FileName);
                     end
@@ -2867,6 +2880,7 @@ displayEndOfDemoMessage('');
             GUI.FourthAxes1.Visible = 'off';
         end
         box(GUI.FourthAxes1, 'off');
+        GUI.FourthAxes1.FontName = DATA.font_name;
         %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
     end
 %%
@@ -2889,6 +2903,8 @@ displayEndOfDemoMessage('');
         end
         box(GUI.FrequencyAxes1, 'off');
         box(GUI.FrequencyAxes2, 'off');
+        GUI.FrequencyAxes1.FontName = DATA.font_name;
+        GUI.FrequencyAxes2.FontName = DATA.font_name;
         %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
     end
 %%
@@ -2904,6 +2920,7 @@ displayEndOfDemoMessage('');
             GUI.TimeAxes1.Visible = 'off';
         end
         box(GUI.TimeAxes1, 'off');
+        GUI.TimeAxes1.FontName = DATA.font_name;
         %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
     end
 %%
@@ -2934,6 +2951,8 @@ displayEndOfDemoMessage('');
         end
         box(GUI.FifthAxes1, 'off' );
         box(GUI.FifthAxes2, 'off' );
+        GUI.FifthAxes1.FontName = DATA.font_name;
+        GUI.FifthAxes2.FontName = DATA.font_name;
         %         setAllowAxesZoom(DATA.zoom_handle, GUI.FifthAxes1, false);
     end
 %%
@@ -2947,6 +2966,7 @@ displayEndOfDemoMessage('');
             mhrv.plots.plot_hrv_time_hist(GUI.TimeAxes1, plot_data, 'clear', true);
         end
         box(GUI.TimeAxes1, 'off');
+        GUI.TimeAxes1.FontName = DATA.font_name;
         setAllowAxesZoom(DATA.zoom_handle, GUI.TimeAxes1, false);
     end
 %%
@@ -2962,9 +2982,18 @@ displayEndOfDemoMessage('');
         if ~isempty(plot_data)
             mhrv.plots.plot_hrv_freq_spectrum(GUI.FrequencyAxes1, plot_data, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
             mhrv.plots.plot_hrv_freq_beta(GUI.FrequencyAxes2, plot_data);
+            xlabel(GUI.FrequencyAxes2, 'log(Frequency (Hz))');
+            GUI.FrequencyAxes1.YLabel.String = strrep(GUI.FrequencyAxes1.YLabel.String, '^2', sprintf('\x00B2'));
+            GUI.FrequencyAxes2.YLabel.String = strrep(GUI.FrequencyAxes2.YLabel.String, '^2', sprintf('\x00B2'));
         end
         box(GUI.FrequencyAxes1, 'off');
         box(GUI.FrequencyAxes2, 'off');
+        GUI.FrequencyAxes1.FontName = DATA.font_name;
+        GUI.FrequencyAxes2.FontName = DATA.font_name;        
+        set(findobj(GUI.FrequencyAxes1.Children, 'Type', 'Text'), 'FontName', DATA.font_name);
+%         GUI.FrequencyAxes1.Title.Interpreter = 'Latex';
+%         GUI.FrequencyAxes1.XLabel.Interpreter = 'Latex';
+%         GUI.FrequencyAxes1.YLabel.Interpreter = 'Latex';
         setAllowAxesZoom(DATA.zoom_handle, GUI.FrequencyAxes2, false);
     end
 %%
@@ -2982,6 +3011,9 @@ displayEndOfDemoMessage('');
             mhrv.plots.plot_dfa_fn(GUI.NonLinearAxes1, plot_data.dfa);
             mhrv.plots.plot_mse(GUI.NonLinearAxes3, plot_data.mse);
             mhrv.plots.plot_poincare_ellipse(GUI.NonLinearAxes2, plot_data.poincare);
+            
+            GUI.NonLinearAxes1.XLabel.String = strrep(GUI.NonLinearAxes1.XLabel.String, '_2', sprintf('\x2082')); 
+            
         else
             if ~all(isnan(plot_data))
                 GUI.NonLinearAxes1.Visible = 'on';
@@ -2994,6 +3026,9 @@ displayEndOfDemoMessage('');
             box(GUI.NonLinearAxes1, 'off');
             box(GUI.NonLinearAxes2, 'off');
             box(GUI.NonLinearAxes3, 'off');
+            GUI.NonLinearAxes1.FontName = DATA.font_name;
+            GUI.NonLinearAxes2.FontName = DATA.font_name;
+            GUI.NonLinearAxes3.FontName = DATA.font_name;
             setAllowAxesZoom(DATA.zoom_handle, [GUI.NonLinearAxes1, GUI.NonLinearAxes2, GUI.NonLinearAxes3], false);
         catch
         end
@@ -3181,6 +3216,8 @@ displayEndOfDemoMessage('');
                     delete(DATA.legend_handle);
                 end
                 
+                RRDataAxes_title = GUI.RRDataAxes.Title.String;
+                
                 cla(GUI.RRDataAxes, 'reset');
                 cla(GUI.AllDataAxes, 'reset');
                 
@@ -3188,6 +3225,8 @@ displayEndOfDemoMessage('');
                 plotRawData();
                 setXAxesLim();
                 
+                title(GUI.RRDataAxes, RRDataAxes_title, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize, 'FontName', DATA.font_name); % , 'Interpreter', 'Latex'
+                                
                 DATA.YLimUpperAxes = setYAxesLim(GUI.RRDataAxes, GUI.AutoScaleYUpperAxes_checkbox, GUI.MinYLimitUpperAxes_Edit, GUI.MaxYLimitUpperAxes_Edit, DATA.YLimUpperAxes, DATA.AutoYLimitUpperAxes);
                 DATA.YLimLowAxes = setYAxesLim(GUI.AllDataAxes, GUI.AutoScaleYLowAxes_checkbox, GUI.MinYLimitLowAxes_Edit, GUI.MaxYLimitLowAxes_Edit, DATA.YLimLowAxes, DATA.AutoYLimitLowAxes);
                 
@@ -3209,7 +3248,8 @@ displayEndOfDemoMessage('');
                 set(GUI.MaxYLimitLowAxes_Edit, 'String', num2str(DATA.AutoYLimitLowAxes.RRMaxYLimit));
                 
                 set(GUI.WindowSize, 'String', calcDuration(DATA.MyWindowSize, 0));
-                set(GUI.RecordLength_text, 'String', [calcDuration(DATA.maxSignalLength, 1) '    h:min:sec.msec']);
+%                 set(GUI.RecordLength_text, 'String', [calcDuration(DATA.maxSignalLength, 1) '    h:min:sec.msec']);
+                set(GUI.RecordLength_text, 'String', calcDuration(DATA.maxSignalLength, 1));
                 %                 set(GUI.RR_or_HR_plot_button, 'Enable', 'on', 'Value', 0, 'String', 'Plot HR');
                 set(GUI.FirstSecond, 'String', calcDuration(DATA.firstSecond2Show, 0)); % , 'Enable', 'off'
                 set(GUI.RRIntPage_Length, 'String', calcDuration(DATA.RRIntPage_Length, 0));
@@ -3632,11 +3672,16 @@ displayEndOfDemoMessage('');
             set(GUI.MinYLimitUpperAxes_Edit, 'String', num2str(MinYLimit));
             set(GUI.MaxYLimitUpperAxes_Edit, 'String', num2str(MaxYLimit));
             
+            RRDataAxes_title = GUI.RRDataAxes.Title.String;
+            
             cla(GUI.RRDataAxes, 'reset');
             cla(GUI.AllDataAxes, 'reset');
             delete(DATA.legend_handle);
             plotAllData();
             plotRawData();
+            
+            title(GUI.RRDataAxes, RRDataAxes_title, 'FontWeight', 'normal', 'FontSize', DATA.SmallFontSize, 'FontName', DATA.font_name); %, 'Interpreter', 'Latex'
+            
             DetrendIfNeed_data_chunk();
             setXAxesLim();
             setAutoYAxisLimLowAxes(get(GUI.AllDataAxes, 'XLim'));
@@ -4498,7 +4543,7 @@ displayEndOfDemoMessage('');
                             setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
                             mhrv.plots.plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
-                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{1}], 'output_format', ext, 'title', figure_title(fig_name, 1));
+                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{1}], 'output_format', ext, 'title', figure_title(fig_name, 1), 'font_weight', 'normal');
                             close(af);
                         end
                         
@@ -4508,7 +4553,7 @@ displayEndOfDemoMessage('');
                                 setLogo(af, 'M2');
                                 set(af, 'Visible', 'off')
                                 mhrv.plots.plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
-                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{2}], 'output_format', ext, 'title', figure_title(fig_name, 2));
+                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{2}], 'output_format', ext, 'title', figure_title(fig_name, 2), 'font_weight', 'normal');
                                 close(af);
                             end
                             if DATA_Fig.export_figures(3) && yes_no(3)
@@ -4516,7 +4561,8 @@ displayEndOfDemoMessage('');
                                 setLogo(af, 'M2');
                                 set(af, 'Visible', 'off')
                                 mhrv.plots.plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
-                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{3}], 'output_format', ext, 'title', figure_title(fig_name, 3));
+                                xlabel(gca, 'log(Frequency (Hz))');
+                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{3}], 'output_format', ext, 'title', figure_title(fig_name, 3), 'font_weight', 'normal');
                                 close(af);
                             end
                         end
@@ -4527,7 +4573,7 @@ displayEndOfDemoMessage('');
                                 setLogo(af, 'M2');
                                 set(af, 'Visible', 'off')
                                 mhrv.plots.plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
-                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{4}], 'output_format', ext, 'title', figure_title(fig_name, 4));
+                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{4}], 'output_format', ext, 'title', figure_title(fig_name, 4), 'font_weight', 'normal');
                                 close(af);
                             end
                             if DATA_Fig.export_figures(5) && yes_no(5)
@@ -4535,7 +4581,7 @@ displayEndOfDemoMessage('');
                                 setLogo(af, 'M2');
                                 set(af, 'Visible', 'off')
                                 mhrv.plots.plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
-                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{5}], 'output_format', ext, 'title', figure_title(fig_name, 5));
+                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{5}], 'output_format', ext, 'title', figure_title(fig_name, 5), 'font_weight', 'normal');
                                 close(af);
                             end
                             if DATA_Fig.export_figures(6) && yes_no(6)
@@ -4543,7 +4589,7 @@ displayEndOfDemoMessage('');
                                 setLogo(af, 'M2');
                                 set(af, 'Visible', 'off')
                                 mhrv.plots.plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
-                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{6}], 'output_format', ext, 'title', figure_title(fig_name, 6));
+                                mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{6}], 'output_format', ext, 'title', figure_title(fig_name, 6), 'font_weight', 'normal');
                                 close(af);
                             end
                         end
@@ -4552,7 +4598,7 @@ displayEndOfDemoMessage('');
                             setLogo(af, 'M2');
                             set(af, 'Visible', 'off')
                             plot_rr_time_series(gca);
-                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{7}], 'output_format', ext, 'title', figure_title(fig_name, 7));
+                            mhrv.util.fig_print( af, [export_path_name, DATA.FiguresNames{7}], 'output_format', ext, 'title', figure_title(fig_name, 7), 'font_weight', 'normal');
                             close(af);
                         end
                     elseif strcmpi(ext, 'fig')
@@ -4561,14 +4607,16 @@ displayEndOfDemoMessage('');
                             setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{1}], 'NumberTitle', 'off');
                             mhrv.plots.plot_hrv_time_hist(gca, DATA.TimeStat.PlotData{DATA.active_window}, 'clear', true);
-                            title(gca, figure_title(fig_name, 1), 'Interpreter', 'Latex');
-                            set(gca, 'TickLabelInterpreter', 'Latex');
-                            xl = get(gca, 'XLabel');
-                            xl.Interpreter = 'Latex';
-                            yl = get(gca, 'YLabel');
-                            yl.Interpreter = 'Latex';
-                            %                             lh = get(gca, 'Legend');
-                            %                             lh.Interpreter = 'Latex';
+                            title(gca, figure_title(fig_name, 1), 'FontName', DATA.font_name, 'FontWeight', 'normal'); % , 'Interpreter', 'Latex'
+                            set(gca, 'FontName', DATA.font_name);
+%                             set(gca, 'TickLabelInterpreter', 'Latex');
+%                             xl = get(gca, 'XLabel');
+%                             xl.Interpreter = 'Latex';
+%                             yl = get(gca, 'YLabel');
+%                             yl.Interpreter = 'Latex';
+                            lh = get(gca, 'Legend');
+                            lh.FontName = DATA.font_name;
+%                             lh.Interpreter = 'Latex';
                             savefig(af, [export_path_name, DATA.FiguresNames{1}], 'compact');
                             close(af);
                         end
@@ -4578,16 +4626,22 @@ displayEndOfDemoMessage('');
                                 setLogo(af, 'M2');
                                 set(af, 'Name', [fig_name, DATA.FiguresNames{2}], 'NumberTitle', 'off');
                                 mhrv.plots.plot_hrv_freq_spectrum(gca, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale);
-                                title(gca, figure_title(fig_name, 2), 'Interpreter', 'Latex');
-                                set(gca, 'TickLabelInterpreter', 'Latex');
-                                xl = get(gca, 'XLabel');
-                                xl.Interpreter = 'Latex';
-                                yl = get(gca, 'YLabel');
+                                title(gca, figure_title(fig_name, 2), 'FontName', DATA.font_name, 'FontWeight', 'normal');
+                                set(gca, 'FontName', DATA.font_name);
+%                                 set(gca, 'TickLabelInterpreter', 'Latex');
+%                                 xl = get(gca, 'XLabel');
+%                                 xl.Interpreter = 'Latex';
+%                                 yl = get(gca, 'YLabel');
                                 %                                 yl.String = ['$' yl.String '$'];
-                                yl.String = 'PSD ( $\frac {ms^2} {Hz}$)';
-                                yl.Interpreter = 'Latex';
-                                %                                 lh = get(gca, 'Legend');
-                                %                                 lh.Interpreter = 'Latex';
+%                                 yl.String = 'PSD ( $\frac {ms^2} {Hz}$)';
+%                                 yl.String = 'PSD (ms^2/Hz)';
+%                                 yl.Interpreter = 'Latex';
+                                lh = get(gca, 'Legend');
+%                                 lh.Interpreter = 'Latex';
+                                lh.FontName = DATA.font_name;
+                                fC = get(gca, 'Children');
+                                set(findobj(fC, 'Type', 'Text'), 'FontName', DATA.font_name);
+                                
                                 savefig(af, [export_path_name, DATA.FiguresNames{2}], 'compact');
                                 close(af);
                             end
@@ -4596,15 +4650,18 @@ displayEndOfDemoMessage('');
                                 setLogo(af, 'M2');
                                 set(af, 'Name', [fig_name, DATA.FiguresNames{3}], 'NumberTitle', 'off');
                                 mhrv.plots.plot_hrv_freq_beta(gca, DATA.FrStat.PlotData{DATA.active_window});
-                                title(gca, figure_title(fig_name, 3), 'Interpreter', 'Latex');
-                                set(gca, 'TickLabelInterpreter', 'latex');
-                                xl = get(gca, 'XLabel');
-                                xl.Interpreter = 'latex';
-                                yl = get(gca, 'YLabel');
-                                yl.String = 'log(PSD [ $\frac {ms^2} {Hz}$])';
-                                yl.Interpreter = 'latex';
-                                %                                 lh = get(gca, 'Legend');
-                                %                                 lh.Interprseter = 'latex';
+                                title(gca, figure_title(fig_name, 3), 'FontName', DATA.font_name, 'FontWeight', 'normal');
+                                set(gca, 'FontName', DATA.font_name);
+%                                 set(gca, 'TickLabelInterpreter', 'latex');
+                                xlabel(gca, 'log(Frequency (Hz))');
+%                                 xl = get(gca, 'XLabel');
+%                                 xl.Interpreter = 'latex';
+%                                 yl = get(gca, 'YLabel');
+%                                 yl.String = 'log(PSD [ $\frac {ms^2} {Hz}$])';
+%                                 yl.String = 'log(PSD [ms^2/Hz])';
+%                                 yl.Interpreter = 'latex';
+                                lh = get(gca, 'Legend');
+                                lh.FontName = DATA.font_name;
                                 savefig(af, [export_path_name, DATA.FiguresNames{3}], 'compact');
                                 close(af);
                             end
@@ -4615,15 +4672,16 @@ displayEndOfDemoMessage('');
                                 setLogo(af, 'M2');
                                 set(af, 'Name', [fig_name, DATA.FiguresNames{4}], 'NumberTitle', 'off');
                                 mhrv.plots.plot_dfa_fn(gca, DATA.NonLinStat.PlotData{DATA.active_window}.dfa);
-                                title(gca, figure_title(fig_name, 4), 'Interpreter', 'Latex');
-                                set(gca, 'TickLabelInterpreter', 'latex');
-                                xl = get(gca, 'XLabel');
-                                xl.String = ['$' xl.String '$'];
-                                xl.Interpreter = 'latex';
-                                yl = get(gca, 'YLabel');
-                                yl.Interpreter = 'latex';
-                                %                                 lh = get(gca, 'Legend');
-                                %                                 lh.Interpreter = 'latex';
+                                title(gca, figure_title(fig_name, 4), 'FontName', DATA.font_name, 'FontWeight', 'normal');
+                                set(gca, 'FontName', DATA.font_name);
+%                                 set(gca, 'TickLabelInterpreter', 'latex');
+%                                 xl = get(gca, 'XLabel');
+%                                 xl.String = ['$' xl.String '$'];
+%                                 xl.Interpreter = 'latex';
+%                                 yl = get(gca, 'YLabel');
+%                                 yl.Interpreter = 'latex';
+                                lh = get(gca, 'Legend');
+                                lh.FontName = DATA.font_name;
                                 savefig(af, [export_path_name, DATA.FiguresNames{4}], 'compact');
                                 close(af);
                             end
@@ -4632,14 +4690,15 @@ displayEndOfDemoMessage('');
                                 setLogo(af, 'M2');
                                 set(af, 'Name', [fig_name, DATA.FiguresNames{5}], 'NumberTitle', 'off');
                                 mhrv.plots.plot_mse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.mse);
-                                title(gca, figure_title(fig_name, 5), 'Interpreter', 'Latex');
-                                set(gca, 'TickLabelInterpreter', 'latex');
-                                xl = get(gca, 'XLabel');
-                                xl.Interpreter = 'latex';
-                                yl = get(gca, 'YLabel');
-                                yl.Interpreter = 'latex';
-                                %                                 lh = get(gca, 'Legend');
-                                %                                 lh.Interpreter = 'latex';
+                                title(gca, figure_title(fig_name, 5), 'FontName', DATA.font_name, 'FontWeight', 'normal');
+                                set(gca, 'FontName', DATA.font_name);
+%                                 set(gca, 'TickLabelInterpreter', 'latex');
+%                                 xl = get(gca, 'XLabel');
+%                                 xl.Interpreter = 'latex';
+%                                 yl = get(gca, 'YLabel');
+%                                 yl.Interpreter = 'latex';
+                                lh = get(gca, 'Legend');
+                                lh.FontName = DATA.font_name;
                                 savefig(af, [export_path_name, DATA.FiguresNames{5}], 'compact');
                                 close(af);
                             end
@@ -4648,14 +4707,15 @@ displayEndOfDemoMessage('');
                                 setLogo(af, 'M2');
                                 set(af, 'Name', [fig_name, DATA.FiguresNames{6}], 'NumberTitle', 'off');
                                 mhrv.plots.plot_poincare_ellipse(gca, DATA.NonLinStat.PlotData{DATA.active_window}.poincare);
-                                title(gca, figure_title(fig_name, 6), 'Interpreter', 'Latex');
-                                set(gca, 'TickLabelInterpreter', 'latex');
-                                xl = get(gca, 'XLabel');
-                                xl.Interpreter = 'latex';
-                                yl = get(gca, 'YLabel');
-                                yl.Interpreter = 'latex';
-                                %                                 lh = get(gca, 'Legend');
-                                %                                 lh.Interpreter = 'latex';
+                                title(gca, figure_title(fig_name, 6), 'FontName', DATA.font_name, 'FontWeight', 'normal');
+                                set(gca, 'FontName', DATA.font_name);
+%                                 set(gca, 'TickLabelInterpreter', 'latex');
+%                                 xl = get(gca, 'XLabel');
+%                                 xl.Interpreter = 'latex';
+%                                 yl = get(gca, 'YLabel');
+%                                 yl.Interpreter = 'latex';
+                                lh = get(gca, 'Legend');
+                                lh.FontName = DATA.font_name;
                                 savefig(af, [export_path_name, DATA.FiguresNames{6}], 'compact');
                                 close(af);
                             end
@@ -4665,14 +4725,15 @@ displayEndOfDemoMessage('');
                             setLogo(af, 'M2');
                             set(af, 'Name', [fig_name, DATA.FiguresNames{7}], 'NumberTitle', 'off');
                             plot_rr_time_series(gca);
-                            title(gca, figure_title(fig_name, 7), 'Interpreter', 'Latex');
-                            set(gca, 'TickLabelInterpreter', 'latex');
-                            xl = get(gca, 'XLabel');
-                            xl.Interpreter = 'latex';
-                            yl = get(gca, 'YLabel');
-                            yl.Interpreter = 'latex';
-                            %                             lh = get(gca, 'Legend');
-                            %                             lh.Interpreter = 'latex';
+                            title(gca, figure_title(fig_name, 7), 'FontName', DATA.font_name, 'FontWeight', 'normal');
+                            set(gca, 'FontName', DATA.font_name);
+%                             set(gca, 'TickLabelInterpreter', 'latex');
+%                             xl = get(gca, 'XLabel');
+%                             xl.Interpreter = 'latex';
+%                             yl = get(gca, 'YLabel');
+%                             yl.Interpreter = 'latex';
+                            lh = get(gca, 'Legend');
+                            lh.FontName = DATA.font_name;
                             savefig(af, [export_path_name, DATA.FiguresNames{7}], 'compact');
                             close(af);
                         end
@@ -4705,6 +4766,8 @@ displayEndOfDemoMessage('');
 %%
     function plot_rr_time_series(ax)
         
+        ax.FontName = DATA.font_name;
+        
         XData_active_window = get(GUI.rect_handle(DATA.active_window), 'XData');
         
         win_indexes = find(DATA.trr >= XData_active_window(1) & DATA.trr <= XData_active_window(3));
@@ -4721,13 +4784,14 @@ displayEndOfDemoMessage('');
             plot(ax, DATA.tnn(filt_win_indexes), 60 ./ DATA.nni(filt_win_indexes), 'g-', 'LineWidth', 1);
             yString = 'HR (BPM)';
         end
-        xlabel(ax, 'Time (h:min:sec)', 'Interpreter', 'Latex');
-        ylabel(ax, yString, 'Interpreter', 'Latex');
+        xlabel(ax, 'Time (h:min:sec)'); % , 'Interpreter', 'Latex'
+        ylabel(ax, yString); % , 'Interpreter', 'Latex'
+%         set(ax, 'TickLabelInterpreter', 'Latex');
         
         set(ax, 'XLim', [XData_active_window(1), XData_active_window(3)]);
         setAxesXTicks(ax);
         
-        legend_handle = legend(ax, 'show', 'Location', 'southeast', 'Orientation', 'horizontal');
+        legend_handle = legend(ax, 'show', 'Location', 'southeast', 'Orientation', 'horizontal'); %, 'Interpreter', 'Latex'
         
         legend_handle.String{1} = 'Time series';
         
@@ -4737,6 +4801,8 @@ displayEndOfDemoMessage('');
         else
             legend_handle.String{2} = 'Selected filtered time series';
         end
+        
+        legend_handle.FontName = DATA.font_name;
     end
 %%
     function onSavePSDAsFile( filename )
@@ -5629,10 +5695,14 @@ displayEndOfDemoMessage('');
         if ~strcmp(DATA.Integration, 'oximetry')
             if ~isempty(DATA.FrStat.PlotData{DATA.active_window})
                 mhrv.plots.plot_hrv_freq_spectrum(GUI.FrequencyAxes1, DATA.FrStat.PlotData{DATA.active_window}, 'detailed_legend', false, 'yscale', DATA.freq_yscale, 'clear', true);
+                set(findobj(GUI.FrequencyAxes1.Children, 'Type', 'Text'), 'FontName', DATA.font_name);
+                GUI.FrequencyAxes1.YLabel.String = strrep(GUI.FrequencyAxes1.YLabel.String, '^2', sprintf('\x00B2'));
             end
         else
             if ~isempty(DATA.PMStat.PlotData{DATA.active_window})
                 plot_spo2_psd_graph(GUI.FifthAxes1, DATA.PMStat.PlotData{DATA.active_window}.fft, DATA.freq_yscale);
+                GUI.FifthAxes1.FontName = DATA.font_name;
+                set(findobj(GUI.FifthAxes1.Children, 'Type', 'Text'), 'FontName', DATA.font_name);
             end
         end
     end
@@ -5989,6 +6059,7 @@ displayEndOfDemoMessage('');
         fr_prop_variables_names = cellfun(@(x) strrep(x, ' TO ', sprintf('/')), fr_prop_variables_names, 'UniformOutput', false);
         fr_prop_variables_names = cellfun(@(x) strrep(x, ' POWER', sprintf('')), fr_prop_variables_names, 'UniformOutput', false);
         fr_prop_variables_names = cellfun(@(x) strrep(x, 'TOTAL', sprintf('TOTAL POWER')), fr_prop_variables_names, 'UniformOutput', false);
+        fr_prop_variables_names = cellfun(@(x) strrep(x, '^2', sprintf('\x00B2')), fr_prop_variables_names, 'UniformOutput', false);
     end
 %%
     function calcFrequencyStatistics(waitbar_handle)

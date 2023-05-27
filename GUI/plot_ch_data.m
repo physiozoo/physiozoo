@@ -28,7 +28,7 @@ for i = 1 : ch_num
     x_lim = ECG_Axes_Array(i).XLim;
     y_lim = ECG_Axes_Array(i).YLim;
     
-    ch_name_handles(i) = text(ECG_Axes_Array(i), x_lim(1) + 0.1, y_lim(2) - 0.2, names_array{i}, 'FontSize', 11);
+    ch_name_handles(i) = text(ECG_Axes_Array(i), x_lim(1) + 0.1, y_lim(2) - 0.2, names_array{i}, 'FontSize', 11, 'FontName', 'Times New Roman');
         
 %     axis(ECG_Axes_Array(i), 'equal');
 %     set(ECG_Axes_Array(i), 'DataAspectRatio', [1 1 1]);

@@ -11,8 +11,10 @@ end
 
 plot(values_x, result, 'Parent', ax, 'LineWidth', 2);
 
-xlabel(ax, '$Baseline (\%)$', 'Interpreter', 'Latex');
-ylabel(ax, '$CT (\%)$', 'Interpreter', 'Latex');
+% xlabel(ax, '$Baseline (\%)$', 'Interpreter', 'Latex');
+% ylabel(ax, '$CT (\%)$', 'Interpreter', 'Latex');
+% set(ax, 'TickLabelInterpreter', 'Latex');
 
-set(ax, 'TickLabelInterpreter', 'Latex');
+xlabel(ax, 'Baseline (%)');
+ylabel(ax, 'CT (%)');
 

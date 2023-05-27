@@ -30,12 +30,15 @@ line(Frequency_Low  * ones(1,2), yrange, 'Parent', ax, 'LineStyle', ls, 'Color',
 line(Frequency_High  * ones(1,2), yrange, 'Parent', ax, 'LineStyle', ls, 'Color', lc, 'LineWidth', lw, 'Tag', 'freqband');
 
 %% Legend
-legend(ax, 'Welch', 'Interpreter', 'Latex');
+% legend(ax, 'Welch', 'Interpreter', 'Latex');
+legend(ax, 'Welch');
 
 %% Labels
 % X
-xlabel(ax, '$Frequency (Hz)$', 'Interpreter', 'Latex');
+% xlabel(ax, '$Frequency (Hz)$', 'Interpreter', 'Latex');
+xlabel(ax, 'Frequency (Hz)');
 % Y
-ylabel(ax, '$Amplitude ( \frac {\%^2} {Hz})$', 'Interpreter', 'Latex');
+% ylabel(ax, '$Amplitude ( \frac {\%^2} {Hz})$', 'Interpreter', 'Latex');
+ylabel(ax, 'Amplitude (%^2/Hz)');
 
-set(ax, 'TickLabelInterpreter', 'Latex');
+% set(ax, 'TickLabelInterpreter', 'Latex');

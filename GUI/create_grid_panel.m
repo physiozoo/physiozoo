@@ -12,6 +12,7 @@ for i = 1 : ch_num
     axes_name = ['ch_axes_' num2str(ch_num)];    
 %     ECG_Axes_Handles(i) = axes(uicontainer('Parent', tempPanel), 'ActivePositionProperty', 'Position', 'Tag', axes_name);
     ECG_Axes_Handles(i) = axes('Parent', tempPanel, 'ActivePositionProperty', 'Position', 'Tag', axes_name);
+    ECG_Axes_Handles(i).FontName = 'Times New Roman';
                                
 %     ECG_Axes_Handles(i).XTick = [];
 %     ECG_Axes_Handles(i).YTick = [];  

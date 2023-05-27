@@ -361,17 +361,17 @@ end
         DATA.screensize = get( 0, 'Screensize' );
         
         %                 DEBUGGING MODE - Small Screen
-        %                                         DATA.screensize = [0 0 1250 800];
+%         DATA.screensize = [0 0 1250 800];
         
         DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
         
         if DATA.screensize(3) < 1530 %1080 % 1920
-            DATA.BigFontSize = 10;
-            DATA.SmallFontSize = 10;
+            DATA.BigFontSize = 9;
+            DATA.SmallFontSize = 9;
             DATA.SmallScreen = 1;
         else
-            DATA.BigFontSize = 11;
-            DATA.SmallFontSize = 11;
+            DATA.BigFontSize = 10;
+            DATA.SmallFontSize = 10;
             DATA.SmallScreen = 0;
         end
         
@@ -616,7 +616,7 @@ end
             
             GUI.RightLeft_TabPanel = uix.TabPanel('Parent', temp_panel_left, 'Padding', DATA.Padding);
             %             two_axes_box = uix.VBox('Parent', GUI.graphs_panel_up_central, 'Spacing', DATA.Spacing);
-            CommandsButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
+            CommandsButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top'); % 
             
             GUI.ChannelsTable = uitable('Parent', temp_vbox_buttons, 'FontSize', SmallFontSize, 'FontName', 'Calibri', 'Tag', 'ChannelsTable',...
                 'ColumnName', {'Ch.', 'Disp.', 'D.Filt.', 'D.Fiducials'}, 'ColumnEditable', [false true true true], 'RowStriping', 'on', ...
@@ -638,18 +638,18 @@ end
             
             %-----------------------------------------
             FiducialsStartTimeBox = uix.HBox('Parent', amp_box, 'Spacing',DATA.Spacing);
-            aa{1} = uicontrol('Style', 'text', 'Parent', FiducialsStartTimeBox, 'String', 'W. S.', 'FontSize', SmallFontSize-5, 'HorizontalAlignment', 'left');
-            GUI.Fiducials_winStart = uicontrol('Style', 'edit', 'Parent', FiducialsStartTimeBox, 'FontSize', SmallFontSize-2, 'Callback', @Fiducials_winStartLength_Edit_Callback, 'Tag', 'Fiducials_startTime');
-            uicontrol('Style', 'text', 'Parent', FiducialsStartTimeBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize-5, 'HorizontalAlignment', 'left');
+            aa{1} = uicontrol('Style', 'text', 'Parent', FiducialsStartTimeBox, 'String', 'W. S.', 'FontSize', SmallFontSize-0.5, 'HorizontalAlignment', 'left');
+            GUI.Fiducials_winStart = uicontrol('Style', 'edit', 'Parent', FiducialsStartTimeBox, 'FontSize', SmallFontSize-0.5, 'Callback', @Fiducials_winStartLength_Edit_Callback, 'Tag', 'Fiducials_startTime');
+            uicontrol('Style', 'text', 'Parent', FiducialsStartTimeBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize-1, 'HorizontalAlignment', 'left');
             
             FiducialWindowLengthBox = uix.HBox( 'Parent', amp_box, 'Spacing', DATA.Spacing);
-            aa{2} = uicontrol( 'Style', 'text', 'Parent', FiducialWindowLengthBox, 'String', 'W. L.', 'FontSize', SmallFontSize-5, 'HorizontalAlignment', 'left');
-            GUI.Fiducials_winLength = uicontrol( 'Style', 'edit', 'Parent', FiducialWindowLengthBox, 'FontSize', SmallFontSize-2, 'Callback', @Fiducials_winStartLength_Edit_Callback, 'Tag', 'Fiducials_winLength');
-            uicontrol( 'Style', 'text', 'Parent', FiducialWindowLengthBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize-5, 'HorizontalAlignment', 'left');
+            aa{2} = uicontrol( 'Style', 'text', 'Parent', FiducialWindowLengthBox, 'String', 'W. L.', 'FontSize', SmallFontSize-0.5, 'HorizontalAlignment', 'left');
+            GUI.Fiducials_winLength = uicontrol( 'Style', 'edit', 'Parent', FiducialWindowLengthBox, 'FontSize', SmallFontSize-0.5, 'Callback', @Fiducials_winStartLength_Edit_Callback, 'Tag', 'Fiducials_winLength');
+            uicontrol( 'Style', 'text', 'Parent', FiducialWindowLengthBox, 'String', 'h:min:sec', 'FontSize', SmallFontSize-1, 'HorizontalAlignment', 'left');
             
             max_extent_control = calc_max_control_x_extend(aa);
             
-            field_size = [max_extent_control, -5, -3];
+            field_size = [max_extent_control, -4.5, -4];
             
             set(FiducialsStartTimeBox, 'Widths', field_size);
             set(FiducialWindowLengthBox, 'Widths', field_size);
@@ -679,11 +679,11 @@ end
             % ------------------------
             %         peaks_box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Padding', DATA.Padding);
             peaks_box = uix.VBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding);
-            GUI.P_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'P-Peaks', 'Value', 0, 'Tag', 'PPeaksCb');
-            GUI.Q_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'Q-Peaks (QRS on)', 'Value', 0, 'Tag', 'QPeaksCb');
-            GUI.R_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'R-Peaks', 'Value', 1, 'Tag', 'RPeaksCb');
-            GUI.S_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'S-Peaks (QRS off)', 'Value', 0, 'Tag', 'SPeaksCb');
-            GUI.T_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize-1, 'String', 'T-Peaks', 'Value', 0, 'Tag', 'TPeaksCb');
+            GUI.P_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'P-Peaks', 'Value', 0, 'Tag', 'PPeaksCb');
+            GUI.Q_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Q-Peaks (QRS on)', 'Value', 0, 'Tag', 'QPeaksCb');
+            GUI.R_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'R-Peaks', 'Value', 1, 'Tag', 'RPeaksCb');
+            GUI.S_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'S-Peaks (QRS off)', 'Value', 0, 'Tag', 'SPeaksCb');
+            GUI.T_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'T-Peaks', 'Value', 0, 'Tag', 'TPeaksCb');
             
             GUI.P_checkbox.ForegroundColor = [0.9290, 0.6940, 0.1250];
             GUI.Q_checkbox.ForegroundColor = [0.4940, 0.1840, 0.5560];
@@ -692,15 +692,20 @@ end
             GUI.T_checkbox.ForegroundColor = [0.6350, 0.0780, 0.1840];
             
             
-            
-            GUI.CalcPeaksButton_handle = uicontrol('Style', 'PushButton', 'Parent', peaks_box, 'String', 'Find Fiducials', 'FontSize', DATA.SmallFontSize-1,...
-                'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Enable', 'inactive', 'Tag', 'CalcPQRSTPeaks', 'Callback', @CalcPQRSTPeaks);
-            %on' | 'off' | 'inactive'
-            
-            %         set(peaks_box, 'ButtonSize', [110, 80], 'Spacing', DATA.Spacing);
             % ------------------------
             
-            play_box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Padding', DATA.Padding);
+            play_box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Padding', DATA.Padding); % 
+            
+            
+%             fp_box = uix.HButtonBox('Parent', play_box, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Padding', DATA.Padding);
+            
+            GUI.CalcPeaksButton_handle = uicontrol('Style', 'PushButton', 'Parent', play_box, 'String', 'Find Fiducials', 'FontSize', DATA.SmallFontSize,...
+                'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Enable', 'inactive', 'Tag', 'CalcPQRSTPeaks', 'Callback', @CalcPQRSTPeaks);
+            %on' | 'off' | 'inactive'
+                                    
+%             set(fp_box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing);
+            
+            
             
             %         set(temp_vbox_buttons, 'Heights', [-100, -35]);
             
@@ -790,7 +795,7 @@ end
             %-------------------------------------------------------
             % Folder Tab
             
-            [GUI, textBox{1}, text_handles{1}] = createGUITextLine(GUI, 'GUIDir', 'DirName_text', 'Directory name:', DirBox, 'text', 1, @OpenDir_Callback);
+            [GUI, textBox{1}, text_handles{1}] = createGUITextLine(GUI, 'GUIDir', 'DirName_text', 'Folder name:', DirBox, 'text', 1, @OpenDir_Callback);
             GUI.GUIDir.DirName_text_pushbutton_handle.Enable = 'on';
             
             textBox{2} = uix.HBox('Parent', DirBox, 'Spacing', DATA.Spacing);
@@ -830,9 +835,9 @@ end
             max_extent_control = calc_max_control_x_extend(text_handles);
             
             if DATA.SmallScreen
-                field_size = [max_extent_control, 170, 25];
-            else
                 field_size = [max_extent_control, 200, 25];
+            else
+                field_size = [max_extent_control, 270, 25];
             end
             for i =  1 : 5
                 set(textBox{i}, 'Widths', field_size);
@@ -843,7 +848,8 @@ end
             %             set(DirBox, 'Heights', [hf * ones(1, 2), -4] );
             %         else
             %             hf = -1;
-            set(DirBox, 'Heights', [-0.9, -7, -0.7, -0.7, -0.7, -0.7, -7]);
+%             set(DirBox, 'Heights', [-0.9, -7, -0.7, -0.7, -0.7, -0.7, -7]);
+            set(DirBox, 'Heights', [-1, -7, -1, -1, -1, -1 -8]);
             %         end
             
             %-------------------------------------------------------
@@ -890,9 +896,9 @@ end
             popupmenu_position = get(GUI.GUIRecord.Mammal_popupmenu, 'Position');
             
             if DATA.SmallScreen
-                field_size = [max_extent_control, popupmenu_position(3) + 20, 25];
+                field_size = [max_extent_control, popupmenu_position(3) + 50, 25];
             else
-                field_size = [max_extent_control, popupmenu_position(3) + 45, 25];
+                field_size = [max_extent_control, popupmenu_position(3) + 94, 25];
             end
             for i = 1 : 5
                 set(textBox{i}, 'Widths', field_size);
@@ -922,7 +928,7 @@ end
                 set(RecordBox, 'Heights', [hf * ones(1, 11), -1]);
             else
                 hf = -0.12; % -0.155
-                set(RecordBox, 'Heights', [hf * ones(1, 11), -1]);
+                set(RecordBox, 'Heights', [hf * ones(1, 11), -0.9]);
             end
             
             load_config_name_button_position = get(GUI.GUIRecord.Config_text_pushbutton_handle, 'Position');
@@ -946,52 +952,52 @@ end
             
             %         field_size = [80, 150, 10 -1];
             
-            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'rqrs', 'FontSize', BigFontSize-1, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'rqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
             
             %         uix.Empty( 'Parent', GUI.ConfigBox );
             
-            [GUI, textBox{1}, text_handles{1}] = createGUISingleEditLine(GUI, 'GUIConfig', 'HR', 'HR', 'BPM', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'HR', BigFontSize-2);
-            [GUI, textBox{2}, text_handles{2}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QS', 'QS', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QS', BigFontSize-2);
-            [GUI, textBox{3}, text_handles{3}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QT', 'QT', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QT', BigFontSize-2);
-            [GUI, textBox{4}, text_handles{4}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSa', 'QRSa', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSa', BigFontSize-2);
-            [GUI, textBox{5}, text_handles{5}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSamin', 'QRSamin', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSamin', BigFontSize-2);
-            [GUI, textBox{6}, text_handles{6}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmin', 'RRmin', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmin', BigFontSize-2);
-            [GUI, textBox{7}, text_handles{7}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmax', 'RRmax', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmax', BigFontSize-2);
+            [GUI, textBox{1}, text_handles{1}] = createGUISingleEditLine(GUI, 'GUIConfig', 'HR', 'HR', 'BPM', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'HR', BigFontSize-0.5);
+            [GUI, textBox{2}, text_handles{2}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QS', 'QS', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QS', BigFontSize-0.5);
+            [GUI, textBox{3}, text_handles{3}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QT', 'QT', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QT', BigFontSize-0.5);
+            [GUI, textBox{4}, text_handles{4}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSa', 'QRSa', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSa', BigFontSize-0.5);
+            [GUI, textBox{5}, text_handles{5}] = createGUISingleEditLine(GUI, 'GUIConfig', 'QRSamin', 'QRSamin', 'microVolts', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'QRSamin', BigFontSize-0.5);
+            [GUI, textBox{6}, text_handles{6}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmin', 'RRmin', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmin', BigFontSize-0.5);
+            [GUI, textBox{7}, text_handles{7}] = createGUISingleEditLine(GUI, 'GUIConfig', 'RRmax', 'RRmax', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'RRmax', BigFontSize-0.5);
             
             %             uix.Empty('Parent', GUI.ConfigBox );
             
-            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'jqrs/wjqrs', 'FontSize', BigFontSize-1, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
-            [GUI, textBox{8}, text_handles{8}] = createGUISingleEditLine(GUI, 'GUIConfig', 'lcf', 'Lower cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'lcf', BigFontSize-2);
-            [GUI, textBox{9}, text_handles{9}] = createGUISingleEditLine(GUI, 'GUIConfig', 'hcf', 'Upper cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'hcf', BigFontSize-2);
-            [GUI, textBox{10}, text_handles{10}] = createGUISingleEditLine(GUI, 'GUIConfig', 'thr', 'Threshold', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'thr', BigFontSize-2);
-            [GUI, textBox{11}, text_handles{11}] = createGUISingleEditLine(GUI, 'GUIConfig', 'rp', 'Refractory period', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'rp', BigFontSize-2);
-            [GUI, textBox{12}, text_handles{12}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ws', 'Window size', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ws', BigFontSize-2);
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'jqrs/wjqrs', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            [GUI, textBox{8}, text_handles{8}] = createGUISingleEditLine(GUI, 'GUIConfig', 'lcf', 'Lower cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'lcf', BigFontSize-0.5);
+            [GUI, textBox{9}, text_handles{9}] = createGUISingleEditLine(GUI, 'GUIConfig', 'hcf', 'Upper cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'hcf', BigFontSize-0.5);
+            [GUI, textBox{10}, text_handles{10}] = createGUISingleEditLine(GUI, 'GUIConfig', 'thr', 'Threshold', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'thr', BigFontSize-0.5);
+            [GUI, textBox{11}, text_handles{11}] = createGUISingleEditLine(GUI, 'GUIConfig', 'rp', 'Refractory period', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'rp', BigFontSize-0.5);
+            [GUI, textBox{12}, text_handles{12}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ws', 'Window size', 'sec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ws', BigFontSize-0.5);
             
             %             uix.Empty('Parent', GUI.ConfigBox );
             
             % ORI's algorithm for EGM peaks
-            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'egmbeat', 'FontSize', BigFontSize-1, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
-            [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ref_per', 'Refractory period', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ref_per', BigFontSize-2);
-            [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIConfig', 'bi', 'Average BI', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'bi', BigFontSize-2);
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'egmbeat', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            [GUI, textBox{13}, text_handles{13}] = createGUISingleEditLine(GUI, 'GUIConfig', 'ref_per', 'Refractory period', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'ref_per', BigFontSize-0.5);
+            [GUI, textBox{14}, text_handles{14}] = createGUISingleEditLine(GUI, 'GUIConfig', 'bi', 'Average BI', 'msec', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'bi', BigFontSize-0.5);
             
-            [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'init_prom_thresh', 'Initial prominence threshold', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'init_prom_thresh', BigFontSize-2);
-            [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'classify_prom_thresh', 'Clasifying prominence threshold', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'classify_prom_thresh', BigFontSize-2);
+            [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'init_prom_thresh', 'Initial prominence threshold', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'init_prom_thresh', BigFontSize-0.5);
+            [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'classify_prom_thresh', 'Clasifying prominence threshold', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'classify_prom_thresh', BigFontSize-0.5);
             
             %             [GUI, textBox{15}, text_handles{15}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh1', 'Prominence threshold 1', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh1');
             %             [GUI, textBox{16}, text_handles{16}] = createGUISingleEditLine(GUI, 'GUIConfig', 'prom_thresh2', 'Prominence threshold 2', '%', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'prom_thresh2');
             
             %             uix.Empty('Parent', GUI.ConfigBox );
             
-            GUI.AutoPeakWin_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', BigFontSize-1, 'String', 'Auto', 'Value', 1);
-            [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window', BigFontSize-2);
+            GUI.AutoPeakWin_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', BigFontSize, 'String', 'Auto', 'Value', 1);
+            [GUI, textBox{17}, text_handles{17}] = createGUISingleEditLine(GUI, 'GUIConfig', 'PeaksWindow', 'Peaks window', 'ms', GUI.ConfigBox, @Peaks_Window_edit_Callback, '', 'peaks_window', BigFontSize-0.5);
             
-            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'Fiducials filtering parameters', 'FontSize', BigFontSize-1, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
-            GUI.BandpassFilter_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', BigFontSize-2, 'String', 'Bandpass filter', 'Value', 1);
+            uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'Fiducials filtering parameters', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
+            GUI.BandpassFilter_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', BigFontSize-0.5, 'String', 'Bandpass filter', 'Value', 1);
             
             [GUI, textBox{18}, text_handles{18}] = createGUIPopUpMenuLine(GUI, 'GUIConfig', 'NotchFilter_popupmenu', 'Notch filter', GUI.ConfigBox, @NotchFilter_popupmenu_Callback, {'None'; '50'; '60'});
-            text_handles{18}.FontSize = BigFontSize-2;
-            GUI.GUIConfig.NotchFilter_popupmenu.FontSize = BigFontSize-2;
-            uicontrol( 'Style', 'text', 'Parent', textBox{18}, 'String', 'Hz', 'FontSize', BigFontSize-2, 'HorizontalAlignment', 'left');
+            text_handles{18}.FontSize = BigFontSize-0.5;
+            GUI.GUIConfig.NotchFilter_popupmenu.FontSize = BigFontSize-0.5;
+            uicontrol( 'Style', 'text', 'Parent', textBox{18}, 'String', 'Hz', 'FontSize', BigFontSize-0.5, 'HorizontalAlignment', 'left');
             
             uix.Empty('Parent', GUI.ConfigBox );
             
@@ -1011,9 +1017,16 @@ end
             %         set(GUI.ConfigBox, 'Heights', [-7 -7 -7 -7 -7 -7 -7 -7   -1 -7 -7 -7 -7 -7 -7   -8 -7 -7   -7 -7] );
             
             
+            if DATA.SmallScreen
+                set(GUI.ConfigBox, 'Heights', [-10 -10 * ones(1, 7)  -10 -10 * ones(1, 5)  -10 -10 * ones(1, 4)  -10 -10 -10 -10 -15 -100]);
+            else
+                set(GUI.ConfigBox, 'Heights', [-10 -10 * ones(1, 7)  -10 -10 * ones(1, 5)  -10 -10 * ones(1, 4)  -10 -10 -10 -10 -15 -80]);
+            end
+            
+            
             
             %             set(GUI.ConfigBox, 'Heights', [-15 -10 * ones(1, 7) -0.25 -15 -10 * ones(1, 5) -0.25 -15 -10 * ones(1, 4)  -0.25 -10 -10 -100]);
-            set(GUI.ConfigBox, 'Heights', [-10 -10 * ones(1, 7)  -10 -10 * ones(1, 5)  -10 -10 * ones(1, 4)  -10 -10 -10 -10 -15 -80]);
+%             set(GUI.ConfigBox, 'Heights', [-10 -10 * ones(1, 7)  -10 -10 * ones(1, 5)  -10 -10 * ones(1, 4)  -10 -10 -10 -10 -15 -80]);
             %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)   -1 -7 * ones(1, 6) -1 -7 * ones(1, 4)  -8 -7 -7 ] );
             %         set(GUI.ConfigBox, 'Heights', [-7 * ones(1, 8)    -7 * ones(1, 6) -7 * ones(1, 4)  -7 -7 ] );
             %-------------------------------------------------------
@@ -1104,7 +1117,8 @@ end
             set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'Enable', 'inactive');
             set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'Enable', 'inactive');
             
-            max_extent_control = calc_max_control_x_extend(text_handles);
+            max_extent_control = calc_max_control_x_extend(text_handles(19:end));
+%             max_extent_control = max_extent_control - 25;
             
             if DATA.SmallScreen
                 field_size = [max_extent_control, 120, 1 -1]; % max_extent_control, 150, 10 -1
@@ -1534,6 +1548,9 @@ end
                         setLogo(waitbar_handle, 'M1');
                         
                         DataFileMap = loadDataFile([PathName DataFileName '.' EXT]);
+                        
+                        channels_data = DataFileMap('channels');
+                        
                         close(waitbar_handle);
                     catch e
                         if isvalid(waitbar_handle)
@@ -1687,18 +1704,43 @@ end
                 end
                 
                 set(GUI.GUIRecord.RecordFileName_text, 'String', ECG_FileName);
-                
-                
+                                
                 %--------------------------------------------------------------------
+                
+                total_ch_no = length(channels_data);
+                j = 1;
+                names_array = {};
+                for i = 1 : total_ch_no
+                    if ~strcmp(channels_data{i}.type, 'time')
+                        if channels_data{i}.enable
+                            names_array{j} = channels_data{i}.name;
+                            j = j + 1;
+                        end
+                    end
+                end
+                
+                if isempty(names_array)
+                    clean_gui_low_part();
+                    clean_gui(true);
+                    delete_temp_wfdb_files();
+                    if isvalid(waitbar_handle)
+                        close(waitbar_handle);
+                    end
+                    GUI.ChannelsTable.Data = {};
+                    GUI.CalcPeaksButton_handle.Enable = 'inactive';
+                    h_e = errordlg('No data was loaded', 'Input Error'); setLogo(h_e, 'M1');
+                    return;
+                end
+                
                 [~, ch_no] = size(DATA.sig);
                 
-                [real_ch_no, ~] = size(data.Data.Names);
+%                 [real_ch_no, ~] = size(data.Data.Names);
                 
-                if real_ch_no > ch_no
-                    names_array = {data.Data.Names{2:end}};
-                else
-                    names_array = data.Data.Names;
-                end
+%                 if real_ch_no > ch_no
+%                     names_array = {data.Data.Names{2:end}};
+%                 else
+%                     names_array = data.Data.Names;
+%                 end
                 
                 table_data = cell(ch_no, 4);
                 table_data(1, 1) = {names_array{1}};
@@ -1725,9 +1767,7 @@ end
                     GUI.RawData_handle = line(DATA.tm, DATA.sig(:, 1), 'Parent', GUI.ECG_Axes, 'Tag', 'RawData_1', 'Color', DATA.Ch_Colors{1});
                     
                     offset = min(GUI.RawData_handle.YData)*1.05;
-                    GUI.RawChannelsData_handle(1) = GUI.RawData_handle;
-                    
-                    
+                    GUI.RawChannelsData_handle(1) = GUI.RawData_handle;                                        
                     
                     for i = 2 : ch_no
                         GUI.offset_array(i) = offset;
@@ -1744,7 +1784,8 @@ end
                     ECG_FileName_title = strrep(ECG_FileName, '_', '\_');
                     
                     TitleName = [PathName ECG_FileName_title] ;
-                    title(GUI.ECG_Axes, TitleName, 'FontWeight', 'normal', 'FontSize', 11);
+                    title(GUI.ECG_Axes, TitleName, 'FontWeight', 'normal', 'FontSize', 11, 'FontName', 'Times New Roman');
+%                     GUI.ECG_Axes.FontName = 'Times New Roman';
                     
                     % -----------------------------------------------------
                     DATA.firstZoom = min(60, max(DATA.tm)); % sec
@@ -1783,14 +1824,14 @@ end
                     GUI.GUIRecord.Annotation_popupmenu.Enable = 'on';
                     GUI.GUIRecord.PeakAdjustment_popupmenu.Enable = 'on';
                     
-                    xlabel(GUI.ECG_Axes, 'Time (h:min:sec)');
-                    ylabel(GUI.ECG_Axes, 'ECG (mV)');
+                    xlabel(GUI.ECG_Axes, 'Time (h:min:sec)', 'FontName', 'Times New Roman');
+                    ylabel(GUI.ECG_Axes, 'ECG (mV)', 'FontName', 'Times New Roman');
                     hold(GUI.ECG_Axes, 'on');
                     
                     GUI.Rhythms_handle.Enable = 'inactive';
 %                     GUI.Rhythms_handle.Enable = 'on';
                     
-                    GUI.hT = text(0, 0, 'Test', 'Parent', GUI.ECG_Axes);
+                    GUI.hT = text(0, 0, 'Test', 'Parent', GUI.ECG_Axes, 'FontName', 'Times New Roman');
                 else
                     
                     %                     DATA.tm = DATA.tm/0.2;
@@ -2379,7 +2420,11 @@ end
                 GUI.timer_object.StopFcn = @EnablePageUpDown;
             end
             if ~isempty(DATA.qrs) && ~all(isnan(DATA.qrs))
-                GUI.CalcPeaksButton_handle.Enable = 'on';
+                if strcmp(DATA.Mammal, 'human')
+                    GUI.CalcPeaksButton_handle.Enable = 'on';
+                else
+                    GUI.CalcPeaksButton_handle.Enable = 'inactive';
+                end
             else
                 GUI.CalcPeaksButton_handle.Enable = 'inactive';
             end
@@ -2437,7 +2482,7 @@ end
             DATA.maxRRTime = max(DATA.tm);
             %                 DATA.RRIntPage_Length = DATA.maxRRTime;
             DATA.RRIntPage_Length = max(rr_time);
-            ylabel(GUI.RRInt_Axes, yString);
+            ylabel(GUI.RRInt_Axes, yString, 'FontName', 'Times New Roman');
             
             if length(rr_data) == 1
                 DATA.rr_data_filtered = rr_data;
@@ -2915,7 +2960,7 @@ end
                 reset_fiducials_checkboxs();
                 
                 DATA.qrs = double(DATA.qrs);
-                GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
+                GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'MarkerSize', 5, 'LineWidth', 1, 'Tag', 'Peaks');
                 uistack(GUI.red_peaks_handle, 'top');
                 
                 %  ---------------------------
@@ -2974,7 +3019,11 @@ end
             end
             
             if ~isempty(DATA.qrs) && ~all(isnan(DATA.qrs))
-                GUI.CalcPeaksButton_handle.Enable = 'on';
+                if strcmp(DATA.Mammal, 'human')
+                    GUI.CalcPeaksButton_handle.Enable = 'on';
+                else
+                    GUI.CalcPeaksButton_handle.Enable = 'inactive';
+                end
             else
                 GUI.CalcPeaksButton_handle.Enable = 'inactive';
             end
@@ -4209,7 +4258,7 @@ end
             if isfield(GUI, 'red_peaks_handle') && isvalid(GUI.red_peaks_handle)
                 set(GUI.red_peaks_handle, 'XData', temp_XData, 'YData', temp_YData);
             else
-                GUI.red_peaks_handle = line(temp_XData, temp_YData, 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 2, 'Tag', 'Peaks');
+                GUI.red_peaks_handle = line(temp_XData, temp_YData, 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'MarkerSize', 5, 'LineWidth', 1, 'Tag', 'Peaks');
                 uistack(GUI.red_peaks_handle, 'top');
             end
         else
@@ -4235,7 +4284,11 @@ end
         catch
         end
         if ~isempty(DATA.qrs) && ~all(isnan(DATA.qrs))
-            GUI.CalcPeaksButton_handle.Enable = 'on';
+            if strcmp(DATA.Mammal, 'human')
+                GUI.CalcPeaksButton_handle.Enable = 'on';
+            else
+                GUI.CalcPeaksButton_handle.Enable = 'inactive';
+            end
         else
             GUI.CalcPeaksButton_handle.Enable = 'inactive';
         end
@@ -4304,7 +4357,11 @@ end
                 disp('Not in range!');
             end
             if ~isempty(DATA.qrs) && ~all(isnan(DATA.qrs))
-                GUI.CalcPeaksButton_handle.Enable = 'on';
+                if strcmp(DATA.Mammal, 'human')
+                    GUI.CalcPeaksButton_handle.Enable = 'on';
+                else
+                    GUI.CalcPeaksButton_handle.Enable = 'inactive';
+                end
             else
                 GUI.CalcPeaksButton_handle.Enable = 'inactive';
             end
@@ -4867,7 +4924,7 @@ end
             legend(GUI.ECG_Axes, 'off');
             
             DATA.qrs = double(DATA.qrs);
-            GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'LineWidth', 1, 'Tag', 'Peaks');
+            GUI.red_peaks_handle = line(DATA.tm(DATA.qrs), DATA.sig(DATA.qrs, 1), 'Parent', GUI.ECG_Axes, 'Color', 'r', 'LineStyle', 'none', 'Marker', 'x', 'MarkerSize', 5, 'LineWidth', 1, 'Tag', 'Peaks');
             uistack(GUI.red_peaks_handle, 'top');
             
             %  ---------------------------
@@ -4888,7 +4945,11 @@ end
             setRRIntYLim();
             
             if ~isempty(DATA.qrs) && ~all(isnan(DATA.qrs))
-                GUI.CalcPeaksButton_handle.Enable = 'on';
+                if strcmp(DATA.Mammal, 'human')
+                    GUI.CalcPeaksButton_handle.Enable = 'on';
+                else
+                    GUI.CalcPeaksButton_handle.Enable = 'inactive';
+                end
             else
                 GUI.CalcPeaksButton_handle.Enable = 'inactive';
             end
@@ -5910,7 +5971,9 @@ end
                 af = figure;
                 set(af, 'Name', [fig_name figures_names{i}], 'NumberTitle', 'off');
                 new_axes = copyobj(axes_handle, af);
-                xlabel(new_axes, 'Time (h:min:sec)');
+                xlabel(new_axes, 'Time (h:min:sec)', 'FontName', 'Times New Roman');                
+                new_axes.YLabel.FontName = 'Times New Roman';
+                new_axes.FontName = 'Times New Roman';
                 
                 uicontrolData = findobj(GUI.SaveFiguresWindow, 'Tag', 'TimeSeries');
                 uicontrolPeaks = findobj(GUI.SaveFiguresWindow, 'Tag', 'Peaks');
@@ -5955,8 +6018,8 @@ end
                         end
                         if strcmpi(ext, 'fig')
                             savefig(af, file_name, 'compact');
-                        elseif ~strcmpi(ext, 'fig')
-                            mhrv.util.fig_print( af, file_name, 'output_format', ext, 'font_size', 16, 'width', 20);
+                        elseif ~strcmpi(ext, 'fig')                            
+                            mhrv.util.fig_print( af, file_name, 'output_format', ext, 'font_size', 10, 'width', 20, 'font', 'Times New Roman', 'font_weight', 'normal');
                         end
                     end
                     close(af);
@@ -6352,7 +6415,7 @@ end
                 y_lim = parent_axes.YLim;
                 
                 delete(GUI.ch_name_handles(j));
-                GUI.ch_name_handles(j) = text(parent_axes, x_lim(1) + 0.1, y_lim(2) - 0.2, names_array{j}, 'FontSize', 11);
+                GUI.ch_name_handles(j) = text(parent_axes, x_lim(1) + 0.1, y_lim(2) - 0.2, names_array{j}, 'FontSize', 11, 'FontName', 'Times New Roman');
             end
         end
     end
@@ -6649,19 +6712,22 @@ end
     end
 %%
     function set_fid_visible(ch_num)
-        if_sig_visible = GUI.ChannelsTable.Data{ch_num, 2} * GUI.RawSignal_checkbox.Value;
-        if_fid_visible = GUI.ChannelsTable.Data{ch_num, 4};
-        if_filt_visible = GUI.ChannelsTable.Data{ch_num, 3} * GUI.FilteredSignal_checkbox.Value;
-        
-        if if_sig_visible && if_fid_visible
-            select_fid_handles(ch_num, 1, 0);
-            select_fid_handles(ch_num, 0, 1);
-        elseif ~if_sig_visible && if_fid_visible && if_filt_visible
-            select_fid_handles(ch_num, 0, 0);
-            select_fid_handles(ch_num, 1, 1);
-        else
-            select_fid_handles(ch_num, 0, 0);
-            select_fid_handles(ch_num, 0, 1);
+        try
+            if_sig_visible = GUI.ChannelsTable.Data{ch_num, 2} * GUI.RawSignal_checkbox.Value;
+            if_fid_visible = GUI.ChannelsTable.Data{ch_num, 4};
+            if_filt_visible = GUI.ChannelsTable.Data{ch_num, 3} * GUI.FilteredSignal_checkbox.Value;
+            
+            if if_sig_visible && if_fid_visible
+                select_fid_handles(ch_num, 1, 0);
+                select_fid_handles(ch_num, 0, 1);
+            elseif ~if_sig_visible && if_fid_visible && if_filt_visible
+                select_fid_handles(ch_num, 0, 0);
+                select_fid_handles(ch_num, 1, 1);
+            else
+                select_fid_handles(ch_num, 0, 0);
+                select_fid_handles(ch_num, 0, 1);
+            end
+        catch
         end
     end
 %%
@@ -7561,62 +7627,64 @@ end
     end
 %%
     function PQRST_checkbox_Callback(src, ~)
-        
-        line_vis = src.Value;
-        
-        handles_fid = gobjects(0);
-        handles_fid_filt = gobjects(0);
-        
-        if GUI.RawSignal_checkbox.Value
-            array_vis = cell2mat(GUI.ChannelsTable.Data(:, 4)) * line_vis .* cell2mat(GUI.ChannelsTable.Data(:, 2));
-            if GUI.FilteredSignal_checkbox.Value
-                array_vis_filt = ~cell2mat(GUI.ChannelsTable.Data(:, 2)) * line_vis .* cell2mat(GUI.ChannelsTable.Data(:, 3)).* cell2mat(GUI.ChannelsTable.Data(:, 4));
-            else
+        try
+            line_vis = src.Value;
+            
+            handles_fid = gobjects(0);
+            handles_fid_filt = gobjects(0);
+            
+            if GUI.RawSignal_checkbox.Value
+                array_vis = cell2mat(GUI.ChannelsTable.Data(:, 4)) * line_vis .* cell2mat(GUI.ChannelsTable.Data(:, 2));
+                if GUI.FilteredSignal_checkbox.Value
+                    array_vis_filt = ~cell2mat(GUI.ChannelsTable.Data(:, 2)) * line_vis .* cell2mat(GUI.ChannelsTable.Data(:, 3)).* cell2mat(GUI.ChannelsTable.Data(:, 4));
+                else
+                    array_vis_filt = zeros(size(array_vis));
+                end
+            elseif GUI.FilteredSignal_checkbox.Value && ~GUI.RawSignal_checkbox.Value
+                array_vis_filt = cell2mat(GUI.ChannelsTable.Data(:, 4)) * line_vis .* cell2mat(GUI.ChannelsTable.Data(:, 3));
+                array_vis = zeros(size(array_vis_filt));
+            elseif ~GUI.FilteredSignal_checkbox.Value && ~GUI.RawSignal_checkbox.Value
+                array_vis = zeros(size(cell2mat(GUI.ChannelsTable.Data(:, 4))));
                 array_vis_filt = zeros(size(array_vis));
             end
-        elseif GUI.FilteredSignal_checkbox.Value && ~GUI.RawSignal_checkbox.Value
-            array_vis_filt = cell2mat(GUI.ChannelsTable.Data(:, 4)) * line_vis .* cell2mat(GUI.ChannelsTable.Data(:, 3));
-            array_vis = zeros(size(array_vis_filt));
-        elseif ~GUI.FilteredSignal_checkbox.Value && ~GUI.RawSignal_checkbox.Value
-            array_vis = zeros(size(cell2mat(GUI.ChannelsTable.Data(:, 4))));
-            array_vis_filt = zeros(size(array_vis));
-        end
-        
-        if strcmp(src.Tag, 'PPeaksCb') && isfield(GUI, 'P_linehandle') && ~isempty(GUI.P_linehandle) && any(ishandle(GUI.P_linehandle)) && any(isvalid(GUI.P_linehandle))
-            handles_fid = GUI.P_linehandle;
-        elseif strcmp(src.Tag, 'QPeaksCb') && isfield(GUI, 'Q_linehandle') && ~isempty(GUI.Q_linehandle) && any(ishandle(GUI.Q_linehandle)) && any(isvalid(GUI.Q_linehandle))
-            handles_fid = GUI.Q_linehandle;
-        elseif strcmp(src.Tag, 'RPeaksCb')   && isfield(GUI, 'red_peaks_handle') && ~isempty(GUI.red_peaks_handle) && any(ishandle(GUI.red_peaks_handle)) && any(isvalid(GUI.red_peaks_handle))
-            handles_fid = GUI.red_peaks_handle;
-        elseif strcmp(src.Tag, 'SPeaksCb') && isfield(GUI, 'S_linehandle') && ~isempty(GUI.S_linehandle) && any(ishandle(GUI.S_linehandle)) && any(isvalid(GUI.S_linehandle))
-            handles_fid = GUI.S_linehandle;
-        elseif strcmp(src.Tag, 'TPeaksCb') && isfield(GUI, 'T_linehandle') && ~isempty(GUI.T_linehandle) && any(ishandle(GUI.T_linehandle)) && any(isvalid(GUI.T_linehandle))
-            handles_fid = GUI.T_linehandle;
-        end
-        if strcmp(src.Tag, 'PPeaksCb') && isfield(GUI, 'P_linehandle_filt') && ~isempty(GUI.P_linehandle_filt) && any(ishandle(GUI.P_linehandle_filt)) && any(isvalid(GUI.P_linehandle_filt))
-            handles_fid_filt = GUI.P_linehandle_filt;
-        elseif strcmp(src.Tag, 'QPeaksCb') && isfield(GUI, 'Q_linehandle_filt') && ~isempty(GUI.Q_linehandle_filt) && any(ishandle(GUI.Q_linehandle_filt)) && any(isvalid(GUI.Q_linehandle_filt))
-            handles_fid_filt = GUI.Q_linehandle_filt;
-        elseif strcmp(src.Tag, 'RPeaksCb')   && isfield(GUI, 'red_peaks_handle_Filt') && ~isempty(GUI.red_peaks_handle_Filt) && any(ishandle(GUI.red_peaks_handle_Filt)) && any(isvalid(GUI.red_peaks_handle_Filt))
-            handles_fid_filt = GUI.red_peaks_handle_Filt;
-        elseif strcmp(src.Tag, 'SPeaksCb') && isfield(GUI, 'S_linehandle_filt') && ~isempty(GUI.S_linehandle_filt) && any(ishandle(GUI.S_linehandle_filt)) && any(isvalid(GUI.S_linehandle_filt))
-            handles_fid_filt = GUI.S_linehandle_filt;
-        elseif strcmp(src.Tag, 'TPeaksCb') && isfield(GUI, 'T_linehandle_filt') && ~isempty(GUI.T_linehandle_filt) && any(ishandle(GUI.T_linehandle_filt)) && any(isvalid(GUI.T_linehandle_filt))
-            handles_fid_filt = GUI.T_linehandle_filt;
-        end
-        if strcmp(src.Tag, 'RPeaksCb') && isfield(GUI, 'qrs_ch') && ~isempty(GUI.qrs_ch) && any(ishandle(GUI.qrs_ch)) && any(isvalid(GUI.qrs_ch))
-            handles_fid = [handles_fid GUI.qrs_ch];
-        end
-        
-        for i = 1 : length(handles_fid)
-            if ishandle(handles_fid(i))
-                handles_fid(i).Visible = array_vis(i);
+            
+            if strcmp(src.Tag, 'PPeaksCb') && isfield(GUI, 'P_linehandle') && ~isempty(GUI.P_linehandle) && any(ishandle(GUI.P_linehandle)) && any(isvalid(GUI.P_linehandle))
+                handles_fid = GUI.P_linehandle;
+            elseif strcmp(src.Tag, 'QPeaksCb') && isfield(GUI, 'Q_linehandle') && ~isempty(GUI.Q_linehandle) && any(ishandle(GUI.Q_linehandle)) && any(isvalid(GUI.Q_linehandle))
+                handles_fid = GUI.Q_linehandle;
+            elseif strcmp(src.Tag, 'RPeaksCb')   && isfield(GUI, 'red_peaks_handle') && ~isempty(GUI.red_peaks_handle) && any(ishandle(GUI.red_peaks_handle)) && any(isvalid(GUI.red_peaks_handle))
+                handles_fid = GUI.red_peaks_handle;
+            elseif strcmp(src.Tag, 'SPeaksCb') && isfield(GUI, 'S_linehandle') && ~isempty(GUI.S_linehandle) && any(ishandle(GUI.S_linehandle)) && any(isvalid(GUI.S_linehandle))
+                handles_fid = GUI.S_linehandle;
+            elseif strcmp(src.Tag, 'TPeaksCb') && isfield(GUI, 'T_linehandle') && ~isempty(GUI.T_linehandle) && any(ishandle(GUI.T_linehandle)) && any(isvalid(GUI.T_linehandle))
+                handles_fid = GUI.T_linehandle;
             end
-        end
-        for i = 1 : length(handles_fid_filt)
-            if ishandle(handles_fid_filt(i))
-                handles_fid_filt(i).Visible = array_vis_filt(i);
+            if strcmp(src.Tag, 'PPeaksCb') && isfield(GUI, 'P_linehandle_filt') && ~isempty(GUI.P_linehandle_filt) && any(ishandle(GUI.P_linehandle_filt)) && any(isvalid(GUI.P_linehandle_filt))
+                handles_fid_filt = GUI.P_linehandle_filt;
+            elseif strcmp(src.Tag, 'QPeaksCb') && isfield(GUI, 'Q_linehandle_filt') && ~isempty(GUI.Q_linehandle_filt) && any(ishandle(GUI.Q_linehandle_filt)) && any(isvalid(GUI.Q_linehandle_filt))
+                handles_fid_filt = GUI.Q_linehandle_filt;
+            elseif strcmp(src.Tag, 'RPeaksCb')   && isfield(GUI, 'red_peaks_handle_Filt') && ~isempty(GUI.red_peaks_handle_Filt) && any(ishandle(GUI.red_peaks_handle_Filt)) && any(isvalid(GUI.red_peaks_handle_Filt))
+                handles_fid_filt = GUI.red_peaks_handle_Filt;
+            elseif strcmp(src.Tag, 'SPeaksCb') && isfield(GUI, 'S_linehandle_filt') && ~isempty(GUI.S_linehandle_filt) && any(ishandle(GUI.S_linehandle_filt)) && any(isvalid(GUI.S_linehandle_filt))
+                handles_fid_filt = GUI.S_linehandle_filt;
+            elseif strcmp(src.Tag, 'TPeaksCb') && isfield(GUI, 'T_linehandle_filt') && ~isempty(GUI.T_linehandle_filt) && any(ishandle(GUI.T_linehandle_filt)) && any(isvalid(GUI.T_linehandle_filt))
+                handles_fid_filt = GUI.T_linehandle_filt;
             end
+            if strcmp(src.Tag, 'RPeaksCb') && isfield(GUI, 'qrs_ch') && ~isempty(GUI.qrs_ch) && any(ishandle(GUI.qrs_ch)) && any(isvalid(GUI.qrs_ch))
+                handles_fid = [handles_fid GUI.qrs_ch];
+            end
+            
+            for i = 1 : length(handles_fid)
+                if ishandle(handles_fid(i))
+                    handles_fid(i).Visible = array_vis(i);
+                end
+            end
+            for i = 1 : length(handles_fid_filt)
+                if ishandle(handles_fid_filt(i))
+                    handles_fid_filt(i).Visible = array_vis_filt(i);
+                end
+            end
+        catch
         end
     end
 %%

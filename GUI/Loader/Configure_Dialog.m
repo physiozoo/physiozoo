@@ -22,7 +22,7 @@ function varargout = Configure_Dialog(varargin)
 
 % Edit the above text to modify the response to help Configure_Dialog
 
-% Last Modified by GUIDE v2.5 21-Jul-2018 16:29:00
+% Last Modified by GUIDE v2.5 03-Jun-2023 14:29:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -173,6 +173,7 @@ Channels.Data.Data = [];%  Changed 080720 data(:,Channels.Data.No);
 Channels.Data.Unit = 'select';
 Channels.Data.Type = 'select';
 Channels.Data.Name = 'data';
+Channels.Data.EnabledChNames = {};
 for i = 1 : Data_Size
     Channels.Data.Names{i} = sprintf('Ch%02d',i);
 end
@@ -183,14 +184,15 @@ if UniqueMap('IsHeader')
         try
             localChannel = cell2mat(rawChannels(iCh));
             type = lower(localChannel.type);
-            Channels.Data.Names{iCh} =localChannel.name;
+            Channels.Data.Names{iCh} = localChannel.name;
             switch type
                 case 'time'
                     type = 'Time';
                 otherwise
                     type = 'Data';
             end
-            if localChannel.enable
+            if localChannel.enable         
+                Channels.Data.EnabledChNames{end+1} = localChannel.name;
                 Channels = Update_Channel_Info(Channels,iCh,localChannel,data,type,Config);
             end            
         catch
@@ -1095,3 +1097,25 @@ end
             end
             
  
+
+
+% --- Executes during object creation, after setting all properties.
+function figure1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over btnOK.
+function btnOK_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to btnOK (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes during object creation, after setting all properties.
+function btnOK_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to btnOK (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called

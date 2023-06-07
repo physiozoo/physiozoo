@@ -13,7 +13,7 @@ for iCh = 1 :  length(header_info.channel_info)
         Channel.name = Description{1};
         Channel.type = Channel_Type{1};
         Channel_Enable = strsplit(Channel.type,',');
-%         Channel.enable = Channel_Enable{2};
+        %         Channel.enable = Channel_Enable{2};
         switch Channel_Enable{2}
             case 'enable'
                 Channel.enable = true;
@@ -26,13 +26,13 @@ for iCh = 1 :  length(header_info.channel_info)
         Channel.name = 'data';
         Channel.enable = true;
     end
-%     Channel.enable = 'yes';
+    %     Channel.enable = 'yes';
     try
         Channel.unit = header_info.channel_info{iCh}.units;
     catch
         Channel.unit = 'select';
     end
-        Channels{iCh} = Channel;
+    Channels{iCh} = Channel;
 end
 try
     comment = header_info.comments{1};
@@ -45,8 +45,8 @@ catch
 end
 
 %% -----------  Read data from WFDB file ------------------------
-    [tm, sig, Fs] = mhrv.wfdb.rdsamp(FileName, 1:header_info.N_channels, 'header_info', header_info);
-    data.data = [tm,sig];
+[tm, sig, Fs] = mhrv.wfdb.rdsamp(FileName, 1:header_info.N_channels, 'header_info', header_info);
+data.data = [tm,sig];
 
 %% --------------------Build Channels Information for Loader ---------------------------------------------
 if ~isempty(tm)

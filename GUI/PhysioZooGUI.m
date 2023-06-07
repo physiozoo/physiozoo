@@ -1,5 +1,5 @@
 %%
-function PhysioZooGUI_HRVAnalysis(fileNameFromM1, DataFileMapFromM1)
+function PhysioZooGUI(fileNameFromM1, DataFileMapFromM1)
 
 % Add third-party dependencies to path
 gui_basepath = fileparts(mfilename('fullpath'));
@@ -71,8 +71,8 @@ displayEndOfDemoMessage('');
         DATA.mammal_index = 1;
         
         DATA.Integration = [];
-        DATA.integration_level = {'ecg'; 'electrogram'; 'ap'; 'oximetry'};
-        DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Action Potential'; 'Oximetry'};
+        DATA.integration_level = {'ecg'; 'electrogram'; 'oximetry'}; % ; 'ap'
+        DATA.GUI_Integration = {'ECG'; 'Electrogram'; 'Oximetry'}; % ; 'Action Potential'
         %         DATA.Integration = 'ECG';
         DATA.integration_index = 1;
         
@@ -449,8 +449,8 @@ displayEndOfDemoMessage('');
         %uimenu( helpMenu, 'Label', 'About', 'Callback', @onAbout );
         
         % + Peak Detection menu
-        tempMenu = uimenu( GUI.Window, 'Label', 'Peak Detection');
-        GUI.PeakDetectionMenu = uimenu( tempMenu, 'Label', 'Peak Detection', 'Callback', @onPeakDetection);
+        tempMenu = uimenu( GUI.Window, 'Label', 'Pulse');
+        GUI.PeakDetectionMenu = uimenu( tempMenu, 'Label', 'Pulse', 'Callback', @onPeakDetection);
         
         % Create the layout (Arrange the main interface)
         GUI.mainLayout = uix.VBoxFlex('Parent', GUI.Window, 'Spacing', DATA.Spacing);
@@ -2281,14 +2281,14 @@ displayEndOfDemoMessage('');
                             if isvalid(waitbar_handle)
                                 close(waitbar_handle);
                             end
-                            choice = questdlg('This recording contains raw electrophysiological data. It will be opened in the peak detection module.', ...
+                            choice = questdlg('This recording contains raw electrophysiological data. It will be opened in the pulse module.', ...
                                 'Select module', 'OK', 'Cancel', 'OK');
                             
                             switch choice
                                 case 'OK'
                                     fileNameFromM2.FileName = QRS_FileName;
                                     fileNameFromM2.PathName = PathName;
-                                    PhysioZooGUI_PeakDetection(fileNameFromM2, DataFileMap);
+                                    PhysioZooGUIPulse(fileNameFromM2, DataFileMap);
                                     isM1 = 1;
                                     return;
                                 case 'Cancel'
@@ -7915,7 +7915,7 @@ displayEndOfDemoMessage('');
     end
 %%
     function onPeakDetection( ~, ~ )
-        PhysioZooGUI_PeakDetection();
+        PhysioZooGUIPulse();
     end
 %%
     function build_OBM_Tab()

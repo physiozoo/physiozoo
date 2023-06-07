@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.6.06] - 2023-06-07
+
+### Changed
+
+Fix loading multy-channels files bug
+Rename module 1 to 'Pulse'
+Rename module 2 to 'PZGUI'
 
 ## [1.6.05] - 2023-05-04
 

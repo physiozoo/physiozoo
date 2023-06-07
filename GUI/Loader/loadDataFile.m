@@ -88,10 +88,19 @@ switch ext(2:end)
             return
         end
         
-        if ~strcmp(header_info.channel_info{1}.units, '%')
-            [UniqueMap,header,data] = Read_WFDB_DataFile(header_info,UniqueMap,waitbar_handle,FileName,ext);
-        elseif strcmp(header_info.channel_info{1}.units, '%')
-            [UniqueMap,header,data] = Read_WFDB_SpO2File(header_info,UniqueMap,waitbar_handle,FileName,ext);
+        try
+            if ~isfield(header_info.channel_info{1}, 'units')
+                [UniqueMap,header,data] = Read_WFDB_DataFile(header_info,UniqueMap,waitbar_handle,FileName,ext);
+            elseif ~strcmp(header_info.channel_info{1}.units, '%')
+                [UniqueMap,header,data] = Read_WFDB_DataFile(header_info,UniqueMap,waitbar_handle,FileName,ext);
+            elseif strcmp(header_info.channel_info{1}.units, '%')
+                [UniqueMap,header,data] = Read_WFDB_SpO2File(header_info,UniqueMap,waitbar_handle,FileName,ext);
+            end
+        catch
+            if isvalid(waitbar_handle)
+                close(waitbar_handle);
+                return;
+            end
         end
         
     case {'qrs','atr'}  % WFDB annotation files

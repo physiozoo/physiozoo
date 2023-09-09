@@ -123,9 +123,9 @@ html_theme_options = {
 html_static_path = ['_static']
 
 html_logo = "logo.png"
-# html_theme_options = {
-#     'logo_only': False
-# }
+html_theme_options = {
+    'logo_only': False
+}
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

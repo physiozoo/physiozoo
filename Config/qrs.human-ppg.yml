@@ -1,0 +1,35 @@
+mammal:             human
+integration_level:  PPG
+peak_detector:      PPGdet
+peak_adjustment:    default
+   
+# PPG peaks
+        
+# adjusting peaks location
+peaks_window:
+    value: 150
+    units: ms
+    description: Search for a peak within a window of size peak_window. Used for manual correction of peaks location or peak_adjustment.
+    name: Peaks window
+   
+# PPG filtering   
+ppg_filt_enable:
+    value: true
+    description: Whether to enable filtering
+    name: Enable filter
+    units: boolean
+lcf_ppg:
+    value: 0.5000001
+    description: Lower cutoff frequency
+    name: Lower cutoff frequency
+    units: Hz
+hcf_ppg:
+    value: 12
+    description: Higher cutoff frequency
+    name: Higher cutoff frequency
+    units: Hz 
+order:
+    value: 4
+    description: Filter order
+    name: Order
+    units: nu     

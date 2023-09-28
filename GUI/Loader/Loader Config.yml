@@ -6,12 +6,14 @@ data_type:
     beating_rate: [bpm]
     peak: [second,millisecond,index]
     oxygen_saturation: [percent]
+    photoplethysmography: [volt,millivolt,microvolt, nu]
 integration_level:
     - select
     - electrocardiogram
     - electrogram
     - action potential
     - oximetry
+    - photoplethysmogram
 mammal:
     - select
     - dog

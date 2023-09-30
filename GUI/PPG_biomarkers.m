@@ -6,11 +6,18 @@ biomarkers_path = '';
 exe_file_path = fileparts(mfilename('fullpath'));
 executable_file = [exe_file_path filesep 'PPG' filesep 'pyPPG.exe'];
 
-if exist(executable_file, 'file') && exist(config_file_name, 'file') && exist(fiducials_path, 'file')
-    
-    config_struct = ReadYaml(config_file_name);
-    Fs = load(ppg_file_name, 'Fs');
-    
+% if exist(executable_file, 'file') && exist(config_file_name, 'file') && exist(fiducials_path, 'file')
+try
+    try
+        config_struct = ReadYaml(config_file_name);
+        Fs = load(ppg_file_name, 'Fs');
+    catch e
+        rethrow(e);
+    end
+    if ~exist(executable_file, 'file')
+        ME = MException('PPG_peaks:noSuchFile', 'Please, download PPG executable from https://physiozoo.com/!');
+        throw(ME);
+    end
     %% Input parameters
     in.data_path = ppg_file_name;
     in.savedata = 1;
@@ -54,11 +61,18 @@ if exist(executable_file, 'file') && exist(config_file_name, 'file') && exist(fi
         end
     else
         disp(['PPG_biomarkers error: ', error, '\n', result]);
-%         rethrow(MException('PPG_biomarkers:jsystem', error));
+        ME = MException('PPG_peaks:jsystem', error);
+        throw(ME);
+        %         disp(['PPG_biomarkers error: ', error, '\n', result]);
+        %         rethrow(MException('PPG_biomarkers:jsystem', error));
     end
-%     if isempty(biomarkers_path)
-%         rethrow('The PPG biomarkers was''t calculated.');
-%     end
-else
-    h_e = errordlg('The PPG exe or config file does''t exist!', 'Input Error'); setLogo(h_e, 'PPG');
+    %     if isempty(biomarkers_path)
+    %         rethrow('The PPG biomarkers was''t calculated.');
+    %     end
+    % else
+    %     h_e = errordlg('Please, download PPG executable for https://physiozoo.com/!', 'Input Error'); setLogo(h_e, 'PPG');
+    %     h_e = errordlg('The PPG exe or config file does''t exist!', 'Input Error'); setLogo(h_e, 'PPG');
+    % end
+catch e
+    rethrow(e);
 end

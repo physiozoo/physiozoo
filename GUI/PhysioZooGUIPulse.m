@@ -42,7 +42,7 @@ end
         DATA.Adjust = 0;
         
         DATA.Mammal = '';
-                
+        
         DATA.Integration = '';
         DATA.integration_index = 1;
         
@@ -53,7 +53,7 @@ end
         DATA.config_struct = struct;
         DATA.customConfigFile = '';
         DATA.wfdb_record_name = '';
-                        
+        
         DATA.PlotHR = 1;
         
         DATA.maxRRTime = 0;
@@ -100,7 +100,7 @@ end
         
         GUI.SavePeaks.Enable = 'off';
         GUI.AutoScaleYLowAxes_checkbox.Value = 1;
-                
+        
         DATA.peaks_added = 0;
         DATA.peaks_deleted = 0;
         DATA.peaks_total = 0;
@@ -140,13 +140,13 @@ end
         GUI.GUIDisplay.MaxRhythmsRange_Edit.String = '';
         GUI.GUIDisplay.MinRhythmsRange_Edit.UserData = [];
         GUI.GUIDisplay.MaxRhythmsRange_Edit.UserData = [];
-                
+        
         set(GUI.GUIRecord.RecordFileName_text, 'String', '');
         
         set(GUI.GUIRecord.DataQualityFileName_text, 'String', '');
         set(GUI.GUIRecord.RhythmsFileName_text, 'String', '');
         set(GUI.GUIRecord.Config_text, 'String', '');
-        set(GUI.GUIRecord.TimeSeriesLength_text, 'String', '');                
+        set(GUI.GUIRecord.TimeSeriesLength_text, 'String', '');
         
         set(GUI.GUIDisplay.FirstSecond, 'String', '');
         set(GUI.GUIDisplay.WindowSize, 'String', '');
@@ -158,19 +158,19 @@ end
         set(GUI.GUIDisplay.MaxYLimit_Edit, 'UserData', '');
         
         GUI.AutoPeakWin_checkbox.Value = 1;
-                
-        GUI.GUIRecord.Annotation_popupmenu.Value = 1;                
+        
+        GUI.GUIRecord.Annotation_popupmenu.Value = 1;
         
         GUI.Adjustment_Text.String = 'Peak adjustmen';
         GUI.GUIRecord.PeakAdjustment_popupmenu.Value = 1;
         GUI.GUIRecord.PeakAdjustment_popupmenu.String = DATA.Adjustment_type;
-        GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @PeakAdjustment_popupmenu_Callback;                
+        GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @PeakAdjustment_popupmenu_Callback;
         
         set(GUI.GUIRecord.Mammal_popupmenu, 'String', '');
         set(GUI.GUIRecord.PeakDetector_popupmenu, 'Value', 1);
         
         GUI.LoadConfigurationFile.Enable = 'off';
-        GUI.SaveConfigurationFile.Enable = 'off';        
+        GUI.SaveConfigurationFile.Enable = 'off';
         
         GUI.SaveRhythms.Enable = 'off';
         GUI.OpenRhythms.Enable = 'off';
@@ -214,7 +214,7 @@ end
         GridX_checkbox_Callback();
         
         GUI.FilteredSignal_checkbox.Value = 0;
-        GUI.GUIDisplay.FilterLevel_popupmenu.Value = 1;        
+        GUI.GUIDisplay.FilterLevel_popupmenu.Value = 1;
         GUI.FilterLevelBox.Visible = 'off';
         GUI.CutoffFrBox.Visible = 'off';
         
@@ -222,7 +222,7 @@ end
         
         reset_rhythm_button();
         GUI.RhythmsHBox.Visible = 'off';
-        Rhythms_ToggleButton_Reset();                
+        Rhythms_ToggleButton_Reset();
         
         if isfield(GUI, 'RawChannelsData_handle')
             GUI = rmfield(GUI, 'RawChannelsData_handle');
@@ -318,7 +318,7 @@ end
         DATA.screensize = get( 0, 'Screensize' );
         
         %                 DEBUGGING MODE - Small Screen
-%         DATA.screensize = [0 0 1250 800];
+        %         DATA.screensize = [0 0 1250 800];
         
         DATA.window_size = [DATA.screensize(3)*0.99 DATA.screensize(4)*0.85];
         
@@ -575,7 +575,7 @@ end
             
             GUI.RightLeft_TabPanel = uix.TabPanel('Parent', temp_panel_left, 'Padding', DATA.Padding);
             %             two_axes_box = uix.VBox('Parent', GUI.graphs_panel_up_central, 'Spacing', DATA.Spacing);
-            CommandsButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top'); % 
+            CommandsButtons_Box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top'); %
             
             GUI.ChannelsTable = uitable('Parent', temp_vbox_buttons, 'FontSize', SmallFontSize, 'FontName', 'Calibri', 'Tag', 'ChannelsTable',...
                 'ColumnName', {'Ch.', 'Disp.', 'D.Filt.', 'D.Fiducials'}, 'ColumnEditable', [false true true true], 'RowStriping', 'on', ...
@@ -615,7 +615,7 @@ end
             
             set(amp_box, 'Heights', [-3 -1 -1]);
             %-----------------------------------------
-                        
+            
             peaks_box = uix.VBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'Padding', DATA.Padding);
             GUI.P_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'P-Peaks', 'Value', 0, 'Tag', 'PPeaksCb');
             GUI.Q_checkbox = uicontrol('Style', 'Checkbox', 'Parent', peaks_box, 'Callback', @PQRST_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Q-Peaks (QRS on)', 'Value', 0, 'Tag', 'QPeaksCb');
@@ -628,16 +628,16 @@ end
             GUI.R_checkbox.ForegroundColor = [1 0 0];
             GUI.S_checkbox.ForegroundColor = [0.8500, 0.3250, 0.0980];
             GUI.T_checkbox.ForegroundColor = [0.6350, 0.0780, 0.1840];
-                        
+            
             % ------------------------
             
-            play_box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Padding', DATA.Padding); % 
-                                   
+            play_box = uix.VButtonBox('Parent', temp_vbox_buttons, 'Spacing', DATA.Spacing, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Padding', DATA.Padding); %
+            
             GUI.CalcPeaksButton_handle = uicontrol('Style', 'PushButton', 'Parent', play_box, 'String', 'Find Fiducials', 'FontSize', DATA.SmallFontSize,...
                 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Enable', 'inactive', 'Tag', 'CalcPQRSTPeaks', 'Callback', @CalcPQRSTPeaks);
             %on' | 'off' | 'inactive'
-                                    
-%             set(fp_box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing);
+            
+            %             set(fp_box, 'ButtonSize', [110, 25], 'Spacing', DATA.Spacing);
             
             
             
@@ -782,7 +782,7 @@ end
             %             set(DirBox, 'Heights', [hf * ones(1, 2), -4] );
             %         else
             %             hf = -1;
-%             set(DirBox, 'Heights', [-0.9, -7, -0.7, -0.7, -0.7, -0.7, -7]);
+            %             set(DirBox, 'Heights', [-0.9, -7, -0.7, -0.7, -0.7, -0.7, -7]);
             set(DirBox, 'Heights', [-1, -7, -1, -1, -1, -1 -8]);
             %         end
             
@@ -932,27 +932,27 @@ end
             text_handles{18}.FontSize = BigFontSize-0.5;
             GUI.GUIConfig.NotchFilter_popupmenu.FontSize = BigFontSize-0.5;
             uicontrol( 'Style', 'text', 'Parent', textBox{18}, 'String', 'Hz', 'FontSize', BigFontSize-0.5, 'HorizontalAlignment', 'left');
-
+            
             
             uicontrol( 'Style', 'text', 'Parent', GUI.ConfigBox, 'String', 'Fiducials PPG filtering parameters', 'FontSize', BigFontSize, 'HorizontalAlignment', 'left', 'FontWeight', 'bold');
-            GUI.PPGFilter_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', BigFontSize-0.5, 'String', 'Apply filter', 'Value', 1, 'UserData', 'ppg_filt_enable', 'Callback', @apply_filter_ppg_checkbox_Callback);                        
+            GUI.PPGFilter_checkbox = uicontrol('Style', 'Checkbox', 'Parent', GUI.ConfigBox, 'FontSize', BigFontSize-0.5, 'String', 'Apply filter', 'Value', 1, 'UserData', 'ppg_filt_enable', 'Callback', @apply_filter_ppg_checkbox_Callback);
             [GUI, PPGLimitBox_L, text_handles_ppg_L] =     createGUISingleEditLine(GUI, 'GUIConfig', 'lcf_ppg', 'Lower cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'lcf_ppg', BigFontSize-0.5);
-            [GUI, PPGLimitBox_H, text_handles_ppg_H] =     createGUISingleEditLine(GUI, 'GUIConfig', 'hcf_ppg', 'Upper cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'hcf_ppg', BigFontSize-0.5);                                                
+            [GUI, PPGLimitBox_H, text_handles_ppg_H] =     createGUISingleEditLine(GUI, 'GUIConfig', 'hcf_ppg', 'Upper cutoff frequency', 'Hz', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'hcf_ppg', BigFontSize-0.5);
             [GUI, PPGOrder,      text_handles_ppg_order] = createGUISingleEditLine(GUI, 'GUIConfig', 'order', 'Order', 'n.u.', GUI.ConfigBox, @config_edit_Callback, 'config_edit', 'order', BigFontSize-0.5);
-                                    
+            
             uix.Empty('Parent', GUI.ConfigBox );
-                                                
+            
             if DATA.SmallScreen
                 set(GUI.ConfigBox, 'Heights', [-10 -10 * ones(1, 7)  -10 -10 * ones(1, 5)  -10 -10 * ones(1, 4)  -10 -10 -10 -10 -15 -10 -10 -10 -10 -10 -40]);
             else
                 set(GUI.ConfigBox, 'Heights', [-10 -10 * ones(1, 7)  -10 -10 * ones(1, 5)  -10 -10 * ones(1, 4)  -10 -10 -10 -10 -15 -10 -10 -10 -10 -10 -20]);
             end
-                                    
+            
             uix.Empty('Parent', DisplayBox);
             
             [GUI, textBox{19}, text_handles{19}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'FirstSecond', 'Window start:', 'h:min:sec', DisplayBox, @FirstSecond_Callback, '', 0, BigFontSize);
             [GUI, textBox{20}, text_handles{20}] = createGUISingleEditLine(GUI, 'GUIDisplay', 'WindowSize', 'Window length:', 'h:min:sec', DisplayBox, @WindowSize_Callback, '', 0, BigFontSize);
-                        
+            
             [GUI, YLimitBox, text_handles{21}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinYLimit_Edit'; 'MaxYLimit_Edit'}, 'Y Limit:', '', DisplayBox, {@MinMaxYLimit_Edit_Callback; @MinMaxYLimit_Edit_Callback}, {'', ''}, []);
             
             uix.Empty('Parent', DisplayBox);
@@ -986,7 +986,7 @@ end
             uix.Empty('Parent', DisplayBox);
             
             ChannelsBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
-                        
+            
             GUI.FilteredSignal_checkbox = uicontrol('Style', 'Checkbox', 'Parent', ChannelsBox, 'Callback', @ShowFilteredSignal_checkbox_Callback, 'FontSize', SmallFontSize, 'String', 'Show filtered signal', 'Value', 0);
             GUI.RawSignal_checkbox =      uicontrol('Style', 'Checkbox', 'Parent', ChannelsBox, 'Callback', @ShowRawSignal_checkbox_Callback,      'FontSize', SmallFontSize, 'String', 'Show raw signal', 'Value', 1);
             
@@ -996,15 +996,15 @@ end
             [GUI, CutoffFr, text_handles{26}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'LowCutoffFr_Edit'; 'HightCutoffFr_Edit'}, 'Cutoff Frequency:', 'Hz', DisplayBox, {@LowHightCutoffFr_Edit; @LowHightCutoffFr_Edit}, {'', ''}, []);
             set_default_filter_level_user_data();
             
-            uix.Empty('Parent', DisplayBox);                        
+            uix.Empty('Parent', DisplayBox);
             
             % ---------------------------------------------------
-            [GUI, GUI.RhythmsRangeHBox, text_handles{27}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinRhythmsRange_Edit'; 'MaxRhythmsRange_Edit'}, 'Rhythms range:', 'h:min:sec', DisplayBox, {@MinMaxRhythmsRange_Edit_Callback; @MinMaxRhythmsRange_Edit_Callback}, {'Min'; 'Max'}, []);            
-                                    
+            [GUI, GUI.RhythmsRangeHBox, text_handles{27}] = createGUIDoubleEditLine(GUI, 'GUIDisplay', {'MinRhythmsRange_Edit'; 'MaxRhythmsRange_Edit'}, 'Rhythms range:', 'h:min:sec', DisplayBox, {@MinMaxRhythmsRange_Edit_Callback; @MinMaxRhythmsRange_Edit_Callback}, {'Min'; 'Max'}, []);
+            
             GUI.DispRhythmsHBox = uix.HBox('Parent', DisplayBox, 'Spacing', DATA.Spacing);
             text_handles{28} = uicontrol('Style', 'text', 'Parent', GUI.DispRhythmsHBox, 'String', 'Rhythms', 'FontSize', DATA.SmallFontSize, 'HorizontalAlignment', 'left');
             GUI.RhythmsListbox = uicontrol('Style', 'ListBox', 'Parent', GUI.DispRhythmsHBox, 'Callback', @Rhythms_listbox_Callback, 'FontSize', DATA.SmallFontSize, 'Tag', 'RhythmsList');
-                                    
+            
             uix.Empty('Parent', DisplayBox);
             
             GUI.FilterLevelBox = textBox{25};
@@ -1069,7 +1069,7 @@ end
             end
             set(CutoffFr, 'Widths', field_size);
             set(GUI.RhythmsRangeHBox, 'Widths', field_size);
-%             set(PPGLimitBox, 'Widths', field_size);
+            %             set(PPGLimitBox, 'Widths', field_size);
             
             
             if DATA.SmallScreen
@@ -1092,51 +1092,51 @@ end
             
             GUI = create_low_part_tables(GUI, GUI.Low_TabPanel, '', DATA.Padding, DATA.Spacing, DATA.SmallFontSize, DATA.BigFontSize);
             
-%             PeaksTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
-%             RhythmsTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
-%             DurationTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
-%             AmplitudeTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
-%             
-%             Low_TabPanel.TabTitles = {'Peaks', 'Rhythms', 'Duration', 'Amplitude'};
-%             Low_TabPanel.TabWidth = 100;
-%             Low_TabPanel.FontSize = BigFontSize;
-%             
-%             Low_Part_Box = uix.VBox('Parent', PeaksTab, 'Spacing', DATA.Spacing);
-%             
-%             GUI.PeaksTable = uitable('Parent', Low_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{550 'auto'}, 'FontName', 'Calibri');
-%             GUI.PeaksTable.ColumnName = {'Description'; 'Values'};
-%             GUI.PeaksTable.RowName = {'NB PEAKS (n.u.)'; 'NB PEAKS ADD (n.u.)'; 'NB PEAKS RM (n.u.)'; 'PR BAD SQ (%)'};
-%             GUI.PeaksTable.Data = {''};
-%             GUI.PeaksTable.Data(1, 1) = {'Total number of peaks'};    % Number of peaks detected by the peak detection algorithm
-%             GUI.PeaksTable.Data(2, 1) = {'Number of peaks manually added by the user'}; % Number of peaks manually added by the user
-%             GUI.PeaksTable.Data(3, 1) = {'Number of peaks manually removed by the user'}; % Number of peaks manually removed by the user
-%             GUI.PeaksTable.Data(4, 1) = {['Percentage of the record annotated as bad quality (i.e. signal quality ' sprintf('\x2260') ' ''A'')']};
-%             GUI.PeaksTable.Data(:, 2) = {0};
-%             
-%             %--------------------------------------------------------------------------
-%             
-%             Rhythms_Part_Box = uix.VBox('Parent', RhythmsTab, 'Spacing', DATA.Spacing);
-%             GUI.RhythmsTable = uitable('Parent', Rhythms_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{250 'auto' 'auto' 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
-%             GUI.RhythmsTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Median (sec)'; 'Q1 (sec)'; 'Q3 (sec)'; 'Burden (%)'; 'Nb events'};
-%             GUI.RhythmsTable.Data = {};
-%             GUI.RhythmsTable.RowName = {};
-%             
-%             %--------------------------------------------------------------------------
-%             
-%             Amplitude_Part_Box = uix.VBox('Parent', AmplitudeTab, 'Spacing', DATA.Spacing);
-%             GUI.AmplitudeTable = uitable('Parent', Amplitude_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{450 'auto' 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
-%             %             GUI.AmplitudeTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Mean (sec)'; 'Median (sec)'; 'STD (sec)'; 'IQR (sec)'};
-%             GUI.AmplitudeTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
-%             GUI.AmplitudeTable.Data = {};
-%             GUI.AmplitudeTable.RowName = {};
-%             
-%             %--------------------------------------------------------------------------
-%             
-%             Duration_Part_Box = uix.VBox('Parent', DurationTab, 'Spacing', DATA.Spacing);
-%             GUI.DurationTable = uitable('Parent', Duration_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{350 'auto' 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
-%             GUI.DurationTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
-%             GUI.DurationTable.Data = {};
-%             GUI.DurationTable.RowName = {};
+            %             PeaksTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
+            %             RhythmsTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
+            %             DurationTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
+            %             AmplitudeTab = uix.Panel('Parent', Low_TabPanel, 'Padding', DATA.Padding);
+            %
+            %             Low_TabPanel.TabTitles = {'Peaks', 'Rhythms', 'Duration', 'Amplitude'};
+            %             Low_TabPanel.TabWidth = 100;
+            %             Low_TabPanel.FontSize = BigFontSize;
+            %
+            %             Low_Part_Box = uix.VBox('Parent', PeaksTab, 'Spacing', DATA.Spacing);
+            %
+            %             GUI.PeaksTable = uitable('Parent', Low_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{550 'auto'}, 'FontName', 'Calibri');
+            %             GUI.PeaksTable.ColumnName = {'Description'; 'Values'};
+            %             GUI.PeaksTable.RowName = {'NB PEAKS (n.u.)'; 'NB PEAKS ADD (n.u.)'; 'NB PEAKS RM (n.u.)'; 'PR BAD SQ (%)'};
+            %             GUI.PeaksTable.Data = {''};
+            %             GUI.PeaksTable.Data(1, 1) = {'Total number of peaks'};    % Number of peaks detected by the peak detection algorithm
+            %             GUI.PeaksTable.Data(2, 1) = {'Number of peaks manually added by the user'}; % Number of peaks manually added by the user
+            %             GUI.PeaksTable.Data(3, 1) = {'Number of peaks manually removed by the user'}; % Number of peaks manually removed by the user
+            %             GUI.PeaksTable.Data(4, 1) = {['Percentage of the record annotated as bad quality (i.e. signal quality ' sprintf('\x2260') ' ''A'')']};
+            %             GUI.PeaksTable.Data(:, 2) = {0};
+            %
+            %             %--------------------------------------------------------------------------
+            %
+            %             Rhythms_Part_Box = uix.VBox('Parent', RhythmsTab, 'Spacing', DATA.Spacing);
+            %             GUI.RhythmsTable = uitable('Parent', Rhythms_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{250 'auto' 'auto' 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
+            %             GUI.RhythmsTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Median (sec)'; 'Q1 (sec)'; 'Q3 (sec)'; 'Burden (%)'; 'Nb events'};
+            %             GUI.RhythmsTable.Data = {};
+            %             GUI.RhythmsTable.RowName = {};
+            %
+            %             %--------------------------------------------------------------------------
+            %
+            %             Amplitude_Part_Box = uix.VBox('Parent', AmplitudeTab, 'Spacing', DATA.Spacing);
+            %             GUI.AmplitudeTable = uitable('Parent', Amplitude_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{450 'auto' 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
+            %             %             GUI.AmplitudeTable.ColumnName = {'Description'; 'Min (sec)'; 'Max (sec)'; 'Mean (sec)'; 'Median (sec)'; 'STD (sec)'; 'IQR (sec)'};
+            %             GUI.AmplitudeTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
+            %             GUI.AmplitudeTable.Data = {};
+            %             GUI.AmplitudeTable.RowName = {};
+            %
+            %             %--------------------------------------------------------------------------
+            %
+            %             Duration_Part_Box = uix.VBox('Parent', DurationTab, 'Spacing', DATA.Spacing);
+            %             GUI.DurationTable = uitable('Parent', Duration_Part_Box, 'FontSize', SmallFontSize, 'ColumnWidth',{350 'auto' 'auto' 'auto' 'auto' 'auto' 'auto'}, 'FontName', 'Calibri');
+            %             GUI.DurationTable.ColumnName = {'Description'; 'Mean'; 'Median'; 'Min'; 'Max'; 'IQR'; 'STD'};
+            %             GUI.DurationTable.Data = {};
+            %             GUI.DurationTable.RowName = {};
             
             %--------------------------------------------------------------------------
             
@@ -1323,9 +1323,9 @@ end
             elseif strcmp(integration, 'ECG')
                 set(GUI.GUIRecord.PeakDetector_popupmenu, 'String', DATA.GUI_PeakDetector(1:end-1, :), 'Value', DATA.peakDetector_index);
                 GUI.GUIRecord.PeakDetector_popupmenu.Enable = 'on';
-            elseif strcmp(integration, 'PPG')    
+            elseif strcmp(integration, 'PPG')
                 set(GUI.GUIRecord.PeakDetector_popupmenu, 'String', DATA.GUI_PeakDetector, 'Value', DATA.peakDetector_index);
-                GUI.GUIRecord.PeakDetector_popupmenu.Enable = 'inactive';
+                GUI.GUIRecord.PeakDetector_popupmenu.Enable = 'off';
             end
             
             
@@ -1374,10 +1374,10 @@ end
                 GUI.GUIRecord.PeakDetector_popupmenu.Value = 1;
                 GUI.GUIRecord.PeakDetector_popupmenu.String = DATA.GUI_PeakDetector(1:end-1, :);
                 GUI.GUIRecord.PeakDetector_popupmenu.Enable = 'on';
-            elseif index_selected == 3    
+            elseif index_selected == 3
                 GUI.GUIRecord.PeakDetector_popupmenu.String = DATA.GUI_PeakDetector;
                 GUI.GUIRecord.PeakDetector_popupmenu.Value = 5;
-                GUI.GUIRecord.PeakDetector_popupmenu.Enable = 'inactive';
+                GUI.GUIRecord.PeakDetector_popupmenu.Enable = 'off';
             end
         end
     end
@@ -1422,7 +1422,7 @@ end
         
         persistent DIRS;
         persistent EXT;
-                        
+        
         % Add third-party dependencies to path
         gui_basepath = fileparts(mfilename('fullpath'));
         basepath = fileparts(gui_basepath);
@@ -1469,7 +1469,7 @@ end
                         setLogo(waitbar_handle, DATA.Module);
                         
                         DataFileMap = loadDataFile([PathName DataFileName '.' EXT]);
-                                               
+                        
                         close(waitbar_handle);
                     catch e
                         if isvalid(waitbar_handle)
@@ -1483,7 +1483,7 @@ end
                 MSG = DataFileMap('MSG');
                 if strcmp(Config.alarm.(MSG), 'OK')
                     data = DataFileMap('DATA');
-
+                    
                     if strcmp(data.Data.Type, 'electrography') || strcmp(data.Data.Type, 'photoplethysmography')
                         
                         clearData();
@@ -1516,7 +1516,7 @@ end
                         DATA.Fs = double(data.Time.Fs);
                         DATA.sig = data.Data.Data;
                         time_data = data.Time.Data;
-                        DATA.tm = time_data - time_data(1);                        
+                        DATA.tm = time_data - time_data(1);
                         
                         DATA.ecg_channel = 1;
                         
@@ -1530,7 +1530,7 @@ end
                             end
                         elseif (strcmpi(EXT, 'txt') || strcmpi(EXT, 'mat')) && strcmp(DATA.Integration, 'PPG')
                             Fs = DATA.Fs;
-                            Data = DATA.sig;                            
+                            Data = DATA.sig;
                             DATA.wfdb_record_name = [tempdir DATA.temp_rec_name4wfdb '.mat'];
                             save(DATA.wfdb_record_name, 'Data', 'Fs');
                             clear Fs;
@@ -1567,7 +1567,7 @@ end
                                         if isvalid(waitbar_handle)
                                             close(waitbar_handle);
                                         end
-
+                                        
                                         GUI.Rhythms_handle.Enable = 'inactive';
                                         return;
                                     catch e
@@ -1630,11 +1630,11 @@ end
                 end
                 
                 set(GUI.GUIRecord.RecordFileName_text, 'String', ECG_FileName);
-                                
-                %--------------------------------------------------------------------                
-                                                
-                [~, ch_no] = size(DATA.sig);                
-                real_ch_no = length(data.Data.EnabledChNames);                
+                
+                %--------------------------------------------------------------------
+                
+                [~, ch_no] = size(DATA.sig);
+                real_ch_no = length(data.Data.EnabledChNames);
                 if real_ch_no > ch_no
                     names_array = {data.Data.EnabledChNames{2:end}};
                 else
@@ -1674,9 +1674,9 @@ end
                     table_data(i, 4) = {false};
                     table_data(i, 3) = {false};
                 end
-                                
+                
                 clear('DataFileMap');
-                                
+                
                 GUI.ChannelsTable.Data = table_data;
                 
                 GUI.offset_array = zeros(1, ch_no);
@@ -1684,20 +1684,20 @@ end
                 
                 if ch_no ~= 12
                     
-%                     if ~strcmp(DATA.Integration, 'PPG')
-                        [GUI.ECG_Axes, GUI.RRInt_Axes] = create_graphs_panel(GUI.graphs_panel_up_central, DATA.Spacing, myUpBackgroundColor);
-                        GUI.RawData_handle = line(DATA.tm, DATA.sig(:, 1), 'Parent', GUI.ECG_Axes, 'Tag', 'RawData_1', 'Color', DATA.Ch_Colors{1});
-                        offset = min(GUI.RawData_handle.YData)*1.05;
-                        GUI.RawChannelsData_handle(1) = GUI.RawData_handle;
-                        
-                        for i = 2 : ch_no
-                            GUI.offset_array(i) = offset;
-                            GUI.RawChannelsData_handle(i) = line(DATA.tm, DATA.sig(:, i) + offset, 'Parent', GUI.ECG_Axes,...
-                                'Tag', ['RawData_' num2str(i)], 'Color', DATA.Ch_Colors{mod(i-1, 3)+1});
-                            offset = min(GUI.RawChannelsData_handle(i).YData)*1.05; % +offset
-                            GUI.RawChannelsData_handle(i).Visible = 'off';
-                        end                    
-                                                                                                    
+                    %                     if ~strcmp(DATA.Integration, 'PPG')
+                    [GUI.ECG_Axes, GUI.RRInt_Axes] = create_graphs_panel(GUI.graphs_panel_up_central, DATA.Spacing, myUpBackgroundColor);
+                    GUI.RawData_handle = line(DATA.tm, DATA.sig(:, 1), 'Parent', GUI.ECG_Axes, 'Tag', 'RawData_1', 'Color', DATA.Ch_Colors{1});
+                    offset = min(GUI.RawData_handle.YData)*1.05;
+                    GUI.RawChannelsData_handle(1) = GUI.RawData_handle;
+                    
+                    for i = 2 : ch_no
+                        GUI.offset_array(i) = offset;
+                        GUI.RawChannelsData_handle(i) = line(DATA.tm, DATA.sig(:, i) + offset, 'Parent', GUI.ECG_Axes,...
+                            'Tag', ['RawData_' num2str(i)], 'Color', DATA.Ch_Colors{mod(i-1, 3)+1});
+                        offset = min(GUI.RawChannelsData_handle(i).YData)*1.05; % +offset
+                        GUI.RawChannelsData_handle(i).Visible = 'off';
+                    end
+                    
                     PathName = strrep(PathName, '\', '\\');
                     PathName = strrep(PathName, '_', '\_');
                     ECG_FileName_title = strrep(ECG_FileName, '_', '\_');
@@ -1741,11 +1741,11 @@ end
                     
                     GUI.GUIRecord.Annotation_popupmenu.Enable = 'on';
                     GUI.GUIRecord.PeakAdjustment_popupmenu.Enable = 'on';
-
+                    
                     if strcmp(DATA.Integration, 'PPG')
                         y_label_text = 'PPG (mV)';
-                        GUI.GUIRecord.Annotation_popupmenu.Enable = 'inactive';
-                        GUI.GUIRecord.PeakAdjustment_popupmenu.Enable = 'inactive';
+                        GUI.GUIRecord.Annotation_popupmenu.Enable = 'off';
+                        GUI.GUIRecord.PeakAdjustment_popupmenu.Enable = 'off';
                         GUI.TrendHR_checkbox.Enable = 'off';
                         GUI.FilterHR_checkbox.Enable = 'off';
                         GUI.FilteredSignal_checkbox.Enable = 'off';
@@ -1769,7 +1769,19 @@ end
                         GUI.GUIConfig.NotchFilter_popupmenu.Enable = 'off';
                         GUI.BandpassFilter_checkbox.Enable = 'off';
                         
+                        %                         GUI.GUIRecord.PeaksFileName_text.Enable = 'off';
+                        %                         GUI.GUIRecord.DataQualityFileName_text.Enable = 'off';
+                        %                         GUI.GUIRecord.RhythmsFileName_text.Enable = 'off';
+                        
                         GUI = create_low_part_tables(GUI, GUI.Low_TabPanel, 'PPG', DATA.Padding, DATA.Spacing, DATA.SmallFontSize, DATA.BigFontSize);
+                        
+                        %                         try
+                        %                             download_ppg_exe_file();
+                        %                         catch e
+                        %                             h_e = errordlg(['OpenFile error: ' e.message], 'Input Error'); setLogo(h_e, DATA.Module);
+                        %                             return;
+                        %                         end
+                        
                         
                     else
                         y_label_text = 'ECG (mV)';
@@ -1798,43 +1810,47 @@ end
                         GUI.GUIConfig.NotchFilter_popupmenu.Enable = 'on';
                         GUI.BandpassFilter_checkbox.Enable = 'on';
                         
+                        %                         GUI.GUIRecord.PeaksFileName_text.Enable = 'on';
+                        %                         GUI.GUIRecord.DataQualityFileName_text.Enable = 'on';
+                        %                         GUI.GUIRecord.RhythmsFileName_text.Enable = 'on';
+                        
                         GUI = create_low_part_tables(GUI, GUI.Low_TabPanel, 'ECG', DATA.Padding, DATA.Spacing, DATA.SmallFontSize, DATA.BigFontSize);
-                    end                    
+                    end
                     
-                    try 
+                    try
                         xlabel(GUI.ECG_Axes, 'Time (h:min:sec)', 'FontName', 'Times New Roman');
                         ylabel(GUI.ECG_Axes, y_label_text, 'FontName', 'Times New Roman');
                         hold(GUI.ECG_Axes, 'on');
                         GUI.hT = text(0, 0, 'Test', 'Parent', GUI.ECG_Axes, 'FontName', 'Times New Roman');
                     catch
-%                         xlabel(GUI.PPG_Axes, 'Time (h:min:sec)', 'FontName', 'Times New Roman');
-%                         ylabel(GUI.PPG_Axes, 'PPG (mV)', 'FontName', 'Times New Roman');
-%                         hold(GUI.PPG_Axes, 'on');
-%                         GUI.hT = text(0, 0, 'Test', 'Parent', GUI.PPG_Axes, 'FontName', 'Times New Roman');
-%                         GUI.RR_or_HR_plot_button.Enable = 'off';
-%                         GUI.ChAmpDecreaseButton.Enable = 'off';
-%                         GUI.ChAmpIncreaseButton.Enable = 'off';
-%                         GUI.ChAmpSourceButton.Enable = 'off';                        
-%                         GUI.GUIRecord.Annotation_popupmenu.Enable = 'off';
-%                         GUI.GUIRecord.PeakAdjustment_popupmenu.Enable = 'off';
-%                         GUI.PlayStopReverseMovieButton.Enable = 'off';
-%                         GUI.PlayStopForwMovieButton.Enable = 'off';
-%                         GUI.PageDownButton.Enable = 'off';
-%                         GUI.PageUpButton.Enable = 'off';
+                        %                         xlabel(GUI.PPG_Axes, 'Time (h:min:sec)', 'FontName', 'Times New Roman');
+                        %                         ylabel(GUI.PPG_Axes, 'PPG (mV)', 'FontName', 'Times New Roman');
+                        %                         hold(GUI.PPG_Axes, 'on');
+                        %                         GUI.hT = text(0, 0, 'Test', 'Parent', GUI.PPG_Axes, 'FontName', 'Times New Roman');
+                        %                         GUI.RR_or_HR_plot_button.Enable = 'off';
+                        %                         GUI.ChAmpDecreaseButton.Enable = 'off';
+                        %                         GUI.ChAmpIncreaseButton.Enable = 'off';
+                        %                         GUI.ChAmpSourceButton.Enable = 'off';
+                        %                         GUI.GUIRecord.Annotation_popupmenu.Enable = 'off';
+                        %                         GUI.GUIRecord.PeakAdjustment_popupmenu.Enable = 'off';
+                        %                         GUI.PlayStopReverseMovieButton.Enable = 'off';
+                        %                         GUI.PlayStopForwMovieButton.Enable = 'off';
+                        %                         GUI.PageDownButton.Enable = 'off';
+                        %                         GUI.PageUpButton.Enable = 'off';
                     end
                     
                     GUI.Rhythms_handle.Enable = 'inactive';
-%                     GUI.Rhythms_handle.Enable = 'on';
+                    %                     GUI.Rhythms_handle.Enable = 'on';
                     
                     
-                else                                        
+                else
                     GUI.ECG_Axes_Array = create_grid_panel(GUI.graphs_panel_up_central, DATA.Spacing, DATA.Padding, myUpBackgroundColor, ch_no);
                     [GUI.RawChannelsData_handle, GUI.ch_name_handles] = plot_ch_data(GUI.ECG_Axes_Array, DATA.tm, DATA.sig, names_array, GUI.GridX_checkbox, GUI.GridY_checkbox);
                     
                     GUI.ECG_Axes = GUI.ECG_Axes_Array(1);
                     GUI.RawData_handle = GUI.RawChannelsData_handle(1);
                     
-                    GUI.ChannelsTable.Data(:, 2) = {true};                    
+                    GUI.ChannelsTable.Data(:, 2) = {true};
                     
                     set(GUI.GUIDisplay.FirstSecond, 'Enable', 'off', 'String', '');
                     set(GUI.GUIDisplay.WindowSize, 'Enable', 'off', 'String', '');
@@ -1865,6 +1881,8 @@ end
                     GUI.GUIRecord.PeakAdjustment_popupmenu.Enable = 'off';
                     DATA.Module = 'M1';
                     setLogo(GUI.Window, DATA.Module);
+                    
+                    GUI = create_low_part_tables(GUI, GUI.Low_TabPanel, 'ECG', DATA.Padding, DATA.Spacing, DATA.SmallFontSize, DATA.BigFontSize);
                 end
                 
                 %---------------------------------------------------------------------------------------------------
@@ -1885,15 +1903,27 @@ end
                 GUI.LoadConfigurationFile.Enable = 'on';
                 GUI.SaveConfigurationFile.Enable = 'on';
                 GUI.SavePeaks.Enable = 'on';
-                GUI.SaveDataQuality.Enable = 'on';
-                GUI.OpenDataQuality.Enable = 'on';
-                GUI.SaveRhythms.Enable = 'on';
-                GUI.OpenRhythms.Enable = 'on';
                 GUI.SaveFiguresFile.Enable = 'on';
-                GUI.GUIRecord.PeaksFileName_text_pushbutton_handle.Enable = 'on';
+                
+                if ~strcmp(DATA.Integration, 'PPG')
+                    GUI.GUIRecord.PeaksFileName_text_pushbutton_handle.Enable = 'on';
+                    GUI.GUIRecord.DataQualityFileName_text_pushbutton_handle.Enable = 'on';
+                    GUI.GUIRecord.RhythmsFileName_text_pushbutton_handle.Enable = 'on';
+                    GUI.SaveDataQuality.Enable = 'on';
+                    GUI.OpenDataQuality.Enable = 'on';
+                    GUI.SaveRhythms.Enable = 'on';
+                    GUI.OpenRhythms.Enable = 'on';
+                else
+                    GUI.GUIRecord.PeaksFileName_text_pushbutton_handle.Enable = 'off';
+                    GUI.GUIRecord.DataQualityFileName_text_pushbutton_handle.Enable = 'off';
+                    GUI.GUIRecord.RhythmsFileName_text_pushbutton_handle.Enable = 'off';
+                    GUI.SaveDataQuality.Enable = 'off';
+                    GUI.OpenDataQuality.Enable = 'off';
+                    GUI.SaveRhythms.Enable = 'off';
+                    GUI.OpenRhythms.Enable = 'off';
+                end
+                
                 GUI.GUIRecord.Config_text_pushbutton_handle.Enable = 'on';
-                GUI.GUIRecord.DataQualityFileName_text_pushbutton_handle.Enable = 'on';
-                GUI.GUIRecord.RhythmsFileName_text_pushbutton_handle.Enable = 'on';
                 
                 GUI.Fiducials_winStart.String = calcDuration(0, 0);
                 GUI.Fiducials_winLength.String = calcDuration(min(300, max(DATA.tm)), 0);
@@ -1903,7 +1933,6 @@ end
                 
                 DATA.zoom_rect_limits = [0 DATA.firstZoom];
                 set_default_filter_level_user_data();
-                
                 
                 GUI.GUIDir.Split_Sec.String = min(max(DATA.tm), DATA.Small_File_Length_Sec);
                 GUI.GUIDir.Split_Sec.UserData = GUI.GUIDir.Split_Sec.String;
@@ -1985,9 +2014,9 @@ end
             if isfield(GUI, 'ECG_Axes') && isvalid(GUI.ECG_Axes)
                 set(GUI.ECG_Axes, 'XLim', [minLimit maxLimit]);
                 setXECGGrid(GUI.ECG_Axes, GUI.GridX_checkbox);
-%             elseif isfield(GUI, 'PPG_Axes') && isvalid(GUI.PPG_Axes)
-%                 set(GUI.PPG_Axes, 'XLim', [minLimit maxLimit]);
-%                 setXECGGrid(GUI.PPG_Axes, GUI.GridX_checkbox);
+                %             elseif isfield(GUI, 'PPG_Axes') && isvalid(GUI.PPG_Axes)
+                %                 set(GUI.PPG_Axes, 'XLim', [minLimit maxLimit]);
+                %                 setXECGGrid(GUI.PPG_Axes, GUI.GridX_checkbox);
             end
         end
     end
@@ -2055,8 +2084,8 @@ end
                 try
                     if isfield(GUI, 'ECG_Axes') && isvalid(GUI.ECG_Axes)
                         set(GUI.ECG_Axes, 'YLim', [min_y_lim max_y_lim]);
-%                     elseif isfield(GUI, 'PPG_Axes') && isvalid(GUI.PPG_Axes)
-%                         set(GUI.PPG_Axes, 'YLim', [min_y_lim max_y_lim]);
+                        %                     elseif isfield(GUI, 'PPG_Axes') && isvalid(GUI.PPG_Axes)
+                        %                         set(GUI.PPG_Axes, 'YLim', [min_y_lim max_y_lim]);
                     end
                 catch e
                     disp(e.message);
@@ -2095,7 +2124,7 @@ end
                 current_y_data = DATA.rr_data_filtered(DATA.rr_time_filtered >= xlim(1) & DATA.rr_time_filtered <= xlim(2));
                 
                 low_y_lim = min(current_y_data);
-                hight_y_lim = max(current_y_data);                                
+                hight_y_lim = max(current_y_data);
             end
         end
     end
@@ -2172,8 +2201,8 @@ end
             if DATA.Fs/2 <= str2double(get(GUI.GUIConfig.hcf, 'String'))
                 set(GUI.GUIConfig.hcf, 'String', floor(DATA.Fs/2) - 2);
                 DATA.config_map(get(GUI.GUIConfig.hcf, 'UserData')) = str2double(get(GUI.GUIConfig.hcf, 'String'));
-            end            
-                                    
+            end
+            
             params_GUI_checkbox_values = findobj(GUI.ConfigBox, 'Style', 'Checkbox');
             fields_name = get(params_GUI_checkbox_values, 'UserData');
             for i = 1 : length(params_GUI_checkbox_values)
@@ -2183,11 +2212,11 @@ end
                         tooltip = DATA.config_struct.(fields_name{i}).description;
                         set(params_GUI_checkbox_values(i), 'Value', param_value, 'Tooltip', tooltip, 'Enable', 'on');
                     catch
-%                         set(params_GUI_checkbox_values(i), 'Enable', 'off');
+                        %                         set(params_GUI_checkbox_values(i), 'Enable', 'off');
                     end
                 end
             end
-                        
+            
             if ~strcmp(DATA.Integration, 'PPG')
                 DATA.customConfigFile = [tempdir 'gqrs.temp_custom.conf'];
                 temp_custom_conf_fileID = saveCustomParameters(DATA.customConfigFile);
@@ -2224,7 +2253,7 @@ end
         if isfield(GUI, 'rhythms_win')
             delete(GUI.rhythms_win);
             GUI = rmfield(GUI, 'rhythms_win');
-%             DATA.rhythms_win_num = 0;
+            %             DATA.rhythms_win_num = 0;
         end
         DATA.rhythms_win_num = 0;
         
@@ -2256,9 +2285,9 @@ end
             if isfield(GUI, 'ECG_Axes') && isvalid(GUI.ECG_Axes)
                 legend(GUI.ECG_Axes, 'off');
             end
-%             if isfield(GUI, 'PPG_Axes') && isvalid(GUI.PPG_Axes)
-%                 legend(GUI.PPG_Axes, 'off');
-%             end
+            %             if isfield(GUI, 'PPG_Axes') && isvalid(GUI.PPG_Axes)
+            %                 legend(GUI.PPG_Axes, 'off');
+            %             end
             if isfield(GUI, 'RRInt_Axes') && isvalid(GUI.RRInt_Axes)
                 cla(GUI.RRInt_Axes);
             end
@@ -2328,12 +2357,16 @@ end
                             h_e = errordlg('The parameters for the EGM algorithms were not defined.', 'Input Error');
                             setLogo(h_e, DATA.Module);
                         end
-                    elseif strcmpi(peak_detector, 'PPGdet')   
+                    elseif strcmpi(peak_detector, 'PPGdet')
                         try
                             [GUI.PQRST_position, GUI.fiducials_path] = PPG_peaks(DATA.wfdb_record_name, DATA.customConfigFile);
                             DATA.qrs = GUI.PQRST_position.sp + 1;
-                        catch
-                            h_e = errordlg('The PPG fiducials points were not found.', 'Input Error'); setLogo(h_e, DATA.Module);
+                        catch e
+                            if isvalid(waitbar_handle)
+                                close(waitbar_handle);
+                            end
+                            h_e = errordlg(['The PPG fiducials points were not found. ', e.message], 'Input Error'); setLogo(h_e, DATA.Module);
+                            return;
                         end
                     else
                         if (exist(fullfile([DATA.wfdb_record_name '.dat']), 'file') || exist(fullfile([DATA.wfdb_record_name '.rdt']), 'file')) && exist(fullfile([DATA.wfdb_record_name '.hea']), 'file')
@@ -2421,7 +2454,7 @@ end
                 GUI.PeaksTable.Data(1, 2) = {DATA.peaks_total};
                 rethrow(e);
             end
-            if ch_no ~= 12
+            if ch_no ~= 12 && ~isempty(DATA.qrs)
                 set(GUI.Window, 'WindowButtonMotionFcn', {@my_WindowButtonMotionFcn, 'init'});
                 set(GUI.Window, 'WindowButtonUpFcn', @my_WindowButtonUpFcn);
                 set(GUI.Window, 'WindowButtonDownFcn', @my_WindowButtonDownFcn);
@@ -2474,7 +2507,7 @@ end
     function plot_rr_data()
         if isfield(DATA, 'qrs')
             
-            DATA.maxRRTime = max(DATA.tm);            
+            DATA.maxRRTime = max(DATA.tm);
             
             if ~strcmp(DATA.Integration, 'PPG')
                 try
@@ -2489,7 +2522,7 @@ end
                 yString = '';
                 DATA.RRIntPage_Length = DATA.maxRRTime;
             end
-                                                            
+            
             ylabel(GUI.RRInt_Axes, yString, 'FontName', 'Times New Roman');
             
             if ~strcmp(DATA.Integration, 'PPG')
@@ -2572,7 +2605,7 @@ end
             
             try
                 set_new_mammal(DATA.customConfigFile);
-            catch                
+            catch
                 h_e = errordlg('LoadConfigurationFile_Callback error: Please, choose right config file format!', 'Input Error');
                 setLogo(h_e, DATA.Module);
                 return;
@@ -2627,17 +2660,17 @@ end
                 button = questdlg([full_file_name_conf ' already exist. Do you want to overwrite it?'], 'Overwrite existing file?', 'Yes', 'No', 'No');
             end
             
-%             config_keys = keys(DATA.config_map);                        
-%             for i = 1 : length(config_keys)
-%                 curr_field = config_keys{i};
-%                 if isstruct(DATA.config_struct.(curr_field))
-%                     DATA.config_struct.(curr_field).value = DATA.config_map(curr_field);
-%                 else
-%                     DATA.config_struct.(curr_field) = DATA.config_map(curr_field);
-%                 end
-%             end      
+            %             config_keys = keys(DATA.config_map);
+            %             for i = 1 : length(config_keys)
+            %                 curr_field = config_keys{i};
+            %                 if isstruct(DATA.config_struct.(curr_field))
+            %                     DATA.config_struct.(curr_field).value = DATA.config_map(curr_field);
+            %                 else
+            %                     DATA.config_struct.(curr_field) = DATA.config_map(curr_field);
+            %                 end
+            %             end
             DATA.config_struct = update_config_struct(DATA.config_map, DATA.config_struct);
-            if strcmp(button, 'Yes')                
+            if strcmp(button, 'Yes')
                 WriteYaml(full_file_name_conf, DATA.config_struct);
             end
             
@@ -2733,22 +2766,22 @@ end
                 h_e = errordlg('The Upper cutoff frequency must be greater or equal to 0 and less then 20.', 'Input Error');
                 setLogo(h_e, DATA.Module);
                 set(src, 'String', DATA.config_map(get(src, 'UserData')));
-                return;   
+                return;
             elseif strcmp(get(src, 'UserData'), 'lcf_ppg') && (numeric_field_value < 0 || numeric_field_value > 20)
                 h_e = errordlg('The Low cutoff frequency must be greater or equal to 0 and less then 20.', 'Input Error');
                 setLogo(h_e, DATA.Module);
                 set(src, 'String', DATA.config_map(get(src, 'UserData')));
-                return; 
+                return;
             elseif strcmp(get(src, 'UserData'), 'order') && ~(ismember(numeric_field_value, [0:1:4]))
                 h_e = errordlg('The order must be only integer between 0 and 4.', 'Input Error');
                 setLogo(h_e, DATA.Module);
                 set(src, 'String', DATA.config_map(get(src, 'UserData')));
-                return;     
+                return;
             elseif (numeric_field_value <= 0) && ~(strcmp(get(src, 'UserData'), 'rp') || strcmp(get(src, 'UserData'), 'hcf_ppg') || strcmp(get(src, 'UserData'), 'lcf_ppg'))
                 h_e = errordlg('The value must be greater then 0.', 'Input Error');
                 setLogo(h_e, DATA.Module);
                 set(src, 'String', DATA.config_map(get(src, 'UserData')));
-                return;             
+                return;
             end
             if strcmp(get(src, 'UserData'), 'hcf') && (numeric_field_value > DATA.Fs/2)
                 h_e = errordlg('The upper cutoff frequency must be inferior to half of the sampling frequency.', 'Input Error');
@@ -2771,7 +2804,7 @@ end
                     return;
                 end
             end
-                                    
+            
             if strcmp(get(src, 'UserData'), 'ref_per')
                 if (numeric_field_value < 0 || numeric_field_value > 20000)
                     h_e = errordlg('The refractory period must be in the range of 0 - 20000', 'Input Error');
@@ -2797,7 +2830,7 @@ end
                         setLogo(h_e, DATA.Module);
                         return;
                     end
-                else                    
+                else
                     DATA.customConfigFile = [tempdir 'temp_custom_ppg.yml'];
                     DATA.config_struct = update_config_struct(DATA.config_map, DATA.config_struct);
                     result_WriteYaml = WriteYaml(DATA.customConfigFile, DATA.config_struct);
@@ -2806,7 +2839,7 @@ end
                         setLogo(h_e, DATA.Module);
                         return;
                     end
-                end                
+                end
                 if get(GUI.AutoCalc_checkbox, 'Value')
                     try
                         RunAndPlotPeakDetector();
@@ -2856,7 +2889,7 @@ end
                             clear_fiducials_handles();
                             clear_fiducials_filt_handles();
                             reset_fiducials_checkboxs();
-                            RunAndPlotPeakDetector();                                                        
+                            RunAndPlotPeakDetector();
                             if isfield(GUI, 'red_rect_handle') && isvalid(GUI.red_rect_handle)
                                 xdata = get(GUI.red_rect_handle, 'XData');
                                 setECGYLim(xdata(1), xdata(2));
@@ -3317,12 +3350,12 @@ end
             clear_fiducials_handles();
             clear_fiducials_filt_handles();
             reset_fiducials_checkboxs();
-                                    
+            
             if isfield(GUI, 'PinkLineHandle_AllDataAxes')
                 delete(GUI.PinkLineHandle_AllDataAxes);
                 GUI = rmfield(GUI, 'PinkLineHandle_AllDataAxes');
             end
-                                    
+            
             GUI.AutoCalc_checkbox.Value = 1;
             GUI.RR_or_HR_plot_button.String = 'Plot HR';
             DATA.PlotHR = 1;
@@ -3338,13 +3371,18 @@ end
             GUI.GUIRecord.PeakAdjustment_popupmenu.Callback = @PeakAdjustment_popupmenu_Callback;
             
             if strcmp(DATA.Integration, 'PPG')
-                GUI.GUIRecord.Annotation_popupmenu.Enable = 'inactive';
-                GUI.GUIRecord.PeakAdjustment_popupmenu.Enable = 'inactive';
+                GUI.GUIRecord.Annotation_popupmenu.Enable = 'off';
+                GUI.GUIRecord.PeakAdjustment_popupmenu.Enable = 'off';
                 GUI.TrendHR_checkbox.Enable = 'off';
                 GUI.FilterHR_checkbox.Enable = 'off';
                 GUI.FilteredSignal_checkbox.Enable = 'off';
                 GUI.DispRhythmsHBox.Visible = 'off';
                 GUI.RhythmsRangeHBox.Visible = 'off';
+                
+                GUI.Derivatives_Ratios_Table.Data = {};
+                GUI.Signal_Ratios_Table.Data = {};
+                GUI.PPG_Derivatives_Table.Data = {};
+                GUI.PPG_Signal_Table.Data = {};
             else
                 GUI.GUIRecord.Annotation_popupmenu.Enable = 'on';
                 GUI.GUIRecord.PeakAdjustment_popupmenu.Enable = 'on';
@@ -3354,7 +3392,7 @@ end
                 GUI.DispRhythmsHBox.Visible = 'on';
                 GUI.RhythmsRangeHBox.Visible = 'on';
             end
-                                    
+            
             DATA.Adjust = 0;
             
             GUI.GridX_checkbox.Value = 1;
@@ -3384,7 +3422,7 @@ end
             GUI.GUIDisplay.Movie_Delay.String = 2;
             
             GUI.AutoScaleY_checkbox.Value = 1;
-            GUI.AutoScaleYLowAxes_checkbox.Value = 1;                        
+            GUI.AutoScaleYLowAxes_checkbox.Value = 1;
             
             set(GUI.GUIDisplay.MinYLimitLowAxes_Edit, 'UserData', []);
             set(GUI.GUIDisplay.MaxYLimitLowAxes_Edit, 'UserData', []);
@@ -3393,10 +3431,10 @@ end
             set(GUI.GUIDisplay.MaxYLimit_Edit, 'UserData', '');
             
             clean_rhythms();
-                        
+            
             Rhythms_ToggleButton_Reset();
             GUI.RhythmsHBox.Visible = 'off';
-                        
+            
             GUI.FilteredSignal_checkbox.Value = 0;
             GUI.GUIDisplay.FilterLevel_popupmenu.Value = 1;
             
@@ -3873,10 +3911,12 @@ end
             case 'init'
                 reset_rhythm_button();
                 annotation = get(GUI.GUIRecord.Annotation_popupmenu, 'Value');
-                if annotation == 1 && ((hittest(GUI.Window) == GUI.RawData_handle || get(hittest(GUI.Window), 'Parent') == GUI.RawData_handle)) % ECG data
+                integration = DATA.Integration;
+                
+                if annotation == 1 && ((hittest(GUI.Window) == GUI.RawData_handle || get(hittest(GUI.Window), 'Parent') == GUI.RawData_handle)) && ~strcmp(integration, 'PPG') % ECG data
                     setptr(GUI.Window, 'datacursor');
                     DATA.hObject = 'add_del_peak';
-                elseif annotation == 1 && (hittest(GUI.Window) == GUI.ECG_Axes) %  || get(hittest(GUI.Window), 'Parent') == GUI.ECG_Axes % white space, draw del rect
+                elseif annotation == 1 && (hittest(GUI.Window) == GUI.ECG_Axes) && ~strcmp(integration, 'PPG') %  || get(hittest(GUI.Window), 'Parent') == GUI.ECG_Axes % white space, draw del rect
                     setptr(GUI.Window, 'ddrag');
                     DATA.hObject = 'del_win_peaks';
                 elseif annotation == 2 && hittest(GUI.Window) == GUI.ECG_Axes % signal quality
@@ -4340,11 +4380,11 @@ end
         GUI.ChannelsTable.Data(:, 4) = {false};
         GUI.ChannelsTable.Data(1, 4) = {true};
         
-%         if ~strcmp(DATA.Integration, 'PPG')
-            clear_fiducials_handles();
-            clear_fiducials_filt_handles();
-            reset_fiducials_checkboxs();
-%         end
+        %         if ~strcmp(DATA.Integration, 'PPG')
+        clear_fiducials_handles();
+        clear_fiducials_filt_handles();
+        reset_fiducials_checkboxs();
+        %         end
         
         if ch_num == 12
             parent_axes = GUI.ECG_Axes_Array(1);
@@ -5253,7 +5293,7 @@ end
                     
                     fid_points = GUI.PQRST_position;
                     
-                    if ~strcmp(IntegrationLevel, 'PPG')                    
+                    if ~strcmp(IntegrationLevel, 'PPG')
                         for i = 1 : length(fid_points)
                             if ~isempty(fid_points{i})
                                 writecell([fieldnames(fid_points{i}), struct2cell(fid_points{i})], full_file_name, 'Sheet', [GUI.ChannelsTable.Data{i, 1}]);
@@ -5336,7 +5376,7 @@ end
             if strcmpi(ExtensionFileName, 'mat')
                 if ~strcmp(IntegrationLevel, 'PPG')
                     save(full_file_name, 'fid_intervals', 'fid_waves', 'RecordName', 'Mammal', 'IntegrationLevel', 'PeakDetector', 'PeakAdjustment', 'WindowStart', 'WindowLength');
-                else                                    
+                else
                     save(full_file_name, 'PPG_Signal_BM', 'PPG_Derivatives_BM', 'Signal_Ratios_BM', 'Derivatives_Ratios_BM', 'RecordName', 'Mammal', 'IntegrationLevel', 'PeakDetector', 'PeakAdjustment', 'WindowStart', 'WindowLength');
                 end
                 %             elseif strcmpi(ExtensionFileName, 'txt')
@@ -5396,14 +5436,14 @@ end
                     'Same Rhythm file', 'Open', 'Cancel', 'Cancel');
                 
                 switch choice
-                    case 'Open'                        
+                    case 'Open'
                     case 'Cancel'
                         was_return = 1;
                         return;
                 end
             end
         end
-       
+        
         DATA.Rhythms_file_name = [PathName, RhythmsFileName];
         
         if strcmpi(ExtensionFileName, 'mat')
@@ -5456,18 +5496,18 @@ end
                 %                     source_line = strsplit(tline3, ': ');
                 
                 if strcmp(tline1, '---') && strcmp(type_line{1}, 'type') && strcmp(type_line{2}, 'rhythms annotation') && ...
-                   strcmp(tline5, '---') && strcmp(type_line2{1}, 'Beginning') && strcmp(type_line2{2}, 'End') && strcmp(type_line2{3}, 'Class')
+                        strcmp(tline5, '---') && strcmp(type_line2{1}, 'Beginning') && strcmp(type_line2{2}, 'End') && strcmp(type_line2{3}, 'Class')
                     
                     if ~isempty(rhythms_data{1}) && ~isempty(rhythms_data{2}) && ~isempty(rhythms_data{3})
                         DATA_RhythmsAnnotations_Data = [cell2mat(rhythms_data(1)) cell2mat(rhythms_data(2))];
                         class = rhythms_data(3);
                         DATA_RhythmsClass = class{1};
                     else
-                        DATA_RhythmsAnnotations_Data = [0 0];                        
+                        DATA_RhythmsAnnotations_Data = [0 0];
                         DATA_RhythmsClass = {'AB'};
-%                         h_e = errordlg('Please, choose the Rhythms Annotations File.', 'Input Error');
-%                         setLogo(h_e, DATA.Module);
-%                         return;
+                        %                         h_e = errordlg('Please, choose the Rhythms Annotations File.', 'Input Error');
+                        %                         setLogo(h_e, DATA.Module);
+                        %                         return;
                     end
                 else
                     h_e = errordlg('Please, choose the right format for Rhythms Annotations File.', 'Input Error');
@@ -5494,10 +5534,10 @@ end
         GUI.GUIRecord.Annotation_popupmenu.Value = 3;
         Annotation_popupmenu_Callback();
         
-        if isfield(DATA, 'rhythms_win_num') && DATA.rhythms_win_num           
+        if isfield(DATA, 'rhythms_win_num') && DATA.rhythms_win_num
             rhythms_keys = DATA.Rhythms_Map.keys;
-            keys_num = length(rhythms_keys);    
-            rhythms_keys_str = cellfun(@num2str, rhythms_keys, 'UniformOutput', false);        
+            keys_num = length(rhythms_keys);
+            rhythms_keys_str = cellfun(@num2str, rhythms_keys, 'UniformOutput', false);
             temp_rhythms_map = containers.Map(rhythms_keys_str, zeros(1, keys_num));
         else
             DATA.Rhythms_Map = containers.Map('KeyType', 'double', 'ValueType', 'any');
@@ -5517,15 +5557,15 @@ end
         
         Rhythms_Data = [];
         RhythmsClass = {};
-                
+        
         for i = 1 : rhythms_annotations_num
             [is_member, class_ind] = ismember(DATA_RhythmsClass{i}, DATA.Rhythms_Type);
             if ~is_member
                 class_ind = 1;
             end
-            if DATA_RhythmsAnnotations_Data(i, 1) ~= DATA_RhythmsAnnotations_Data(i, 2)                                              
-%                 if ~isKey(DATA.Rhythms_Map, DATA_RhythmsAnnotations_Data(i, 1))
-                 if ~isKey(temp_rhythms_map, num2str(DATA_RhythmsAnnotations_Data(i, 1)))
+            if DATA_RhythmsAnnotations_Data(i, 1) ~= DATA_RhythmsAnnotations_Data(i, 2)
+                %                 if ~isKey(DATA.Rhythms_Map, DATA_RhythmsAnnotations_Data(i, 1))
+                if ~isKey(temp_rhythms_map, num2str(DATA_RhythmsAnnotations_Data(i, 1)))
                     waitbar(i / rhythms_annotations_num, waitbar_handle, ['Ploting rhythms for ' num2str(i) ' annotation']); setLogo(waitbar_handle, DATA.Module);
                     
                     rhythms_struct.rhythm_type = DATA_RhythmsClass{i};
@@ -5533,7 +5573,7 @@ end
                     rhythms_struct.rhythm_class_ind = class_ind;
                     rhythms_struct.rhythm_plotted = false;
                     
-                    DATA.Rhythms_Map(DATA_RhythmsAnnotations_Data(i, 1)) = rhythms_struct;                                        
+                    DATA.Rhythms_Map(DATA_RhythmsAnnotations_Data(i, 1)) = rhythms_struct;
                     DATA.rhythms_win_num = DATA.rhythms_win_num + 1;
                     
                     Rhythms_Data = [Rhythms_Data; DATA_RhythmsAnnotations_Data(i, :)];
@@ -5546,7 +5586,7 @@ end
         redraw_rhythms_rect();
         if isvalid(waitbar_handle)
             close(waitbar_handle);
-        end        
+        end
         plot_rhythms_line(Rhythms_Data, RhythmsClass);
         Update_Rhytms_Stat_Table();
     end
@@ -6028,7 +6068,7 @@ end
                 af = figure;
                 set(af, 'Name', [fig_name figures_names{i}], 'NumberTitle', 'off');
                 new_axes = copyobj(axes_handle, af);
-                xlabel(new_axes, 'Time (h:min:sec)', 'FontName', 'Times New Roman');                
+                xlabel(new_axes, 'Time (h:min:sec)', 'FontName', 'Times New Roman');
                 new_axes.YLabel.FontName = 'Times New Roman';
                 new_axes.FontName = 'Times New Roman';
                 
@@ -6075,7 +6115,7 @@ end
                         end
                         if strcmpi(ext, 'fig')
                             savefig(af, file_name, 'compact');
-                        elseif ~strcmpi(ext, 'fig')                            
+                        elseif ~strcmpi(ext, 'fig')
                             mhrv.util.fig_print( af, file_name, 'output_format', ext, 'font_size', 10, 'width', 20, 'font', 'Times New Roman', 'font_weight', 'normal');
                         end
                     end
@@ -6190,7 +6230,7 @@ end
         end
     end
 %%
-    function GridX_checkbox_Callback(~, ~)        
+    function GridX_checkbox_Callback(~, ~)
         if isfield(DATA, 'sig')
             [~, ch_num] = size(DATA.sig);
             
@@ -6841,7 +6881,7 @@ end
                     if ch_num == 1
                         GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData * DATA.amp_ch_factor;
                     end
-%                     try
+                    %                     try
                     if isfield(GUI, 'P_linehandle') && isvalid(GUI.P_linehandle(ch_num))
                         GUI.P_linehandle(ch_num).YData = ((GUI.P_linehandle(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                     end
@@ -6857,10 +6897,10 @@ end
                     if ch_num ~= 1 && (isfield(GUI, 'qrs_ch') && isvalid(GUI.qrs_ch(ch_num-1)))
                         GUI.qrs_ch(ch_num-1).YData =     ((GUI.qrs_ch(ch_num-1).YData     - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                     end
-%                     catch e
-%                         disp(e);
-%                     end
-%                     try
+                    %                     catch e
+                    %                         disp(e);
+                    %                     end
+                    %                     try
                     if isfield(GUI, 'P_linehandle_filt') && isvalid(GUI.P_linehandle_filt(ch_num))
                         GUI.P_linehandle_filt(ch_num).YData = ((GUI.P_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                     end
@@ -6873,9 +6913,9 @@ end
                     if isfield(GUI, 'T_linehandle_filt') && isvalid(GUI.T_linehandle_filt(ch_num))
                         GUI.T_linehandle_filt(ch_num).YData = ((GUI.T_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                     end
-%                     catch e
-%                         disp(e);
-%                     end
+                    %                     catch e
+                    %                         disp(e);
+                    %                     end
                     try
                         GUI.red_peaks_handle_Filt(ch_num).YData = ((GUI.red_peaks_handle_Filt(ch_num).YData - GUI.offset_array(ch_num)) * DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                     catch
@@ -6890,7 +6930,7 @@ end
                     if ch_num == 1
                         GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData / DATA.amp_ch_factor;
                     end
-%                     try
+                    %                     try
                     if isfield(GUI, 'P_linehandle') && isvalid(GUI.P_linehandle(ch_num))
                         GUI.P_linehandle(ch_num).YData = ((GUI.P_linehandle(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                     end
@@ -6906,10 +6946,10 @@ end
                     if ch_num ~= 1 && (isfield(GUI, 'qrs_ch') && isvalid(GUI.qrs_ch(ch_num-1)))
                         GUI.qrs_ch(ch_num-1).YData =     ((GUI.qrs_ch(ch_num-1).YData     - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                     end
-%                     catch e
-%                         disp(e);
-%                     end
-%                     try
+                    %                     catch e
+                    %                         disp(e);
+                    %                     end
+                    %                     try
                     if isfield(GUI, 'P_linehandle_filt') && isvalid(GUI.P_linehandle_filt(ch_num))
                         GUI.P_linehandle_filt(ch_num).YData = ((GUI.P_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                     end
@@ -6922,9 +6962,9 @@ end
                     if isfield(GUI, 'T_linehandle_filt') && isvalid(GUI.T_linehandle_filt(ch_num))
                         GUI.T_linehandle_filt(ch_num).YData = ((GUI.T_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                     end
-%                     catch e
-%                         disp(e);
-%                     end
+                    %                     catch e
+                    %                         disp(e);
+                    %                     end
                     try
                         GUI.red_peaks_handle_Filt(ch_num).YData = ((GUI.red_peaks_handle_Filt(ch_num).YData - GUI.offset_array(ch_num)) / DATA.amp_ch_factor) + GUI.offset_array(ch_num);
                     catch
@@ -6944,7 +6984,7 @@ end
                         if ch_num == 1
                             GUI.red_peaks_handle.YData = GUI.red_peaks_handle.YData * coeff;
                         end
-%                         try
+                        %                         try
                         if isfield(GUI, 'P_linehandle') && isvalid(GUI.P_linehandle(ch_num))
                             GUI.P_linehandle(ch_num).YData = ((GUI.P_linehandle(ch_num).YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
                         end
@@ -6960,10 +7000,10 @@ end
                         if ch_num ~= 1 && (isfield(GUI, 'qrs_ch') && isvalid(GUI.qrs_ch(ch_num-1)))
                             GUI.qrs_ch(ch_num-1).YData =     ((GUI.qrs_ch(ch_num-1).YData     - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
                         end
-%                         catch e
-%                             disp(e);
-%                         end
-%                         try
+                        %                         catch e
+                        %                             disp(e);
+                        %                         end
+                        %                         try
                         if isfield(GUI, 'P_linehandle_filt') && isvalid(GUI.P_linehandle_filt(ch_num))
                             GUI.P_linehandle_filt(ch_num).YData = ((GUI.P_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
                         end
@@ -6976,13 +7016,13 @@ end
                         if isfield(GUI, 'T_linehandle_filt') && isvalid(GUI.T_linehandle_filt(ch_num))
                             GUI.T_linehandle_filt(ch_num).YData = ((GUI.T_linehandle_filt(ch_num).YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
                         end
-%                         catch e
-%                             disp(e);
-%                         end
+                        %                         catch e
+                        %                             disp(e);
+                        %                         end
                         try
                             GUI.red_peaks_handle_Filt(ch_num).YData = ((GUI.red_peaks_handle_Filt(ch_num).YData - GUI.offset_array(ch_num)) * coeff) + GUI.offset_array(ch_num);
                         catch e
-%                             disp(e);
+                            %                             disp(e);
                         end
                     end
                     DATA.amp_counter(ch_num) = 0;
@@ -7300,13 +7340,51 @@ end
         end
     end
 %%
+    function set_legend(parent_axes, leg_str, ch_num)
+        try
+            if ch_num ~= 12
+                warning('off');
+                lgn_subset = GUI.red_peaks_handle;
+                if isfield(GUI, 'P_linehandle')
+                    P_valid = findobj(GUI.P_linehandle, 'Type', 'line');  
+                    lgn_subset = [lgn_subset P_valid(1)];
+                end
+                if isfield(GUI, 'Q_linehandle') || isfield(GUI, 'S_linehandle') || isfield(GUI, 'T_linehandle')
+                    Q_valid = findobj(GUI.Q_linehandle, 'Type', 'line');
+                    lgn_subset = [lgn_subset Q_valid(1)];
+                end
+                if isfield(GUI, 'S_linehandle') || isfield(GUI, 'T_linehandle')
+                    S_valid = findobj(GUI.S_linehandle, 'Type', 'line');
+                    lgn_subset = [lgn_subset S_valid(1)];
+                end
+                if isfield(GUI, 'T_linehandle')
+                    T_valid = findobj(GUI.T_linehandle, 'Type', 'line');
+                    lgn_subset = [lgn_subset T_valid(1)];
+                end
+                
+%                 l_h = legend(parent_axes, [GUI.red_peaks_handle; P_valid(1);...
+%                     Q_valid(1);...
+%                     S_valid(1);...
+%                     T_valid(1)],...
+%                     leg_str, 'Location', 'best');
+                l_h = legend(parent_axes, lgn_subset, leg_str, 'Location', 'best');
+                warning('on');
+                l_h.AutoUpdate = 'off';
+            end
+        catch e
+            disp(e.message);
+        end
+    end
+%%
     function CalcPQRSTPeaks(~, ~)
         
         if ~strcmp(DATA.Integration, 'PPG')
             [~, ch_num] = size(DATA.sig);
             
+            clear_fiducials_handles();
+            
             if ch_num == 12
-                clear_fiducials_handles();
+%                 clear_fiducials_handles();
                 clear_fiducials_filt_handles();
                 reset_fiducials_checkboxs();
                 GUI.ChannelsTable.Data(:, 4) = {true};
@@ -7324,7 +7402,7 @@ end
                     if ch_num == 12
                         GUI.PQRST_position = cell(1, ch_num);
                     elseif isfield(GUI, 'PQRST_position') && isempty(GUI.PQRST_position)
-                        GUI.PQRST_position = cell(1, ch_num);
+                        GUI.PQRST_position = cell(1, ch_num);                        
                     end
                     
                     parent_axes = GUI.ECG_Axes;
@@ -7491,28 +7569,30 @@ end
                         GUI.T_checkbox.Value = 0;
                     end
                     
-                    try
-                        if ch_num ~= 12
-                            warning('off');
-                            if isfield(GUI, 'P_linehandle') || isfield(GUI, 'Q_linehandle') || isfield(GUI, 'S_linehandle') || isfield(GUI, 'T_linehandle')
-                                
-                                P_valid = findobj(GUI.P_linehandle, 'Type', 'line');
-                                Q_valid = findobj(GUI.Q_linehandle, 'Type', 'line');
-                                S_valid = findobj(GUI.S_linehandle, 'Type', 'line');
-                                T_valid = findobj(GUI.T_linehandle, 'Type', 'line');
-                                
-                                l_h = legend(parent_axes, [GUI.red_peaks_handle; P_valid(1);...
-                                    Q_valid(1);...
-                                    S_valid(1);...
-                                    T_valid(1)],...
-                                    {'R', 'P', 'Q', 'S', 'T'}, 'Location', 'best');
-                                warning('on');
-                                l_h.AutoUpdate = 'off';
-                            end
-                        end
-                    catch e
-                        disp(e.message);
-                    end
+                    set_legend(parent_axes, {'R', 'P', 'Q', 'S', 'T'}, ch_num);
+                    
+%                     try
+%                         if ch_num ~= 12
+%                             warning('off');
+%                             if isfield(GUI, 'P_linehandle') || isfield(GUI, 'Q_linehandle') || isfield(GUI, 'S_linehandle') || isfield(GUI, 'T_linehandle')
+%                                 
+%                                 P_valid = findobj(GUI.P_linehandle, 'Type', 'line');
+%                                 Q_valid = findobj(GUI.Q_linehandle, 'Type', 'line');
+%                                 S_valid = findobj(GUI.S_linehandle, 'Type', 'line');
+%                                 T_valid = findobj(GUI.T_linehandle, 'Type', 'line');
+%                                 
+%                                 l_h = legend(parent_axes, [GUI.red_peaks_handle; P_valid(1);...
+%                                     Q_valid(1);...
+%                                     S_valid(1);...
+%                                     T_valid(1)],...
+%                                     {'R', 'P', 'Q', 'S', 'T'}, 'Location', 'best');
+%                                 warning('on');
+%                                 l_h.AutoUpdate = 'off';
+%                             end
+%                         end
+%                     catch e
+%                         disp(e.message);
+%                     end
                     if ch_num == 12
                         set12LEDYLim();
                     end
@@ -7637,22 +7717,23 @@ end
             end
         else
             
-            if isempty(GUI.PQRST_position)
-                waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing'); setLogo(waitbar_handle, DATA.Module);
-                [GUI.PQRST_position, GUI.fiducials_path] = PPG_peaks(DATA.wfdb_record_name, DATA.customConfigFile);
-                %                 DATA.qrs = GUI.PQRST_position.sp + 1;
-                if isvalid(waitbar_handle)
-                    close(waitbar_handle);
-                end
-            end
+            %             if isempty(GUI.PQRST_position)
+            %                 waitbar_handle = waitbar(1/2, 'Compute peaks...', 'Name', 'Computing'); setLogo(waitbar_handle, DATA.Module);
+            %                 [GUI.PQRST_position, GUI.fiducials_path] = PPG_peaks(DATA.wfdb_record_name, DATA.customConfigFile);
+            %                 %                 DATA.qrs = GUI.PQRST_position.sp + 1;
+            %                 if isvalid(waitbar_handle)
+            %                     close(waitbar_handle);
+            %                 end
+            %             end
             
+            
+            GUI.SaveFiducials.Enable = 'off';
+            GUI.SaveFiducialsStat.Enable = 'off';
             waitbar_handle = waitbar(0, 'Calculating PPG biomarkers', 'Name', 'Working on it...'); setLogo(waitbar_handle, DATA.Module);
-            waitbar_handle = waitbar(1/2, waitbar_handle, 'Calculating PPG Biomarkers'); setLogo(waitbar_handle, DATA.Module);            
+            waitbar_handle = waitbar(1/2, waitbar_handle, 'Calculating PPG Biomarkers'); setLogo(waitbar_handle, DATA.Module);
             calc_disp_PPG_Stats();
             waitbar_handle = waitbar(2/2, waitbar_handle, 'Plot PPG Fiducials Points'); setLogo(waitbar_handle, DATA.Module);
             plotPPGFiducials4Win();
-            GUI.SaveFiducials.Enable = 'on';
-            GUI.SaveFiducialsStat.Enable = 'on';
             if isvalid(waitbar_handle)
                 close(waitbar_handle);
             end
@@ -7660,48 +7741,56 @@ end
     end
 %%
     function calc_disp_PPG_Stats()
-        if isfield(GUI, 'PQRST_position') && ~isempty(GUI.PQRST_position)           
+        if isfield(GUI, 'PQRST_position') && ~isempty(GUI.PQRST_position)
+            
+            GUI.Derivatives_Ratios_Table.Data = {};
+            GUI.Signal_Ratios_Table.Data = {};
+            GUI.PPG_Derivatives_Table.Data = {};
+            GUI.PPG_Signal_Table.Data = {};
             
             winStart = GUI.Fiducials_winStart.UserData;
             winLength = GUI.Fiducials_winLength.UserData;
-            start_sig = int16(winStart * DATA.Fs);
-            
-            biomarkers_path = PPG_biomarkers(DATA.wfdb_record_name, DATA.customConfigFile, GUI.fiducials_path, start_sig, winLength);
-            
-            if ~isempty(biomarkers_path)
-
-                res_dir_struct_fields_names = fieldnames(biomarkers_path);
+            if winLength > 0
+                start_sig = int16(winStart * DATA.Fs);
                 
-                saved_fn = {'ppg_sig'; 'sig_ratios'; 'ppg_derivs'; 'derivs_ratios'};
-                GUI_fn = {'PPG_Signal'; 'Signal_Ratios'; 'PPG_Derivatives'; 'Derivatives_Ratios'};
-                our_map = containers.Map(saved_fn, GUI_fn);
-                
-                TabName_str = '';
-                for i = 1 : length(res_dir_struct_fields_names)
-                    ppg_bm_st = load(biomarkers_path.(res_dir_struct_fields_names{i}));
-                    
-                    TabName_str = cell2mat(fieldnames(ppg_bm_st));
-                    
-                    bm_table = struct2table(ppg_bm_st.(TabName_str));
-                    bm_table_data = removevars(bm_table, 'index');
-                    bm_table_data = removevars(bm_table_data, 'unit');
-                    
-                    RowName = cell(height(bm_table), 1);
-                    for j = 1 : height(bm_table)
-                        RowName{j} = [cell2mat(bm_table.index(j)) ' ' cell2mat(bm_table.unit(j))];
-                    end
-                    
-                    TableName4GUI = our_map(TabName_str);
-                    
-                    GUI.([TableName4GUI '_Table']).RowName = RowName;
-                    GUI.([TableName4GUI '_Table']).Data = table2cell(bm_table_data);
+                try
+                    biomarkers_path = PPG_biomarkers(DATA.wfdb_record_name, DATA.customConfigFile, GUI.fiducials_path, start_sig, winLength);
+                catch e
+                    h_e = errordlg(['The PPG biomarkers points were not found. ', e.message], 'Input Error'); setLogo(h_e, DATA.Module);
+                    return;
                 end
-            else
-                h_e = errordlg('The PPG biomarkers were not calculated!', 'Input Error'); setLogo(h_e, 'PPG');
-                GUI.Derivatives_Ratios_Table.Data = {};
-                GUI.Signal_Ratios_Table.Data = {};
-                GUI.PPG_Derivatives_Table.Data = {};
-                GUI.PPG_Signal_Table.Data = {};
+                if ~isempty(biomarkers_path)
+                    
+                    res_dir_struct_fields_names = fieldnames(biomarkers_path);
+                    
+                    saved_fn = {'ppg_sig'; 'sig_ratios'; 'ppg_derivs'; 'derivs_ratios'};
+                    GUI_fn = {'PPG_Signal'; 'Signal_Ratios'; 'PPG_Derivatives'; 'Derivatives_Ratios'};
+                    our_map = containers.Map(saved_fn, GUI_fn);
+                    
+                    TabName_str = '';
+                    for i = 1 : length(res_dir_struct_fields_names)
+                        ppg_bm_st = load(biomarkers_path.(res_dir_struct_fields_names{i}));
+                        
+                        TabName_str = cell2mat(fieldnames(ppg_bm_st));
+                        
+                        bm_table = struct2table(ppg_bm_st.(TabName_str));
+                        bm_table_data = removevars(bm_table, 'index');
+                        bm_table_data = removevars(bm_table_data, 'unit');
+                        
+                        RowName = cell(height(bm_table), 1);
+                        for j = 1 : height(bm_table)
+                            RowName{j} = [cell2mat(bm_table.index(j)) ' ' cell2mat(bm_table.unit(j))];
+                        end
+                        
+                        TableName4GUI = our_map(TabName_str);
+                        
+                        GUI.([TableName4GUI '_Table']).RowName = RowName;
+                        GUI.([TableName4GUI '_Table']).Data = table2cell(bm_table_data);
+                    end
+                    GUI.SaveFiducialsStat.Enable = 'on';
+                else
+                    h_e = errordlg('The PPG biomarkers were not calculated!', 'Input Error'); setLogo(h_e, 'PPG');
+                end
             end
         end
     end
@@ -7711,53 +7800,60 @@ end
         ch_marker_size = 5;
         parent_axes = GUI.ECG_Axes;
         if isfield(GUI, 'PQRST_position') && ~isempty(GUI.PQRST_position)
-                                    
+            
             winStart = GUI.Fiducials_winStart.UserData;
             winLength = GUI.Fiducials_winLength.UserData;
             
-            start_sig = winStart * DATA.Fs;
-            end_sig = start_sig + winLength * DATA.Fs;
-
-            select_row = find(GUI.PQRST_position.on >= start_sig & GUI.PQRST_position.off < end_sig);
-            fiducials = GUI.PQRST_position(select_row, :);
-            
-            P = [];
-            Q = fiducials.on + 1;
-            S = fiducials.dn + 1;
-            T = fiducials.dp + 1;
-            
-            if ~isempty(P)
-                GUI.P_linehandle = line(DATA.tm(P), GUI.RawChannelsData_handle(1).YData(P), 'Parent', parent_axes, 'LineStyle', 'none', 'LineWidth', 1.5, 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', 'w', 'Tag', 'P');
-            end
-            if ~isempty(Q)
-                GUI.Q_linehandle = line(DATA.tm(Q), GUI.RawChannelsData_handle(1).YData(Q), 'Parent', parent_axes, 'LineStyle', 'none', 'LineWidth', 1.5, 'Marker', 's', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', 'b', 'Tag', 'Q');
-            end
-            if ~isempty(S)
-                GUI.S_linehandle = line(DATA.tm(S), GUI.RawChannelsData_handle(1).YData(S), 'Parent', parent_axes, 'LineStyle', 'none', 'LineWidth', 1.5, 'Marker', 'd', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', 'g', 'Tag', 'S');
-            end
-            if ~isempty(T)
-                GUI.T_linehandle = line(DATA.tm(T), GUI.RawChannelsData_handle(1).YData(T), 'Parent', parent_axes, 'LineStyle', 'none', 'LineWidth', 1.5, 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', 'm', 'Tag', 'T');
-            end
-            
-            if ~all(isnan(P))
-                GUI.P_checkbox.Value = 1;
-            else
-                GUI.P_checkbox.Value = 0;
-            end
-            if ~all(isnan(Q))
-                GUI.Q_checkbox.Value = 1;
-            else
-                GUI.Q_checkbox.Value = 0;
-            end
-            if ~all(isnan(S))
-                GUI.S_checkbox.Value = 1;
-            else
-                GUI.S_checkbox.Value = 0;
-            end
-            if ~all(isnan(T))
-                GUI.T_checkbox.Value = 1;
-            else
-                GUI.T_checkbox.Value = 0;
+            if winLength > 0
+                start_sig = winStart * DATA.Fs;
+                end_sig = start_sig + winLength * DATA.Fs;
+                
+                select_row = find(GUI.PQRST_position.on >= start_sig & GUI.PQRST_position.off < end_sig);
+                fiducials = GUI.PQRST_position(select_row, :);
+                
+                P = [];
+                Q = fiducials.on + 1;
+                S = fiducials.dn + 1;
+                T = fiducials.dp + 1;
+                
+                clear_only_fiducials_handles();
+                
+                if ~isempty(P)
+                    GUI.P_linehandle = line(DATA.tm(P), GUI.RawChannelsData_handle(1).YData(P), 'Parent', parent_axes, 'LineStyle', 'none', 'LineWidth', 1.5, 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', 'w', 'Tag', 'P');
+                end
+                if ~isempty(Q)
+                    GUI.Q_linehandle = line(DATA.tm(Q), GUI.RawChannelsData_handle(1).YData(Q), 'Parent', parent_axes, 'LineStyle', 'none', 'LineWidth', 1.5, 'Marker', 's', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', 'b', 'Tag', 'Q');
+                end
+                if ~isempty(S)
+                    GUI.S_linehandle = line(DATA.tm(S), GUI.RawChannelsData_handle(1).YData(S), 'Parent', parent_axes, 'LineStyle', 'none', 'LineWidth', 1.5, 'Marker', 'd', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', 'g', 'Tag', 'S');
+                end
+                if ~isempty(T)
+                    GUI.T_linehandle = line(DATA.tm(T), GUI.RawChannelsData_handle(1).YData(T), 'Parent', parent_axes, 'LineStyle', 'none', 'LineWidth', 1.5, 'Marker', 'o', 'MarkerSize', ch_marker_size, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', 'm', 'Tag', 'T');
+                end
+                
+                if ~all(isnan(P))
+                    GUI.P_checkbox.Value = 1;
+                else
+                    GUI.P_checkbox.Value = 0;
+                end
+                if ~all(isnan(Q))
+                    GUI.Q_checkbox.Value = 1;
+                else
+                    GUI.Q_checkbox.Value = 0;
+                end
+                if ~all(isnan(S))
+                    GUI.S_checkbox.Value = 1;
+                else
+                    GUI.S_checkbox.Value = 0;
+                end
+                if ~all(isnan(T))
+                    GUI.T_checkbox.Value = 1;
+                else
+                    GUI.T_checkbox.Value = 0;
+                end
+                GUI.SaveFiducials.Enable = 'on';
+                
+                set_legend(parent_axes, {'SP', 'ON', 'DN', 'DP'}, ch_num);
             end
         end
     end
@@ -7771,6 +7867,47 @@ end
     end
 %%
     function clear_fiducials_handles()
+%         if isfield(GUI, 'P_linehandle')% && any(isvalid(GUI.P_linehandle))
+%             delete(GUI.P_linehandle);
+%             GUI = rmfield(GUI, 'P_linehandle');
+%         end
+%         if isfield(GUI, 'Q_linehandle')% && any(isvalid(GUI.Q_linehandle))
+%             delete(GUI.Q_linehandle);
+%             GUI = rmfield(GUI, 'Q_linehandle');
+%         end
+%         if isfield(GUI, 'S_linehandle')% && any(isvalid(GUI.S_linehandle))
+%             delete(GUI.S_linehandle);
+%             GUI = rmfield(GUI, 'S_linehandle');
+%         end
+%         if isfield(GUI, 'T_linehandle')% && any(isvalid(GUI.T_linehandle))
+%             delete(GUI.T_linehandle);
+%             GUI = rmfield(GUI, 'T_linehandle');
+%         end
+%         %-----------------------------------------------
+%         if isfield(GUI, 'qrs_ch')% && any(isvalid(GUI.qrs_ch))
+%             delete(GUI.qrs_ch);
+%             GUI = rmfield(GUI, 'qrs_ch');
+%         end
+
+        clear_only_fiducials_handles();
+        
+        if isfield(GUI, 'ECG_Axes') && isvalid(GUI.ECG_Axes)
+            legend(GUI.ECG_Axes, 'off');
+        end
+        GUI.DurationTable.Data = {};
+        GUI.AmplitudeTable.Data = {};
+        try
+            GUI.Derivatives_Ratios_Table.Data = {};
+            GUI.Signal_Ratios_Table.Data = {};
+            GUI.PPG_Derivatives_Table.Data = {};
+            GUI.PPG_Signal_Table.Data = {};
+        catch
+        end
+        GUI.SaveFiducials.Enable = 'off';
+        GUI.SaveFiducialsStat.Enable = 'off';
+    end
+%%
+    function clear_only_fiducials_handles()
         if isfield(GUI, 'P_linehandle')% && any(isvalid(GUI.P_linehandle))
             delete(GUI.P_linehandle);
             GUI = rmfield(GUI, 'P_linehandle');
@@ -7791,13 +7928,7 @@ end
         if isfield(GUI, 'qrs_ch')% && any(isvalid(GUI.qrs_ch))
             delete(GUI.qrs_ch);
             GUI = rmfield(GUI, 'qrs_ch');
-        end
-        
-        if isfield(GUI, 'ECG_Axes') && isvalid(GUI.ECG_Axes)
-            legend(GUI.ECG_Axes, 'off');
-        end
-        GUI.DurationTable.Data = {};
-        GUI.AmplitudeTable.Data = {};
+        end                
     end
 %%
     function clear_fiducials_filt_handles()
@@ -7953,7 +8084,7 @@ end
             if DATA.PlotHR == 1
                 rr_data = 60./ rr_data;
             end
-                        
+            
             disp('save temp files:');
             waitbar_handle = waitbar(1/2, waitbar_handle, 'Saving ArNet2 temp files'); setLogo(waitbar_handle, DATA.Module);
             tic
@@ -7970,19 +8101,19 @@ end
         tempdir_name = tempdir;
         
         if exist(executable_file, 'file')
-        
+            
             command = ['"' executable_file '" ' '"' peaks_file '" ' '"' tempdir_name(1:end-1) '"'];
             
             waitbar_handle = waitbar(2/2, waitbar_handle, 'Calc ArNet2 rhythms'); setLogo(waitbar_handle, DATA.Module);
             tic
             [res, out, error] = jsystem(command, 'noshell');
-            toc            
+            toc
             if(res ~= 0)
-                disp(['jsystem error: ', error, '\n', out]);            
+                disp(['jsystem error: ', error, '\n', out]);
             else
                 rhythms_file_name = [tempdir_name '\' 'rhythms.txt'];
             end
-                        
+            
             delete(peaks_file);
             if ~exist(rhythms_file_name, 'file')
                 h_e = errordlg('ArNet2_pushbutton_Callback error: The exe file was not executed', 'Input Error'); setLogo(h_e, DATA.Module);
@@ -7993,7 +8124,7 @@ end
                 catch
                 end
                 SaveRhythms_Callback();
-%                 set(GUI.GUIRecord.RhythmsFileName_text, 'String', Rhythms_FileName);
+                %                 set(GUI.GUIRecord.RhythmsFileName_text, 'String', Rhythms_FileName);
             end
         end
         if isvalid(waitbar_handle)
@@ -8021,9 +8152,9 @@ end
             if isfield(GUI, 'timer_object')
                 delete(GUI.timer_object);
             end
-%             delete(GUI.Window);
+            %             delete(GUI.Window);
         catch
-        end        
+        end
         if exist('GUI', 'var') && isfield(GUI, 'Window') && isvalid(GUI.Window)
             delete(GUI.Window);
         end

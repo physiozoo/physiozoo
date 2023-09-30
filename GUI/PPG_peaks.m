@@ -7,10 +7,18 @@ fiducials_path = '';
 exe_file_path = fileparts(mfilename('fullpath'));
 executable_file = [exe_file_path filesep 'PPG' filesep 'pyPPG.exe'];
 
-if exist(executable_file, 'file') && exist(config_file_name, 'file')
-    
-    config_struct = ReadYaml(config_file_name);
-    Fs = load(ppg_file_name, 'Fs');
+try
+    % if exist(executable_file, 'file') && exist(config_file_name, 'file')
+    try
+        config_struct = ReadYaml(config_file_name);
+        Fs = load(ppg_file_name, 'Fs');
+    catch e
+        rethrow(e);
+    end
+    if ~exist(executable_file, 'file')
+        ME = MException('PPG_peaks:noSuchFile', 'Please, download PPG executable from https://physiozoo.com/!');
+        throw(ME);
+    end
     
     %% Input parameters
     in.data_path = ppg_file_name;
@@ -32,33 +40,48 @@ if exist(executable_file, 'file') && exist(config_file_name, 'file')
     executable_file = strrep(executable_file ,'\', '/');
     %% EXTRACT FIDUCIALS
     in.process_type = 'fiducials';
-    tic
     
     func_args = zip_args(fieldnames(in), struct2cell(in));
     command = ['"' executable_file '" "' ,'{\"function\":\"ppg_example\",\"args\":',func_args,'}'];
-    
+    % try
+    tic
     [status, result, error] = jsystem(command);
-    
-    if status ~= 0
-        disp(['PPG_peaks error: ', error, '\n', result]);
-        rethrow(error);
-    else
+    toc
+    %     if status ~= 0
+    %         disp(['PPG_peaks error: ', error, '\n', result]);
+    %         rethrow(error);
+    if status == 0
         fiducials_file_names = jsondecode(result);
         if ~isempty(fiducials_file_names) && isfield(fiducials_file_names, 'fiducials_mat')
             fiducials_path = fiducials_file_names.fiducials_mat;
             if exist(fiducials_path, 'file')
                 a = load(fiducials_path);
                 if isfield(a, 'PPG_fiducials')
-                    fiducials_table = struct2table(a.PPG_fiducials);                
-                end            
-            end        
+                    fiducials_table = struct2table(a.PPG_fiducials);
+                end
+            end
         end
+    else
+        disp(['PPG_peaks error: ', error, '\n', result]);
+        ME = MException('PPG_peaks:jsystem', error);
+        throw(ME);
     end
-    toc
-%     if isempty(fiducials_table) || isempty(fiducials_path)
-%         rethrow('The fiducials points was''t calculated.');
-%     end
-else
-    h_e = errordlg('The PPG exe or config file does''t exist!', 'Input Error'); setLogo(h_e, 'PPG');
-%     rethrow('The PPG exe or config file does''t exist!');
+    
+    %     if isempty(fiducials_table) || isempty(fiducials_path)
+    %         rethrow('The fiducials points was''t calculated.');
+    %     end
+    % else
+    % catch e
+    %     if ~exist(executable_file, 'file')
+    %         ME = MException('PPG_peaks:noSuchFile', 'Please, download PPG executable from https://physiozoo.com/!');
+    %         rethrow(ME);
+    %     else
+    %         rethrow([e ': ' error]);
+    %     end
+    %     h_e = errordlg('Please, download PPG executable for https://physiozoo.com/!', 'Input Error'); setLogo(h_e, 'PPG');
+    %     h_e = errordlg('The PPG exe or config file does''t exist!', 'Input Error'); setLogo(h_e, 'PPG');
+    %     rethrow('The PPG exe or config file does''t exist!');
+    % end
+catch e
+    rethrow(e);
 end

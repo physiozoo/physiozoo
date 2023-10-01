@@ -5551,7 +5551,7 @@ end
             temp_rhythms_map = containers.Map;
         end
         
-        waitbar_handle = waitbar(0, 'Loadind', 'Name', 'Working on it...'); setLogo(waitbar_handle, DATA.Module);
+        waitbar_handle = waitbar(0, 'Loading', 'Name', 'Working on it...'); setLogo(waitbar_handle, DATA.Module);
         
         rhythms_annotations_num = length(DATA_RhythmsClass);
         

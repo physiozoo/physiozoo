@@ -4,8 +4,8 @@ function [fiducials_table, fiducials_path] = PPG_peaks(ppg_file_name, config_fil
 %% Path of executable file
 fiducials_table = '';
 fiducials_path = '';
-exe_file_path = fileparts(mfilename('fullpath'));
-executable_file = [exe_file_path filesep 'PPG' filesep 'pyPPG.exe'];
+% exe_file_path = fileparts(mfilename('fullpath'));
+% executable_file = [exe_file_path filesep 'PPG' filesep 'pyPPG.exe'];
 
 try
     % if exist(executable_file, 'file') && exist(config_file_name, 'file')
@@ -15,10 +15,13 @@ try
     catch e
         rethrow(e);
     end
-    if ~exist(executable_file, 'file')
-        ME = MException('PPG_peaks:noSuchFile', 'Please, download PPG executable from https://physiozoo.com/!');
-        throw(ME);
-    end
+    
+    executable_file = download_ppg_exe_file();
+    
+%     if ~exist(executable_file, 'file')
+%         ME = MException('PPG_peaks:noSuchFile', 'Please, download PPG executable from https://physiozoo.com/!');
+%         throw(ME);
+%     end
     
     %% Input parameters
     in.data_path = ppg_file_name;
